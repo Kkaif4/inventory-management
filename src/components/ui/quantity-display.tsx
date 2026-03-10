@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cn, formatNumber } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface QuantityDisplayProps {
   qty: number;
@@ -34,7 +34,7 @@ export function QuantityDisplay({
               : "text-green-600",
         )}
       >
-        {formatNumber(qty)}
+        {qty.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
       </span>
       <span className="text-[11px] font-bold text-text-disabled uppercase tracking-tighter self-end mb-0.5">
         {unit}

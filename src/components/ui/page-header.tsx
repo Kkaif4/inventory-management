@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ChevronRight, LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
 interface Breadcrumb {
@@ -10,7 +9,7 @@ interface Breadcrumb {
 
 interface Action {
   label: string;
-  variant?: "primary" | "secondary" | "ghost" | "destructive" | "outline";
+  variant?: "default" | "secondary" | "ghost" | "destructive" | "outline";
   icon?: LucideIcon;
   onClick: () => void;
   disabled?: boolean;
@@ -67,7 +66,7 @@ export function PageHeader({
             {actions.map((action) => (
               <Button
                 key={action.label}
-                variant={action.variant || "primary"}
+                variant={action.variant || "default"}
                 onClick={action.onClick}
                 disabled={action.disabled}
                 className="gap-2"

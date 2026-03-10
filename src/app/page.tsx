@@ -6,8 +6,6 @@ import {
   BarChart3,
   Package,
   ArrowRight,
-  Database,
-  Truck,
 } from "lucide-react";
 
 export default function LandingPage() {

@@ -19,30 +19,30 @@ enum Role {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  name        String
-  role        Role
-  password    String
-  outlets     Outlet[] // Associated outlets for Sales logic
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      Role
+  password  String
+  outlets   Outlet[] // Associated outlets for Sales logic
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Auditing
-  actions     AuditLog[]
+  actions AuditLog[]
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  action     String   // CREATE, UPDATE, DELETE
-  entity     String   // Product, Transaction, etc.
-  entityId   String
-  oldValues  Json?
-  newValues  Json?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String // CREATE, UPDATE, DELETE
+  entity    String // Product, Transaction, etc.
+  entityId  String
+  oldValues Json?
+  newValues Json?
+  createdAt DateTime @default(now())
 }
 
 // ============================================
@@ -50,17 +50,17 @@ model AuditLog {
 // ============================================
 
 model Warehouse {
-  id       String   @id @default(cuid())
-  name     String
-  address  String?
-  outlets  Outlet[]
-  stocks   Stock[]
+  id      String   @id @default(cuid())
+  name    String
+  address String?
+  outlets Outlet[]
+  stocks  Stock[]
 }
 
 model Outlet {
   id                  String      @id @default(cuid())
   name                String
-  invoicePrefix       String      // e.g., "INV/MAIN/"
+  invoicePrefix       String // e.g., "INV/MAIN/"
   gstin               String?
   bankDetails         String?
   negativeStockPolicy String      @default("WARN") // WARN, BLOCK, ALLOW
@@ -83,7 +83,7 @@ model Product {
   name            String
   brand           String?
   hsnCode         String
-  gstRate         Float     // Usually 5, 12, 18, 28
+  gstRate         Float // Usually 5, 12, 18, 28
   baseUnit        String
   purchaseUnit    String?
   salesUnit       String?
@@ -95,19 +95,20 @@ model Product {
 }
 
 model Variant {
-  id              String   @id @default(cuid())
-  productId       String
-  product         Product  @relation(fields: [productId], references: [id])
-  sku             String   @unique
-  specifications  Json?    // Structured key-value pair for size, cap, model
-  purchasePrice   Float    // Moving Average Cost base
-  sellingPrice    Float
-  pricingMethod   String   @default("MANUAL") // MANUAL or MARKUP
-  markupPercent   Float?
-  minStockLevel   Float    @default(0)
-  stocks          Stock[]
-  txnItems        TransactionItem[]
-  suppliers       VendorProduct[]
+  id               String            @id @default(cuid())
+  productId        String
+  product          Product           @relation(fields: [productId], references: [id])
+  sku              String            @unique
+  specifications   Json? // Structured key-value pair for size, cap, model
+  purchasePrice    Float // Moving Average Cost base
+  sellingPrice     Float
+  pricingMethod    String            @default("MANUAL") // MANUAL or MARKUP
+  markupPercent    Float?
+  minStockLevel    Float             @default(0)
+  stocks           Stock[]
+  txnItems         TransactionItem[]
+  suppliers        VendorProduct[]
+  priceListEntries PriceListEntry[]
 }
 
 // ============================================
@@ -115,15 +116,15 @@ model Variant {
 // ============================================
 
 model Stock {
-  id           String    @id @default(cuid())
+  id           String     @id @default(cuid())
   variantId    String
-  variant      Variant   @relation(fields: [variantId], references: [id])
+  variant      Variant    @relation(fields: [variantId], references: [id])
   warehouseId  String?
   warehouse    Warehouse? @relation(fields: [warehouseId], references: [id])
   outletId     String?
-  outlet       Outlet?   @relation(fields: [outletId], references: [id])
-  quantity     Float     @default(0) // Physical count
-  inTransitQty Float     @default(0) // Stock in transit via transfers
+  outlet       Outlet?    @relation(fields: [outletId], references: [id])
+  quantity     Float      @default(0) // Physical count
+  inTransitQty Float      @default(0) // Stock in transit via transfers
 
   @@unique([variantId, warehouseId, outletId]) // Cannot have dual rows per location
 }
@@ -138,19 +139,23 @@ enum PartyType {
 }
 
 model Party {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   type           PartyType
   name           String
   gstin          String?
   pan            String?
   address        String
-  state          String   // Crucial for CGST/SGST vs IGST calculation
+  state          String // Crucial for CGST/SGST vs IGST calculation
   contactInfo    String?
-  creditPeriod   Int      @default(0)
+  creditPeriod   Int       @default(0)
   creditLimit    Float?
-  openingBalance Float    @default(0)
-  transactions   Transaction[]
-  ledgerEntries  LedgerEntry[]
+  openingBalance Float     @default(0)
+
+  priceListId String?
+  priceList   PriceList? @relation(fields: [priceListId], references: [id])
+
+  transactions     Transaction[]
+  ledgerEntries    LedgerEntry[]
   suppliedProducts VendorProduct[]
 }
 
@@ -160,6 +165,7 @@ model Party {
 
 enum TxType {
   // Purchase
+  PURCHASE_REQUEST
   PURCHASE_ORDER
   GRN
   PURCHASE_BILL
@@ -178,48 +184,48 @@ enum TxType {
 }
 
 model Transaction {
-  id              String   @id @default(cuid())
-  type            TxType
-  txnNumber       String   @unique // Auto-generated based on Outlet prefix
-  date            DateTime @default(now())
+  id        String   @id @default(cuid())
+  type      TxType
+  txnNumber String   @unique // Auto-generated based on Outlet prefix
+  date      DateTime @default(now())
 
-  partyId         String?
-  party           Party?   @relation(fields: [partyId], references: [id])
+  partyId String?
+  party   Party?  @relation(fields: [partyId], references: [id])
 
-  fromLocationId  String?  // Warehouse/Outlet ID
-  toLocationId    String?  // Warehouse/Outlet ID
+  fromLocationId String? // Warehouse/Outlet ID
+  toLocationId   String? // Warehouse/Outlet ID
 
-  totalTaxable    Float    @default(0)
-  totalTax        Float    @default(0)
-  freightCost     Float?   @default(0)
-  grandTotal      Float    @default(0)
+  totalTaxable Float  @default(0)
+  totalTax     Float  @default(0)
+  freightCost  Float? @default(0)
+  grandTotal   Float  @default(0)
 
-  status          String   @default("DRAFT") // DRAFT, POSTED, CANCELLED
+  status String @default("DRAFT") // DRAFT, POSTED, CANCELLED
 
   // Workflow linking (e.g., PO -> GRN -> BILL)
-  parentId        String?
-  parent          Transaction?  @relation("TxFlow", fields: [parentId], references: [id])
-  children        Transaction[] @relation("TxFlow")
+  parentId String?
+  parent   Transaction?  @relation("TxFlow", fields: [parentId], references: [id])
+  children Transaction[] @relation("TxFlow")
 
-  items           TransactionItem[]
-  ledgerEntries   LedgerEntry[]
+  items         TransactionItem[]
+  ledgerEntries LedgerEntry[]
 }
 
 model TransactionItem {
-  id              String      @id @default(cuid())
-  transactionId   String
-  transaction     Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-  variantId       String
-  variant         Variant     @relation(fields: [variantId], references: [id])
+  id            String      @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  variantId     String
+  variant       Variant     @relation(fields: [variantId], references: [id])
 
   quantity        Float
   rate            Float
-  freightFraction Float?      // Landed cost calculation distribution
+  freightFraction Float? // Landed cost calculation distribution
 
-  taxableValue    Float
-  cgst            Float       @default(0)
-  sgst            Float       @default(0)
-  igst            Float       @default(0)
+  taxableValue Float
+  cgst         Float @default(0)
+  sgst         Float @default(0)
+  igst         Float @default(0)
 }
 
 // ============================================
@@ -235,40 +241,64 @@ enum AccountGroup {
 }
 
 model Account {
-  id              String       @id @default(cuid())
-  code            String       @unique  // e.g., "1001"
-  name            String       // e.g., "Cash in Hand", "Sales", "Input CGST"
-  group           AccountGroup
-  isSystem        Boolean      @default(false) // Core mapped accounts cannot be deleted
-  entries         LedgerEntry[]
+  id       String        @id @default(cuid())
+  code     String        @unique // e.g., "1001"
+  name     String // e.g., "Cash in Hand", "Sales", "Input CGST"
+  group    AccountGroup
+  isSystem Boolean       @default(false) // Core mapped accounts cannot be deleted
+  entries  LedgerEntry[]
 }
 
 model LedgerEntry {
-  id              String       @id @default(cuid())
-  accountId       String
-  account         Account      @relation(fields: [accountId], references: [id])
-  partyId         String?      // Links the entry to AR (Debtors) or AP (Creditors)
-  party           Party?       @relation(fields: [partyId], references: [id])
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id])
+  partyId   String? // Links the entry to AR (Debtors) or AP (Creditors)
+  party     Party?  @relation(fields: [partyId], references: [id])
 
-  transactionId   String?      // Link to bill, invoice, or payment
-  transaction     Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId String? // Link to bill, invoice, or payment
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
 
-  date            DateTime     @default(now())
-  debit           Float        @default(0)
-  credit          Float        @default(0)
-  reference       String?      // Cheque info, manual journal notes
+  date      DateTime @default(now())
+  debit     Float    @default(0)
+  credit    Float    @default(0)
+  reference String? // Cheque info, manual journal notes
 
-  isReconciled    Boolean      @default(false) // For Bank Reconciliation
+  isReconciled Boolean @default(false) // For Bank Reconciliation
 }
 
 model VendorProduct {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   vendorId  String
-  vendor    Party    @relation(fields: [vendorId], references: [id])
+  vendor    Party   @relation(fields: [vendorId], references: [id])
   variantId String
-  variant   Variant  @relation(fields: [variantId], references: [id])
+  variant   Variant @relation(fields: [variantId], references: [id])
   lastPrice Float?
-  leadTime  Int?     // in days
+  leadTime  Int? // in days
 
   @@unique([vendorId, variantId])
+}
+
+// ============================================
+// 7. PRICE LISTS
+// ============================================
+
+model PriceList {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean          @default(true)
+  entries     PriceListEntry[]
+  parties     Party[] // Customers assigned to this price list
+}
+
+model PriceListEntry {
+  id          String    @id @default(cuid())
+  priceListId String
+  priceList   PriceList @relation(fields: [priceListId], references: [id], onDelete: Cascade)
+  variantId   String
+  variant     Variant   @relation(fields: [variantId], references: [id])
+  price       Float
+
+  @@unique([priceListId, variantId])
 }

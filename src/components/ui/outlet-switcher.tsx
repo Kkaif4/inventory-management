@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Store, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 import { Button } from "./button";
 
 export function OutletSwitcher() {

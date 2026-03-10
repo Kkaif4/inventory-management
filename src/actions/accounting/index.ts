@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { initializeCOA } from "@/domains/accounting/ledger-service";
 import { revalidatePath } from "next/cache";
+import { roundToTwo } from "@/lib/utils";
 
 export async function setupCOA() {
   await initializeCOA();
@@ -63,10 +64,12 @@ export async function createPayment(data: {
         txnNumber: `${data.type === "PAYMENT_MADE" ? "PM" : "PR"}-${Date.now()}`,
         date: data.date,
         partyId: data.partyId,
-        grandTotal: data.amount,
+        grandTotal: roundToTwo(data.amount),
         status: "POSTED",
       },
     });
+
+    const roundedAmount = roundToTwo(data.amount);
 
     // 2. Accounting Entries
     const bankAcc = await tx.account.findUnique({
@@ -88,13 +91,13 @@ export async function createPayment(data: {
             transactionId: txn.id,
             accountId: creditorAcc.id,
             partyId: data.partyId,
-            debit: data.amount,
+            debit: roundedAmount,
             reference: data.reference,
           },
           {
             transactionId: txn.id,
             accountId: bankAcc.id,
-            credit: data.amount,
+            credit: roundedAmount,
             reference: data.reference,
           },
         ],
@@ -106,14 +109,14 @@ export async function createPayment(data: {
           {
             transactionId: txn.id,
             accountId: bankAcc.id,
-            debit: data.amount,
+            debit: roundedAmount,
             reference: data.reference,
           },
           {
             transactionId: txn.id,
             accountId: debtorAcc.id,
             partyId: data.partyId,
-            credit: data.amount,
+            credit: roundedAmount,
             reference: data.reference,
           },
         ],

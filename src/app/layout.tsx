@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Industrial ERP",
 };
 
-export default function RootLayout({
+export default function RootLayout({    
   children,
 }: Readonly<{
   children: React.ReactNode;

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { startOfDay, endOfDay } from "date-fns";
+import { roundToTwo } from "@/lib/utils";
 
 export async function getDashboardStats() {
   const now = new Date();
@@ -86,18 +87,18 @@ export async function getDashboardStats() {
   return {
     kpis: {
       todaySales: {
-        value: todaySales._sum.grandTotal || 0,
+        value: roundToTwo(todaySales._sum.grandTotal || 0),
         count: todaySales._count.id,
       },
       openPOs: {
         count: openPOs,
-        value: openPOValue._sum.grandTotal || 0,
+        value: roundToTwo(openPOValue._sum.grandTotal || 0),
       },
       lowStock: {
         count: lowStockCount,
       },
       receivables: {
-        value: outstandingReceivables._sum.openingBalance || 0,
+        value: roundToTwo(outstandingReceivables._sum.openingBalance || 0),
       },
     },
     recentInvoices,

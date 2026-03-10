@@ -5,27 +5,50 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Building2, ShieldAlert, Mail, Lock } from "lucide-react";
 import Link from "next/link";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("from") || "/dashboard";
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [globalError, setGlobalError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     setLoading(true);
-    setError("");
+    setGlobalError("");
 
     try {
       const res = await signIn("credentials", {
         redirect: false,
-        email,
-        password,
+        email: values.email,
+        password: values.password,
       });
 
       if (res?.error) {
@@ -33,19 +56,23 @@ function LoginContent() {
           res.error === "CredentialsSignin" ||
           res.error === "Invalid email or password"
         ) {
-          setError("Invalid email or password");
+          setGlobalError("Invalid email or password");
         } else {
-          setError(res.error || "An unexpected error occurred during sign in");
+          setGlobalError(
+            res.error || "An unexpected error occurred during sign in",
+          );
         }
       } else if (!res) {
-        setError("Could not connect to the authentication server");
+        setGlobalError("Could not connect to the authentication server");
       } else {
         router.push(callbackUrl);
         router.refresh();
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("An unexpected error occurred. Please check the server logs.");
+      setGlobalError(
+        "An unexpected error occurred. Please check the server logs.",
+      );
     } finally {
       setLoading(false);
     }
@@ -77,63 +104,78 @@ function LoginContent() {
           </p>
         </div>
 
-        {error && (
+        {globalError && (
           <div className="mb-8 flex items-center gap-3 bg-red-500/10 text-red-300 p-4 rounded-xl border border-red-500/20 text-sm animate-in fade-in slide-in-from-top-2 duration-300">
             <ShieldAlert className="w-5 h-5 shrink-0 text-red-400" />
-            {error}
+            {globalError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
-              Work Email
-            </label>
-            <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full pl-12 pr-4 py-3 bg-slate-950/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-white placeholder:text-slate-600"
-                placeholder="admin@erp.com"
-              />
-            </div>
-          </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
+                    Work Email
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative group">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors z-10" />
+                      <Input
+                        placeholder="admin@erp.com"
+                        className="pl-12 pr-4 py-6 bg-slate-950/50 border-white/5 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500 text-white placeholder:text-slate-600 rounded-xl"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-red-400 ml-1 text-xs" />
+                </FormItem>
+              )}
+            />
 
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
-              Access Token
-            </label>
-            <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full pl-12 pr-4 py-3 bg-slate-950/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-white placeholder:text-slate-600"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
+                    Access Token
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative group">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors z-10" />
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        className="pl-12 pr-4 py-6 bg-slate-950/50 border-white/5 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500 text-white placeholder:text-slate-600 rounded-xl"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-red-400 ml-1 text-xs" />
+                </FormItem>
+              )}
+            />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg active:scale-[0.98]"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                Securing Session...
-              </>
-            ) : (
-              "Establish Connection"
-            )}
-          </button>
-        </form>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-600 text-white font-bold py-6 rounded-xl hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 transition-all text-lg"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                  Securing Session...
+                </>
+              ) : (
+                "Establish Connection"
+              )}
+            </Button>
+          </form>
+        </Form>
 
         <p className="mt-8 text-center text-slate-500 text-sm">
           Forgot credentials?{" "}

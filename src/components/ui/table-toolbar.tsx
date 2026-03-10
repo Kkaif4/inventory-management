@@ -1,10 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { Search, Filter, Columns, Download, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  Search,
+  Columns,
+  Download,
+  Trash2,
+  Filter,
+  LucideIcon,
+} from "lucide-react";
 import { Button } from "./button";
 import { Input } from "./input";
+
+export interface TableAction {
+  label: string;
+  variant?: "default" | "secondary" | "ghost" | "destructive" | "outline";
+  icon?: LucideIcon;
+  onClick: () => void;
+  disabled?: boolean;
+}
 
 interface TableToolbarProps {
   onSearchChange?: (value: string) => void;
@@ -12,7 +26,7 @@ interface TableToolbarProps {
   selectedCount?: number;
   onBulkDelete?: () => void;
   filters?: React.ReactNode;
-  actions?: React.ReactNode;
+  actions?: React.ReactNode | TableAction[];
 }
 
 export function TableToolbar({
@@ -68,7 +82,26 @@ export function TableToolbar({
             <span>Export</span>
           </Button>
 
-          {actions}
+          {actions &&
+            (Array.isArray(actions) ? (
+              <div className="flex items-center gap-2">
+                {actions.map((action) => (
+                  <Button
+                    key={action.label}
+                    size="sm"
+                    variant={action.variant || "default"}
+                    onClick={action.onClick}
+                    disabled={action.disabled}
+                    className="gap-2"
+                  >
+                    {action.icon && <action.icon className="w-4 h-4" />}
+                    <span>{action.label}</span>
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              actions
+            ))}
         </div>
       </div>
 

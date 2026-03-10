@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { StockService } from "@/domains/inventory/stock-service";
 import { AccountingService } from "@/domains/accounting/ledger-service";
+import { roundToTwo } from "@/lib/utils";
 
 export async function createSalesInvoice(data: {
   partyId: string;
@@ -73,14 +74,22 @@ export async function createSalesInvoice(data: {
     const outputSgstAcc = await tx.account.findUnique({
       where: { code: "2003" },
     });
+    const outputIgstAcc = await tx.account.findUnique({
+      where: { code: "2004" },
+    });
 
     if (!salesAcc || !debtorAcc)
       throw new Error("Required accounts not found. Run COA setup.");
 
-    const totalTaxable = data.items.reduce((a, b) => a + b.taxableValue, 0);
-    const totalCgst = data.items.reduce((a, b) => a + b.cgst, 0);
-    const totalSgst = data.items.reduce((a, b) => a + b.sgst, 0);
-    const grandTotal = totalTaxable + totalCgst + totalSgst;
+    const totalTaxable = roundToTwo(
+      data.items.reduce((a, b) => a + b.taxableValue, 0),
+    );
+    const totalCgst = roundToTwo(data.items.reduce((a, b) => a + b.cgst, 0));
+    const totalSgst = roundToTwo(data.items.reduce((a, b) => a + b.sgst, 0));
+    const totalIgst = roundToTwo(data.items.reduce((a, b) => a + b.igst, 0));
+    const grandTotal = roundToTwo(
+      totalTaxable + totalCgst + totalSgst + totalIgst,
+    );
 
     const entries = [
       { accountId: salesAcc.id, credit: totalTaxable },
@@ -91,6 +100,8 @@ export async function createSalesInvoice(data: {
       entries.push({ accountId: outputCgstAcc.id, credit: totalCgst });
     if (totalSgst > 0 && outputSgstAcc)
       entries.push({ accountId: outputSgstAcc.id, credit: totalSgst });
+    if (totalIgst > 0 && outputIgstAcc)
+      entries.push({ accountId: outputIgstAcc.id, credit: totalIgst });
 
     await AccountingService.postJournalEntry(tx, {
       transactionId: invoice.id,

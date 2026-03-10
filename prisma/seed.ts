@@ -1,7 +1,7 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { Pool } from "pg";
-import { PrismaClient, Role } from "./generated";
+import { PrismaClient, Role } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
@@ -28,23 +28,67 @@ async function main() {
         isActive: true,
       },
     });
-    console.log("Seed: Admin user created (admin@erp.com / admin123)");
+    console.log("Seed: Admin user created (admin@admin.com / admin123)");
   } else {
     console.log("Seed: Admin user already exists");
   }
 
-  // 2. Create a default Outlet if none exists
-  const existingOutlet = await prisma.outlet.findFirst();
+  // 2. Create Staff Member
+  const staffEmail = "arjun@enterprise.com";
+  const existingStaff = await prisma.user.findUnique({
+    where: { email: staffEmail },
+  });
+
+  if (!existingStaff) {
+    const hashedPassword = await bcrypt.hash("staff123", 10);
+    await prisma.user.create({
+      data: {
+        email: staffEmail,
+        name: "Arjun Sales",
+        role: Role.SALES,
+        password: hashedPassword,
+        isActive: true,
+      },
+    });
+    console.log("Seed: Staff user created (arjun@enterprise.com / staff123)");
+  }
+
+  // 3. Create Warehouse
+  const warehouseName = "Main Distribution Center";
+  let warehouse = await prisma.warehouse.findFirst({
+    where: { name: warehouseName },
+  });
+
+  if (!warehouse) {
+    warehouse = await prisma.warehouse.create({
+      data: {
+        name: warehouseName,
+        address: "Plot 45, Industrial Area Phase II, Mumbai",
+      },
+    });
+    console.log("Seed: Warehouse created");
+  }
+
+  // 4. Create Outlet linked to Warehouse
+  const outletName = "City Showroom - South";
+  const existingOutlet = await prisma.outlet.findFirst({
+    where: { name: outletName },
+  });
+
   if (!existingOutlet) {
     await prisma.outlet.create({
       data: {
-        name: "Main Head Office",
-        invoicePrefix: "INV/HQ/",
+        name: outletName,
+        invoicePrefix: "INV/SS/",
         gstin: "27ABCDE1234F1Z5",
-        bankDetails: "HDFC Bank, AC: 123456789, IFSC: HDFC0001",
+        bankDetails: "HDFC Bank, AC: 987654321, IFSC: HDFC0001",
+        negativeStockPolicy: "WARN",
+        warehouses: {
+          connect: [{ id: warehouse.id }],
+        },
       },
     });
-    console.log("Seed: Default outlet created");
+    console.log("Seed: Outlet created and linked to Warehouse");
   }
 
   console.log("Seed: Completed successfully");

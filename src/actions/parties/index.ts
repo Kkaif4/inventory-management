@@ -8,6 +8,11 @@ export async function getParties() {
   return await prisma.party.findMany({
     orderBy: { name: "asc" },
     include: {
+      priceList: {
+        include: {
+          entries: true,
+        },
+      },
       _count: {
         select: { transactions: true },
       },
@@ -46,12 +51,14 @@ export async function createParty(data: {
   creditPeriod: number;
   creditLimit?: number;
   openingBalance: number;
+  priceListId?: string;
 }) {
+  const { priceListId, ...rest } = data;
+
   const party = await prisma.party.create({
     data: {
-      ...data,
-      // When a party is created with an opening balance, we ideally need to create a ledger entry.
-      // For this phase, we'll just set the party field. Full double-entry will hook into this later.
+      ...rest,
+      priceListId: priceListId === "" ? null : priceListId,
     },
   });
 
@@ -64,6 +71,57 @@ export async function createParty(data: {
 
   revalidatePath("/dashboard/master-data/parties");
   return party;
+}
+
+export async function getVendorMetrics() {
+  const vendors = await prisma.party.findMany({
+    where: { type: "VENDOR" },
+    include: {
+      transactions: {
+        where: {
+          type: {
+            in: ["PURCHASE_ORDER", "GRN", "DEBIT_NOTE"],
+          },
+        },
+        include: {
+          items: true,
+        },
+      },
+    },
+  });
+
+  return vendors.map((vendor) => {
+    const pos = vendor.transactions.filter((t) => t.type === "PURCHASE_ORDER");
+    const grns = vendor.transactions.filter((t) => t.type === "GRN");
+    const returns = vendor.transactions.filter((t) => t.type === "DEBIT_NOTE");
+
+    // Performance Logic
+    const onTimeCount = grns.filter((g) => {
+      // Find parent PO to compare dates
+      const po = pos.find((p) => p.id === g.parentId);
+      if (!po) return true; // Default to on-time if no link
+      return new Date(g.date) <= new Date(po.date);
+    }).length;
+
+    const onTimeRate =
+      grns.length > 0 ? (onTimeCount / grns.length) * 100 : 100;
+    const returnRate = pos.length > 0 ? (returns.length / pos.length) * 100 : 0;
+
+    // Rating Calculation
+    let rating = "B";
+    if (onTimeRate >= 95 && returnRate < 2) rating = "A+";
+    else if (onTimeRate >= 90) rating = "A";
+    else if (onTimeRate < 70) rating = "C";
+
+    return {
+      id: vendor.id,
+      name: vendor.name,
+      rating,
+      onTime: `${onTimeRate.toFixed(1)}%`,
+      leadTime: "4.2 Days", // Placeholder until historical diff logic is added
+      returns: `${returnRate.toFixed(1)}%`,
+    };
+  });
 }
 
 export async function linkProductToVendor(variantId: string, vendorId: string) {

@@ -8,6 +8,7 @@ export async function getProducts() {
   return await prisma.product.findMany({
     include: {
       category: true,
+      variants: true,
       _count: {
         select: { variants: true },
       },
@@ -66,4 +67,27 @@ export async function createProduct(data: {
 
   revalidatePath("/dashboard/master-data/products");
   return product;
+}
+
+export async function getProductWithVariants(productId: string) {
+  return await prisma.product.findUnique({
+    where: { id: productId },
+    include: {
+      category: true,
+      variants: {
+        orderBy: { sku: "asc" },
+      },
+    },
+  });
+}
+
+export async function getAllVariants() {
+  return await prisma.variant.findMany({
+    include: {
+      product: {
+        select: { name: true, baseUnit: true },
+      },
+    },
+    orderBy: [{ product: { name: "asc" } }, { sku: "asc" }],
+  });
 }

@@ -69,7 +69,7 @@ export function Pagination({
               return (
                 <Button
                   key={pageNum}
-                  variant={currentPage === pageNum ? "primary" : "ghost"}
+                  variant={currentPage === pageNum ? "default" : "ghost"}
                   className={cn(
                     "h-8 w-8 p-0 text-xs",
                     currentPage !== pageNum &&

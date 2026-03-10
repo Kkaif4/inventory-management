@@ -1,6 +1,5 @@
-"use server";
-
 import { prisma } from "@/lib/prisma";
+import { roundToTwo } from "@/lib/utils";
 
 /**
  * Standard Double-Entry Ledger Service
@@ -25,8 +24,12 @@ export const AccountingService = {
     const { transactionId, entries, partyId } = data;
 
     // Validate entry balance
-    const totalDebit = entries.reduce((sum, e) => sum + (e.debit || 0), 0);
-    const totalCredit = entries.reduce((sum, e) => sum + (e.credit || 0), 0);
+    const totalDebit = roundToTwo(
+      entries.reduce((sum, e) => sum + (e.debit || 0), 0),
+    );
+    const totalCredit = roundToTwo(
+      entries.reduce((sum, e) => sum + (e.credit || 0), 0),
+    );
 
     if (Math.abs(totalDebit - totalCredit) > 0.01) {
       throw new Error("Journal entry is not balanced");
@@ -39,8 +42,8 @@ export const AccountingService = {
             transactionId,
             accountId: entry.accountId,
             partyId: partyId, // Link to party if provided (for Debtor/Creditor ledgers)
-            debit: entry.debit || 0,
-            credit: entry.credit || 0,
+            debit: roundToTwo(entry.debit || 0),
+            credit: roundToTwo(entry.credit || 0),
             reference: entry.reference,
           },
         }),

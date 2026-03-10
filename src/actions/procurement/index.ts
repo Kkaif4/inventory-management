@@ -2,9 +2,10 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { StockService, LocationType } from "@/domains/inventory/stock-service";
+import { StockService } from "@/domains/inventory/stock-service";
 import { AccountingService } from "@/domains/accounting/ledger-service";
 import { AuditService } from "@/domains/audit/audit-service";
+import { roundToTwo } from "@/lib/utils";
 
 export type PurchaseItemPayload = {
   variantId: string;
@@ -24,12 +25,13 @@ export async function createPurchaseOrder(data: {
   const { items, ...poData } = data;
 
   // Calculate totals
-  const totalTaxable = items.reduce((sum, item) => sum + item.taxableValue, 0);
-  const totalTax = items.reduce(
-    (sum, item) => sum + item.cgst + item.sgst + item.igst,
-    0,
+  const totalTaxable = roundToTwo(
+    items.reduce((sum, item) => sum + item.taxableValue, 0),
   );
-  const grandTotal = totalTaxable + totalTax;
+  const totalTax = roundToTwo(
+    items.reduce((sum, item) => sum + item.cgst + item.sgst + item.igst, 0),
+  );
+  const grandTotal = roundToTwo(totalTaxable + totalTax);
 
   const po = await prisma.transaction.create({
     data: {
@@ -96,7 +98,9 @@ export async function createGRN(data: {
               variantId: item.variantId,
               quantity: item.quantityReceived,
               rate: poItem?.rate || 0,
-              taxableValue: (poItem?.rate || 0) * item.quantityReceived,
+              taxableValue: roundToTwo(
+                (poItem?.rate || 0) * item.quantityReceived,
+              ),
             };
           }),
         },
@@ -215,11 +219,14 @@ export async function createPurchaseBill(data: {
     if (!purchaseAcc || !creditorAcc)
       throw new Error("Mapped system accounts not found. Run COA setup.");
 
-    const totalTaxable = grn.items.reduce((a, b) => a + b.taxableValue, 0);
-    const totalCgst = grn.items.reduce((a, b) => a + b.cgst, 0);
-    const totalSgst = grn.items.reduce((a, b) => a + b.sgst, 0);
-    const grandTotal =
-      totalTaxable + totalCgst + totalSgst + (data.freightCost || 0);
+    const totalTaxable = roundToTwo(
+      grn.items.reduce((a, b) => a + b.taxableValue, 0),
+    );
+    const totalCgst = roundToTwo(grn.items.reduce((a, b) => a + b.cgst, 0));
+    const totalSgst = roundToTwo(grn.items.reduce((a, b) => a + b.sgst, 0));
+    const grandTotal = roundToTwo(
+      totalTaxable + totalCgst + totalSgst + (data.freightCost || 0),
+    );
 
     const entries = [
       { accountId: purchaseAcc.id, debit: totalTaxable },
@@ -303,7 +310,7 @@ export async function createDebitNote(data: {
               variantId: item.variantId,
               quantity: item.quantity,
               rate: billItem?.rate || 0,
-              taxableValue: (billItem?.rate || 0) * item.quantity,
+              taxableValue: roundToTwo((billItem?.rate || 0) * item.quantity),
             };
           }),
         },

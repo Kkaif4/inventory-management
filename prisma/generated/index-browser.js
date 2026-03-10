@@ -209,7 +209,8 @@ exports.Prisma.PartyScalarFieldEnum = {
   contactInfo: 'contactInfo',
   creditPeriod: 'creditPeriod',
   creditLimit: 'creditLimit',
-  openingBalance: 'openingBalance'
+  openingBalance: 'openingBalance',
+  priceListId: 'priceListId'
 };
 
 exports.Prisma.TransactionScalarFieldEnum = {
@@ -269,6 +270,20 @@ exports.Prisma.VendorProductScalarFieldEnum = {
   leadTime: 'leadTime'
 };
 
+exports.Prisma.PriceListScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive'
+};
+
+exports.Prisma.PriceListEntryScalarFieldEnum = {
+  id: 'id',
+  priceListId: 'priceListId',
+  variantId: 'variantId',
+  price: 'price'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -307,6 +322,7 @@ exports.PartyType = exports.$Enums.PartyType = {
 };
 
 exports.TxType = exports.$Enums.TxType = {
+  PURCHASE_REQUEST: 'PURCHASE_REQUEST',
   PURCHASE_ORDER: 'PURCHASE_ORDER',
   GRN: 'GRN',
   PURCHASE_BILL: 'PURCHASE_BILL',
@@ -342,7 +358,9 @@ exports.Prisma.ModelName = {
   TransactionItem: 'TransactionItem',
   Account: 'Account',
   LedgerEntry: 'LedgerEntry',
-  VendorProduct: 'VendorProduct'
+  VendorProduct: 'VendorProduct',
+  PriceList: 'PriceList',
+  PriceListEntry: 'PriceListEntry'
 };
 
 /**
