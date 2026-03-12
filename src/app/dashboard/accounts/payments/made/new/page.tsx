@@ -4,11 +4,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createPayment, getAccounts } from "@/actions/accounting";
 import { getParties } from "@/actions/parties";
 import { Wallet, Save, ArrowDownCircle } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 const paymentSchema = z.object({
   partyId: z.string().min(1, "Vendor is required"),
@@ -25,12 +27,13 @@ export default function NewPaymentMadePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [vendors, setVendors] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
-
+  const { currentOutletId } = useOutletStore();
+  if (!currentOutletId) return null;
   useEffect(() => {
-    getParties().then((res) =>
+    getParties(currentOutletId).then((res) =>
       setVendors(res.filter((p) => p.type === "VENDOR")),
     );
-    getAccounts().then((res) =>
+    getAccounts(currentOutletId).then((res) =>
       setAccounts(res.filter((a) => a.group === "ASSET")),
     ); // Only banks/cash
   }, []);
@@ -51,6 +54,7 @@ export default function NewPaymentMadePage() {
       setIsSubmitting(true);
       await createPayment({
         ...data,
+        outletId: currentOutletId,
         date: new Date(data.date),
         type: "PAYMENT_MADE",
       });
@@ -58,7 +62,7 @@ export default function NewPaymentMadePage() {
       router.refresh();
     } catch (error) {
       console.error(error);
-      alert("Failed to record payment");
+      toast.error("Failed to record payment");
     } finally {
       setIsSubmitting(false);
     }

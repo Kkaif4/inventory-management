@@ -1,15 +1,53 @@
+"use client";
+
 import { getAccounts, setupCOA } from "@/actions/accounting";
+import { useOutletStore } from "@/store/use-outlet-store";
 import {
   LayoutGrid,
   AlertCircle,
   CheckCircle2,
   ChevronRight,
   Settings,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
-export default async function AccountsPage() {
-  const accounts = await getAccounts();
+export default function AccountsPage() {
+  const { currentOutletId } = useOutletStore();
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (currentOutletId) {
+      setIsLoading(true);
+      getAccounts(currentOutletId)
+        .then(setAccounts)
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
+    }
+  }, [currentOutletId]);
+
+  if (!currentOutletId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6 bg-white rounded-2xl border border-slate-200">
+        <AlertCircle className="w-12 h-12 text-amber-500 mb-4" />
+        <h2 className="text-xl font-bold text-slate-800">No Outlet Selected</h2>
+        <p className="text-slate-500 mt-2">
+          Please select an outlet from the switcher above to view its Chart of
+          Accounts.
+        </p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      </div>
+    );
+  }
 
   const groups = {
     ASSET: accounts.filter((a) => a.group === "ASSET"),
@@ -37,8 +75,8 @@ export default async function AccountsPage() {
         </div>
 
         {accounts.length === 0 && (
-          <form action={setupCOA}>
-            <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center text-sm font-medium shadow-sm">
+          <form action={() => setupCOA(currentOutletId)}>
+            <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center text-sm font-medium shadow-sm transition-all active:scale-95">
               <Settings className="w-4 h-4 mr-2" />
               Initialize Standard Accounts
             </button>

@@ -1,18 +1,45 @@
+"use client";
+
 import { getParties } from "@/actions/parties";
 import Link from "next/link";
 import {
-  Users,
   Plus,
-  IndianRupee,
+  Star,
+  Clock,
+  Users,
   Search,
   TrendingUp,
-  Clock,
-  Star,
+  IndianRupee,
+  Loader2,
 } from "lucide-react";
+import { useOutletStore } from "@/store/use-outlet-store";
+import { useState, useEffect } from "react";
 
-export default async function CustomersPage() {
-  const allParties = await getParties();
-  const customers = allParties.filter((p) => p.type === "CUSTOMER");
+export default function CustomersPage() {
+  const { currentOutletId } = useOutletStore();
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (currentOutletId) {
+      setIsLoading(true);
+      getParties(currentOutletId)
+        .then((allParties) => {
+          setCustomers(allParties.filter((p) => p.type === "CUSTOMER"));
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [currentOutletId]);
+
+  if (!currentOutletId) return null;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

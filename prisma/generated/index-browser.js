@@ -160,7 +160,8 @@ exports.Prisma.OutletScalarFieldEnum = {
 exports.Prisma.CategoryScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  parentId: 'parentId'
+  parentId: 'parentId',
+  outletId: 'outletId'
 };
 
 exports.Prisma.ProductScalarFieldEnum = {
@@ -174,7 +175,9 @@ exports.Prisma.ProductScalarFieldEnum = {
   salesUnit: 'salesUnit',
   conversionRatio: 'conversionRatio',
   categoryId: 'categoryId',
-  isArchived: 'isArchived'
+  isArchived: 'isArchived',
+  parentCategoryId: 'parentCategoryId',
+  outletId: 'outletId'
 };
 
 exports.Prisma.VariantScalarFieldEnum = {
@@ -186,7 +189,8 @@ exports.Prisma.VariantScalarFieldEnum = {
   sellingPrice: 'sellingPrice',
   pricingMethod: 'pricingMethod',
   markupPercent: 'markupPercent',
-  minStockLevel: 'minStockLevel'
+  minStockLevel: 'minStockLevel',
+  categoryId: 'categoryId'
 };
 
 exports.Prisma.StockScalarFieldEnum = {
@@ -210,7 +214,8 @@ exports.Prisma.PartyScalarFieldEnum = {
   creditPeriod: 'creditPeriod',
   creditLimit: 'creditLimit',
   openingBalance: 'openingBalance',
-  priceListId: 'priceListId'
+  priceListId: 'priceListId',
+  outletId: 'outletId'
 };
 
 exports.Prisma.TransactionScalarFieldEnum = {
@@ -219,6 +224,7 @@ exports.Prisma.TransactionScalarFieldEnum = {
   txnNumber: 'txnNumber',
   date: 'date',
   partyId: 'partyId',
+  outletId: 'outletId',
   fromLocationId: 'fromLocationId',
   toLocationId: 'toLocationId',
   totalTaxable: 'totalTaxable',
@@ -226,7 +232,8 @@ exports.Prisma.TransactionScalarFieldEnum = {
   freightCost: 'freightCost',
   grandTotal: 'grandTotal',
   status: 'status',
-  parentId: 'parentId'
+  parentId: 'parentId',
+  userId: 'userId'
 };
 
 exports.Prisma.TransactionItemScalarFieldEnum = {
@@ -247,7 +254,8 @@ exports.Prisma.AccountScalarFieldEnum = {
   code: 'code',
   name: 'name',
   group: 'group',
-  isSystem: 'isSystem'
+  isSystem: 'isSystem',
+  outletId: 'outletId'
 };
 
 exports.Prisma.LedgerEntryScalarFieldEnum = {
@@ -322,18 +330,18 @@ exports.PartyType = exports.$Enums.PartyType = {
 };
 
 exports.TxType = exports.$Enums.TxType = {
-  PURCHASE_REQUEST: 'PURCHASE_REQUEST',
   PURCHASE_ORDER: 'PURCHASE_ORDER',
   GRN: 'GRN',
   PURCHASE_BILL: 'PURCHASE_BILL',
   DEBIT_NOTE: 'DEBIT_NOTE',
-  QUOTATION: 'QUOTATION',
   PROFORMA_INVOICE: 'PROFORMA_INVOICE',
   DELIVERY_CHALLAN: 'DELIVERY_CHALLAN',
   SALES_INVOICE: 'SALES_INVOICE',
   CREDIT_NOTE: 'CREDIT_NOTE',
   STOCK_TRANSFER: 'STOCK_TRANSFER',
-  STOCK_ADJUSTMENT: 'STOCK_ADJUSTMENT'
+  STOCK_ADJUSTMENT: 'STOCK_ADJUSTMENT',
+  QUOTATION: 'QUOTATION',
+  PURCHASE_REQUEST: 'PURCHASE_REQUEST'
 };
 
 exports.AccountGroup = exports.$Enums.AccountGroup = {

@@ -4,11 +4,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 import { createPayment, getAccounts } from "@/actions/accounting";
 import { getParties } from "@/actions/parties";
 import { Wallet, Save, ArrowUpCircle } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 const paymentSchema = z.object({
   partyId: z.string().min(1, "Customer is required"),
@@ -25,12 +28,17 @@ export default function NewPaymentReceiptPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
+  const { currentOutletId } = useOutletStore();
+
+  if (!currentOutletId) {
+    return null;
+  }
 
   useEffect(() => {
-    getParties().then((res) =>
+    getParties(currentOutletId).then((res) =>
       setCustomers(res.filter((p) => p.type === "CUSTOMER")),
     );
-    getAccounts().then((res) =>
+    getAccounts(currentOutletId).then((res) =>
       setAccounts(res.filter((a) => a.group === "ASSET")),
     );
   }, []);
@@ -53,12 +61,13 @@ export default function NewPaymentReceiptPage() {
         ...data,
         date: new Date(data.date),
         type: "PAYMENT_RECEIPT",
+        outletId: currentOutletId,
       });
       router.push("/dashboard/master-data/parties");
       router.refresh();
     } catch (error) {
       console.error(error);
-      alert("Failed to record receipt");
+      toast.error("Failed to record receipt");
     } finally {
       setIsSubmitting(false);
     }

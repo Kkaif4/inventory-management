@@ -1,4 +1,6 @@
+export const dynamic = "force-dynamic";
 import { getPriceLists } from "@/actions/price-lists";
+
 import { PriceListsClient } from "./price-lists-client";
 
 export default async function PriceListsPage() {

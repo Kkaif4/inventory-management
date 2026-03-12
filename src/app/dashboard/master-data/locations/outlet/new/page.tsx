@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createOutlet, getLocations } from "@/actions/locations";
 import { Store, Save } from "lucide-react";
 import Link from "next/link";
@@ -50,7 +51,7 @@ export default function NewOutletPage() {
       router.push("/dashboard/master-data/locations");
     } catch (error) {
       console.error("Failed to create outlet:", error);
-      alert("Failed to create outlet. Please try again.");
+      toast.error("Failed to create outlet. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

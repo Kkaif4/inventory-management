@@ -22,6 +22,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { createPriceList } from "@/actions/price-lists";
 import { getParties } from "@/actions/parties";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -45,9 +46,11 @@ export function PriceListForm({ variants }: { variants: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customers, setCustomers] = useState<any[]>([]);
+  const { currentOutletId } = useOutletStore();
+  if (!currentOutletId) return;
 
   useEffect(() => {
-    getParties().then((data) =>
+    getParties(currentOutletId).then((data) =>
       setCustomers(data.filter((p) => p.type === "CUSTOMER")),
     );
   }, []);

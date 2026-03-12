@@ -1,9 +1,34 @@
+"use client";
+
 import { getParties } from "@/actions/parties";
 import Link from "next/link";
-import { Plus, IndianRupee } from "lucide-react";
+import { Plus, IndianRupee, Loader2 } from "lucide-react";
+import { useOutletStore } from "@/store/use-outlet-store";
+import { useState, useEffect } from "react";
 
-export default async function PartiesPage() {
-  const parties = await getParties();
+export default function PartiesPage() {
+  const { currentOutletId } = useOutletStore();
+  const [parties, setParties] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (currentOutletId) {
+      setIsLoading(true);
+      getParties(currentOutletId)
+        .then(setParties)
+        .finally(() => setIsLoading(false));
+    }
+  }, [currentOutletId]);
+
+  if (!currentOutletId) return null;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

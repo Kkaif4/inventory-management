@@ -2,23 +2,50 @@
 
 import { getPartyLedger } from "@/actions/accounting";
 import { getParties } from "@/actions/parties";
-import { BookOpen, ArrowLeft } from "lucide-react";
+import { useOutletStore } from "@/store/use-outlet-store";
+import { BookOpen, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect, use } from "react";
 
 interface PartyLedgerPageProps {
   params: { id: string };
 }
 
-export default async function PartyLedgerPage({
-  params,
-}: PartyLedgerPageProps) {
-  const parties = await getParties();
-  const partyId = (await params).id;
-  const party = parties.find((p) => p.id === partyId);
+export default function PartyLedgerPage({ params }: PartyLedgerPageProps) {
+  const { currentOutletId } = useOutletStore();
+  const [data, setData] = useState<{ party: any; entries: any[] } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const resolvedParams: any = use(params as any);
+  const partyId = resolvedParams.id;
 
-  if (!party) return <div>Party not found</div>;
+  useEffect(() => {
+    if (currentOutletId && partyId) {
+      setIsLoading(true);
+      Promise.all([
+        getParties(currentOutletId),
+        getPartyLedger(partyId, currentOutletId),
+      ])
+        .then(([parties, entries]) => {
+          const party = parties.find((p) => p.id === partyId);
+          if (party) {
+            setData({ party, entries });
+          }
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [currentOutletId, partyId]);
 
-  const entries = await getPartyLedger(partyId);
+  if (!currentOutletId) return null;
+
+  if (isLoading || !data) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-orange-600 animate-spin" />
+      </div>
+    );
+  }
+
+  const { party, entries } = data;
 
   // Calculate Running Balance
   let runningBalance = party.openingBalance || 0;

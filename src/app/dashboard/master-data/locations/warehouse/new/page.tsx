@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createWarehouse } from "@/actions/locations";
 import { Building2, Save } from "lucide-react";
 import Link from "next/link";
@@ -45,7 +46,7 @@ export default function NewWarehousePage() {
       router.push("/dashboard/master-data/locations");
     } catch (error) {
       console.error("Failed to create warehouse:", error);
-      alert("Failed to create warehouse. Please try again.");
+      toast.error("Failed to create warehouse. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

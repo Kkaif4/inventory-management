@@ -11,17 +11,23 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { Button } from "@/components/ui/button";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { currentOutletId } = useOutletStore();
+
   useEffect(() => {
-    getSalesInvoices().then((data) => {
-      setInvoices(data);
-      setIsLoading(false);
-    });
-  }, []);
+    if (currentOutletId) {
+      setIsLoading(true);
+      getSalesInvoices(currentOutletId).then((data) => {
+        setInvoices(data);
+        setIsLoading(false);
+      });
+    }
+  }, [currentOutletId]);
 
   const columns: ColumnDef<any>[] = [
     {

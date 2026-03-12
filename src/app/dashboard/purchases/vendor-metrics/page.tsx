@@ -12,13 +12,16 @@ import {
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 export default function VendorMetricsPage() {
   const [vendorData, setVendorData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { currentOutletId } = useOutletStore();
 
+  if (!currentOutletId) return;
   useEffect(() => {
-    getVendorMetrics().then((data) => {
+    getVendorMetrics(currentOutletId).then((data) => {
       setVendorData(data);
       setIsLoading(false);
     });

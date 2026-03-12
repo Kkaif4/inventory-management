@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
+import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Plus, Trash2, Loader2 } from "lucide-react";
@@ -18,6 +19,8 @@ import {
 } from "@/components/ui/form";
 import { PageHeader } from "@/components/ui/page-header";
 import { createPurchaseRequest } from "@/actions/purchases/requests";
+import { useOutletStore } from "@/store/use-outlet-store";
+import { AlertTriangle } from "lucide-react";
 
 const formSchema = z.object({
   items: z
@@ -32,6 +35,8 @@ const formSchema = z.object({
 
 export function PRForm({ variants }: { variants: any[] }) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const { currentOutletId } = useOutletStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,9 +54,16 @@ export function PRForm({ variants }: { variants: any[] }) {
 
   async function onSubmit(data: any) {
     try {
+      if (!currentOutletId) throw new Error("Please select an outlet");
+      if (!session?.user?.id) throw new Error("Unauthorized");
+
       setIsSubmitting(true);
       setError(null);
-      await createPurchaseRequest({ items: data.items });
+      await createPurchaseRequest({
+        items: data.items,
+        outletId: currentOutletId,
+        userId: session.user.id,
+      });
       router.push("/dashboard/purchases/requests");
     } catch (err: any) {
       setError(err.message || "An error occurred");
@@ -181,6 +193,31 @@ export function PRForm({ variants }: { variants: any[] }) {
           </div>
         </form>
       </Form>
+      {!currentOutletId && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 text-center animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto">
+              <AlertTriangle className="w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold text-slate-900">
+                Selection Required
+              </h3>
+              <p className="text-slate-500">
+                Please select an active outlet from the switcher in the top
+                navigation bar before raising a purchase request.
+              </p>
+            </div>
+            <Button
+              onClick={() => router.push("/dashboard/purchases/requests")}
+              variant="outline"
+              className="w-full py-6 rounded-2xl font-bold"
+            >
+              Go Back to Requests
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,9 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { AuditService } from "@/domains/audit/audit-service";
 
-export async function getPurchaseRequests() {
+export async function getPurchaseRequests(outletId: string) {
   return await prisma.transaction.findMany({
-    where: { type: "PURCHASE_REQUEST" as any },
+    where: {
+      type: "PURCHASE_REQUEST" as any,
+      outletId: outletId,
+    },
     include: {
       items: {
         include: { variant: { include: { product: true } } },
@@ -37,6 +40,8 @@ export async function updatePurchaseRequestStatus(
 }
 
 export async function createPurchaseRequest(data: {
+  outletId: string; // Scoping
+  userId: string;
   items: { variantId: string; quantity: number }[];
 }) {
   // Generate simple PR number
@@ -47,6 +52,8 @@ export async function createPurchaseRequest(data: {
       type: "PURCHASE_REQUEST" as any,
       txnNumber: prNum,
       status: "PENDING_APPROVAL",
+      outletId: data.outletId, // Scoped
+      userId: data.userId,
       items: {
         create: data.items.map((it) => ({
           variantId: it.variantId,

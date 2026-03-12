@@ -4,10 +4,13 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createGRN, getPurchaseOrders } from "@/actions/procurement";
 import { Truck, Save, PackageCheck } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 const grnSchema = z.object({
   poId: z.string().min(1, "Select a PO"),
@@ -28,12 +31,17 @@ type GRNFormValues = z.infer<typeof grnSchema>;
 
 export default function NewGRNPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [purchaseOrders, setPurchaseOrders] = useState<any[]>([]);
   const [selectedPO, setSelectedPO] = useState<any>(null);
+  const { currentOutlet } = useOutletStore();
+  if (!currentOutlet) {
+    return;
+  }
 
   useEffect(() => {
-    getPurchaseOrders().then(setPurchaseOrders);
+    getPurchaseOrders(currentOutlet.id).then(setPurchaseOrders);
   }, []);
 
   const {
@@ -81,12 +89,13 @@ export default function NewGRNPage() {
           variantId: i.variantId,
           quantityReceived: i.quantityReceived,
         })),
+        userId: session?.user?.id!,
       });
       router.push("/dashboard/inventory/current-stock");
       router.refresh();
     } catch (error) {
       console.error(error);
-      alert("Failed to process GRN");
+      toast.error("Failed to process GRN");
     } finally {
       setIsSubmitting(false);
     }

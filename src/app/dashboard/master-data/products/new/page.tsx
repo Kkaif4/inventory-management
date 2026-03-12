@@ -4,6 +4,8 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 import { createProduct } from "@/actions/products";
 import { getCategories } from "@/actions/categories";
 import { PackageX, Save, Plus, Trash2 } from "lucide-react";
@@ -28,13 +30,19 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { useSession } from "next-auth/react";
+import { useOutletStore } from "@/store/use-outlet-store";
+import { AlertTriangle } from "lucide-react";
+
 const variantSchema = z.object({
   sku: z.string().min(2, "SKU required").max(50),
+  categoryId: z.string().min(1, "Classification is required"),
   purchasePrice: z.coerce.number().min(0),
   sellingPrice: z.coerce.number().min(0),
   pricingMethod: z.enum(["MANUAL", "MARKUP"]),
   markupPercent: z.coerce.number().optional(),
   minStockLevel: z.coerce.number().min(0).default(0),
+  specifications: z.any().optional().default({}),
 });
 
 const productSchema = z.object({
@@ -44,6 +52,7 @@ const productSchema = z.object({
   gstRate: z.coerce.number(),
   baseUnit: z.string().min(1, "Base unit is required"),
   categoryId: z.string().min(1, "Category is required"),
+  parentCategoryId: z.string().min(1, "Parent Category is required"),
   variants: z.array(variantSchema).min(1, "At least one variant is required"),
 });
 
@@ -51,10 +60,13 @@ type ProductFormValues = z.infer<typeof productSchema>;
 
 export default function NewProductPage() {
   const router = useRouter();
+  const { currentOutletId } = useOutletStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
     [],
   );
+
+  const { data: session } = useSession();
 
   useEffect(() => {
     getCategories().then((res) => setCategories(res));
@@ -63,14 +75,21 @@ export default function NewProductPage() {
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema) as any,
     defaultValues: {
+      name: "",
+      hsnCode: "",
       gstRate: 18,
+      baseUnit: "",
+      categoryId: "",
+      parentCategoryId: "",
       variants: [
         {
           sku: "",
+          categoryId: "",
           purchasePrice: 0,
           sellingPrice: 0,
           pricingMethod: "MANUAL",
           minStockLevel: 0,
+          specifications: {},
         },
       ],
     },
@@ -90,12 +109,21 @@ export default function NewProductPage() {
 
   const onSubmit = async (data: ProductFormValues) => {
     try {
+      if (!session?.user?.id || !currentOutletId) {
+        throw new Error("Unauthorized or no active outlet selected.");
+      }
       setIsSubmitting(true);
-      await createProduct(data as any);
+      await createProduct({
+        ...data,
+        outletId: currentOutletId,
+        userId: session.user.id,
+      });
       router.push("/dashboard/master-data/products");
     } catch (error) {
       console.error("Failed to create product:", error);
-      alert("Failed to create product. Ensure SKU is unique.");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create product",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -164,10 +192,38 @@ export default function NewProductPage() {
 
                 <FormField
                   control={control}
+                  name="parentCategoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Parent Category (Product Type) *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Parent..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={control}
                   name="categoryId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category *</FormLabel>
+                      <FormLabel>Specific Category *</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
@@ -261,10 +317,12 @@ export default function NewProductPage() {
                 onClick={() =>
                   append({
                     sku: "",
+                    categoryId: "",
                     purchasePrice: 0,
                     sellingPrice: 0,
                     pricingMethod: "MANUAL",
                     minStockLevel: 0,
+                    specifications: {},
                   })
                 }
               >
@@ -307,6 +365,36 @@ export default function NewProductPage() {
                             <FormControl>
                               <Input placeholder="Unique ID" {...field} />
                             </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={control}
+                        name={`variants.${index}.categoryId`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">
+                              Classification *
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-8">
+                                  <SelectValue placeholder="Cat..." />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {categories.map((c) => (
+                                  <SelectItem key={c.id} value={c.id}>
+                                    {c.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -433,6 +521,31 @@ export default function NewProductPage() {
           </div>
         </form>
       </Form>
+      {!currentOutletId && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 text-center">
+          <div className="bg-white rounded-3xl p-10 max-w-md w-full shadow-2xl space-y-6 animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto">
+              <AlertTriangle className="w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold text-slate-900">
+                Outlet Required
+              </h3>
+              <p className="text-slate-500">
+                Please select an active outlet from the switcher in the top
+                navigation bar before adding products to the master catalog.
+              </p>
+            </div>
+            <Button
+              onClick={() => router.push("/dashboard/master-data/products")}
+              variant="outline"
+              className="w-full py-6 rounded-2xl font-bold"
+            >
+              Go Back
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

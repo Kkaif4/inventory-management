@@ -1,13 +1,19 @@
+export const dynamic = "force-dynamic";
 import { getUsers } from "@/actions/users";
+
 import { ToggleUserButton } from "./toggle-user-button";
 import Link from "next/link";
 import { Plus, ShieldCheck } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 export default async function UsersPage() {
   const session = await getServerSession(authOptions);
-
+  const { currentOutlet } = useOutletStore();
+  if (!currentOutlet) {
+    return;
+  }
   if (session?.user?.role !== "ADMIN") {
     return (
       <div className="p-6 bg-red-50 text-red-700 rounded-lg border border-red-200">
@@ -17,7 +23,7 @@ export default async function UsersPage() {
     );
   }
 
-  const users = await getUsers();
+  const users = await getUsers(currentOutlet.id);
 
   return (
     <div className="space-y-8">

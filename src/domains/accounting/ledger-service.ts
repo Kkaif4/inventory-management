@@ -35,27 +35,25 @@ export const AccountingService = {
       throw new Error("Journal entry is not balanced");
     }
 
-    return await Promise.all(
-      entries.map((entry) =>
-        tx.ledgerEntry.create({
-          data: {
-            transactionId,
-            accountId: entry.accountId,
-            partyId: partyId, // Link to party if provided (for Debtor/Creditor ledgers)
-            debit: roundToTwo(entry.debit || 0),
-            credit: roundToTwo(entry.credit || 0),
-            reference: entry.reference,
-          },
-        }),
-      ),
-    );
+    await tx.ledgerEntry.createMany({
+      data: entries.map((entry) => ({
+        transactionId,
+        accountId: entry.accountId,
+        partyId: partyId,
+        debit: roundToTwo(entry.debit || 0),
+        credit: roundToTwo(entry.credit || 0),
+        reference: entry.reference,
+      })),
+    });
   },
 
   /**
    * Helper to find standard accounts by name/code
    */
-  async findAccountByCode(code: string) {
-    return await prisma.account.findUnique({ where: { code } });
+  async findAccountByCode(code: string, outletId: string) {
+    return await prisma.account.findUnique({
+      where: { code_outletId: { code, outletId } },
+    });
   },
   /**
    * Validate Ledger Integrity
@@ -85,7 +83,7 @@ export const AccountingService = {
 /**
  * Chart of Accounts (COA) Initializer
  */
-export async function initializeCOA() {
+export async function initializeCOA(outletId: string) {
   const accounts = [
     // Assets
     { code: "1001", name: "Cash in Hand", group: "ASSET", isSystem: true },
@@ -142,9 +140,9 @@ export async function initializeCOA() {
 
   for (const acc of accounts) {
     await prisma.account.upsert({
-      where: { code: acc.code },
+      where: { code_outletId: { code: acc.code, outletId } },
       update: {},
-      create: acc as any,
+      create: { ...acc, outletId } as any,
     });
   }
 }

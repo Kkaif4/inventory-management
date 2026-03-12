@@ -4,10 +4,13 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createDebitNote, getBills } from "@/actions/procurement";
 import { Undo2, Save, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 const dnSchema = z.object({
   billId: z.string().min(1, "Select a Bill"),
@@ -29,12 +32,16 @@ type DNFormValues = z.infer<typeof dnSchema>;
 
 export default function NewDebitNotePage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bills, setBills] = useState<any[]>([]);
   const [selectedBill, setSelectedBill] = useState<any>(null);
-
+  const { currentOutlet } = useOutletStore();
+  if (!currentOutlet) {
+    return;
+  }
   useEffect(() => {
-    getBills().then(setBills);
+    getBills(currentOutlet.id).then(setBills);
   }, []);
 
   const {
@@ -79,7 +86,7 @@ export default function NewDebitNotePage() {
       const itemsToReturn = data.items.filter((i) => i.quantity > 0);
 
       if (itemsToReturn.length === 0) {
-        alert("Enter at least one item to return");
+        toast.error("Enter at least one item to return");
         return;
       }
 
@@ -90,12 +97,13 @@ export default function NewDebitNotePage() {
           variantId: i.variantId,
           quantity: i.quantity,
         })),
+        userId: session?.user?.id!,
       });
       router.push("/dashboard/inventory/current-stock");
       router.refresh();
     } catch (error) {
       console.error(error);
-      alert("Failed to process Debit Note");
+      toast.error("Failed to process Debit Note");
     } finally {
       setIsSubmitting(false);
     }

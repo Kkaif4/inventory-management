@@ -1,4 +1,6 @@
+export const dynamic = "force-dynamic";
 import { getCategories } from "@/actions/categories";
+
 import { Plus, ChevronRight } from "lucide-react";
 import Link from "next/link";
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { useState, Suspense } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Building2, ShieldAlert, Mail, Lock } from "lucide-react";
 import Link from "next/link";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -31,6 +32,18 @@ function LoginContent() {
 
   const [globalError, setGlobalError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { setAvailableOutlets } = useOutletStore();
+  const { data: session } = useSession();
+
+  // Sync outlets to store when session is available
+  useEffect(() => {
+    if (
+      session?.user?.availableOutlets &&
+      session.user.availableOutlets.length > 0
+    ) {
+      setAvailableOutlets(session.user.availableOutlets as any);
+    }
+  }, [session, setAvailableOutlets]);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -65,6 +78,8 @@ function LoginContent() {
       } else if (!res) {
         setGlobalError("Could not connect to the authentication server");
       } else {
+        // Redirect immediately after successful login
+        // Outlets will be fetched on the dashboard
         router.push(callbackUrl);
         router.refresh();
       }

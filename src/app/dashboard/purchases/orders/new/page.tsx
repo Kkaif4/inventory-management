@@ -4,15 +4,20 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+import { useSession } from "next-auth/react";
 import { createPurchaseOrder } from "@/actions/procurement";
 import { getParties } from "@/actions/parties";
 import {
   getInventoryLocations,
   getVariantsForSelection,
 } from "@/actions/inventory";
-import { ShoppingCart, Plus, Trash2, Save } from "lucide-react";
+import { ShoppingCart, Plus, Trash2, Save, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useOutletStore } from "@/store/use-outlet-store";
+import { Button } from "@/components/ui/button";
 
 const itemSchema = z.object({
   variantId: z.string().min(1, "Item is required"),
@@ -31,17 +36,23 @@ type POFormValues = z.infer<typeof poSchema>;
 
 export default function NewPurchaseOrderPage() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const { currentOutletId } = useOutletStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
 
+  if (!currentOutletId) return;
+
   useEffect(() => {
-    getParties().then((res) =>
+    getParties(currentOutletId).then((res) =>
       setSuppliers(res.filter((p) => p.type === "VENDOR")),
     );
-    getInventoryLocations().then((res) => setLocations(res.warehouses));
-    getVariantsForSelection().then((res) => setVariants(res));
+    getInventoryLocations(currentOutletId).then((res) =>
+      setLocations(res.warehouses),
+    );
+    getVariantsForSelection(currentOutletId).then((res) => setVariants(res));
   }, []);
 
   const {
@@ -87,13 +98,13 @@ export default function NewPurchaseOrderPage() {
 
       const payload = {
         partyId: data.partyId,
+        outletId: currentOutletId, // Scoped
+        userId: session?.user?.id, // Audited
         toLocationId: data.toLocationId,
         items: data.items.map((item) => {
           const taxableValue = item.quantity * item.rate;
           const tax = taxableValue * (item.gstPercent / 100);
 
-          // Logic for IGST vs CGST/SGST based on company state vs supplier state
-          // For now, simplicity: all to GST (implementation plan says to handle state logic in phase 5, but we'll prepare fields)
           return {
             variantId: item.variantId,
             quantity: item.quantity,
@@ -110,7 +121,7 @@ export default function NewPurchaseOrderPage() {
       router.push("/dashboard/purchases/orders");
     } catch (error) {
       console.error(error);
-      alert("Failed to create PO");
+      toast.error("Failed to create PO");
     } finally {
       setIsSubmitting(false);
     }
@@ -321,6 +332,32 @@ export default function NewPurchaseOrderPage() {
           </button>
         </div>
       </form>
+
+      {!currentOutletId && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl space-y-6 text-center animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto">
+              <AlertTriangle className="w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold text-slate-900">
+                Selection Required
+              </h3>
+              <p className="text-slate-500">
+                Please select an active outlet from the switcher in the top
+                navigation bar before issuing a purchase order.
+              </p>
+            </div>
+            <Button
+              onClick={() => router.push("/dashboard/purchases/orders")}
+              variant="outline"
+              className="w-full py-6 rounded-xl font-bold"
+            >
+              Go Back to Orders
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

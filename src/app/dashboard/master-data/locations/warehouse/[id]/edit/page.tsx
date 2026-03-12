@@ -1,4 +1,6 @@
+export const dynamic = "force-dynamic";
 import { getWarehouseById } from "@/actions/locations";
+
 import { notFound } from "next/navigation";
 import { WarehouseEditClient } from "./edit-client";
 

@@ -3,8 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { startOfDay, endOfDay } from "date-fns";
 import { roundToTwo } from "@/lib/utils";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
-export async function getDashboardStats() {
+export async function getDashboardStats(outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   const now = new Date();
   const todayStart = startOfDay(now);
   const todayEnd = endOfDay(now);
@@ -12,6 +16,7 @@ export async function getDashboardStats() {
   // 1. Today's Sales
   const todaySales = await prisma.transaction.aggregate({
     where: {
+      outletId, // Add outlet filter
       type: "SALES_INVOICE",
       date: {
         gte: todayStart,
@@ -29,6 +34,7 @@ export async function getDashboardStats() {
   // 2. Open Purchase Orders
   const openPOs = await prisma.transaction.count({
     where: {
+      outletId, // Add outlet filter
       type: "PURCHASE_ORDER",
       status: {
         in: ["DRAFT", "PENDING", "APPROVED", "PARTIAL"],
@@ -38,6 +44,7 @@ export async function getDashboardStats() {
 
   const openPOValue = await prisma.transaction.aggregate({
     where: {
+      outletId, // Add outlet filter
       type: "PURCHASE_ORDER",
       status: {
         in: ["DRAFT", "PENDING", "APPROVED", "PARTIAL"],
@@ -51,6 +58,7 @@ export async function getDashboardStats() {
   // 3. Low Stock Items
   // Compare stock quantity with variant's minStockLevel manually since Prisma doesn't support relation field comparison yet
   const allStock = await prisma.stock.findMany({
+    where: { outletId }, // Add outlet filter
     include: { variant: true },
   });
   const lowStockCount = allStock.filter(
@@ -60,6 +68,7 @@ export async function getDashboardStats() {
   // 4. Outstanding Receivables (Customers who owe us)
   const outstandingReceivables = await prisma.party.aggregate({
     where: {
+      outletId, // Add outlet filter
       type: "CUSTOMER",
       openingBalance: {
         gt: 0,
@@ -73,6 +82,7 @@ export async function getDashboardStats() {
   // 5. Recent Invoices
   const recentInvoices = await prisma.transaction.findMany({
     where: {
+      outletId, // Add outlet filter
       type: "SALES_INVOICE",
     },
     take: 8,

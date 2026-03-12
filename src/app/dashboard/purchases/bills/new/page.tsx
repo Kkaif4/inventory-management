@@ -4,10 +4,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 import { createPurchaseBill, getGRNs } from "@/actions/procurement";
-import { Receipt, Save } from "lucide-react";
+import { Receipt, Save, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useOutletStore } from "@/store/use-outlet-store";
+import { Button } from "@/components/ui/button";
 
 const billSchema = z.object({
   grnId: z.string().min(1, "Select a GRN"),
@@ -20,13 +25,17 @@ type BillFormValues = z.infer<typeof billSchema>;
 
 export default function NewPurchaseBillPage() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const { currentOutletId } = useOutletStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [grns, setGRNs] = useState<any[]>([]);
   const [selectedGRN, setSelectedGRN] = useState<any>(null);
 
   useEffect(() => {
-    getGRNs().then(setGRNs);
-  }, []);
+    if (currentOutletId) {
+      getGRNs(currentOutletId).then(setGRNs);
+    }
+  }, [currentOutletId]);
 
   const {
     register,
@@ -49,18 +58,21 @@ export default function NewPurchaseBillPage() {
 
   const onSubmit = async (data: BillFormValues) => {
     try {
+      if (!session?.user?.id) throw new Error("Unauthorized");
+
       setIsSubmitting(true);
       await createPurchaseBill({
         grnId: data.grnId,
         billNumber: data.billNumber,
         billDate: new Date(data.billDate),
         freightCost: data.freightCost,
+        userId: session.user.id,
       });
       router.push("/dashboard/purchases/bills");
       router.refresh();
     } catch (error) {
       console.error(error);
-      alert("Failed to save bill");
+      toast.error("Failed to save bill");
     } finally {
       setIsSubmitting(false);
     }
@@ -265,6 +277,31 @@ export default function NewPurchaseBillPage() {
           )}
         </form>
       </div>
+      {!currentOutletId && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 text-center">
+          <div className="bg-white rounded-3xl p-10 max-w-md w-full shadow-2xl space-y-6 animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto">
+              <AlertTriangle className="w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold text-slate-900">
+                Outlet Required
+              </h3>
+              <p className="text-slate-500">
+                Please select an active outlet from the switcher in the top
+                navigation bar to list pending GRNs and generate bills.
+              </p>
+            </div>
+            <Button
+              onClick={() => router.push("/dashboard/purchases/bills")}
+              variant="outline"
+              className="w-full py-6 rounded-2xl font-bold"
+            >
+              Go Back
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

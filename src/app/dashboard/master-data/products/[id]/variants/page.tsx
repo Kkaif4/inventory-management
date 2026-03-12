@@ -1,4 +1,6 @@
+export const dynamic = "force-dynamic";
 import { getProductWithVariants } from "@/actions/products";
+
 import { VariantsClient } from "./variants-client";
 import { notFound } from "next/navigation";
 

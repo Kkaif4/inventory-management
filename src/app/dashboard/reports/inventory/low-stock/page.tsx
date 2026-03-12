@@ -1,4 +1,6 @@
+export const dynamic = "force-dynamic";
 import { getLowStockReport } from "@/actions/reports";
+
 import {
   AlertTriangle,
   PackageSearch,

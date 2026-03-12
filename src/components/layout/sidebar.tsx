@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useOutletStore } from "@/store/use-outlet-store";
+import { logoutAndClearData } from "@/lib/logout";
 
 const navigation = [
   {
@@ -235,7 +237,10 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
         {!isCollapsed && (
           <Button
             variant="ghost"
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => {
+              useOutletStore.getState().reset();
+              logoutAndClearData();
+            }}
             className="w-full justify-start text-text-secondary hover:bg-red-50 hover:text-red-600 gap-3"
           >
             <LogOut className="w-4 h-4" />

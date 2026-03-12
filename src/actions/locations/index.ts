@@ -1,6 +1,8 @@
 "use server";
 
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 
 export async function getLocations() {
@@ -66,6 +68,24 @@ export async function getOutletById(id: string) {
       warehouses: true,
     },
   });
+}
+
+export async function getOutletsByUserId(userId: string) {
+  if (!userId) return [];
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      outlets: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return user?.outlets ?? [];
 }
 
 export async function createOutlet(data: {

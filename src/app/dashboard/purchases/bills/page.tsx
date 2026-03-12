@@ -1,7 +1,19 @@
-import { getPurchaseBills } from "@/actions/purchases/bills";
-import { PurchaseBillsClient } from "./bills-client";
+"use client";
 
-export default async function PurchaseBillsPage() {
-  const bills = await getPurchaseBills();
+import { useEffect, useState } from "react";
+import { getBills } from "@/actions/procurement";
+import { PurchaseBillsClient } from "./bills-client";
+import { useOutletStore } from "@/store/use-outlet-store";
+
+export default function BillsPage() {
+  const [bills, setBills] = useState<any[]>([]);
+  const { currentOutletId } = useOutletStore();
+
+  useEffect(() => {
+    if (currentOutletId) {
+      getBills(currentOutletId).then(setBills);
+    }
+  }, [currentOutletId]);
+
   return <PurchaseBillsClient bills={bills} />;
 }

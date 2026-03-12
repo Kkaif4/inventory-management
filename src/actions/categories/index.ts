@@ -23,11 +23,14 @@ export async function getCategories() {
 export async function createCategory(data: {
   name: string;
   parentId?: string;
+  outletId: string;
+  userId: string;
 }) {
   const category = await prisma.category.create({
     data: {
       name: data.name,
       parentId: data.parentId || null,
+      outletId: data.outletId,
     },
   });
 
@@ -35,7 +38,12 @@ export async function createCategory(data: {
     action: "CREATE",
     entity: "CATEGORY",
     entityId: category.id,
-    newValues: data,
+    userId: data.userId,
+    newValues: {
+      name: data.name,
+      parentId: data.parentId,
+      outletId: data.outletId,
+    },
   });
 
   revalidatePath("/dashboard/master-data/categories");

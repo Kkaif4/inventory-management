@@ -18,6 +18,7 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          include: { outlets: true },
         });
 
         if (
@@ -36,6 +37,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          outletId: user.outlets?.[0]?.id?.toString() || "",
         };
       },
     }),
@@ -45,6 +47,17 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+
+        const userWithOutlets = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: { outlets: true },
+        });
+        token.outletId = userWithOutlets?.outlets[0]?.id?.toString() || "";
+        token.availableOutlets =
+          userWithOutlets?.outlets.map((o) => ({
+            id: o.id,
+            name: o.name,
+          })) || [];
       }
       return token;
     },
@@ -54,6 +67,8 @@ export const authOptions: NextAuthOptions = {
           ...session.user,
           id: token.id as string,
           role: token.role as string,
+          outletId: token.outletId as string,
+          availableOutlets: token.availableOutlets as any[],
         };
       }
       return session;

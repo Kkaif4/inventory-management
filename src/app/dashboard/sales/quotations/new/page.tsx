@@ -1,12 +1,37 @@
+"use client";
+
 import { getCustomers } from "@/actions/sales/quotations";
 import { getAllVariants } from "@/actions/products";
 import { QuotationForm } from "./quotation-form";
+import { useOutletStore } from "@/store/use-outlet-store";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
-export default async function NewQuotationPage() {
-  const [customers, variants] = await Promise.all([
-    getCustomers(),
-    getAllVariants(),
-  ]);
+export default function NewQuotationPage() {
+  const { currentOutletId } = useOutletStore();
+  const [data, setData] = useState<{
+    customers: any[];
+    variants: any[];
+  } | null>(null);
 
-  return <QuotationForm customers={customers} variants={variants} />;
+  useEffect(() => {
+    if (currentOutletId) {
+      Promise.all([getCustomers(currentOutletId), getAllVariants()]).then(
+        ([customers, variants]) => {
+          setData({ customers, variants });
+        },
+      );
+    }
+  }, [currentOutletId]);
+
+  if (!currentOutletId) return null;
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      </div>
+    );
+  }
+
+  return <QuotationForm customers={data.customers} variants={data.variants} />;
 }

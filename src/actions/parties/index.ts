@@ -3,9 +3,14 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { AuditService } from "@/domains/audit/audit-service";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
-export async function getParties() {
+export async function getParties(outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   return await prisma.party.findMany({
+    where: { outletId },
     orderBy: { name: "asc" },
     include: {
       priceList: {
@@ -20,9 +25,13 @@ export async function getParties() {
   });
 }
 
-export async function getVendorsByProduct(variantId: string) {
+export async function getVendorsByProduct(variantId: string, outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   return await prisma.party.findMany({
     where: {
+      outletId,
       type: "VENDOR",
       suppliedProducts: {
         some: {
@@ -40,24 +49,31 @@ export async function getVendorsByProduct(variantId: string) {
   });
 }
 
-export async function createParty(data: {
-  type: "VENDOR" | "CUSTOMER";
-  name: string;
-  gstin?: string;
-  pan?: string;
-  address: string;
-  state: string;
-  contactInfo?: string;
-  creditPeriod: number;
-  creditLimit?: number;
-  openingBalance: number;
-  priceListId?: string;
-}) {
+export async function createParty(
+  data: {
+    type: "VENDOR" | "CUSTOMER";
+    name: string;
+    gstin?: string;
+    pan?: string;
+    address: string;
+    state: string;
+    contactInfo?: string;
+    creditPeriod: number;
+    creditLimit?: number;
+    openingBalance: number;
+    priceListId?: string;
+  },
+  outletId: string,
+) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   const { priceListId, ...rest } = data;
 
   const party = await prisma.party.create({
     data: {
       ...rest,
+      outletId, // Add outlet context
       priceListId: priceListId === "" ? null : priceListId,
     },
   });
@@ -73,12 +89,19 @@ export async function createParty(data: {
   return party;
 }
 
-export async function getVendorMetrics() {
+export async function getVendorMetrics(outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   const vendors = await prisma.party.findMany({
-    where: { type: "VENDOR" },
+    where: {
+      outletId, // Filter by outlet
+      type: "VENDOR",
+    },
     include: {
       transactions: {
         where: {
+          outletId, // Also filter transactions by outlet
           type: {
             in: ["PURCHASE_ORDER", "GRN", "DEBIT_NOTE"],
           },
@@ -124,7 +147,23 @@ export async function getVendorMetrics() {
   });
 }
 
-export async function linkProductToVendor(variantId: string, vendorId: string) {
+export async function linkProductToVendor(
+  variantId: string,
+  vendorId: string,
+  outletId: string,
+) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
+  // Verify vendor belongs to this outlet
+  const vendor = await prisma.party.findUnique({
+    where: { id: vendorId },
+  });
+
+  if (!vendor || vendor.outletId !== outletId) {
+    throw new Error("403: Vendor not found in this outlet");
+  }
+
   return await prisma.vendorProduct.create({
     data: {
       variantId,
@@ -136,7 +175,20 @@ export async function linkProductToVendor(variantId: string, vendorId: string) {
 export async function removeProductFromVendor(
   variantId: string,
   vendorId: string,
+  outletId: string,
 ) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
+  // Verify vendor belongs to this outlet
+  const vendor = await prisma.party.findUnique({
+    where: { id: vendorId },
+  });
+
+  if (!vendor || vendor.outletId !== outletId) {
+    throw new Error("403: Vendor not found in this outlet");
+  }
+
   return await prisma.vendorProduct.delete({
     where: {
       vendorId_variantId: {

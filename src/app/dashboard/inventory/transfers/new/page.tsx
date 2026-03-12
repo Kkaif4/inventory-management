@@ -4,6 +4,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import { useOutletStore } from "@/store/use-outlet-store";
 import {
   createStockTransfer,
   getInventoryLocations,
@@ -47,6 +50,8 @@ type TransferFormValues = z.infer<typeof transferSchema>;
 
 export default function NewTransferPage() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const { currentOutletId } = useOutletStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locations, setLocations] = useState<
     { id: string; name: string; type: string }[]
@@ -54,16 +59,18 @@ export default function NewTransferPage() {
   const [variants, setVariants] = useState<any[]>([]);
 
   useEffect(() => {
-    Promise.all([getInventoryLocations(), getVariantsForSelection()]).then(
-      ([locs, vars]) => {
-        const combinedLocs = [
-          ...locs.warehouses.map((w) => ({ ...w, type: "WAREHOUSE" })),
-          ...locs.outlets.map((o) => ({ ...o, type: "OUTLET" })),
-        ];
-        setLocations(combinedLocs);
-        setVariants(vars);
-      },
-    );
+    if (!currentOutletId) return;
+    Promise.all([
+      getInventoryLocations(currentOutletId),
+      getVariantsForSelection(currentOutletId),
+    ]).then(([locs, vars]) => {
+      const combinedLocs = [
+        ...locs.warehouses.map((w) => ({ ...w, type: "WAREHOUSE" })),
+        ...locs.outlets.map((o) => ({ ...o, type: "OUTLET" })),
+      ];
+      setLocations(combinedLocs);
+      setVariants(vars);
+    });
   }, []);
 
   const form = useForm<TransferFormValues>({
@@ -88,13 +95,15 @@ export default function NewTransferPage() {
         toLocationId: data.toLocation,
         toLocationType: toLoc.type as any,
         quantity: data.quantity,
+        outletId: currentOutletId!,
+        userId: session?.user?.id!,
       });
 
       router.push("/dashboard/inventory/current-stock");
       router.refresh();
     } catch (error: any) {
       console.error("Failed to transfer stock:", error);
-      alert(
+      toast.error(
         error.message ||
           "Failed to transfer stock. Check if source has enough quantity.",
       );

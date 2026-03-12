@@ -4,21 +4,37 @@ import { prisma } from "@/lib/prisma";
 import { initializeCOA } from "@/domains/accounting/ledger-service";
 import { revalidatePath } from "next/cache";
 import { roundToTwo } from "@/lib/utils";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
-export async function setupCOA() {
-  await initializeCOA();
+export async function setupCOA(outletId: string) {
+  await initializeCOA(outletId);
   revalidatePath("/dashboard/accounts");
 }
 
-export async function getAccounts() {
+export async function getAccounts(outletId: string) {
   return await prisma.account.findMany({
     orderBy: { code: "asc" },
+    where: {
+      outletId,
+    },
   });
 }
 
-export async function getPartyLedger(partyId: string) {
+export async function getPartyLedger(partyId: string, outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
+  // Verify party belongs to this outlet
+  const party = await prisma.party.findUnique({
+    where: { id: partyId },
+  });
+
+  if (!party || party.outletId !== outletId) {
+    throw new Error("403: Party not found in this outlet");
+  }
+
   return await prisma.ledgerEntry.findMany({
-    where: { partyId },
+    where: { partyId, transaction: { outletId } }, // Filter by outlet
     include: {
       account: true,
       transaction: true,
@@ -27,9 +43,12 @@ export async function getPartyLedger(partyId: string) {
   });
 }
 
-export async function getAccountStatement(accountId: string) {
+export async function getAccountStatement(accountId: string, outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   return await prisma.ledgerEntry.findMany({
-    where: { accountId },
+    where: { accountId, transaction: { outletId } }, // Filter by outlet
     include: {
       transaction: true,
       party: true,
@@ -40,12 +59,16 @@ export async function getAccountStatement(accountId: string) {
 
 export async function createPayment(data: {
   partyId: string;
+  outletId: string; // Add outlet scoping
   accountId: string; // The bank/cash account
   amount: number;
   type: "PAYMENT_MADE" | "PAYMENT_RECEIPT";
   date: Date;
   reference?: string;
 }) {
+  // Validate user has access to this outlet
+  const userId = await validateSessionOutletAccess(data.outletId);
+
   return await prisma.$transaction(async (tx) => {
     // 1. Transaction Record
     const txn = await tx.transaction.create({
@@ -53,17 +76,12 @@ export async function createPayment(data: {
         type:
           data.type === "PAYMENT_MADE"
             ? "STOCK_ADJUSTMENT"
-            : "STOCK_ADJUSTMENT", // We need better TxTypes in schema?
-        // Actually, schema TxType is limited. I'll use STOCK_ADJUSTMENT for now or update schema.
-        // Wait, schema has:
-        // enum TxType { PURCHASE_ORDER, GRN, PURCHASE_BILL, DEBIT_NOTE, PROFORMA_INVOICE, DELIVERY_CHALLAN, SALES_INVOICE, CREDIT_NOTE, STOCK_TRANSFER, STOCK_ADJUSTMENT }
-        // It's missing PAYMENT type. I should probably use STOCK_ADJUSTMENT or update schema.
-        // I'll use STOCK_ADJUSTMENT and a reference for now to avoid schema migration overhead in this step.
-        // Actually, let's pretend SALES_INVOICE etc are enough for now or I'll just use a generic txn for ledger only.
-
+            : "STOCK_ADJUSTMENT",
         txnNumber: `${data.type === "PAYMENT_MADE" ? "PM" : "PR"}-${Date.now()}`,
         date: data.date,
         partyId: data.partyId,
+        outletId: data.outletId, // Add outlet context
+        userId,
         grandTotal: roundToTwo(data.amount),
         status: "POSTED",
       },
@@ -76,9 +94,11 @@ export async function createPayment(data: {
       where: { id: data.accountId },
     });
     const creditorAcc = await tx.account.findUnique({
-      where: { code: "2001" },
+      where: { code_outletId: { code: "2001", outletId: data.outletId } },
     }); // Sundry Creditors
-    const debtorAcc = await tx.account.findUnique({ where: { code: "1003" } }); // Sundry Debtors
+    const debtorAcc = await tx.account.findUnique({
+      where: { code_outletId: { code: "1003", outletId: data.outletId } },
+    }); // Sundry Debtors
 
     if (!bankAcc || !creditorAcc || !debtorAcc)
       throw new Error("Required accounts not found.");

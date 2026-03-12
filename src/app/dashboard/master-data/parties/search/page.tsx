@@ -5,12 +5,16 @@ import { Search, Users, Package, ArrowRight, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { getProducts } from "@/actions/products";
 import { getVendorsByProduct } from "@/actions/parties";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 export default function VendorSearchPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [results, setResults] = useState<any[]>([]);
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const { currentOutletId } = useOutletStore();
+  if (!currentOutletId) return;
 
   useEffect(() => {
     getProducts().then(setProducts);
@@ -24,7 +28,7 @@ export default function VendorSearchPage() {
     setIsLoading(true);
     setSelectedVariantId(variantId);
     try {
-      const data = await getVendorsByProduct(variantId);
+      const data = await getVendorsByProduct(variantId, currentOutletId);
       setResults(data);
     } catch (error) {
       console.error(error);

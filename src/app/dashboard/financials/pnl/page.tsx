@@ -1,4 +1,6 @@
+export const dynamic = "force-dynamic";
 import { getPNL } from "@/actions/financials/reports";
+
 import { PNLClient } from "./pnl-client";
 
 export default async function PNLPage() {

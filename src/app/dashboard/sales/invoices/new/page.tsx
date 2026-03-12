@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { toast } from "sonner";
 import {
   Save,
   Info,
@@ -21,16 +23,20 @@ import { getProducts } from "@/actions/products";
 import { getCurrentStock, getInventoryLocations } from "@/actions/inventory";
 import { createSalesInvoice } from "@/actions/sales/sales-invoice";
 import { roundToTwo } from "@/lib/utils";
+import { useOutletStore } from "@/store/use-outlet-store";
+import { Button } from "@/components/ui/button";
 
 const invoiceSchema = z.object({
   partyId: z.string().min(1, "Customer is required"),
   fromOutletId: z.string().min(1, "Outlet is required"),
   date: z.coerce.date(),
+  freightCost: z.coerce.number().min(0, "Freight >= 0").optional(),
   items: z
     .array(
       z.object({
         variantId: z.string().min(1, "Product is required"),
         quantity: z.coerce.number().min(0.01, "Qty > 0"),
+        unit: z.enum(["BASE", "SALES"]),
         rate: z.coerce.number().min(0, "Rate >= 0"),
         gstRate: z.number(),
         taxableValue: z.number(),
@@ -46,19 +52,33 @@ type FormValues = z.infer<typeof invoiceSchema>;
 
 export default function NewSalesInvoicePage() {
   const router = useRouter();
+  const { currentOutletId } = useOutletStore();
+
   const [parties, setParties] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [outlets, setOutlets] = useState<any[]>([]);
   const [stockLevels, setStockLevels] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  if (!currentOutletId) return;
+
   useEffect(() => {
-    getParties().then((data) =>
+    if (currentOutletId) {
+      setValue("fromOutletId", currentOutletId);
+    }
+  }, [currentOutletId]);
+
+  useEffect(() => {
+    getParties(currentOutletId).then((data) =>
       setParties(data.filter((p) => p.type === "CUSTOMER")),
     );
     getProducts().then(setProducts);
-    getInventoryLocations().then((data) => setOutlets(data.outlets));
-    getCurrentStock().then(setStockLevels);
+    getInventoryLocations(currentOutletId).then((data) =>
+      setOutlets(data.outlets),
+    );
+    if (currentOutletId) {
+      getCurrentStock(currentOutletId).then(setStockLevels);
+    }
   }, []);
 
   const {
@@ -73,10 +93,12 @@ export default function NewSalesInvoicePage() {
     resolver: zodResolver(invoiceSchema) as any,
     defaultValues: {
       date: new Date(),
+      freightCost: 0,
       items: [
         {
           variantId: "",
           quantity: 1,
+          unit: "BASE",
           rate: 0,
           gstRate: 18,
           taxableValue: 0,
@@ -91,12 +113,27 @@ export default function NewSalesInvoicePage() {
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
 
   const watchItems = watch("items");
+  const watchFreight = watch("freightCost") || 0;
   const watchOutletId = watch("fromOutletId");
   const selectedOutlet = outlets.find((o) => o.id === watchOutletId);
+  const primaryWarehouseId = selectedOutlet?.warehouses[0]?.id;
 
   const calculateRow = (index: number) => {
     const item = getValues(`items.${index}`);
     if (!item) return;
+
+    const variant = products
+      .flatMap((p) => p.variants)
+      .find((v) => v.id === item.variantId);
+    const product = products.find((p) =>
+      p.variants.some((v: any) => v.id === item.variantId),
+    );
+
+    if (!variant || !product) return;
+
+    const conversionRatio = product.conversionRatio || 1;
+    const baseQuantity =
+      item.unit === "SALES" ? item.quantity * conversionRatio : item.quantity;
 
     const taxable = roundToTwo(item.quantity * item.rate);
     const gstTotal = roundToTwo((taxable * item.gstRate) / 100);
@@ -123,15 +160,37 @@ export default function NewSalesInvoicePage() {
 
   const getAvailableStock = (variantId: string) => {
     const stock = stockLevels.find(
-      (s) => s.variantId === variantId && s.outletId === watchOutletId,
+      (s) =>
+        s.variantId === variantId &&
+        (primaryWarehouseId
+          ? s.warehouseId === primaryWarehouseId
+          : s.outletId === watchOutletId),
     );
     return stock?.quantity || 0;
   };
 
-  const hasLowStock = watchItems.some((item) => {
-    if (!item.variantId || !watchOutletId) return false;
-    return item.quantity > getAvailableStock(item.variantId);
-  });
+  const getStockStatus = (index: number) => {
+    const item = watchItems[index];
+    if (!item?.variantId || !watchOutletId)
+      return { isNegative: false, available: 0, requestedBase: 0 };
+
+    const product = products.find((p) =>
+      p.variants.some((v: any) => v.id === item.variantId),
+    );
+    if (!product) return { isNegative: false, available: 0, requestedBase: 0 };
+
+    const conversionRatio = product.conversionRatio || 1;
+    const requestedBase =
+      item.unit === "SALES" ? item.quantity * conversionRatio : item.quantity;
+    const available = getAvailableStock(item.variantId);
+
+    return {
+      isNegative: requestedBase > available,
+      available,
+      requestedBase,
+      baseUnit: product.baseUnit,
+    };
+  };
 
   const totals = watchItems.reduce(
     (acc, item) => {
@@ -144,15 +203,17 @@ export default function NewSalesInvoicePage() {
     { taxable: 0, gst: 0 },
   );
 
+  const { data: session } = useSession();
+
   const onSubmit = async (data: FormValues) => {
     try {
+      if (!session?.user?.id) throw new Error("Unauthorized");
       setIsSubmitting(true);
-      await createSalesInvoice(data);
+      await createSalesInvoice({ ...data, userId: session.user.id });
       router.push("/dashboard/sales/invoices");
-      router.refresh();
     } catch (error) {
       console.error(error);
-      alert("Failed to create Invoice");
+      toast.error("Failed to create Invoice");
     } finally {
       setIsSubmitting(false);
     }
@@ -179,24 +240,27 @@ export default function NewSalesInvoicePage() {
         </div>
       </div>
 
-      {hasLowStock && selectedOutlet?.negativeStockPolicy === "WARN" && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start space-x-4 animate-in fade-in slide-in-from-top-4 duration-500">
-          <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
-          <div>
-            <h4 className="font-bold text-amber-900">Inventory Warning</h4>
-            <p className="text-amber-700 text-sm mt-1">
-              One or more items in this invoice have insufficient stock at{" "}
-              <span className="font-bold">{selectedOutlet.name}</span>. Since
-              your policy is set to{" "}
-              <span className="font-bold underline uppercase tracking-tighter">
-                Warn and Allow
-              </span>
-              , you can proceed with the billing, but stock levels will become
-              negative.
-            </p>
+      {watchItems.some((_, i) => getStockStatus(i).isNegative) &&
+        selectedOutlet?.negativeStockPolicy === "WARN" && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start space-x-4 animate-in fade-in slide-in-from-top-4 duration-500">
+            <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
+            <div>
+              <h4 className="font-bold text-amber-900">Inventory Warning</h4>
+              <p className="text-amber-700 text-sm mt-1">
+                One or more items in this invoice have insufficient stock at the
+                assigned location (
+                <span className="font-bold">
+                  {primaryWarehouseId ? "Warehouse" : selectedOutlet.name}
+                </span>
+                ). Since your policy is set to{" "}
+                <span className="font-bold underline uppercase tracking-tighter">
+                  Warn and Allow
+                </span>
+                , you can proceed, but stock levels will become negative.
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -254,6 +318,7 @@ export default function NewSalesInvoicePage() {
                     append({
                       variantId: "",
                       quantity: 1,
+                      unit: "BASE",
                       rate: 0,
                       gstRate: 18,
                       taxableValue: 0,
@@ -270,10 +335,12 @@ export default function NewSalesInvoicePage() {
 
               <div className="p-8 space-y-6">
                 {fields.map((field, index) => {
-                  const itemStock = getAvailableStock(
-                    watchItems[index]?.variantId,
+                  const stockStatus = getStockStatus(index);
+                  const isNegative = stockStatus.isNegative;
+                  const item = watchItems[index];
+                  const product = products.find((p) =>
+                    p.variants.some((v: any) => v.id === item?.variantId),
                   );
-                  const isNegative = watchItems[index]?.quantity > itemStock;
 
                   return (
                     <div
@@ -286,46 +353,54 @@ export default function NewSalesInvoicePage() {
                             Product
                           </label>
                           <select
-                            {...register(`items.${index}.variantId` as const)}
-                            onChange={(e) => {
-                              const variantId = e.target.value;
-                              const currentProducts = products;
-                              const variant = currentProducts
-                                .flatMap((p) => p.variants)
-                                .find((v) => v.id === variantId);
-
-                              if (variant) {
-                                // Automated Pricing Logic
-                                const customerId = getValues("partyId");
-                                const customer = parties.find(
-                                  (p) => p.id === customerId,
-                                );
-                                const customPrice =
-                                  customer?.priceList?.entries?.find(
-                                    (e: any) => e.variantId === variantId,
-                                  )?.price;
-
-                                const rate =
-                                  customPrice ?? variant.sellingPrice;
-
-                                setValue(
-                                  `items.${index}.rate`,
-                                  roundToTwo(rate),
-                                );
+                            {...register(`items.${index}.variantId` as const, {
+                              onChange: (e) => {
+                                const variantId = e.target.value;
+                                const currentProducts = products;
+                                const variant = currentProducts
+                                  .flatMap((p) => p.variants)
+                                  .find((v) => v.id === variantId);
 
                                 const parent = currentProducts.find((p) =>
                                   p.variants.some(
                                     (v: any) => v.id === variantId,
                                   ),
                                 );
-                                if (parent)
+
+                                if (variant && parent) {
+                                  // Automated Pricing Logic
+                                  const customerId = getValues("partyId");
+                                  const customer = parties.find(
+                                    (p) => p.id === customerId,
+                                  );
+                                  const customPrice =
+                                    customer?.priceList?.entries?.find(
+                                      (e: any) => e.variantId === variantId,
+                                    )?.price;
+
+                                  // sellingPrice is for BASE unit
+                                  const baseRate =
+                                    customPrice ?? variant.sellingPrice;
+                                  const currentUnit = getValues(
+                                    `items.${index}.unit`,
+                                  );
+                                  const rate =
+                                    currentUnit === "SALES"
+                                      ? baseRate * (parent.conversionRatio || 1)
+                                      : baseRate;
+
+                                  setValue(
+                                    `items.${index}.rate`,
+                                    roundToTwo(rate),
+                                  );
                                   setValue(
                                     `items.${index}.gstRate`,
                                     parent.gstRate,
                                   );
-                              }
-                              calculateRow(index);
-                            }}
+                                }
+                                calculateRow(index);
+                              },
+                            })}
                             className="w-full bg-white border-none rounded-xl p-3 text-sm font-bold shadow-sm"
                           >
                             <option value="">Search Product...</option>
@@ -337,7 +412,8 @@ export default function NewSalesInvoicePage() {
                                       {v.sku} - Stock:{" "}
                                       {watchOutletId
                                         ? getAvailableStock(v.id)
-                                        : "(Pick Outlet)"}
+                                        : "(Pick Outlet)"}{" "}
+                                      {p.baseUnit}
                                     </option>
                                   ),
                                 )}
@@ -353,58 +429,97 @@ export default function NewSalesInvoicePage() {
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">
+                      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+                        <div className="space-y-1 lg:col-span-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
                             Qty
                           </label>
                           <input
                             type="number"
-                            {...register(`items.${index}.quantity` as const)}
-                            onChange={() => calculateRow(index)}
+                            {...register(`items.${index}.quantity` as const, {
+                              onChange: () => calculateRow(index),
+                            })}
                             className={`w-full bg-white border-none rounded-xl p-3 text-sm font-black text-center shadow-sm ${isNegative ? "text-amber-600 ring-2 ring-amber-500/20" : "text-slate-900"}`}
                           />
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">
+                        <div className="space-y-1 lg:col-span-2">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                            Unit
+                          </label>
+                          <select
+                            {...register(`items.${index}.unit` as const, {
+                              onChange: (e) => {
+                                const newUnit = e.target.value;
+                                const vId = getValues(
+                                  `items.${index}.variantId`,
+                                );
+                                const variant = products
+                                  .flatMap((p) => p.variants)
+                                  .find((v) => v.id === vId);
+                                const parent = products.find((p) =>
+                                  p.variants.some((v: any) => v.id === vId),
+                                );
+
+                                if (variant && parent) {
+                                  const basePrice = variant.sellingPrice;
+                                  const rate =
+                                    newUnit === "SALES"
+                                      ? basePrice *
+                                        (parent.conversionRatio || 1)
+                                      : basePrice;
+                                  setValue(
+                                    `items.${index}.rate`,
+                                    roundToTwo(rate),
+                                  );
+                                }
+                                calculateRow(index);
+                              },
+                            })}
+                            className="w-full bg-white border-none rounded-xl p-3 text-sm font-bold shadow-sm"
+                          >
+                            <option value="BASE">
+                              {product?.baseUnit || "Base"}
+                            </option>
+                            {product?.salesUnit && (
+                              <option value="SALES">{product.salesUnit}</option>
+                            )}
+                          </select>
+                        </div>
+                        <div className="space-y-1 lg:col-span-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
                             Rate (₹)
                           </label>
                           <input
                             type="number"
-                            {...register(`items.${index}.rate` as const)}
-                            onChange={() => calculateRow(index)}
+                            {...register(`items.${index}.rate` as const, {
+                              onChange: () => calculateRow(index),
+                            })}
                             className="w-full bg-white border-none rounded-xl p-3 text-sm font-bold text-right shadow-sm"
                           />
                         </div>
-                        <div className="col-span-2 flex items-center justify-end space-x-8 pt-4">
+                        <div className="col-span-2 flex items-center justify-end space-x-4 pt-2 lg:pt-0">
                           <div className="text-right">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                              Taxable Value
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                              Taxable
                             </p>
-                            <p className="font-extrabold text-slate-700">
-                              ₹{" "}
-                              {(
-                                watchItems[index]?.taxableValue || 0
-                              ).toLocaleString("en-IN", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
+                            <p className="text-xs font-extrabold text-slate-700">
+                              ₹
+                              {(watchItems[index]?.taxableValue || 0).toFixed(
+                                2,
+                              )}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                              GST Total
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                              GST
                             </p>
-                            <p className="font-extrabold text-blue-600">
-                              ₹{" "}
+                            <p className="text-xs font-extrabold text-blue-600">
+                              ₹
                               {(
                                 (watchItems[index]?.cgst || 0) +
                                 (watchItems[index]?.sgst || 0) +
                                 (watchItems[index]?.igst || 0)
-                              ).toLocaleString("en-IN", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
+                              ).toFixed(2)}
                             </p>
                           </div>
                         </div>
@@ -413,7 +528,9 @@ export default function NewSalesInvoicePage() {
                       {isNegative && (
                         <div className="flex items-center text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full w-fit">
                           <Info className="w-3 h-3 mr-1.5" />
-                          STOCK OVERDRAW DETECTED: {itemStock} AVAILABLE
+                          STOCK OVERDRAW DETECTED: {stockStatus.available}{" "}
+                          {stockStatus.baseUnit} AVAILABLE (Requested:{" "}
+                          {stockStatus.requestedBase} {stockStatus.baseUnit})
                         </div>
                       )}
                     </div>
@@ -443,12 +560,20 @@ export default function NewSalesInvoicePage() {
                     const variant = products
                       .flatMap((p) => p.variants)
                       .find((v) => v.id === item.variantId);
+                    const parent = products.find((p) =>
+                      p.variants.some((v: any) => v.id === item.variantId),
+                    );
 
-                    if (variant) {
+                    if (variant && parent) {
                       const customPrice = customer?.priceList?.entries?.find(
                         (e: any) => e.variantId === item.variantId,
                       )?.price;
-                      const rate = customPrice ?? variant.sellingPrice;
+                      const baseRate = customPrice ?? variant.sellingPrice;
+                      const currentUnit = getValues(`items.${i}.unit`);
+                      const rate =
+                        currentUnit === "SALES"
+                          ? baseRate * (parent.conversionRatio || 1)
+                          : baseRate;
                       setValue(`items.${i}.rate`, roundToTwo(rate));
                     }
                     calculateRow(i);
@@ -490,13 +615,28 @@ export default function NewSalesInvoicePage() {
                     })}
                   </span>
                 </div>
+                <div className="flex justify-between items-center text-slate-400">
+                  <span className="font-medium">Freight Cost</span>
+                  <div className="flex items-center space-x-2 bg-slate-800 rounded-lg px-2 py-1">
+                    <span className="text-[10px] font-bold">₹</span>
+                    <input
+                      type="number"
+                      {...register("freightCost")}
+                      className="bg-transparent border-none p-0 w-16 text-right text-white font-black focus:ring-0 text-sm"
+                    />
+                  </div>
+                </div>
                 <div className="pt-6 border-t border-slate-800">
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2 text-center">
                     Amount Due
                   </p>
                   <p className="text-5xl font-black text-emerald-400 text-center tracking-tighter">
                     ₹{" "}
-                    {(totals.taxable + totals.gst).toLocaleString("en-IN", {
+                    {(
+                      totals.taxable +
+                      totals.gst +
+                      (Number(watchFreight) || 0)
+                    ).toLocaleString("en-IN", {
                       minimumFractionDigits: 2,
                     })}
                   </p>
@@ -507,7 +647,7 @@ export default function NewSalesInvoicePage() {
                 type="submit"
                 disabled={
                   isSubmitting ||
-                  (hasLowStock &&
+                  (watchItems.some((_, i) => getStockStatus(i).isNegative) &&
                     selectedOutlet?.negativeStockPolicy === "BLOCK")
                 }
                 className="w-full mt-10 group relative bg-emerald-500 hover:bg-emerald-600 text-white py-5 rounded-2xl font-black text-xl shadow-xl shadow-emerald-500/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center overflow-hidden"
@@ -522,6 +662,32 @@ export default function NewSalesInvoicePage() {
           </div>
         </div>
       </form>
+
+      {!currentOutletId && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 text-center animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto">
+              <AlertTriangle className="w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold text-slate-900">
+                Selection Required
+              </h3>
+              <p className="text-slate-500">
+                Please select an active outlet from the switcher in the top
+                navigation bar before generating an invoice.
+              </p>
+            </div>
+            <Button
+              onClick={() => router.push("/dashboard/sales/invoices")}
+              variant="outline"
+              className="w-full py-6 rounded-2xl font-bold"
+            >
+              Go Back to Invoices
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

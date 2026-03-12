@@ -1,4 +1,6 @@
+export const dynamic = "force-dynamic";
 import { getGSTSummary } from "@/actions/reports";
+
 import { FileBarChart, Calculator, Landmark, ShieldCheck } from "lucide-react";
 
 export default async function GSTSummaryPage() {

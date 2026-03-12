@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { deleteWarehouse, deleteOutlet } from "@/actions/locations";
 import { toast } from "sonner";
 
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+
 interface DeleteLocationButtonProps {
   id: string;
   type: "warehouse" | "outlet";
@@ -18,16 +20,9 @@ export function DeleteLocationButton({
   name,
 }: DeleteLocationButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleDelete = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to delete ${type} "${name}"? This action cannot be undone.`,
-      )
-    ) {
-      return;
-    }
-
     try {
       setIsDeleting(true);
       if (type === "warehouse") {
@@ -43,23 +38,37 @@ export function DeleteLocationButton({
       toast.error(`Failed to delete ${type}. It might have linked records.`);
     } finally {
       setIsDeleting(false);
+      setShowConfirm(false);
     }
   };
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={handleDelete}
-      disabled={isDeleting}
-      className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl h-8 w-8 transition-colors"
-      title={`Delete ${type}`}
-    >
-      {isDeleting ? (
-        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-      ) : (
-        <Trash2 className="w-3.5 h-3.5" />
-      )}
-    </Button>
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setShowConfirm(true)}
+        disabled={isDeleting}
+        className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl h-8 w-8 transition-colors"
+        title={`Delete ${type}`}
+      >
+        {isDeleting ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        ) : (
+          <Trash2 className="w-3.5 h-3.5" />
+        )}
+      </Button>
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleDelete}
+        title={`Delete ${type === "warehouse" ? "Warehouse" : "Outlet"}`}
+        description={`Are you sure you want to delete ${type} "${name}"? This action cannot be undone and might fail if there are linked transactions.`}
+        confirmText="Delete Now"
+        isLoading={isDeleting}
+        variant="destructive"
+      />
+    </>
   );
 }

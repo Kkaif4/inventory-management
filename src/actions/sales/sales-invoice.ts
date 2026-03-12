@@ -1,10 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 import { StockService } from "@/domains/inventory/stock-service";
 import { AccountingService } from "@/domains/accounting/ledger-service";
 import { roundToTwo } from "@/lib/utils";
+import { revalidatePath } from "next/cache";
 
 export async function createSalesInvoice(data: {
   partyId: string;
@@ -19,27 +19,72 @@ export async function createSalesInvoice(data: {
     igst: number;
   }[];
   date: Date;
+  userId: string; // Mandatory for auditing
+  freightCost?: number;
 }) {
-  const outlet = await prisma.outlet.findUnique({
-    where: { id: data.fromOutletId },
-  });
+  // 1. Batch Metadata Lookups (Variants & Required Accounts)
+  const variantIds = data.items.map((i) => i.variantId);
+  const accountCodes = ["3001", "1003", "2002", "2003", "2004"];
+
+  const [outlet, variants, accounts] = await Promise.all([
+    prisma.outlet.findUnique({
+      where: { id: data.fromOutletId },
+      include: { warehouses: true },
+    }),
+    prisma.variant.findMany({
+      where: { id: { in: variantIds } },
+      include: { product: true },
+    }),
+    prisma.account.findMany({
+      where: { code: { in: accountCodes } },
+    }),
+  ]);
 
   if (!outlet) throw new Error("Outlet not found");
+  if (variants.length !== new Set(variantIds).size)
+    throw new Error("Some variants not found");
+
+  const salesAcc = accounts.find((a) => a.code === "3001");
+  const debtorAcc = accounts.find((a) => a.code === "1003");
+  const outputCgstAcc = accounts.find((a) => a.code === "2002");
+  const outputSgstAcc = accounts.find((a) => a.code === "2003");
+  const outputIgstAcc = accounts.find((a) => a.code === "2004");
+
+  if (!salesAcc || !debtorAcc)
+    throw new Error("Required accounts not found. Run COA setup.");
 
   const allowNegative =
     outlet.negativeStockPolicy === "WARN" ||
     outlet.negativeStockPolicy === "ALLOW";
 
+  const totalTaxable = roundToTwo(
+    data.items.reduce((a, b) => a + b.taxableValue, 0),
+  );
+  const totalCgst = roundToTwo(data.items.reduce((a, b) => a + b.cgst, 0));
+  const totalSgst = roundToTwo(data.items.reduce((a, b) => a + b.sgst, 0));
+  const totalIgst = roundToTwo(data.items.reduce((a, b) => a + b.igst, 0));
+  const totalTax = roundToTwo(totalCgst + totalSgst + totalIgst);
+  const freightCost = data.freightCost || 0;
+  const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
+
+  const warehouseId = outlet.warehouses[0]?.id;
+
   return await prisma.$transaction(async (tx) => {
-    // 1. Create Sales Invoice Transaction
+    // 1. Transaction Header
     const invoice = await tx.transaction.create({
       data: {
         type: "SALES_INVOICE",
-        txnNumber: `INV-${Date.now()}`, // Realistically should use outlet prefix
+        txnNumber: `INV-${Date.now()}`,
         date: data.date,
         partyId: data.partyId,
+        outletId: data.fromOutletId, // Scoped to outlet
         fromLocationId: data.fromOutletId,
+        totalTaxable,
+        totalTax,
+        freightCost,
+        grandTotal,
         status: "POSTED",
+        userId: data.userId, // Storing creator info
         items: {
           create: data.items.map((item) => ({
             variantId: item.variantId,
@@ -54,43 +99,23 @@ export async function createSalesInvoice(data: {
       },
     });
 
-    // 2. Update Stock (Respecting Policy)
-    for (const item of data.items) {
-      await StockService.updateStock(tx, {
+    // 2. Batch Stock Updates
+    const stockUpdates = data.items.map((item) => {
+      const variant = variants.find((v) => v.id === item.variantId)!;
+      return {
         variantId: item.variantId,
-        locationId: data.fromOutletId,
-        locationType: "OUTLET",
-        quantityChange: -item.quantity,
+        locationId: warehouseId || data.fromOutletId,
+        locationType: (warehouseId ? "WAREHOUSE" : "OUTLET") as any,
+        quantityChange: -(
+          item.quantity * (variant.product.conversionRatio || 1)
+        ),
         allowNegative,
-      });
-    }
+      };
+    });
+
+    await StockService.batchUpdateStock(tx, stockUpdates);
 
     // 3. Accounting Entries
-    const salesAcc = await tx.account.findUnique({ where: { code: "3001" } });
-    const debtorAcc = await tx.account.findUnique({ where: { code: "1003" } });
-    const outputCgstAcc = await tx.account.findUnique({
-      where: { code: "2002" },
-    });
-    const outputSgstAcc = await tx.account.findUnique({
-      where: { code: "2003" },
-    });
-    const outputIgstAcc = await tx.account.findUnique({
-      where: { code: "2004" },
-    });
-
-    if (!salesAcc || !debtorAcc)
-      throw new Error("Required accounts not found. Run COA setup.");
-
-    const totalTaxable = roundToTwo(
-      data.items.reduce((a, b) => a + b.taxableValue, 0),
-    );
-    const totalCgst = roundToTwo(data.items.reduce((a, b) => a + b.cgst, 0));
-    const totalSgst = roundToTwo(data.items.reduce((a, b) => a + b.sgst, 0));
-    const totalIgst = roundToTwo(data.items.reduce((a, b) => a + b.igst, 0));
-    const grandTotal = roundToTwo(
-      totalTaxable + totalCgst + totalSgst + totalIgst,
-    );
-
     const entries = [
       { accountId: salesAcc.id, credit: totalTaxable },
       { accountId: debtorAcc.id, debit: grandTotal },
@@ -103,29 +128,38 @@ export async function createSalesInvoice(data: {
     if (totalIgst > 0 && outputIgstAcc)
       entries.push({ accountId: outputIgstAcc.id, credit: totalIgst });
 
+    if (freightCost > 0) {
+      const salesEntry = entries.find((e) => e.accountId === salesAcc.id);
+      if (salesEntry) {
+        salesEntry.credit = roundToTwo((salesEntry.credit || 0) + freightCost);
+      }
+    }
+
     await AccountingService.postJournalEntry(tx, {
       transactionId: invoice.id,
       partyId: data.partyId,
       entries,
     });
 
+    revalidatePath("/dashboard/sales/invoices");
     return invoice;
   });
-
-  revalidatePath("/dashboard/sales/invoices");
-  revalidatePath("/dashboard/inventory/current-stock");
 }
 
-export async function getSalesInvoices() {
+export async function getSalesInvoices(outletId: string, limit = 50) {
+  // Optimization: Limit to recent invoices and select only required fields
   return await prisma.transaction.findMany({
-    where: { type: "SALES_INVOICE" },
+    where: {
+      type: "SALES_INVOICE",
+      outletId: outletId,
+    },
+    take: limit,
     include: {
-      party: true,
-      items: {
-        include: {
-          variant: {
-            include: { product: true },
-          },
+      party: {
+        select: {
+          id: true,
+          name: true,
+          gstin: true,
         },
       },
     },

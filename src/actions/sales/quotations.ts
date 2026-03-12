@@ -4,10 +4,14 @@ import { AuditService } from "@/domains/audit/audit-service";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { roundToTwo } from "@/lib/utils";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
-export async function getQuotations() {
+export async function getQuotations(outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   return await prisma.transaction.findMany({
-    where: { type: "QUOTATION" as any },
+    where: { type: "QUOTATION" as any, outletId },
     include: {
       party: true,
       items: {
@@ -24,8 +28,13 @@ export async function getQuotations() {
 
 export async function createQuotation(data: {
   partyId: string;
+  outletId: string; // Scoped
+  userId: string;
   items: { variantId: string; quantity: number; rate: number }[];
 }) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(data.outletId);
+
   const num = `QT-${Date.now()}`;
   let total = 0;
 
@@ -46,6 +55,8 @@ export async function createQuotation(data: {
       txnNumber: num,
       status: "DRAFT",
       partyId: data.partyId,
+      outletId: data.outletId, // Scoped
+      userId: data.userId,
       grandTotal: total,
       totalTaxable: total,
       items: {
@@ -61,11 +72,18 @@ export async function createQuotation(data: {
     newValues: { total, partyId: data.partyId },
   });
 
+  revalidatePath("/dashboard/sales/quotations");
   return quote;
 }
 
-export async function getCustomers() {
+export async function getCustomers(outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   return await prisma.party.findMany({
-    where: { type: "CUSTOMER" as any },
+    where: {
+      type: "CUSTOMER" as any,
+      outletId, // Filter by outlet
+    },
   });
 }

@@ -6,6 +6,7 @@ import { StockService } from "@/domains/inventory/stock-service";
 import { AccountingService } from "@/domains/accounting/ledger-service";
 import { AuditService } from "@/domains/audit/audit-service";
 import { roundToTwo } from "@/lib/utils";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
 export type PurchaseItemPayload = {
   variantId: string;
@@ -19,10 +20,15 @@ export type PurchaseItemPayload = {
 
 export async function createPurchaseOrder(data: {
   partyId: string;
+  outletId: string; // Scoping to outlet
   toLocationId: string; // Warehouse where goods will arrive
   items: PurchaseItemPayload[];
+  userId: string;
 }) {
-  const { items, ...poData } = data;
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(data.outletId);
+
+  const { items, userId, ...poData } = data;
 
   // Calculate totals
   const totalTaxable = roundToTwo(
@@ -38,11 +44,13 @@ export async function createPurchaseOrder(data: {
       type: "PURCHASE_ORDER",
       txnNumber: `PO-${Date.now()}`,
       partyId: data.partyId,
+      outletId: data.outletId, // Scoped
       toLocationId: data.toLocationId,
       totalTaxable,
       totalTax,
       grandTotal,
       status: "POSTED",
+      userId: data.userId,
       items: {
         create: items.map((item) => ({
           variantId: item.variantId,
@@ -61,6 +69,7 @@ export async function createPurchaseOrder(data: {
     action: "CREATE",
     entity: "PURCHASE_ORDER",
     entityId: po.id,
+    userId: data.userId,
     newValues: poData,
   });
 
@@ -71,6 +80,7 @@ export async function createPurchaseOrder(data: {
 export async function createGRN(data: {
   poId: string;
   items: { variantId: string; quantityReceived: number }[];
+  userId: string;
 }) {
   const po = await prisma.transaction.findUnique({
     where: { id: data.poId },
@@ -87,8 +97,10 @@ export async function createGRN(data: {
         txnNumber: `GRN-${Date.now()}`,
         parentId: data.poId,
         partyId: po.partyId,
+        outletId: po.outletId, // Inherited from PO
         toLocationId: po.toLocationId,
         status: "POSTED",
+        userId: data.userId,
         items: {
           create: data.items.map((item) => {
             const poItem = po.items.find(
@@ -124,9 +136,15 @@ export async function createGRN(data: {
   revalidatePath("/dashboard/purchases/grn");
 }
 
-export async function getPurchaseOrders() {
+export async function getPurchaseOrders(outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   return await prisma.transaction.findMany({
-    where: { type: "PURCHASE_ORDER" },
+    where: {
+      type: "PURCHASE_ORDER",
+      outletId: outletId,
+    },
     include: {
       party: true,
       items: {
@@ -143,8 +161,11 @@ export async function getPurchaseOrders() {
   });
 }
 
-export async function getPurchaseOrderById(id: string) {
-  return await prisma.transaction.findUnique({
+export async function getPurchaseOrderById(id: string, outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
+  const po = await prisma.transaction.findUnique({
     where: { id },
     include: {
       party: true,
@@ -159,6 +180,13 @@ export async function getPurchaseOrderById(id: string) {
       },
     },
   });
+
+  // Verify PO belongs to requested outlet
+  if (po && po.outletId !== outletId) {
+    throw new Error("403: Purchase order not found in this outlet");
+  }
+
+  return po;
 }
 
 export async function createPurchaseBill(data: {
@@ -166,6 +194,7 @@ export async function createPurchaseBill(data: {
   billNumber: string;
   billDate: Date;
   freightCost?: number;
+  userId: string;
 }) {
   const grn = await prisma.transaction.findUnique({
     where: { id: data.grnId },
@@ -182,9 +211,11 @@ export async function createPurchaseBill(data: {
         date: data.billDate,
         parentId: data.grnId,
         partyId: grn.partyId,
+        outletId: grn.outletId, // Inherited from GRN
         toLocationId: grn.toLocationId,
         status: "POSTED",
         freightCost: data.freightCost,
+        userId: data.userId,
         items: {
           create: grn.items.map((item) => ({
             variantId: item.variantId,
@@ -201,19 +232,20 @@ export async function createPurchaseBill(data: {
 
     // 2. Automated Accounting Entries
     const purchaseAcc = await tx.account.findUnique({
-      where: { code: "4001" },
+      where: { code_outletId: { code: "4001", outletId: grn.outletId } },
     });
     const inputCgstAcc = await tx.account.findUnique({
-      where: { code: "1005" },
+      where: { code_outletId: { code: "1005", outletId: grn.outletId } },
     });
+    // Wait, let me use the proper compound key throughout
     const inputSgstAcc = await tx.account.findUnique({
-      where: { code: "1006" },
+      where: { code_outletId: { code: "1006", outletId: grn.outletId } },
     });
     const creditorAcc = await tx.account.findUnique({
-      where: { code: "2001" },
+      where: { code_outletId: { code: "2001", outletId: grn.outletId } },
     });
     const freightAcc = await tx.account.findUnique({
-      where: { code: "4002" },
+      where: { code_outletId: { code: "4002", outletId: grn.outletId } },
     });
 
     if (!purchaseAcc || !creditorAcc)
@@ -251,6 +283,7 @@ export async function createPurchaseBill(data: {
       action: "CREATE",
       entity: "PURCHASE_BILL",
       entityId: bill.id,
+      userId: data.userId,
       newValues: { txnNumber: data.billNumber },
     });
 
@@ -260,9 +293,15 @@ export async function createPurchaseBill(data: {
   revalidatePath("/dashboard/purchases/bills");
 }
 
-export async function getGRNs() {
+export async function getGRNs(outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   return await prisma.transaction.findMany({
-    where: { type: "GRN" },
+    where: {
+      type: "GRN",
+      outletId: outletId,
+    },
     include: {
       party: true,
       items: {
@@ -283,6 +322,7 @@ export async function createDebitNote(data: {
   billId: string;
   items: { variantId: string; quantity: number }[];
   reason: string;
+  userId: string;
 }) {
   const bill = await prisma.transaction.findUnique({
     where: { id: data.billId },
@@ -299,8 +339,10 @@ export async function createDebitNote(data: {
         txnNumber: `DN-${Date.now()}`,
         parentId: data.billId,
         partyId: bill.partyId,
+        outletId: bill.outletId, // Inherited from Bill
         toLocationId: bill.toLocationId,
         status: "POSTED",
+        userId: data.userId,
         items: {
           create: data.items.map((item) => {
             const billItem = bill.items.find(
@@ -333,9 +375,15 @@ export async function createDebitNote(data: {
   revalidatePath("/dashboard/inventory/current-stock");
 }
 
-export async function getBills() {
+export async function getBills(outletId: string) {
+  // Validate user has access to this outlet
+  await validateSessionOutletAccess(outletId);
+
   return await prisma.transaction.findMany({
-    where: { type: "PURCHASE_BILL" },
+    where: {
+      type: "PURCHASE_BILL",
+      outletId: outletId,
+    },
     include: {
       party: true,
       items: {

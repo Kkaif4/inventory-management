@@ -5,9 +5,12 @@ import { revalidatePath } from "next/cache";
 import { AuditService } from "@/domains/audit/audit-service";
 import { roundToTwo } from "@/lib/utils";
 
-export async function getProformaInvoices() {
+export async function getProformaInvoices(outletId: string) {
   return await prisma.transaction.findMany({
-    where: { type: "PROFORMA_INVOICE" as any },
+    where: {
+      type: "PROFORMA_INVOICE" as any,
+      outletId: outletId,
+    },
     include: {
       party: true,
       items: {
@@ -20,6 +23,8 @@ export async function getProformaInvoices() {
 
 export async function createProformaInvoice(data: {
   partyId: string;
+  outletId: string; // Scoped
+  userId: string;
   items: { variantId: string; quantity: number; rate: number }[];
 }) {
   const num = `PI-${Date.now()}`;
@@ -42,6 +47,8 @@ export async function createProformaInvoice(data: {
       txnNumber: num,
       status: "DRAFT",
       partyId: data.partyId,
+      outletId: data.outletId, // Scoped
+      userId: data.userId,
       grandTotal: total,
       totalTaxable: total,
       items: {

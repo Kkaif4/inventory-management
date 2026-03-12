@@ -1,4 +1,6 @@
+export const dynamic = "force-dynamic";
 import { getLocations } from "@/actions/locations";
+
 import Link from "next/link";
 import {
   Building2,

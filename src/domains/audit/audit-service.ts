@@ -10,16 +10,23 @@ export const AuditService = {
     action: "CREATE" | "UPDATE" | "DELETE" | "POST";
     entity: string;
     entityId: string;
+    userId?: string;
     oldValues?: any;
     newValues?: any;
   }) {
     try {
-      const session = await getServerSession(authOptions);
-      if (!session?.user?.id) return; // Skip audit if no session (e.g., seeding)
+      let finalUserId = data.userId;
+
+      if (!finalUserId) {
+        const session = await getServerSession(authOptions);
+        finalUserId = session?.user?.id;
+      }
+
+      if (!finalUserId) return; // Skip audit if no user found
 
       return await prisma.auditLog.create({
         data: {
-          userId: session.user.id,
+          userId: finalUserId,
           action: data.action,
           entity: data.entity,
           entityId: data.entityId,

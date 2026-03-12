@@ -4,11 +4,12 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { createUser } from "@/actions/users";
+import { toast } from "sonner";
 import { getLocations } from "@/actions/locations";
 import { UserPlus, Save } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { createUser } from "@/actions/users";
 enum Role {
   ADMIN = "ADMIN",
   ACCOUNTANT = "ACCOUNTANT",
@@ -58,7 +59,7 @@ export default function NewUserPage() {
       router.push("/dashboard/master-data/users");
     } catch (error) {
       console.error("Failed to create user:", error);
-      alert("Failed to create user. Ensure email is unique.");
+      toast.error("Failed to create user. Ensure email is unique.");
     } finally {
       setIsSubmitting(false);
     }

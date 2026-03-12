@@ -1,4 +1,6 @@
+export const dynamic = "force-dynamic";
 import { getTrialBalance } from "@/actions/reports";
+
 import TrialBalanceClient from "./trial-balance-client";
 
 export default async function TrialBalancePage() {

@@ -4,11 +4,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createParty } from "@/actions/parties";
 import { Users, Save } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getPriceLists } from "@/actions/price-lists";
+import { useOutletStore } from "@/store/use-outlet-store";
 
 const partySchema = z.object({
   type: z.enum(["VENDOR", "CUSTOMER"]),
@@ -30,6 +32,8 @@ export default function NewPartyPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [priceLists, setPriceLists] = useState<any[]>([]);
+  const { currentOutletId } = useOutletStore();
+  if (!currentOutletId) return;
 
   useEffect(() => {
     getPriceLists().then(setPriceLists);
@@ -54,11 +58,11 @@ export default function NewPartyPage() {
   const onSubmit = async (data: PartyFormValues) => {
     try {
       setIsSubmitting(true);
-      await createParty(data);
+      await createParty(data, currentOutletId);
       router.push("/dashboard/master-data/parties");
     } catch (error) {
       console.error("Failed to create party:", error);
-      alert("Failed to create party.");
+      toast.error("Failed to create party.");
     } finally {
       setIsSubmitting(false);
     }

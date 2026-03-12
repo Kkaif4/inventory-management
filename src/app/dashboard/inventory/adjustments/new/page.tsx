@@ -1,15 +1,19 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import { useOutletStore } from "@/store/use-outlet-store";
+
 import {
   createStockAdjustment,
   getInventoryLocations,
   getVariantsForSelection,
 } from "@/actions/inventory";
-import { Settings2, Save } from "lucide-react";
+import { Settings2, Save, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
@@ -30,45 +34,63 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 
 const adjustmentSchema = z.object({
-  variantId: z.string().min(1, "Product variant is required"),
   location: z.string().min(1, "Location is required"),
-  quantity: z.coerce.number().min(0.01, "Quantity must be greater than 0"),
-  type: z.enum(["ADDITION", "DEDUCTION"]),
   reason: z.string().min(3, "Reason is required"),
+  items: z
+    .array(
+      z.object({
+        variantId: z.string().min(1, "Product variant is required"),
+        quantity: z.coerce
+          .number()
+          .min(0.01, "Quantity must be greater than 0"),
+        type: z.enum(["ADDITION", "DEDUCTION"]),
+      }),
+    )
+    .min(1, "At least one item is required"),
 });
 
 type AdjustmentFormValues = z.infer<typeof adjustmentSchema>;
 
 export default function NewAdjustmentPage() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const { currentOutletId } = useOutletStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locations, setLocations] = useState<
     { id: string; name: string; type: string }[]
   >([]);
   const [variants, setVariants] = useState<any[]>([]);
 
+  if (!currentOutletId) return;
   useEffect(() => {
-    Promise.all([getInventoryLocations(), getVariantsForSelection()]).then(
-      ([locs, vars]) => {
-        const combinedLocs = [
-          ...locs.warehouses.map((w) => ({ ...w, type: "WAREHOUSE" })),
-          ...locs.outlets.map((o) => ({ ...o, type: "OUTLET" })),
-        ];
-        setLocations(combinedLocs);
-        setVariants(vars);
-      },
-    );
+    Promise.all([
+      getInventoryLocations(currentOutletId),
+      getVariantsForSelection(currentOutletId),
+    ]).then(([locs, vars]) => {
+      // Filter to show only WAREHOUSE
+      const warehouseLocs = locs.warehouses.map((w) => ({
+        ...w,
+        type: "WAREHOUSE",
+      }));
+      setLocations(warehouseLocs);
+      setVariants(vars);
+    });
   }, []);
 
   const form = useForm<AdjustmentFormValues>({
     resolver: zodResolver(adjustmentSchema) as any,
     defaultValues: {
-      type: "ADDITION",
-      quantity: 1,
+      items: [{ variantId: "", quantity: 1, type: "ADDITION" }],
+      reason: "",
+      location: "",
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "items",
   });
 
   const onSubmit = async (data: AdjustmentFormValues) => {
@@ -78,26 +100,26 @@ export default function NewAdjustmentPage() {
       if (!selectedLoc) return;
 
       await createStockAdjustment({
-        variantId: data.variantId,
+        outletId: currentOutletId,
+        userId: session?.user?.id as string,
         locationId: data.location,
         locationType: selectedLoc.type as any,
-        quantity: data.quantity,
-        type: data.type,
         reason: data.reason,
+        items: data.items,
       });
 
       router.push("/dashboard/inventory/current-stock");
       router.refresh();
     } catch (error: any) {
       console.error("Failed to adjust stock:", error);
-      alert(error.message || "Failed to adjust stock");
+      toast.error(error.message || "Failed to adjust stock");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-20">
+    <div className="max-w-4xl mx-auto space-y-6 pb-20">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
@@ -128,86 +150,29 @@ export default function NewAdjustmentPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-              <FormField
-                control={form.control}
-                name="variantId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select Product Variant *</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Search for product..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {variants.map((v) => (
-                          <SelectItem key={v.id} value={v.id}>
-                            {v.product.name} ({v.sku})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Location *</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select location..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {locations.map((l) => (
-                          <SelectItem key={l.id} value={l.id}>
-                            {l.type === "WAREHOUSE"
-                              ? "Warehouse: "
-                              : "Outlet: "}
-                            {l.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="type"
+                  name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Adjustment Type</FormLabel>
+                      <FormLabel>Location (Warehouse Only) *</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue />
+                            <SelectValue placeholder="Select warehouse..." />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="ADDITION">Addition (+)</SelectItem>
-                          <SelectItem value="DEDUCTION">
-                            Deduction (-)
-                          </SelectItem>
+                          {locations.map((l) => (
+                            <SelectItem key={l.id} value={l.id}>
+                              {l.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -217,12 +182,15 @@ export default function NewAdjustmentPage() {
 
                 <FormField
                   control={form.control}
-                  name="quantity"
+                  name="reason"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Quantity *</FormLabel>
+                      <FormLabel>Reason / Remark *</FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.01" {...field} />
+                        <Input
+                          placeholder="e.g. Initial stock entry, damaged goods..."
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -230,23 +198,126 @@ export default function NewAdjustmentPage() {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="reason"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Reason / Remark *</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="e.g. Initial stock entry, damaged goods, physical count correction..."
-                        rows={3}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">
+                    Adjusted Items
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() =>
+                      append({ variantId: "", quantity: 1, type: "ADDITION" })
+                    }
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Item
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="grid grid-cols-12 gap-4 items-end bg-surface-elevated/10 p-4 rounded-lg border border-border/30 relative group"
+                    >
+                      <div className="col-span-12 md:col-span-5">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.variantId`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Product Variant *</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select product..." />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {variants.map((v) => (
+                                    <SelectItem key={v.id} value={v.id}>
+                                      {v.product.name} ({v.sku})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="col-span-12 md:col-span-3">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.type`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Type</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="ADDITION">
+                                    Addition (+)
+                                  </SelectItem>
+                                  <SelectItem value="DEDUCTION">
+                                    Deduction (-)
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="col-span-10 md:col-span-3">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.quantity`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Qty *</FormLabel>
+                              <FormControl>
+                                <Input type="number" step="0.01" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="col-span-2 md:col-span-1 flex justify-center pb-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                          onClick={() => index > 0 && remove(index)}
+                          disabled={index === 0 && fields.length === 1}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
