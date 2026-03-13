@@ -6,7 +6,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 
-export function PurchaseReturnsClient({ returns }: { returns: any[] }) {
+export function PurchaseReturnsClient({
+  returns,
+  hideHeader = false,
+}: {
+  returns: any[];
+  hideHeader?: boolean;
+}) {
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "txnNumber",
@@ -51,11 +57,13 @@ export function PurchaseReturnsClient({ returns }: { returns: any[] }) {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="Purchase Returns (Debit Notes)"
-        subtitle="Track goods returned back to vendors."
-        breadcrumbs={[{ label: "Purchases" }, { label: "Returns" }]}
-      />
+      {!hideHeader && (
+        <PageHeader
+          title="Purchase Returns (Debit Notes)"
+          subtitle="Track goods returned back to vendors."
+          breadcrumbs={[{ label: "Purchases" }, { label: "Returns" }]}
+        />
+      )}
       <TableToolbar searchPlaceholder="Search debit note #..." />
       <DataTable columns={columns} data={returns} />
     </div>

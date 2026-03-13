@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
@@ -11,22 +11,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getPriceLists } from "@/actions/price-lists";
 import { useOutletStore } from "@/store/use-outlet-store";
-
-const partySchema = z.object({
-  type: z.enum(["VENDOR", "CUSTOMER"]),
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  gstin: z.string().optional(),
-  pan: z.string().optional(),
-  address: z.string().min(5, "Address is required"),
-  state: z.string().min(2, "State is required"),
-  contactInfo: z.string().optional(),
-  creditPeriod: z.coerce.number().min(0).default(0),
-  creditLimit: z.coerce.number().optional(),
-  openingBalance: z.coerce.number().default(0),
-  priceListId: z.string().optional(),
-});
-
-type PartyFormValues = z.infer<typeof partySchema>;
+import { PartyFormValues, partySchema } from "@/validations/party.validation";
 
 export default function NewPartyPage() {
   const router = useRouter();
@@ -43,6 +28,7 @@ export default function NewPartyPage() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<PartyFormValues>({
     resolver: zodResolver(partySchema) as any,
@@ -55,7 +41,7 @@ export default function NewPartyPage() {
 
   const type = watch("type");
 
-  const onSubmit = async (data: PartyFormValues) => {
+  const onSubmit: SubmitHandler<PartyFormValues> = async (data) => {
     try {
       setIsSubmitting(true);
       await createParty(data, currentOutletId);
@@ -235,7 +221,25 @@ export default function NewPartyPage() {
               <input
                 type="number"
                 {...register("creditPeriod")}
+                onChange={(e) =>
+                  setValue("creditPeriod", Number(e.target.value))
+                }
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Opening Balance (₹)
+              </label>
+              <input
+                type="number"
+                {...register("openingBalance")}
+                onChange={(e) =>
+                  setValue("openingBalance", Number(e.target.value))
+                }
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="0.00"
               />
             </div>
 
@@ -247,6 +251,12 @@ export default function NewPartyPage() {
                 type="number"
                 step="1000"
                 {...register("creditLimit")}
+                onChange={(e) =>
+                  setValue(
+                    "creditLimit",
+                    e.target.value === "" ? undefined : Number(e.target.value),
+                  )
+                }
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder="Optional"
               />

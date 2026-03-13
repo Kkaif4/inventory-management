@@ -5,6 +5,98 @@ import Link from "next/link";
 import { Plus, IndianRupee, Loader2 } from "lucide-react";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { useState, useEffect } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/ui/data-table";
+
+interface Party {
+  id: string;
+  name: string;
+  type: "CUSTOMER" | "VENDOR";
+  contactInfo: string | null;
+  gstin: string | null;
+  state: string;
+  creditPeriod: number;
+  creditLimit: number | null;
+  openingBalance: number;
+}
+
+const columns: ColumnDef<Party>[] = [
+  {
+    accessorKey: "name",
+    header: "Entity Name",
+    cell: ({ row }) => (
+      <div>
+        <div className="font-medium text-slate-900">{row.original.name}</div>
+        <div className="text-xs text-slate-500 mt-0.5">
+          {row.original.contactInfo || "No contact info"}
+        </div>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => (
+      <span
+        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+          row.original.type === "CUSTOMER"
+            ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+            : "bg-purple-50 text-purple-700 border border-purple-100"
+        }`}
+      >
+        {row.original.type}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "gstin",
+    header: "GSTIN / Region",
+    cell: ({ row }) => (
+      <div>
+        <div className="text-slate-700 font-mono text-xs">
+          {row.original.gstin || "Unregistered"}
+        </div>
+        <div className="text-xs text-slate-500 mt-0.5">
+          {row.original.state}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "credit",
+    header: () => <div className="text-right">Credit Details</div>,
+    cell: ({ row }) => (
+      <div className="text-right">
+        <div className="text-slate-700">{row.original.creditPeriod} Days</div>
+        {row.original.creditLimit ? (
+          <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-end">
+            Limit: <IndianRupee className="w-3 h-3 mx-0.5" />
+            {row.original.creditLimit.toLocaleString()}
+          </div>
+        ) : (
+          <div className="text-xs text-slate-400 mt-0.5">No Limit Setup</div>
+        )}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "openingBalance",
+    header: () => <div className="text-right">Opening Bal.</div>,
+    cell: ({ row }) => (
+      <div className="text-right font-medium text-slate-900 flex items-center justify-end">
+        <IndianRupee className="w-3.5 h-3.5 mr-0.5 text-slate-500" />
+        {row.original.openingBalance.toLocaleString()}
+        <span className="text-xs text-slate-400 ml-1 font-normal">
+          {row.original.openingBalance > 0
+            ? row.original.type === "CUSTOMER"
+              ? "Dr."
+              : "Cr."
+            : ""}
+        </span>
+      </div>
+    ),
+  },
+];
 
 export default function PartiesPage() {
   const { currentOutletId } = useOutletStore();
@@ -47,97 +139,7 @@ export default function PartiesPage() {
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-sm text-slate-600">
-                <th className="px-6 py-4 font-medium">Entity Name</th>
-                <th className="px-6 py-4 font-medium w-32">Type</th>
-                <th className="px-6 py-4 font-medium w-48">GSTIN / Region</th>
-                <th className="px-6 py-4 font-medium text-right w-48">
-                  Credit Details
-                </th>
-                <th className="px-6 py-4 font-medium text-right w-40">
-                  Opening Bal.
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
-              {parties.map((party) => (
-                <tr
-                  key={party.id}
-                  className="hover:bg-slate-50 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-slate-900">
-                      {party.name}
-                    </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      {party.contactInfo || "No contact info"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                        party.type === "CUSTOMER"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                          : "bg-purple-50 text-purple-700 border border-purple-100"
-                      }`}
-                    >
-                      {party.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-slate-700 font-mono text-xs">
-                      {party.gstin || "Unregistered"}
-                    </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      {party.state}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="text-slate-700">
-                      {party.creditPeriod} Days
-                    </div>
-                    {party.creditLimit ? (
-                      <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-end">
-                        Limit: <IndianRupee className="w-3 h-3 mx-0.5" />
-                        {party.creditLimit.toLocaleString()}
-                      </div>
-                    ) : (
-                      <div className="text-xs text-slate-400 mt-0.5">
-                        No Limit Setup
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right font-medium text-slate-900 flex items-center justify-end">
-                    <IndianRupee className="w-3.5 h-3.5 mr-0.5 text-slate-500" />
-                    {party.openingBalance.toLocaleString()}
-                    <span className="text-xs text-slate-400 ml-1 font-normal">
-                      {party.openingBalance > 0
-                        ? party.type === "CUSTOMER"
-                          ? "Dr."
-                          : "Cr."
-                        : ""}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-              {parties.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-8 text-center text-slate-500"
-                  >
-                    No parties found in the directory.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <DataTable columns={columns} data={parties} />
     </div>
   );
 }

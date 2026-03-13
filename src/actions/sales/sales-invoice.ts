@@ -100,20 +100,24 @@ export async function createSalesInvoice(data: {
     });
 
     // 2. Batch Stock Updates
-    const stockUpdates = data.items.map((item) => {
-      const variant = variants.find((v) => v.id === item.variantId)!;
-      return {
-        variantId: item.variantId,
-        locationId: warehouseId || data.fromOutletId,
-        locationType: (warehouseId ? "WAREHOUSE" : "OUTLET") as any,
-        quantityChange: -(
-          item.quantity * (variant.product.conversionRatio || 1)
-        ),
-        allowNegative,
-      };
+    await StockService.batchUpdateStock(tx, {
+      transactionId: invoice.id,
+      userId: data.userId,
+      outletId: data.fromOutletId,
+      type: "SALE",
+      items: data.items.map((item) => {
+        const variant = variants.find((v) => v.id === item.variantId)!;
+        return {
+          variantId: item.variantId,
+          locationId: warehouseId || data.fromOutletId,
+          locationType: warehouseId ? "WAREHOUSE" : "OUTLET",
+          quantityChange: -(
+            item.quantity * (variant.product.conversionRatio || 1)
+          ),
+          allowNegative,
+        };
+      }),
     });
-
-    await StockService.batchUpdateStock(tx, stockUpdates);
 
     // 3. Accounting Entries
     const entries = [

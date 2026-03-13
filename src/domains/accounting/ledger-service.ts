@@ -136,6 +136,12 @@ export async function initializeCOA(outletId: string) {
       group: "EXPENSE",
       isSystem: true,
     },
+    {
+      code: "5001",
+      name: "Opening Balance Offset",
+      group: "EQUITY",
+      isSystem: true,
+    },
   ];
 
   for (const acc of accounts) {

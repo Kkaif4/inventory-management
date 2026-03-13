@@ -3,11 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { AuditService } from "@/domains/audit/audit-service";
+import { roundToTwo } from "@/lib/utils";
 
 export async function getPurchaseRequests(outletId: string) {
   return await prisma.transaction.findMany({
     where: {
-      type: "PURCHASE_REQUEST" as any,
+      type: "PURCHASE_REQUEST",
       outletId: outletId,
     },
     include: {
@@ -40,27 +41,48 @@ export async function updatePurchaseRequestStatus(
 }
 
 export async function createPurchaseRequest(data: {
-  outletId: string; // Scoping
+  outletId: string;
   userId: string;
   items: { variantId: string; quantity: number }[];
 }) {
-  // Generate simple PR number
+  // 1. Fetch variant prices to calculate estimated total
+  const variantIds = data.items.map((it) => it.variantId);
+  const variants = await prisma.variant.findMany({
+    where: { id: { in: variantIds } },
+    select: { id: true, purchasePrice: true },
+  });
+
+  const priceMap = new Map(variants.map((v) => [v.id, v.purchasePrice]));
+
+  // 2. Build items with calculated taxable values
+  let totalTaxable = 0;
+  const itemsData = data.items.map((it) => {
+    const rate = priceMap.get(it.variantId) || 0;
+    const taxableValue = roundToTwo(rate * it.quantity);
+    totalTaxable += taxableValue;
+
+    return {
+      variantId: it.variantId,
+      quantity: it.quantity,
+      rate,
+      taxableValue,
+    };
+  });
+
+  // 3. Generate simple PR number
   const prNum = `PR-${Date.now()}`;
 
   const pr = await prisma.transaction.create({
     data: {
-      type: "PURCHASE_REQUEST" as any,
+      type: "PURCHASE_REQUEST",
       txnNumber: prNum,
       status: "PENDING_APPROVAL",
-      outletId: data.outletId, // Scoped
+      outletId: data.outletId,
       userId: data.userId,
+      totalTaxable: roundToTwo(totalTaxable),
+      grandTotal: roundToTwo(totalTaxable), // Assuming neutral GST for PR Estimates
       items: {
-        create: data.items.map((it) => ({
-          variantId: it.variantId,
-          quantity: it.quantity,
-          rate: 0,
-          taxableValue: 0,
-        })),
+        create: itemsData,
       },
     },
   });
@@ -69,7 +91,7 @@ export async function createPurchaseRequest(data: {
     action: "CREATE",
     entity: "PURCHASE_REQUEST",
     entityId: pr.id,
-    newValues: { prNum, itemCount: data.items.length },
+    newValues: { prNum, total: totalTaxable },
   });
 
   revalidatePath("/dashboard/purchases/requests");

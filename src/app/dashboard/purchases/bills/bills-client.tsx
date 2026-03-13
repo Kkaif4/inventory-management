@@ -6,7 +6,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 
-export function PurchaseBillsClient({ bills }: { bills: any[] }) {
+export function PurchaseBillsClient({
+  bills,
+  hideHeader = false,
+}: {
+  bills: any[];
+  hideHeader?: boolean;
+}) {
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "txnNumber",
@@ -52,14 +58,16 @@ export function PurchaseBillsClient({ bills }: { bills: any[] }) {
   ];
 
   return (
-    <div className="space-y-4">
-      <PageHeader
-        title="Purchase Bills"
-        subtitle="Manage vendor invoices and procurement billing."
-        breadcrumbs={[{ label: "Purchases" }, { label: "Bills" }]}
-      />
+    <>
+      {!hideHeader && (
+        <PageHeader
+          title="Purchase Bills"
+          subtitle="Manage vendor invoices and procurement billing."
+          breadcrumbs={[{ label: "Purchases" }, { label: "Bills" }]}
+        />
+      )}
       <TableToolbar searchPlaceholder="Search bill number..." />
       <DataTable columns={columns} data={bills} />
-    </div>
+    </>
   );
 }

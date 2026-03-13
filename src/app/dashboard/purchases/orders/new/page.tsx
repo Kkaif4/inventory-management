@@ -10,18 +10,33 @@ import { useSession } from "next-auth/react";
 import { createPurchaseOrder } from "@/actions/procurement";
 import { getParties } from "@/actions/parties";
 import {
-  getInventoryLocations,
-  getVariantsForSelection,
-} from "@/actions/inventory";
-import { ShoppingCart, Plus, Trash2, Save, AlertTriangle } from "lucide-react";
+  Plus,
+  Save,
+  Trash2,
+  HelpCircle,
+  ShoppingCart,
+  AlertTriangle,
+} from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { Button } from "@/components/ui/button";
+import {
+  getInventoryLocations,
+  getVariantsForSelection,
+} from "@/actions/inventory";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { DataTable } from "@/components/ui/data-table";
+import { ColumnDef } from "@tanstack/react-table";
+import { Controller } from "react-hook-form";
+import { useMemo } from "react";
+import { getOutletById } from "@/actions/locations";
 
 const itemSchema = z.object({
   variantId: z.string().min(1, "Item is required"),
   quantity: z.coerce.number().min(0.01, "Qty required"),
+  unit: z.string().min(1, "Unit required"),
+  conversionRatio: z.coerce.number().default(1),
   rate: z.coerce.number().min(0.01, "Rate required"),
   gstPercent: z.coerce.number().default(18),
 });
@@ -42,18 +57,33 @@ export default function NewPurchaseOrderPage() {
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
+  const [outlet, setOutlet] = useState<any>(null);
 
   if (!currentOutletId) return;
 
   useEffect(() => {
-    getParties(currentOutletId).then((res) =>
+    getOutletById(currentOutletId).then((res) => setOutlet(res));
+    getParties(currentOutletId).then((res: any[]) =>
       setSuppliers(res.filter((p) => p.type === "VENDOR")),
     );
-    getInventoryLocations(currentOutletId).then((res) =>
+    getInventoryLocations(currentOutletId).then((res: any) =>
       setLocations(res.warehouses),
     );
-    getVariantsForSelection(currentOutletId).then((res) => setVariants(res));
-  }, []);
+    getVariantsForSelection(currentOutletId).then((res: any[]) =>
+      setVariants(res),
+    );
+  }, [currentOutletId]);
+
+  const variantOptions = useMemo(() => {
+    return variants.map((v) => ({
+      value: v.id,
+      label: v.product.name,
+      subLabel: v.sku,
+      searchTerms: [v.product.name, v.sku, v.product.brand].filter(
+        Boolean,
+      ) as string[],
+    }));
+  }, [variants]);
 
   const {
     register,
@@ -65,7 +95,9 @@ export default function NewPurchaseOrderPage() {
   } = useForm<POFormValues>({
     resolver: zodResolver(poSchema) as any,
     defaultValues: {
-      items: [{ variantId: "", quantity: 1, rate: 0, gstPercent: 18 }],
+      items: [
+        { variantId: "", quantity: 1, unit: "", rate: 0, gstPercent: 18 },
+      ],
     },
   });
 
@@ -82,15 +114,182 @@ export default function NewPurchaseOrderPage() {
   const totals = watchedItems.reduce(
     (acc, item) => {
       const taxable = (item.quantity || 0) * (item.rate || 0);
-      const tax = taxable * (item.gstPercent / 100);
+      const taxTotal = taxable * (item.gstPercent / 100);
+
+      // Determine GST Split based on State
+      const isInterState =
+        outlet?.state &&
+        selectedSupplier?.state &&
+        outlet.state.trim().toLowerCase() !==
+          selectedSupplier.state.trim().toLowerCase();
+
       return {
         taxable: acc.taxable + taxable,
-        tax: acc.tax + tax,
-        grand: acc.grand + taxable + tax,
+        tax: acc.tax + taxTotal,
+        grand: acc.grand + taxable + taxTotal,
+        isInterState,
       };
     },
-    { taxable: 0, tax: 0, grand: 0 },
+    { taxable: 0, tax: 0, grand: 0, isInterState: false },
   );
+
+  const columns: ColumnDef<any>[] = [
+    {
+      id: "item",
+      header: "Item / SKU",
+      cell: ({ row }) => (
+        <div className="min-w-[300px]">
+          <Controller
+            name={`items.${row.index}.variantId`}
+            control={control}
+            render={({ field }) => (
+              <SearchableSelect
+                options={variantOptions}
+                value={field.value}
+                onChange={(val) => {
+                  field.onChange(val);
+                  const variant = variants.find((v) => v.id === val);
+                  if (variant) {
+                    const purchaseUnit = variant.product.purchaseUnit;
+                    const currentUnit =
+                      purchaseUnit || variant.product.baseUnit;
+                    const ratio = purchaseUnit
+                      ? variant.product.conversionRatio || 1
+                      : 1;
+                    setValue(`items.${row.index}.unit`, currentUnit);
+                    setValue(`items.${row.index}.conversionRatio`, ratio);
+                  }
+                }}
+                placeholder="Search item or SKU..."
+                className="border-none bg-transparent shadow-none hover:bg-slate-100 font-medium text-slate-900"
+              />
+            )}
+          />
+          {watchedItems[row.index]?.variantId && (
+            <div className="flex items-center mt-1 space-x-2 ml-1 text-[10px] text-slate-500 font-medium">
+              <span className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                {variants.find(
+                  (v) => v.id === watchedItems[row.index].variantId,
+                )?.product.brand || "Generic"}
+              </span>
+              <span className="text-slate-400">|</span>
+              <span>
+                SKU:{" "}
+                {
+                  variants.find(
+                    (v) => v.id === watchedItems[row.index].variantId,
+                  )?.sku
+                }
+              </span>
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: "quantity",
+      header: () => <div className="text-center">Qty</div>,
+      cell: ({ row }) => (
+        <div className="w-32 mx-auto">
+          <div className="flex items-center space-x-1.5">
+            <input
+              type="number"
+              step="0.01"
+              {...register(`items.${row.index}.quantity` as const)}
+              className="w-full px-2 py-1 text-sm border border-slate-200 rounded text-center focus:ring-1 focus:ring-blue-500 font-semibold"
+            />
+            {watchedItems[row.index]?.variantId && (
+              <div className="group relative">
+                <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all z-50 bg-white border border-slate-200 shadow-xl rounded-xl p-2 min-w-[max-content]">
+                  <div className="flex items-center justify-center space-x-1.5">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-1">
+                      Unit:
+                    </span>
+                    <span className="text-xs font-bold text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                      {watchedItems[row.index]?.unit || "—"}
+                    </span>
+                    {watchedItems[row.index]?.conversionRatio &&
+                      watchedItems[row.index]?.conversionRatio !== 1 && (
+                        <span className="text-[9px] text-slate-400 italic">
+                          (x{watchedItems[row.index].conversionRatio})
+                        </span>
+                      )}
+                  </div>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-white"></div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "rate",
+      header: "Rate (Excl. Tax)",
+      cell: ({ row }) => (
+        <div className="w-40 relative">
+          <span className="absolute left-2 top-1.5 text-slate-400 text-xs">
+            ₹
+          </span>
+          <input
+            type="number"
+            step="0.01"
+            {...register(`items.${row.index}.rate` as const)}
+            className="w-full pl-5 pr-2 py-1 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 font-medium"
+          />
+        </div>
+      ),
+    },
+    {
+      id: "gst",
+      header: "GST %",
+      cell: ({ row }) => (
+        <div className="w-24">
+          <select
+            {...register(`items.${row.index}.gstPercent` as const)}
+            className="w-full px-2 py-1 text-[11px] border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 bg-white font-medium"
+          >
+            <option value="0">0%</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18">18%</option>
+            <option value="28">28%</option>
+          </select>
+        </div>
+      ),
+    },
+    {
+      id: "amount",
+      header: () => <div className="text-right">Amount</div>,
+      cell: ({ row }) => (
+        <div className="text-right font-bold text-slate-900 text-sm">
+          ₹
+          {(
+            (watchedItems[row.index]?.quantity || 0) *
+            (watchedItems[row.index]?.rate || 0)
+          ).toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <div className="w-10">
+          {fields.length > 1 && (
+            <button
+              type="button"
+              onClick={() => remove(row.index)}
+              className="text-slate-400 hover:text-red-500"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   const onSubmit = async (data: POFormValues) => {
     try {
@@ -103,22 +302,24 @@ export default function NewPurchaseOrderPage() {
         toLocationId: data.toLocationId,
         items: data.items.map((item) => {
           const taxableValue = item.quantity * item.rate;
-          const tax = taxableValue * (item.gstPercent / 100);
+          const taxTotal = taxableValue * (item.gstPercent / 100);
 
           return {
             variantId: item.variantId,
             quantity: item.quantity,
+            unit: item.unit,
+            conversionRatio: item.conversionRatio,
             rate: item.rate,
             taxableValue,
-            cgst: tax / 2,
-            sgst: tax / 2,
-            igst: 0,
+            cgst: totals.isInterState ? 0 : taxTotal / 2,
+            sgst: totals.isInterState ? 0 : taxTotal / 2,
+            igst: totals.isInterState ? taxTotal : 0,
           };
         }),
       };
 
       await createPurchaseOrder(payload as any);
-      router.push("/dashboard/purchases/orders");
+      router.push("/dashboard/purchases");
     } catch (error) {
       console.error(error);
       toast.error("Failed to create PO");
@@ -144,7 +345,7 @@ export default function NewPurchaseOrderPage() {
           </div>
         </div>
         <Link
-          href="/dashboard/purchases/orders"
+          href="/dashboard/purchases"
           className="text-sm text-slate-600 hover:text-slate-900 px-3 py-2"
         >
           Cancel
@@ -207,7 +408,14 @@ export default function NewPurchaseOrderPage() {
             <button
               type="button"
               onClick={() =>
-                append({ variantId: "", quantity: 1, rate: 0, gstPercent: 18 })
+                append({
+                  variantId: "",
+                  quantity: 1,
+                  unit: "",
+                  conversionRatio: 1,
+                  rate: 0,
+                  gstPercent: 18,
+                })
               }
               className="text-blue-600 flex items-center hover:text-blue-800"
             >
@@ -215,92 +423,15 @@ export default function NewPurchaseOrderPage() {
             </button>
           </div>
 
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 text-xs font-medium text-slate-500 border-b border-slate-200">
-              <tr>
-                <th className="px-6 py-3">Item / SKU</th>
-                <th className="px-4 py-3 w-32 text-center">Qty</th>
-                <th className="px-4 py-3 w-40">Rate (Excl. Tax)</th>
-                <th className="px-4 py-3 w-32">GST %</th>
-                <th className="px-6 py-3 text-right">Amount</th>
-                <th className="px-4 py-3 w-10"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {fields.map((field, index) => (
-                <tr key={field.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-3">
-                    <select
-                      {...register(`items.${index}.variantId` as const)}
-                      className="w-full border-none bg-transparent focus:ring-0 text-sm font-medium text-slate-900"
-                    >
-                      <option value="">Search item...</option>
-                      {variants.map((v) => (
-                        <option key={v.id} value={v.id}>
-                          {v.product.name} ({v.sku})
-                        </option>
-                      ))}
-                    </select>
-                    {errors.items?.[index]?.variantId && (
-                      <p className="text-red-500 text-[10px] mt-0.5 ml-1">
-                        {errors.items[index]?.variantId?.message}
-                      </p>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <input
-                      type="number"
-                      step="0.01"
-                      {...register(`items.${index}.quantity` as const)}
-                      className="w-full px-2 py-1 text-sm border border-slate-200 rounded text-center focus:ring-1 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="relative">
-                      <span className="absolute left-2 top-1.5 text-slate-400 text-xs">
-                        ₹
-                      </span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        {...register(`items.${index}.rate` as const)}
-                        className="w-full pl-5 pr-2 py-1 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <select
-                      {...register(`items.${index}.gstPercent` as const)}
-                      className="w-full px-2 py-1 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 bg-white"
-                    >
-                      <option value="5">5%</option>
-                      <option value="12">12%</option>
-                      <option value="18">18%</option>
-                      <option value="28">28%</option>
-                    </select>
-                  </td>
-                  <td className="px-6 py-3 text-right font-medium text-slate-900 text-sm">
-                    ₹
-                    {(
-                      (watchedItems[index]?.quantity || 0) *
-                      (watchedItems[index]?.rate || 0)
-                    ).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    {fields.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => remove(index)}
-                        className="text-slate-400 hover:text-red-500"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={columns}
+            data={fields}
+            emptyState={
+              <div className="p-8 text-center text-slate-400 italic">
+                No items added yet.
+              </div>
+            }
+          />
         </div>
 
         {/* Breakdown */}
@@ -311,7 +442,7 @@ export default function NewPurchaseOrderPage() {
               <span>₹{totals.taxable.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm text-slate-600">
-              <span>Tax (GST)</span>
+              <span>Tax ({totals.isInterState ? "IGST" : "CGST + SGST"})</span>
               <span>₹{totals.tax.toLocaleString()}</span>
             </div>
             <div className="pt-3 border-t border-slate-100 flex justify-between font-bold text-lg text-slate-900">
@@ -349,7 +480,7 @@ export default function NewPurchaseOrderPage() {
               </p>
             </div>
             <Button
-              onClick={() => router.push("/dashboard/purchases/orders")}
+              onClick={() => router.push("/dashboard/purchases")}
               variant="outline"
               className="w-full py-6 rounded-xl font-bold"
             >

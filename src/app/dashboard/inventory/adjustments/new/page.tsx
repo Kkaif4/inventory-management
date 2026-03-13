@@ -16,6 +16,10 @@ import {
 import { Settings2, Save, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import {
+  adjustmentSchema,
+  AdjustmentFormValues,
+} from "@/validations/stock-adjustment.validation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,24 +38,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const adjustmentSchema = z.object({
-  location: z.string().min(1, "Location is required"),
-  reason: z.string().min(3, "Reason is required"),
-  items: z
-    .array(
-      z.object({
-        variantId: z.string().min(1, "Product variant is required"),
-        quantity: z.coerce
-          .number()
-          .min(0.01, "Quantity must be greater than 0"),
-        type: z.enum(["ADDITION", "DEDUCTION"]),
-      }),
-    )
-    .min(1, "At least one item is required"),
-});
-
-type AdjustmentFormValues = z.infer<typeof adjustmentSchema>;
 
 export default function NewAdjustmentPage() {
   const router = useRouter();
@@ -79,8 +65,8 @@ export default function NewAdjustmentPage() {
     });
   }, []);
 
-  const form = useForm<AdjustmentFormValues>({
-    resolver: zodResolver(adjustmentSchema) as any,
+  const form = useForm<z.infer<typeof adjustmentSchema>>({
+    resolver: zodResolver(adjustmentSchema),
     defaultValues: {
       items: [{ variantId: "", quantity: 1, type: "ADDITION" }],
       reason: "",
@@ -99,20 +85,23 @@ export default function NewAdjustmentPage() {
       const selectedLoc = locations.find((l) => l.id === data.location);
       if (!selectedLoc) return;
 
-      await createStockAdjustment({
-        outletId: currentOutletId,
-        userId: session?.user?.id as string,
-        locationId: data.location,
-        locationType: selectedLoc.type as any,
-        reason: data.reason,
-        items: data.items,
-      });
+      await createStockAdjustment(
+        currentOutletId,
+        session?.user?.id as string,
+        {
+          locationId: data.location,
+          reason: data.reason,
+          items: data.items,
+        },
+      );
 
       router.push("/dashboard/inventory/current-stock");
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to adjust stock:", error);
-      toast.error(error.message || "Failed to adjust stock");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to adjust stock",
+      );
     } finally {
       setIsSubmitting(false);
     }

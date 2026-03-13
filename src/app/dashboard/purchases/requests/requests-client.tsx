@@ -11,7 +11,13 @@ import { updatePurchaseRequestStatus } from "@/actions/purchases/requests";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function PurchaseRequestsClient({ requests }: { requests: any[] }) {
+export function PurchaseRequestsClient({
+  requests,
+  hideHeader = false,
+}: {
+  requests: any[];
+  hideHeader?: boolean;
+}) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -130,14 +136,16 @@ export function PurchaseRequestsClient({ requests }: { requests: any[] }) {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="Purchase Requests"
-        subtitle="Review and approve internal purchase requests (L1/L2 matrix applied)"
-        breadcrumbs={[
-          { label: "Purchases", href: "/dashboard/purchases" },
-          { label: "Requests" },
-        ]}
-      />
+      {!hideHeader && (
+        <PageHeader
+          title="Purchase Requests"
+          subtitle="Review and approve internal purchase requests (L1/L2 matrix applied)"
+          breadcrumbs={[
+            { label: "Purchases", href: "/dashboard/purchases" },
+            { label: "Requests" },
+          ]}
+        />
+      )}
 
       <TableToolbar searchPlaceholder="Search PR number..." />
 

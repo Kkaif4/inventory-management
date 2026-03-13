@@ -10,13 +10,15 @@ import { Plus, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DataTable } from "@/components/ui/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormControl,
 } from "@/components/ui/form";
 import { PageHeader } from "@/components/ui/page-header";
 import { createProformaInvoice } from "@/actions/sales/proforma-invoices";
@@ -81,6 +83,96 @@ export function ProformaInvoiceForm({
       setIsSubmitting(false);
     }
   }
+
+  const columns: ColumnDef<any>[] = [
+    {
+      id: "product",
+      header: "Product",
+      cell: ({ row }) => (
+        <div className="min-w-[300px]">
+          <FormField
+            control={form.control as any}
+            name={`items.${row.index}.variantId`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    {...field}
+                  >
+                    <option value="">-- Select Product --</option>
+                    {variants.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.product.name} ({v.sku})
+                      </option>
+                    ))}
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      ),
+    },
+    {
+      id: "quantity",
+      header: "Quantity",
+      cell: ({ row }) => (
+        <div className="w-24">
+          <FormField
+            control={form.control as any}
+            name={`items.${row.index}.quantity`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input type="number" min="1" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      ),
+    },
+    {
+      id: "rate",
+      header: "Unit Rate (₹)",
+      cell: ({ row }) => (
+        <div className="w-32">
+          <FormField
+            control={form.control as any}
+            name={`items.${row.index}.rate`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input type="number" step="0.01" min="0" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <div className="w-10 flex justify-center">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => remove(row.index)}
+            className="text-red-500"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6 max-w-4xl pb-10">
@@ -152,80 +244,7 @@ export function ProformaInvoiceForm({
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-12 gap-4 px-2 py-2 bg-surface-muted rounded text-xs font-bold text-text-secondary uppercase">
-                <div className="col-span-6">Product</div>
-                <div className="col-span-2">Quantity</div>
-                <div className="col-span-3">Unit Rate (₹)</div>
-                <div className="col-span-1 text-center">Del</div>
-              </div>
-
-              {fields.map((field, idx) => (
-                <div
-                  key={field.id}
-                  className="grid grid-cols-12 gap-4 items-start"
-                >
-                  <FormField
-                    control={form.control as any}
-                    name={`items.${idx}.variantId`}
-                    render={({ field }) => (
-                      <FormItem className="col-span-6">
-                        <FormControl>
-                          <select
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            {...field}
-                          >
-                            <option value="">-- Select Product --</option>
-                            {variants.map((v) => (
-                              <option key={v.id} value={v.id}>
-                                {v.product.name} ({v.sku})
-                              </option>
-                            ))}
-                          </select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control as any}
-                    name={`items.${idx}.quantity`}
-                    render={({ field }) => (
-                      <FormItem className="col-span-2">
-                        <FormControl>
-                          <Input type="number" min="1" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control as any}
-                    name={`items.${idx}.rate`}
-                    render={({ field }) => (
-                      <FormItem className="col-span-3">
-                        <FormControl>
-                          <Input type="number" step="0.01" min="0" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="col-span-1 pt-1 flex justify-center">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => remove(idx)}
-                      className="text-red-500"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+              <DataTable columns={columns} data={fields} />
             </div>
           </div>
 

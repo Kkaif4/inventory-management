@@ -1,76 +1,208 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-import { StockService, LocationType } from "@/domains/inventory/stock-service";
-import { AuditService } from "@/domains/audit/audit-service";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
-export async function getCurrentStock(outletId: string) {
-  // Validate user has access to this outlet
+import { InventoryFilter, StockStatus } from "./types";
+// DO NOT export types from "use server" files.
+// Clients should import types from ./types directly.
+
+export async function getInventoryData(
+  outletId: string,
+  filters: InventoryFilter,
+) {
   await validateSessionOutletAccess(outletId);
 
-  // Fetch warehouses for this outlet
-  const outlet = await prisma.outlet.findUnique({
-    where: { id: outletId },
-    include: { warehouses: true },
+  const { warehouseId, status, search, categoryId, brand } = filters;
+
+  // 1. Build where clause
+  const andClauses: any[] = [{ outletId }, { product: { isArchived: false } }];
+
+  if (search) {
+    andClauses.push({
+      OR: [
+        { sku: { contains: search, mode: "insensitive" } },
+        { product: { name: { contains: search, mode: "insensitive" } } },
+      ],
+    });
+  }
+
+  if (categoryId) {
+    andClauses.push({ categoryId });
+  }
+
+  if (brand && brand.length > 0) {
+    andClauses.push({
+      product: {
+        brand: { in: brand },
+      },
+    });
+  }
+
+  const where = { AND: andClauses };
+
+  // 2. Fetch variants with stock and product info
+  const variants = await prisma.variant.findMany({
+    where,
+    include: {
+      product: true,
+      category: {
+        select: {
+          name: true,
+        },
+      },
+      stocks: {
+        where: warehouseId ? { warehouseId } : {},
+      },
+    },
+    orderBy: {
+      product: {
+        name: "asc",
+      },
+    },
   });
 
-  const warehouseIds = outlet?.warehouses.map((w) => w.id) || [];
+  // 3. Process and filter by status
+  const inventory = variants.map((v: any) => {
+    // Total qty at the specific warehouse or across all warehouses if no warehouse specified
+    const qtyOnHand = v.stocks.reduce(
+      (acc: number, s: any) => acc + (s.quantity || 0),
+      0,
+    );
+    const inTransit = v.stocks.reduce(
+      (acc: number, s: any) => acc + (s.inTransitQty || 0),
+      0,
+    );
+
+    let currentStatus: StockStatus = "IN_STOCK";
+    if (qtyOnHand <= 0) currentStatus = "OUT_OF_STOCK";
+    else if (qtyOnHand <= v.minStockLevel) currentStatus = "LOW_STOCK";
+
+    return {
+      id: v.id,
+      sku: v.sku,
+      productName: v.product.name,
+      brand: v.product.brand,
+      categoryName: v.category?.name || "N/A",
+      specifications:
+        typeof v.specifications === "string"
+          ? v.specifications
+          : v.specifications
+            ? JSON.stringify(v.specifications)
+            : "",
+      unit: v.product.baseUnit,
+      qtyOnHand,
+      inTransit,
+      minStockLevel: v.minStockLevel,
+      status: currentStatus,
+      // Placeholder for batch info if needed later
+      batchCount: 0,
+    };
+  });
+
+  // Apply status filter in code since status is derived
+  if (status && status !== "ALL") {
+    return inventory.filter((item: any) => item.status === status);
+  }
+
+  return inventory;
+}
+
+export async function getInventoryMasterData(outletId: string) {
+  await validateSessionOutletAccess(outletId);
+
+  const warehouses = await prisma.warehouse.findMany({
+    where: {
+      outlets: {
+        some: { id: outletId },
+      },
+    },
+  });
+
+  const categories = await prisma.category.findMany({
+    where: { outletId },
+  });
+
+  const brands = await prisma.product.findMany({
+    where: { outletId },
+    select: { brand: true },
+    distinct: ["brand"],
+  });
+
+  return {
+    warehouses,
+    categories,
+    brands: brands.map((b: any) => b.brand).filter(Boolean) as string[],
+  };
+}
+
+export async function getInventoryLocations(outletId: string) {
+  const masterData = await getInventoryMasterData(outletId);
+  const outlets = await prisma.outlet.findMany({
+    where: {
+      id: { not: outletId },
+    },
+    select: {
+      id: true,
+      name: true,
+      negativeStockPolicy: true,
+      warehouses: {
+        select: { id: true },
+      },
+    },
+  });
+
+  return {
+    ...masterData,
+    outlets,
+  };
+}
+
+export async function getCurrentStock(outletId: string) {
+  await validateSessionOutletAccess(outletId);
 
   return await prisma.stock.findMany({
-    where: {
-      OR: [{ outletId: outletId }, { warehouseId: { in: warehouseIds } }],
-    },
+    where: { outletId },
     include: {
       variant: {
-        include: {
+        select: {
+          id: true,
+          sku: true,
           product: {
-            include: {
-              category: true,
+            select: {
+              name: true,
+              brand: true,
+              baseUnit: true,
+              purchaseUnit: true,
+              conversionRatio: true,
             },
           },
         },
       },
-      warehouse: true,
-      outlet: true,
-    },
-    orderBy: {
-      variant: {
-        product: {
-          name: "asc",
-        },
-      },
     },
   });
-}
-
-// Action to fetch locations (Warehouses and Outlets) for transfer/adjustment dropdowns
-export async function getInventoryLocations(outletId: string) {
-  // Validate user has access to this outlet
-  await validateSessionOutletAccess(outletId);
-
-  const warehouses = await prisma.warehouse.findMany({
-    where: { outlets: { some: { id: outletId } } }, // Filter by outlet relation
-    orderBy: { name: "asc" },
-  });
-  const outlets = await prisma.outlet.findMany({
-    where: { id: outletId }, // Filter for current outlet only
-    include: { warehouses: true },
-    orderBy: { name: "asc" },
-  });
-
-  return { warehouses, outlets };
 }
 
 export async function getVariantsForSelection(outletId: string) {
-  // Validate user has access to this outlet
   await validateSessionOutletAccess(outletId);
 
   return await prisma.variant.findMany({
-    where: { product: { outletId } }, // Filter by outlet
+    where: {
+      outletId,
+      product: {
+        isArchived: false,
+      },
+    },
     include: {
-      product: true,
+      product: {
+        select: {
+          name: true,
+          brand: true,
+          baseUnit: true,
+          purchaseUnit: true,
+          conversionRatio: true,
+        },
+      },
     },
     orderBy: {
       product: {
@@ -80,125 +212,57 @@ export async function getVariantsForSelection(outletId: string) {
   });
 }
 
-export async function createStockAdjustment(data: {
-  outletId: string; // Scoping
-  userId: string;
-  locationId: string;
-  locationType: LocationType;
-  reason: string;
-  items: {
-    variantId: string;
-    quantity: number;
-    type: "ADDITION" | "DEDUCTION";
-  }[];
-}) {
-  // Validate user has access to this outlet
-  await validateSessionOutletAccess(data.outletId);
-  return await prisma.$transaction(async (tx) => {
-    // 1. Create a transaction record for audit/history
-    const txn = await tx.transaction.create({
-      data: {
-        type: "STOCK_ADJUSTMENT",
-        txnNumber: `ADJ-${Date.now()}`,
-        date: new Date(),
-        status: "POSTED",
-        outletId: data.outletId,
-        userId: data.userId,
-        toLocationId:
-          data.locationType === "WAREHOUSE" ? data.locationId : undefined,
-      },
-    });
+import * as adjustment from "./adjustment";
+import * as transfer from "./transfer";
 
-    // 2. Process each item
-    for (const item of data.items) {
-      const quantityChange =
-        item.type === "ADDITION" ? item.quantity : -item.quantity;
-
-      // Update the stock record
-      await StockService.updateStock(tx, {
-        variantId: item.variantId,
-        locationId: data.locationId,
-        locationType: data.locationType,
-        quantityChange,
-      });
-
-      // Log audit for each item
-      await AuditService.log({
-        action: "POST",
-        entity: "STOCK_ADJUSTMENT",
-        entityId: txn.id,
-        userId: data.userId,
-        newValues: {
-          variantId: item.variantId,
-          change: quantityChange,
-          type: item.type,
-          reason: data.reason,
-        },
-      });
-    }
-
-    revalidatePath("/dashboard/inventory/current-stock");
-    return txn;
-  });
+export async function createStockAdjustment(
+  outletId: string,
+  userId: string,
+  data: any,
+) {
+  return adjustment.createStockAdjustment(outletId, userId, data);
 }
 
-export async function createStockTransfer(data: {
-  outletId: string; // Scoping
-  userId: string;
-  variantId: string;
-  fromLocationId: string;
-  fromLocationType: LocationType;
-  toLocationId: string;
-  toLocationType: LocationType;
-  quantity: number;
-}) {
-  // Validate user has access to this outlet
-  await validateSessionOutletAccess(data.outletId);
-  return await prisma.$transaction(async (tx) => {
-    // 1. Deduct from source
-    await StockService.updateStock(tx, {
-      variantId: data.variantId,
-      locationId: data.fromLocationId,
-      locationType: data.fromLocationType,
-      quantityChange: -data.quantity,
-    });
+export async function createAdjustment(
+  outletId: string,
+  userId: string,
+  data: any,
+) {
+  return adjustment.createAdjustment(outletId, userId, data);
+}
 
-    // 2. Add to destination
-    await StockService.updateStock(tx, {
-      variantId: data.variantId,
-      locationId: data.toLocationId,
-      locationType: data.toLocationType,
-      quantityChange: data.quantity,
-    });
+export async function approveAdjustment(
+  outletId: string,
+  adminId: string,
+  transactionId: string,
+) {
+  return adjustment.approveAdjustment(outletId, adminId, transactionId);
+}
 
-    // 3. Create transfer record
-    const txn = await tx.transaction.create({
-      data: {
-        type: "STOCK_TRANSFER",
-        txnNumber: `TRF-${Date.now()}`,
-        date: new Date(),
-        status: "POSTED",
-        outletId: data.outletId,
-        userId: data.userId,
-        fromLocationId: data.fromLocationId,
-        toLocationId: data.toLocationId,
-      },
-    });
+export async function createStockTransfer(
+  outletId: string,
+  userId: string,
+  data: any,
+) {
+  return transfer.createStockTransfer(outletId, userId, data);
+}
 
-    await AuditService.log({
-      action: "POST",
-      entity: "STOCK_TRANSFER",
-      entityId: txn.id,
-      userId: data.userId,
-      newValues: {
-        variantId: data.variantId,
-        qty: data.quantity,
-        from: data.fromLocationId,
-        to: data.toLocationId,
-      },
-    });
+export async function createTransfer(
+  outletId: string,
+  userId: string,
+  data: any,
+) {
+  return transfer.createTransfer(outletId, userId, data);
+}
 
-    revalidatePath("/dashboard/inventory/current-stock");
-    return txn;
-  });
+export async function receiveTransfer(
+  outletId: string,
+  userId: string,
+  transactionId: string,
+) {
+  return transfer.receiveTransfer(outletId, userId, transactionId);
+}
+
+export async function getPendingTransfers(outletId: string) {
+  return transfer.getPendingTransfers(outletId);
 }

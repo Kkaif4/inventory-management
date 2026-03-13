@@ -68,24 +68,9 @@ const navigation = [
     group: "PROCUREMENT",
     items: [
       {
-        name: "Purchase Requests",
-        href: "/dashboard/purchases/requests",
-        icon: FileText,
-      },
-      {
-        name: "Purchase Orders",
-        href: "/dashboard/purchases/orders",
+        name: "Purchases",
+        href: "/dashboard/purchases",
         icon: ShoppingCart,
-      },
-      {
-        name: "Purchase Bills",
-        href: "/dashboard/purchases/bills",
-        icon: Receipt,
-      },
-      {
-        name: "Purchase Returns",
-        href: "/dashboard/purchases/returns",
-        icon: CreditCard,
       },
       {
         name: "Vendor Metrics",

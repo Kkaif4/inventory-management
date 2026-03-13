@@ -145,22 +145,32 @@ exports.Prisma.AuditLogScalarFieldEnum = {
 exports.Prisma.WarehouseScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  address: 'address'
+  address: 'address',
+  state: 'state',
+  contactName: 'contactName',
+  contactPhone: 'contactPhone'
 };
 
 exports.Prisma.OutletScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  address: 'address',
+  state: 'state',
   invoicePrefix: 'invoicePrefix',
+  invoiceStartingNumber: 'invoiceStartingNumber',
   gstin: 'gstin',
   bankDetails: 'bankDetails',
-  negativeStockPolicy: 'negativeStockPolicy'
+  defaultWarehouseId: 'defaultWarehouseId',
+  negativeStockPolicy: 'negativeStockPolicy',
+  batchTrackingEnabled: 'batchTrackingEnabled'
 };
 
 exports.Prisma.CategoryScalarFieldEnum = {
   id: 'id',
   name: 'name',
   parentId: 'parentId',
+  description: 'description',
+  isActive: 'isActive',
   outletId: 'outletId'
 };
 
@@ -190,7 +200,8 @@ exports.Prisma.VariantScalarFieldEnum = {
   pricingMethod: 'pricingMethod',
   markupPercent: 'markupPercent',
   minStockLevel: 'minStockLevel',
-  categoryId: 'categoryId'
+  categoryId: 'categoryId',
+  outletId: 'outletId'
 };
 
 exports.Prisma.StockScalarFieldEnum = {
@@ -233,7 +244,8 @@ exports.Prisma.TransactionScalarFieldEnum = {
   grandTotal: 'grandTotal',
   status: 'status',
   parentId: 'parentId',
-  userId: 'userId'
+  userId: 'userId',
+  remarks: 'remarks'
 };
 
 exports.Prisma.TransactionItemScalarFieldEnum = {
@@ -241,6 +253,8 @@ exports.Prisma.TransactionItemScalarFieldEnum = {
   transactionId: 'transactionId',
   variantId: 'variantId',
   quantity: 'quantity',
+  unit: 'unit',
+  conversionRatio: 'conversionRatio',
   rate: 'rate',
   freightFraction: 'freightFraction',
   taxableValue: 'taxableValue',
@@ -283,6 +297,50 @@ exports.Prisma.PriceListScalarFieldEnum = {
   name: 'name',
   description: 'description',
   isActive: 'isActive'
+};
+
+exports.Prisma.DocumentSeriesScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  prefix: 'prefix',
+  nextNumber: 'nextNumber',
+  financialYear: 'financialYear',
+  outletId: 'outletId',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CustomBatchScalarFieldEnum = {
+  id: 'id',
+  batchNumber: 'batchNumber',
+  variantId: 'variantId',
+  warehouseId: 'warehouseId',
+  outletId: 'outletId',
+  receivedDate: 'receivedDate',
+  quantityReceived: 'quantityReceived',
+  quantityConsumed: 'quantityConsumed',
+  costPerUnit: 'costPerUnit',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.BatchMovementScalarFieldEnum = {
+  id: 'id',
+  batchId: 'batchId',
+  transactionId: 'transactionId',
+  quantity: 'quantity',
+  date: 'date'
+};
+
+exports.Prisma.StockLedgerScalarFieldEnum = {
+  id: 'id',
+  variantId: 'variantId',
+  warehouseId: 'warehouseId',
+  outletId: 'outletId',
+  transactionId: 'transactionId',
+  date: 'date',
+  quantity: 'quantity',
+  balance: 'balance',
+  type: 'type',
+  userId: 'userId'
 };
 
 exports.Prisma.PriceListEntryScalarFieldEnum = {
@@ -368,6 +426,10 @@ exports.Prisma.ModelName = {
   LedgerEntry: 'LedgerEntry',
   VendorProduct: 'VendorProduct',
   PriceList: 'PriceList',
+  DocumentSeries: 'DocumentSeries',
+  CustomBatch: 'CustomBatch',
+  BatchMovement: 'BatchMovement',
+  StockLedger: 'StockLedger',
   PriceListEntry: 'PriceListEntry'
 };
 

@@ -25,6 +25,7 @@ interface DataTableProps<TData, TValue> {
   emptyState?: React.ReactNode;
   onRowClick?: (row: TData) => void;
   rowClassName?: (row: TData) => string;
+  footerRow?: React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -34,6 +35,7 @@ export function DataTable<TData, TValue>({
   emptyState,
   onRowClick,
   rowClassName,
+  footerRow,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -107,6 +109,7 @@ export function DataTable<TData, TValue>({
             </TableRow>
           )}
         </TableBody>
+        {footerRow && <tfoot>{footerRow}</tfoot>}
       </Table>
     </div>
   );

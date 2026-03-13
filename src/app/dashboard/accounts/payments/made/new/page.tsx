@@ -2,25 +2,18 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createPayment, getAccounts } from "@/actions/accounting";
 import { getParties } from "@/actions/parties";
-import { Wallet, Save, ArrowDownCircle } from "lucide-react";
+import { Save, ArrowDownCircle } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useOutletStore } from "@/store/use-outlet-store";
-
-const paymentSchema = z.object({
-  partyId: z.string().min(1, "Vendor is required"),
-  accountId: z.string().min(1, "Source account is required"),
-  amount: z.coerce.number().min(0.01, "Amount must be > 0"),
-  date: z.string().min(1, "Date is required"),
-  reference: z.string().optional(),
-});
-
-type PaymentFormValues = z.infer<typeof paymentSchema>;
+import {
+  paymentSchema,
+  PaymentFormValues,
+} from "@/validations/payment.validation";
 
 export default function NewPaymentMadePage() {
   const router = useRouter();

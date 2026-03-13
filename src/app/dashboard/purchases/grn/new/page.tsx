@@ -11,6 +11,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useOutletStore } from "@/store/use-outlet-store";
+import { DataTable } from "@/components/ui/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 
 const grnSchema = z.object({
   poId: z.string().min(1, "Select a PO"),
@@ -79,6 +81,44 @@ export default function NewGRNPage() {
     replace(grnItems);
     setValue("poId", id);
   };
+
+  const columns: ColumnDef<any>[] = [
+    {
+      accessorKey: "productName",
+      header: "Item / SKU",
+      cell: ({ row }) => (
+        <div>
+          <div className="text-sm font-medium text-slate-900">
+            {row.original.productName}
+          </div>
+          <div className="text-xs text-slate-500">{row.original.sku}</div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "orderedQty",
+      header: () => <div className="text-center">Ordered Qty</div>,
+      cell: ({ row }) => (
+        <div className="text-center text-sm text-slate-600 font-medium">
+          {row.original.orderedQty}
+        </div>
+      ),
+    },
+    {
+      id: "receivedQty",
+      header: () => <div className="text-right">Received Qty</div>,
+      cell: ({ row }) => (
+        <div className="text-right">
+          <input
+            type="number"
+            step="0.01"
+            {...register(`items.${row.index}.quantityReceived` as const)}
+            className="w-32 px-3 py-1.5 text-sm border border-slate-300 rounded-md text-right focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+        </div>
+      ),
+    },
+  ];
 
   const onSubmit = async (data: GRNFormValues) => {
     try {
@@ -155,44 +195,7 @@ export default function NewGRNPage() {
                 <PackageCheck className="w-4 h-4 mr-2" /> Line Items Receipt
               </div>
               <div className="border border-slate-200 rounded-lg overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50 text-xs font-medium text-slate-500 border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-3">Item / SKU</th>
-                      <th className="px-4 py-3 text-center">Ordered Qty</th>
-                      <th className="px-6 py-3 w-48 text-right">
-                        Received Qty
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {fields.map((field, index) => (
-                      <tr key={field.id} className="hover:bg-slate-50">
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-slate-900">
-                            {field.productName}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {field.sku}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 text-center text-sm text-slate-600 font-medium">
-                          {field.orderedQty}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <input
-                            type="number"
-                            step="0.01"
-                            {...register(
-                              `items.${index}.quantityReceived` as const,
-                            )}
-                            className="w-32 px-3 py-1.5 text-sm border border-slate-300 rounded-md text-right focus:ring-2 focus:ring-emerald-500 outline-none"
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <DataTable columns={columns} data={fields} />
               </div>
 
               <div className="flex justify-end pt-6">

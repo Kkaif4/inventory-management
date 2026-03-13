@@ -20,12 +20,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-const warehouseSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  address: z.string().optional(),
-});
-
-type WarehouseFormValues = z.infer<typeof warehouseSchema>;
+import {
+  WarehouseFormValues,
+  warehouseSchema,
+} from "@/validations/warehouse.validation";
 
 export default function NewWarehousePage() {
   const router = useRouter();

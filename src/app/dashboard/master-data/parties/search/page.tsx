@@ -17,7 +17,7 @@ export default function VendorSearchPage() {
   if (!currentOutletId) return;
 
   useEffect(() => {
-    getProducts().then(setProducts);
+    getProducts(currentOutletId).then(setProducts);
   }, []);
 
   const handleSearch = async (variantId: string) => {

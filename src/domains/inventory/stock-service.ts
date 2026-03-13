@@ -1,234 +1,217 @@
-import { Prisma } from "../../../prisma/generated";
+import { Prisma } from "@/generated/prisma";
 
-export type LocationType = "WAREHOUSE" | "OUTLET";
+export type StockMovementType =
+  | "PURCHASE"
+  | "SALE"
+  | "TRANSFER_OUT"
+  | "TRANSFER_IN"
+  | "ADJUSTMENT_INC"
+  | "ADJUSTMENT_DEC";
 
-export type StockUpdateInput = {
+export type StockMoveInput = {
   variantId: string;
-  locationId: string;
-  locationType: LocationType;
-  quantityChange: number;
+  warehouseId: string | null;
+  outletId: string;
+  transactionId: string;
+  quantity: number; // Positive for increase, Negative for decrease
+  type: StockMovementType;
+  userId: string;
   allowNegative?: boolean;
+  costPerUnit?: number; // Optional, used for Purchases to create batches
 };
 
 export const StockService = {
-  async updateStock(tx: Prisma.TransactionClient, input: StockUpdateInput) {
+  /**
+   * Central atomic function to move stock.
+   * Handles Stock balance, StockLedger, and FIFO Batches.
+   */
+  async moveStock(tx: Prisma.TransactionClient, input: StockMoveInput) {
     const {
       variantId,
-      locationId,
-      locationType,
-      quantityChange,
+      warehouseId,
+      outletId,
+      transactionId,
+      quantity,
+      type,
+      userId,
       allowNegative,
+      costPerUnit,
     } = input;
 
-    const warehouseId = locationType === "WAREHOUSE" ? locationId : null;
-    const outletId = locationType === "OUTLET" ? locationId : null;
-
-    // Check if the stock record exists
-    const existingStock = await tx.stock.findFirst({
-      where: {
-        variantId,
-        warehouseId,
-        outletId,
-      },
-    });
-
-    if (existingStock) {
-      if (
-        !allowNegative &&
-        quantityChange < 0 &&
-        existingStock.quantity + quantityChange < 0
-      ) {
-        throw new Error(
-          `Insufficient stock for variant ${variantId} at location ${locationId}. Current: ${existingStock.quantity}, Requested: ${Math.abs(quantityChange)}`,
-        );
-      }
-
-      return await tx.stock.update({
-        where: { id: existingStock.id },
-        data: {
-          quantity: {
-            increment: quantityChange,
-          },
-        },
-      });
-    } else {
-      if (!allowNegative && quantityChange < 0) {
-        throw new Error(
-          `Insufficient stock for variant ${variantId} at location ${locationId}. Stock record does not exist.`,
-        );
-      }
-
-      return await tx.stock.create({
-        data: {
-          variantId,
-          warehouseId,
-          outletId,
-          quantity: quantityChange,
-        },
-      });
-    }
-  },
-
-  /**
-   * Updates in-transit stock (useful for warehouse to outlet transfers)
-   */
-  async updateInTransitStock(
-    tx: Prisma.TransactionClient,
-    input: StockUpdateInput,
-  ) {
-    const { variantId, locationId, locationType, quantityChange } = input;
-
-    const warehouseId = locationType === "WAREHOUSE" ? locationId : null;
-    const outletId = locationType === "OUTLET" ? locationId : null;
-
-    const existingStock = await tx.stock.findFirst({
-      where: {
-        variantId,
-        warehouseId,
-        outletId,
-      },
-    });
-
-    if (existingStock) {
-      if (
-        quantityChange < 0 &&
-        existingStock.inTransitQty + quantityChange < 0
-      ) {
-        throw new Error(
-          `Insufficient in-transit stock for variant ${variantId}.`,
-        );
-      }
-
-      return await tx.stock.update({
-        where: { id: existingStock.id },
-        data: {
-          inTransitQty: {
-            increment: quantityChange,
-          },
-        },
-      });
-    } else {
-      if (quantityChange < 0) {
-        throw new Error(
-          `Insufficient in-transit stock for variant ${variantId}.`,
-        );
-      }
-
-      return await tx.stock.create({
-        data: {
-          variantId,
-          warehouseId,
-          outletId,
-          inTransitQty: quantityChange,
-        },
-      });
-    }
-  },
-
-  async getAvailableStockAtOutlet(
-    tx: Prisma.TransactionClient,
-    variantId: string,
-    outletId: string,
-  ) {
+    // 1. Get outlet settings for batch tracking and policies
     const outlet = await tx.outlet.findUnique({
       where: { id: outletId },
-      include: { warehouses: true },
+      select: { batchTrackingEnabled: true, negativeStockPolicy: true },
     });
 
     if (!outlet) throw new Error("Outlet not found");
 
-    const warehouseId = outlet.warehouses[0]?.id;
-
-    if (!warehouseId) {
-      const stock = await tx.stock.findFirst({
-        where: {
-          variantId,
-          warehouseId: null,
-          outletId,
-        },
-      });
-      return stock?.quantity || 0;
-    }
-
-    const stock = await tx.stock.findFirst({
+    // 2. Update/Create Stock record
+    const stock = await tx.stock.upsert({
       where: {
+        variantId_warehouseId_outletId: {
+          variantId,
+          warehouseId: warehouseId as any,
+          outletId: outletId as any,
+        },
+      },
+      update: {
+        quantity: { increment: quantity },
+      },
+      create: {
         variantId,
         warehouseId,
-        outletId: null,
+        outletId,
+        quantity,
       },
     });
 
-    return stock?.quantity || 0;
+    // Validation for negative stock
+    const effectiveAllowNegative =
+      allowNegative || outlet.negativeStockPolicy === "ALLOW";
+    if (!effectiveAllowNegative && stock.quantity < 0) {
+      throw new Error(
+        `Insufficient stock for variant ${variantId} at warehouse ${warehouseId}. Resulting balance: ${stock.quantity}.`,
+      );
+    }
+
+    // 3. Create StockLedger entry (Source of Truth)
+    await tx.stockLedger.create({
+      data: {
+        variantId,
+        warehouseId: warehouseId as string,
+        outletId,
+        transactionId,
+        quantity,
+        balance: stock.quantity,
+        type,
+        userId,
+      },
+    });
+
+    // 4. FIFO Batch Logic
+    if (outlet.batchTrackingEnabled) {
+      if (quantity > 0) {
+        // INCOMING: Create new batch
+        await tx.customBatch.create({
+          data: {
+            batchNumber: `B-${Date.now()}-${variantId.slice(-4)}`,
+            variantId,
+            warehouseId: warehouseId as string,
+            outletId,
+            quantityReceived: quantity,
+            costPerUnit: costPerUnit || 0,
+          },
+        });
+      } else if (quantity < 0) {
+        // OUTGOING: Consume batches using FIFO
+        let toConsume = Math.abs(quantity);
+
+        // Find active batches (Received Date ASC)
+        const batches = await tx.customBatch.findMany({
+          where: {
+            variantId,
+            warehouseId: warehouseId as string,
+            outletId,
+          },
+          orderBy: { receivedDate: "asc" },
+        });
+
+        // Manual filter for remaining qty since we can't do column comparison easily in standard findMany where
+        const activeBatches = batches.filter(
+          (b) => b.quantityConsumed < b.quantityReceived,
+        );
+
+        for (const batch of activeBatches) {
+          const remainingInBatch =
+            batch.quantityReceived - batch.quantityConsumed;
+          const consumeFromThis = Math.min(toConsume, remainingInBatch);
+
+          if (consumeFromThis > 0) {
+            await tx.customBatch.update({
+              where: { id: batch.id },
+              data: {
+                quantityConsumed: { increment: consumeFromThis },
+              },
+            });
+
+            await tx.batchMovement.create({
+              data: {
+                batchId: batch.id,
+                transactionId,
+                quantity: -consumeFromThis,
+              },
+            });
+
+            toConsume -= consumeFromThis;
+          }
+
+          if (toConsume <= 0) break;
+        }
+
+        if (toConsume > 0 && !effectiveAllowNegative) {
+          throw new Error(
+            `Insufficient batch stock for FIFO consumption. Missing: ${toConsume}`,
+          );
+        }
+      }
+    }
+
+    return stock;
   },
 
+  /**
+   * Helper for stock transfers (Dispatch)
+   */
+  async dispatchTransfer(
+    tx: Prisma.TransactionClient,
+    input: Omit<StockMoveInput, "type">,
+  ) {
+    return this.moveStock(tx, { ...input, type: "TRANSFER_OUT" });
+  },
+
+  /**
+   * Helper for stock transfers (Receive)
+   */
+  async receiveTransfer(
+    tx: Prisma.TransactionClient,
+    input: Omit<StockMoveInput, "type">,
+  ) {
+    return this.moveStock(tx, { ...input, type: "TRANSFER_IN" });
+  },
+
+  /**
+   * Batch update stock for multiple variants
+   */
   async batchUpdateStock(
     tx: Prisma.TransactionClient,
-    inputs: StockUpdateInput[],
+    input: {
+      transactionId: string;
+      userId: string;
+      outletId: string;
+      type: StockMovementType;
+      items: {
+        variantId: string;
+        locationId: string | null;
+        locationType: "WAREHOUSE" | "OUTLET";
+        quantityChange: number;
+        allowNegative?: boolean;
+        costPerUnit?: number;
+      }[];
+    },
   ) {
-    // 1. Group inputs by location/variant to identify existing records in bulk
-    const queries = inputs.map((input) => ({
-      variantId: input.variantId,
-      warehouseId: input.locationType === "WAREHOUSE" ? input.locationId : null,
-      outletId: input.locationType === "OUTLET" ? input.locationId : null,
-    }));
-
-    const existingStocks = await tx.stock.findMany({
-      where: {
-        OR: queries,
-      },
-    });
-
-    for (const input of inputs) {
-      const {
-        variantId,
-        locationId,
-        locationType,
-        quantityChange,
-        allowNegative,
-      } = input;
-      const warehouseId = locationType === "WAREHOUSE" ? locationId : null;
-      const outletId = locationType === "OUTLET" ? locationId : null;
-
-      const existingRecord = existingStocks.find(
-        (s) =>
-          s.variantId === variantId &&
-          s.warehouseId === warehouseId &&
-          s.outletId === outletId,
-      );
-
-      if (existingRecord) {
-        if (
-          !allowNegative &&
-          quantityChange < 0 &&
-          existingRecord.quantity + quantityChange < 0
-        ) {
-          throw new Error(
-            `Insufficient stock for variant ${variantId}. Available: ${existingRecord.quantity}, Requested: ${Math.abs(quantityChange)}`,
-          );
-        }
-
-        await tx.stock.update({
-          where: { id: existingRecord.id },
-          data: {
-            quantity: { increment: quantityChange },
-          },
-        });
-      } else {
-        if (!allowNegative && quantityChange < 0) {
-          throw new Error(
-            `Insufficient stock for variant ${variantId}. No stock record exists.`,
-          );
-        }
-
-        await tx.stock.create({
-          data: {
-            variantId,
-            warehouseId,
-            outletId,
-            quantity: quantityChange,
-          },
-        });
-      }
+    for (const item of input.items) {
+      await this.moveStock(tx, {
+        variantId: item.variantId,
+        warehouseId: item.locationType === "WAREHOUSE" ? item.locationId : null,
+        outletId: input.outletId,
+        transactionId: input.transactionId,
+        quantity: item.quantityChange,
+        type: input.type,
+        userId: input.userId,
+        allowNegative: item.allowNegative,
+        costPerUnit: item.costPerUnit,
+      });
     }
   },
 };

@@ -22,6 +22,7 @@ export interface TableAction {
 
 interface TableToolbarProps {
   onSearchChange?: (value: string) => void;
+  searchValue?: string;
   searchPlaceholder?: string;
   selectedCount?: number;
   onBulkDelete?: () => void;
@@ -31,6 +32,7 @@ interface TableToolbarProps {
 
 export function TableToolbar({
   onSearchChange,
+  searchValue,
   searchPlaceholder = "Search...",
   selectedCount = 0,
   onBulkDelete,
@@ -45,6 +47,7 @@ export function TableToolbar({
           <Input
             placeholder={searchPlaceholder}
             className="pl-9"
+            value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
           />
         </div>

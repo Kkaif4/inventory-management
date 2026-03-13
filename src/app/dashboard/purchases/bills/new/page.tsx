@@ -62,13 +62,13 @@ export default function NewPurchaseBillPage() {
 
       setIsSubmitting(true);
       await createPurchaseBill({
-        grnId: data.grnId,
+        sourceId: data.grnId,
         billNumber: data.billNumber,
         billDate: new Date(data.billDate),
         freightCost: data.freightCost,
         userId: session.user.id,
       });
-      router.push("/dashboard/purchases/bills");
+      router.push("/dashboard/purchases");
       router.refresh();
     } catch (error) {
       console.error(error);
@@ -293,7 +293,7 @@ export default function NewPurchaseBillPage() {
               </p>
             </div>
             <Button
-              onClick={() => router.push("/dashboard/purchases/bills")}
+              onClick={() => router.push("/dashboard/purchases")}
               variant="outline"
               className="w-full py-6 rounded-2xl font-bold"
             >

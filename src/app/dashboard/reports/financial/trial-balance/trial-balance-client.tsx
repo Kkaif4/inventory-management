@@ -1,6 +1,8 @@
 "use client";
 
 import { Scale, Download } from "lucide-react";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/ui/data-table";
 
 export default function TrialBalanceClient({ data }: { data: any }) {
   const totalDebit = data.reduce((sum: number, row: any) => sum + row.debit, 0);
@@ -8,6 +10,48 @@ export default function TrialBalanceClient({ data }: { data: any }) {
     (sum: number, row: any) => sum + row.credit,
     0,
   );
+
+  const columns: ColumnDef<any>[] = [
+    {
+      accessorKey: "name",
+      header: "Account Name",
+      cell: ({ row }) => (
+        <div className="text-sm font-medium text-slate-900">
+          <span className="text-slate-400 font-mono mr-2">
+            {row.original.code}
+          </span>
+          {row.original.name}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "group",
+      header: "Group",
+      cell: ({ row }) => (
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
+          {row.original.group}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "debit",
+      header: () => <div className="text-right">Debit (₹)</div>,
+      cell: ({ row }) => (
+        <div className="text-right text-sm font-semibold text-indigo-600">
+          {row.original.debit > 0 ? row.original.debit.toLocaleString() : "-"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "credit",
+      header: () => <div className="text-right">Credit (₹)</div>,
+      cell: ({ row }) => (
+        <div className="text-right text-sm font-semibold text-emerald-600">
+          {row.original.credit > 0 ? row.original.credit.toLocaleString() : "-"}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20">
@@ -29,52 +73,23 @@ export default function TrialBalanceClient({ data }: { data: any }) {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 text-xs font-semibold text-slate-500 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-4">Account Name</th>
-              <th className="px-4 py-4">Group</th>
-              <th className="px-6 py-4 text-right">Debit (₹)</th>
-              <th className="px-6 py-4 text-right">Credit (₹)</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {data.map((row: any) => (
-              <tr key={row.code} className="hover:bg-slate-50">
-                <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                  <span className="text-slate-400 font-mono mr-2">
-                    {row.code}
-                  </span>{" "}
-                  {row.name}
-                </td>
-                <td className="px-4 py-4 text-xs font-bold text-slate-400 uppercase tracking-tighter">
-                  {row.group}
-                </td>
-                <td className="px-6 py-4 text-right text-sm font-semibold text-indigo-600">
-                  {row.debit > 0 ? row.debit.toLocaleString() : "-"}
-                </td>
-                <td className="px-6 py-4 text-right text-sm font-semibold text-emerald-600">
-                  {row.credit > 0 ? row.credit.toLocaleString() : "-"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot className="bg-slate-50 border-t-2 border-slate-200 font-bold text-slate-900">
-            <tr>
-              <td className="px-6 py-5" colSpan={2}>
-                Grand Total
-              </td>
-              <td className="px-6 py-5 text-right text-lg underline decoration-double">
-                ₹{totalDebit.toLocaleString()}
-              </td>
-              <td className="px-6 py-5 text-right text-lg underline decoration-double">
-                ₹{totalCredit.toLocaleString()}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        data={data}
+        footerRow={
+          <tr className="bg-slate-50 border-t-2 border-slate-200 font-bold text-slate-900">
+            <td className="px-6 py-5" colSpan={2}>
+              Grand Total
+            </td>
+            <td className="px-6 py-5 text-right text-lg underline decoration-double">
+              ₹{totalDebit.toLocaleString()}
+            </td>
+            <td className="px-6 py-5 text-right text-lg underline decoration-double">
+              ₹{totalCredit.toLocaleString()}
+            </td>
+          </tr>
+        }
+      />
 
       {Math.abs(totalDebit - totalCredit) > 1 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center text-red-700 text-sm">

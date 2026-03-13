@@ -9,16 +9,7 @@ import { Store, Save } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-
-const outletSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  invoicePrefix: z.string().min(1, "Invoice prefix is required"),
-  gstin: z.string().optional(),
-  negativeStockPolicy: z.enum(["WARN", "BLOCK", "ALLOW"]),
-  warehouseIds: z.array(z.string()).min(1, "Must link at least one warehouse"),
-});
-
-type OutletFormValues = z.infer<typeof outletSchema>;
+import { OutletFormValues, outletSchema } from "@/validations/outlet.validation";
 
 export function OutletEditClient({
   outlet,
@@ -42,6 +33,7 @@ export function OutletEditClient({
       invoicePrefix: outlet.invoicePrefix,
       gstin: outlet.gstin || "",
       negativeStockPolicy: outlet.negativeStockPolicy as any,
+      batchTrackingEnabled: outlet.batchTrackingEnabled || false,
       warehouseIds: outlet.warehouses.map((w: any) => w.id),
     },
   });
@@ -142,6 +134,25 @@ export function OutletEditClient({
                 <option value="BLOCK">Strict Block</option>
                 <option value="ALLOW">Allow Silently</option>
               </select>
+            </div>
+
+            <div className="flex items-center space-x-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <input
+                type="checkbox"
+                id="batchTrackingEnabled"
+                {...register("batchTrackingEnabled")}
+                className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <label
+                htmlFor="batchTrackingEnabled"
+                className="text-sm font-semibold text-slate-700 cursor-pointer select-none"
+              >
+                Enable FIFO Batch Tracking
+                <span className="block text-[10px] text-slate-500 font-medium">
+                  Track stock by incoming batches and costs (Landed Cost
+                  support).
+                </span>
+              </label>
             </div>
 
             <div className="md:col-span-2">

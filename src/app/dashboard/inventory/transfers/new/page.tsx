@@ -12,6 +12,7 @@ import {
   getInventoryLocations,
   getVariantsForSelection,
 } from "@/actions/inventory";
+import { InventoryFilter, StockStatus } from "@/actions/inventory/types";
 import { ArrowRightLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -33,20 +34,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const transferSchema = z
-  .object({
-    variantId: z.string().min(1, "Product variant is required"),
-    fromLocation: z.string().min(1, "Source location is required"),
-    toLocation: z.string().min(1, "Destination location is required"),
-    quantity: z.coerce.number().min(0.01, "Quantity must be greater than 0"),
-  })
-  .refine((data) => data.fromLocation !== data.toLocation, {
-    message: "Source and destination cannot be the same",
-    path: ["toLocation"],
-  });
-
-type TransferFormValues = z.infer<typeof transferSchema>;
+import {
+  TransferFormValues,
+  transferSchema,
+} from "@/validations/transfer.validation";
 
 export default function NewTransferPage() {
   const router = useRouter();
@@ -74,7 +65,7 @@ export default function NewTransferPage() {
   }, []);
 
   const form = useForm<TransferFormValues>({
-    resolver: zodResolver(transferSchema) as any,
+    resolver: zodResolver(transferSchema),
     defaultValues: {
       quantity: 1,
     },
@@ -88,15 +79,13 @@ export default function NewTransferPage() {
 
       if (!fromLoc || !toLoc) return;
 
-      await createStockTransfer({
+      await createStockTransfer(currentOutletId!, session?.user?.id!, {
         variantId: data.variantId,
         fromLocationId: data.fromLocation,
         fromLocationType: fromLoc.type as any,
         toLocationId: data.toLocation,
         toLocationType: toLoc.type as any,
         quantity: data.quantity,
-        outletId: currentOutletId!,
-        userId: session?.user?.id!,
       });
 
       router.push("/dashboard/inventory/current-stock");

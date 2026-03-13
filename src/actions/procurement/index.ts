@@ -8,15 +8,8 @@ import { AuditService } from "@/domains/audit/audit-service";
 import { roundToTwo } from "@/lib/utils";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
-export type PurchaseItemPayload = {
-  variantId: string;
-  quantity: number;
-  rate: number;
-  taxableValue: number;
-  cgst: number;
-  sgst: number;
-  igst: number;
-};
+import { PurchaseItemPayload } from "./types";
+// DO NOT export types from "use server" files.
 
 export async function createPurchaseOrder(data: {
   partyId: string;
@@ -55,6 +48,8 @@ export async function createPurchaseOrder(data: {
         create: items.map((item) => ({
           variantId: item.variantId,
           quantity: item.quantity,
+          unit: item.unit,
+          conversionRatio: item.conversionRatio || 1,
           rate: item.rate,
           taxableValue: item.taxableValue,
           cgst: item.cgst,
@@ -73,7 +68,7 @@ export async function createPurchaseOrder(data: {
     newValues: poData,
   });
 
-  revalidatePath("/dashboard/purchases/orders");
+  revalidatePath("/dashboard/purchases");
   return po;
 }
 
@@ -90,7 +85,20 @@ export async function createGRN(data: {
   if (!po) throw new Error("Purchase Order not found");
 
   return await prisma.$transaction(async (tx) => {
-    // 1. Create GRN Transaction record
+    // 1. Build the item payloads for transaction creation
+    const itemsData = data.items.map((item) => {
+      const poItem = po.items.find((pi) => pi.variantId === item.variantId);
+      return {
+        variantId: item.variantId,
+        quantity: item.quantityReceived,
+        unit: poItem?.unit,
+        conversionRatio: poItem?.conversionRatio || 1,
+        rate: poItem?.rate || 0,
+        taxableValue: roundToTwo((poItem?.rate || 0) * item.quantityReceived),
+      };
+    });
+
+    // 2. Create GRN Transaction record
     const grn = await tx.transaction.create({
       data: {
         type: "GRN",
@@ -102,30 +110,22 @@ export async function createGRN(data: {
         status: "POSTED",
         userId: data.userId,
         items: {
-          create: data.items.map((item) => {
-            const poItem = po.items.find(
-              (pi) => pi.variantId === item.variantId,
-            );
-            return {
-              variantId: item.variantId,
-              quantity: item.quantityReceived,
-              rate: poItem?.rate || 0,
-              taxableValue: roundToTwo(
-                (poItem?.rate || 0) * item.quantityReceived,
-              ),
-            };
-          }),
+          create: itemsData,
         },
       },
     });
 
-    // 2. Update physical stock for each item
-    for (const item of data.items) {
-      await StockService.updateStock(tx, {
+    // 3. Update physical stock for each item (Convert to Base Unit)
+    for (const item of itemsData) {
+      const baseQuantity = item.quantity * (item.conversionRatio || 1);
+      await StockService.moveStock(tx, {
         variantId: item.variantId,
-        locationId: po.toLocationId!,
-        locationType: "WAREHOUSE",
-        quantityChange: item.quantityReceived,
+        warehouseId: po.toLocationId!,
+        outletId: po.outletId,
+        transactionId: grn.id,
+        quantity: baseQuantity,
+        type: "PURCHASE",
+        userId: data.userId,
       });
     }
 
@@ -190,75 +190,95 @@ export async function getPurchaseOrderById(id: string, outletId: string) {
 }
 
 export async function createPurchaseBill(data: {
-  grnId: string;
+  sourceId: string;
   billNumber: string;
   billDate: Date;
   freightCost?: number;
   userId: string;
 }) {
-  const grn = await prisma.transaction.findUnique({
-    where: { id: data.grnId },
+  const source = await prisma.transaction.findUnique({
+    where: { id: data.sourceId },
     include: { items: true, party: true },
   });
 
-  if (!grn) throw new Error("GRN not found");
+  if (!source) throw new Error("Source transaction not found");
 
   return await prisma.$transaction(async (tx) => {
+    const totalTaxable = roundToTwo(
+      source.items.reduce((a, b) => a + b.taxableValue, 0),
+    );
+    const totalCgst = roundToTwo(source.items.reduce((a, b) => a + b.cgst, 0));
+    const totalSgst = roundToTwo(source.items.reduce((a, b) => a + b.sgst, 0));
+    const totalIgst = roundToTwo(source.items.reduce((a, b) => a + b.igst, 0));
+    const grandTotal = roundToTwo(
+      totalTaxable +
+        totalCgst +
+        totalSgst +
+        totalIgst +
+        (data.freightCost || 0),
+    );
+
+    // 1. Build Item Payloads with Freight fractions
+    const itemsData = source.items.map((item) => {
+      const freightFraction =
+        data.freightCost && totalTaxable > 0
+          ? item.taxableValue / totalTaxable
+          : 0;
+      return {
+        variantId: item.variantId,
+        quantity: item.quantity,
+        unit: item.unit,
+        conversionRatio: item.conversionRatio || 1,
+        rate: item.rate,
+        taxableValue: item.taxableValue,
+        cgst: item.cgst,
+        sgst: item.sgst,
+        igst: item.igst,
+        freightFraction,
+      };
+    });
+
+    // 2. Create Purchase Bill Transaction
     const bill = await tx.transaction.create({
       data: {
         type: "PURCHASE_BILL",
         txnNumber: data.billNumber,
         date: data.billDate,
-        parentId: data.grnId,
-        partyId: grn.partyId,
-        outletId: grn.outletId, // Inherited from GRN
-        toLocationId: grn.toLocationId,
+        parentId: data.sourceId,
+        partyId: source.partyId,
+        outletId: source.outletId,
+        toLocationId: source.toLocationId,
         status: "POSTED",
         freightCost: data.freightCost,
         userId: data.userId,
         items: {
-          create: grn.items.map((item) => ({
-            variantId: item.variantId,
-            quantity: item.quantity,
-            rate: item.rate,
-            taxableValue: item.taxableValue,
-            cgst: item.cgst,
-            sgst: item.sgst,
-            igst: item.igst,
-          })),
+          create: itemsData,
         },
       },
     });
 
-    // 2. Automated Accounting Entries
+    // 3. Automated Accounting Entries
     const purchaseAcc = await tx.account.findUnique({
-      where: { code_outletId: { code: "4001", outletId: grn.outletId } },
+      where: { code_outletId: { code: "4001", outletId: source.outletId } },
     });
     const inputCgstAcc = await tx.account.findUnique({
-      where: { code_outletId: { code: "1005", outletId: grn.outletId } },
+      where: { code_outletId: { code: "1005", outletId: source.outletId } },
     });
-    // Wait, let me use the proper compound key throughout
     const inputSgstAcc = await tx.account.findUnique({
-      where: { code_outletId: { code: "1006", outletId: grn.outletId } },
+      where: { code_outletId: { code: "1006", outletId: source.outletId } },
+    });
+    const inputIgstAcc = await tx.account.findUnique({
+      where: { code_outletId: { code: "1007", outletId: source.outletId } },
     });
     const creditorAcc = await tx.account.findUnique({
-      where: { code_outletId: { code: "2001", outletId: grn.outletId } },
+      where: { code_outletId: { code: "2001", outletId: source.outletId } },
     });
     const freightAcc = await tx.account.findUnique({
-      where: { code_outletId: { code: "4002", outletId: grn.outletId } },
+      where: { code_outletId: { code: "4002", outletId: source.outletId } },
     });
 
     if (!purchaseAcc || !creditorAcc)
       throw new Error("Mapped system accounts not found. Run COA setup.");
-
-    const totalTaxable = roundToTwo(
-      grn.items.reduce((a, b) => a + b.taxableValue, 0),
-    );
-    const totalCgst = roundToTwo(grn.items.reduce((a, b) => a + b.cgst, 0));
-    const totalSgst = roundToTwo(grn.items.reduce((a, b) => a + b.sgst, 0));
-    const grandTotal = roundToTwo(
-      totalTaxable + totalCgst + totalSgst + (data.freightCost || 0),
-    );
 
     const entries = [
       { accountId: purchaseAcc.id, debit: totalTaxable },
@@ -269,14 +289,22 @@ export async function createPurchaseBill(data: {
       entries.push({ accountId: inputCgstAcc.id, debit: totalCgst });
     if (totalSgst > 0 && inputSgstAcc)
       entries.push({ accountId: inputSgstAcc.id, debit: totalSgst });
+    if (totalIgst > 0 && inputIgstAcc)
+      entries.push({ accountId: inputIgstAcc.id, debit: totalIgst });
     if (data.freightCost && data.freightCost > 0 && freightAcc) {
       entries.push({ accountId: freightAcc.id, debit: data.freightCost });
     }
 
     await AccountingService.postJournalEntry(tx, {
       transactionId: bill.id,
-      partyId: grn.partyId!,
+      partyId: source.partyId!,
       entries,
+    });
+
+    // 4. Update parent transaction status to COMPLETED
+    await tx.transaction.update({
+      where: { id: data.sourceId },
+      data: { status: "COMPLETED" },
     });
 
     await AuditService.log({
@@ -284,7 +312,7 @@ export async function createPurchaseBill(data: {
       entity: "PURCHASE_BILL",
       entityId: bill.id,
       userId: data.userId,
-      newValues: { txnNumber: data.billNumber },
+      newValues: { total: grandTotal, freight: data.freightCost },
     });
 
     return bill;
@@ -332,7 +360,20 @@ export async function createDebitNote(data: {
   if (!bill) throw new Error("Bill not found");
 
   return await prisma.$transaction(async (tx) => {
-    // 1. Create Debit Note Transaction
+    // 1. Build the item payloads for transaction creation
+    const itemsData = data.items.map((item) => {
+      const billItem = bill.items.find((bi) => bi.variantId === item.variantId);
+      return {
+        variantId: item.variantId,
+        quantity: item.quantity,
+        unit: billItem?.unit,
+        conversionRatio: billItem?.conversionRatio || 1,
+        rate: billItem?.rate || 0,
+        taxableValue: roundToTwo((billItem?.rate || 0) * item.quantity),
+      };
+    });
+
+    // 2. Create Debit Note Transaction
     const dn = await tx.transaction.create({
       data: {
         type: "DEBIT_NOTE",
@@ -344,28 +385,22 @@ export async function createDebitNote(data: {
         status: "POSTED",
         userId: data.userId,
         items: {
-          create: data.items.map((item) => {
-            const billItem = bill.items.find(
-              (bi) => bi.variantId === item.variantId,
-            );
-            return {
-              variantId: item.variantId,
-              quantity: item.quantity,
-              rate: billItem?.rate || 0,
-              taxableValue: roundToTwo((billItem?.rate || 0) * item.quantity),
-            };
-          }),
+          create: itemsData,
         },
       },
     });
 
-    // 2. Reduce stock for returned items
-    for (const item of data.items) {
-      await StockService.updateStock(tx, {
+    // 3. Reduce stock for returned items (Convert to Base Unit)
+    for (const item of itemsData) {
+      const baseQuantity = -item.quantity * (item.conversionRatio || 1);
+      await StockService.moveStock(tx, {
         variantId: item.variantId,
-        locationId: bill.toLocationId!,
-        locationType: "WAREHOUSE",
-        quantityChange: -item.quantity,
+        warehouseId: bill.toLocationId!,
+        outletId: bill.outletId,
+        transactionId: dn.id,
+        quantity: baseQuantity,
+        type: "ADJUSTMENT_DEC",
+        userId: data.userId,
       });
     }
 
@@ -373,6 +408,65 @@ export async function createDebitNote(data: {
   });
 
   revalidatePath("/dashboard/inventory/current-stock");
+}
+
+export async function acceptPurchaseOrder(
+  poId: string,
+  outletId: string,
+  userId: string,
+) {
+  // Validate outlet access
+  await validateSessionOutletAccess(outletId);
+
+  return await prisma.$transaction(async (tx) => {
+    // 1. Fetch PO and items
+    const po = await tx.transaction.findUnique({
+      where: { id: poId },
+      include: { items: true },
+    });
+
+    if (!po) throw new Error("Purchase Order not found");
+    if (po.outletId !== outletId)
+      throw new Error("Unauthorized: PO does not belong to this outlet");
+    if (po.status === "ACCEPTED" || po.status === "COMPLETED") {
+      throw new Error("Order has already been processed");
+    }
+
+    // 2. Update Stock for each item (Convert to Base Unit)
+    for (const item of po.items) {
+      const baseQuantity = item.quantity * (item.conversionRatio || 1);
+      await StockService.moveStock(tx, {
+        variantId: item.variantId,
+        warehouseId: po.toLocationId!, // POs have a destination warehouse
+        outletId,
+        transactionId: po.id,
+        quantity: baseQuantity,
+        type: "PURCHASE",
+        userId,
+        costPerUnit: item.rate, // Used for batch logic if enabled
+      });
+    }
+
+    // 3. Update PO status
+    const updatedPo = await tx.transaction.update({
+      where: { id: poId },
+      data: { status: "ACCEPTED" },
+    });
+
+    // 4. Log in Audit Trail
+    await AuditService.log({
+      action: "UPDATE",
+      entity: "PURCHASE_ORDER",
+      entityId: poId,
+      userId,
+      newValues: { status: "ACCEPTED", stockUpdated: true },
+    });
+
+    return updatedPo;
+  });
+
+  revalidatePath("/dashboard/purchases");
+  revalidatePath("/dashboard/inventory");
 }
 
 export async function getBills(outletId: string) {

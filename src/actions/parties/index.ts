@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { AuditService } from "@/domains/audit/audit-service";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
+import { AccountingService } from "@/domains/accounting/ledger-service";
 
 export async function getParties(outletId: string) {
   // Validate user has access to this outlet
@@ -70,12 +71,55 @@ export async function createParty(
 
   const { priceListId, ...rest } = data;
 
-  const party = await prisma.party.create({
-    data: {
-      ...rest,
-      outletId, // Add outlet context
-      priceListId: priceListId === "" ? null : priceListId,
-    },
+  const party = await prisma.$transaction(async (tx) => {
+    // 1. Create the party record
+    const p = await tx.party.create({
+      data: {
+        ...rest,
+        outletId,
+        priceListId: priceListId === "" ? null : priceListId,
+      },
+    });
+
+    // 2. Handle Opening Balance if present
+    if (data.openingBalance && data.openingBalance !== 0) {
+      // Find system accounts
+      const offsetAcc = await tx.account.findUnique({
+        where: { code_outletId: { code: "5001", outletId } },
+      });
+      const partyGroupAcc = await tx.account.findUnique({
+        where: {
+          code_outletId: {
+            code: data.type === "VENDOR" ? "2001" : "1003",
+            outletId,
+          },
+        },
+      });
+
+      if (offsetAcc && partyGroupAcc) {
+        // Post Entry
+        // For Vendor: Credit Vendor Group (+Liability), Debit Offset
+        // For Customer: Debit Customer Group (+Asset), Credit Offset
+        const entries =
+          data.type === "VENDOR"
+            ? [
+                { accountId: partyGroupAcc.id, credit: data.openingBalance },
+                { accountId: offsetAcc.id, debit: data.openingBalance },
+              ]
+            : [
+                { accountId: partyGroupAcc.id, debit: data.openingBalance },
+                { accountId: offsetAcc.id, credit: data.openingBalance },
+              ];
+
+        await AccountingService.postJournalEntry(tx, {
+          transactionId: `OPB-${p.id}`, // Virtual transaction ID
+          partyId: p.id,
+          entries,
+        });
+      }
+    }
+
+    return p;
   });
 
   await AuditService.log({

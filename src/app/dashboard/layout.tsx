@@ -84,7 +84,7 @@ export default function DashboardLayout({
           <div className="flex items-center gap-3 px-2 ml-2 border-l border-border-default">
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <button className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+                <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
                   <div className="text-right hidden sm:block">
                     <p className="text-xs font-bold text-text-primary leading-none">
                       {session?.user?.name || "Admin"}
@@ -96,7 +96,7 @@ export default function DashboardLayout({
                   <div className="w-8 h-8 rounded-full bg-brand/10 border border-brand/20 flex items-center justify-center text-brand font-bold text-xs">
                     {session?.user?.name?.[0] || "A"}
                   </div>
-                </button>
+                </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem

@@ -26,6 +26,14 @@ export const useOutletStore = create<OutletState>()(
       availableOutlets: [],
 
       setOutlet: (outletId: string) => {
+        if (outletId === "ALL") {
+          set({
+            currentOutletId: "ALL",
+            currentOutlet: { id: "ALL", name: "All Outlets", color: "#000000" },
+          });
+          return;
+        }
+
         const outlet = get().availableOutlets.find((o) => o.id === outletId);
         if (outlet) {
           set({ currentOutletId: outletId, currentOutlet: outlet });

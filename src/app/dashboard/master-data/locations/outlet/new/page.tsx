@@ -9,16 +9,7 @@ import { createOutlet, getLocations } from "@/actions/locations";
 import { Store, Save } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-
-const outletSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  invoicePrefix: z.string().min(1, "Invoice prefix is required"),
-  gstin: z.string().optional(),
-  negativeStockPolicy: z.enum(["WARN", "BLOCK", "ALLOW"]),
-  warehouseIds: z.array(z.string()).min(1, "Must link at least one warehouse"),
-});
-
-type OutletFormValues = z.infer<typeof outletSchema>;
+import { OutletFormValues, outletSchema } from "@/validations/outlet.validation";
 
 export default function NewOutletPage() {
   const router = useRouter();

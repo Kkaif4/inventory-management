@@ -10,22 +10,11 @@ import { UserPlus, Save } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { createUser } from "@/actions/users";
-enum Role {
-  ADMIN = "ADMIN",
-  ACCOUNTANT = "ACCOUNTANT",
-  SALES = "SALES",
-  INVENTORY_MANAGER = "INVENTORY_MANAGER",
-}
-
-const userSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  role: z.nativeEnum(Role),
-  passwordRaw: z.string().min(6, "Password must be at least 6 characters"),
-  outletIds: z.array(z.string()),
-});
-
-type UserFormValues = z.infer<typeof userSchema>;
+import {
+  Role,
+  UserFormValues,
+  userSchema,
+} from "@/validations/user.validation";
 
 export default function NewUserPage() {
   const router = useRouter();

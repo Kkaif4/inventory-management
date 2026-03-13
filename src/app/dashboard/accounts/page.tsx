@@ -3,12 +3,12 @@
 import { getAccounts, setupCOA } from "@/actions/accounting";
 import { useOutletStore } from "@/store/use-outlet-store";
 import {
+  Loader2,
+  Settings,
   LayoutGrid,
   AlertCircle,
   CheckCircle2,
   ChevronRight,
-  Settings,
-  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";

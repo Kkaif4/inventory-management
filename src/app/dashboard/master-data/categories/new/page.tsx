@@ -11,14 +11,10 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { useOutletStore } from "@/store/use-outlet-store";
-import { Button } from "@/components/ui/button";
-
-const categorySchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  parentId: z.string().optional(),
-});
-
-type CategoryFormValues = z.infer<typeof categorySchema>;
+import {
+  categorySchema,
+  CategoryFormValues,
+} from "@/validations/category.validation";
 
 export default function NewCategoryPage() {
   const router = useRouter();

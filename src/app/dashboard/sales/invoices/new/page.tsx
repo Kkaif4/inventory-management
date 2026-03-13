@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Resolver } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import {
@@ -21,34 +22,15 @@ import Link from "next/link";
 import { getParties } from "@/actions/parties";
 import { getProducts } from "@/actions/products";
 import { getCurrentStock, getInventoryLocations } from "@/actions/inventory";
+import { InventoryFilter, StockStatus } from "@/actions/inventory/types";
 import { createSalesInvoice } from "@/actions/sales/sales-invoice";
 import { roundToTwo } from "@/lib/utils";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { Button } from "@/components/ui/button";
-
-const invoiceSchema = z.object({
-  partyId: z.string().min(1, "Customer is required"),
-  fromOutletId: z.string().min(1, "Outlet is required"),
-  date: z.coerce.date(),
-  freightCost: z.coerce.number().min(0, "Freight >= 0").optional(),
-  items: z
-    .array(
-      z.object({
-        variantId: z.string().min(1, "Product is required"),
-        quantity: z.coerce.number().min(0.01, "Qty > 0"),
-        unit: z.enum(["BASE", "SALES"]),
-        rate: z.coerce.number().min(0, "Rate >= 0"),
-        gstRate: z.number(),
-        taxableValue: z.number(),
-        cgst: z.number(),
-        sgst: z.number(),
-        igst: z.number(),
-      }),
-    )
-    .min(1, "At least one item required"),
-});
-
-type FormValues = z.infer<typeof invoiceSchema>;
+import {
+  InvoiceFormValues,
+  invoiceSchema,
+} from "@/validations/invoice.validation";
 
 export default function NewSalesInvoicePage() {
   const router = useRouter();
@@ -56,8 +38,22 @@ export default function NewSalesInvoicePage() {
 
   const [parties, setParties] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
-  const [outlets, setOutlets] = useState<any[]>([]);
-  const [stockLevels, setStockLevels] = useState<any[]>([]);
+  const [outlets, setOutlets] = useState<
+    {
+      id: string;
+      name: string;
+      negativeStockPolicy: string;
+      warehouses: { id: string }[];
+    }[]
+  >([]);
+  const [stockLevels, setStockLevels] = useState<
+    {
+      variantId: string;
+      quantity: number;
+      warehouseId?: string | null;
+      outletId?: string | null;
+    }[]
+  >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!currentOutletId) return;
@@ -72,7 +68,7 @@ export default function NewSalesInvoicePage() {
     getParties(currentOutletId).then((data) =>
       setParties(data.filter((p) => p.type === "CUSTOMER")),
     );
-    getProducts().then(setProducts);
+    getProducts(currentOutletId).then(setProducts);
     getInventoryLocations(currentOutletId).then((data) =>
       setOutlets(data.outlets),
     );
@@ -89,8 +85,8 @@ export default function NewSalesInvoicePage() {
     setValue,
     getValues,
     formState: { errors },
-  } = useForm<FormValues>({
-    resolver: zodResolver(invoiceSchema) as any,
+  } = useForm<InvoiceFormValues>({
+    resolver: zodResolver(invoiceSchema) as Resolver<InvoiceFormValues>,
     defaultValues: {
       date: new Date(),
       freightCost: 0,
@@ -200,12 +196,12 @@ export default function NewSalesInvoicePage() {
       );
       return acc;
     },
-    { taxable: 0, gst: 0 },
+    { taxable: 0, gst: 0 } as { taxable: number; gst: number },
   );
 
   const { data: session } = useSession();
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit: SubmitHandler<InvoiceFormValues> = async (data) => {
     try {
       if (!session?.user?.id) throw new Error("Unauthorized");
       setIsSubmitting(true);

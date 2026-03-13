@@ -32,7 +32,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useSession } from "next-auth/react";
 import { useOutletStore } from "@/store/use-outlet-store";
-import { AlertTriangle } from "lucide-react";
+import { PRODUCT_UNITS } from "@/lib/constants";
+import { AlertTriangle, Info } from "lucide-react";
+import { getGstRateByHsn } from "@/lib/hsn-data";
 
 const variantSchema = z.object({
   sku: z.string().min(2, "SKU required").max(50),
@@ -51,6 +53,9 @@ const productSchema = z.object({
   hsnCode: z.string().min(4, "Invalid HSN Code"),
   gstRate: z.coerce.number(),
   baseUnit: z.string().min(1, "Base unit is required"),
+  purchaseUnit: z.string().optional(),
+  salesUnit: z.string().optional(),
+  conversionRatio: z.coerce.number().min(1).default(1),
   categoryId: z.string().min(1, "Category is required"),
   parentCategoryId: z.string().min(1, "Parent Category is required"),
   variants: z.array(variantSchema).min(1, "At least one variant is required"),
@@ -72,13 +77,27 @@ export default function NewProductPage() {
     getCategories().then((res) => setCategories(res));
   }, []);
 
+  const getCategoryName = (id?: string | null) =>
+    id ? categories.find((c) => c.id === id)?.name : undefined;
+  const getUnitLabel = (val?: string | null) =>
+    val ? PRODUCT_UNITS.find((u) => u.value === val)?.label : undefined;
+  const getGstLabel = (val: any) => {
+    const s = String(val);
+    if (s === "0") return "0% (Exempt)";
+    return s ? `${s}%` : undefined;
+  };
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema) as any,
     defaultValues: {
       name: "",
+      brand: "",
       hsnCode: "",
       gstRate: 18,
       baseUnit: "",
+      purchaseUnit: "",
+      salesUnit: "",
+      conversionRatio: 1,
       categoryId: "",
       parentCategoryId: "",
       variants: [
@@ -88,6 +107,7 @@ export default function NewProductPage() {
           purchasePrice: 0,
           sellingPrice: 0,
           pricingMethod: "MANUAL",
+          markupPercent: 0,
           minStockLevel: 0,
           specifications: {},
         },
@@ -197,12 +217,15 @@ export default function NewProductPage() {
                     <FormItem>
                       <FormLabel>Parent Category (Product Type) *</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(val) => field.onChange(val)}
                         defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select Parent..." />
+                            <SelectValue placeholder="Select Parent...">
+                              {getCategoryName(field.value)}
+                            </SelectValue>
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -225,12 +248,15 @@ export default function NewProductPage() {
                     <FormItem>
                       <FormLabel>Specific Category *</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(val) => field.onChange(val)}
                         defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select Category..." />
+                            <SelectValue placeholder="Select Category...">
+                              {getCategoryName(field.value)}
+                            </SelectValue>
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -248,12 +274,24 @@ export default function NewProductPage() {
 
                 <FormField
                   control={control}
-                  name="baseUnit"
+                  name="hsnCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Base Unit (UoM) *</FormLabel>
+                      <FormLabel>HSN Code *</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. NOS, KGS, PCS" {...field} />
+                        <Input
+                          placeholder="e.g. 8467"
+                          {...field}
+                          onBlur={(e) => {
+                            const rate = getGstRateByHsn(e.target.value);
+                            if (rate !== null) {
+                              form.setValue("gstRate", rate);
+                              toast.info(
+                                `GST Rate auto-set to ${rate}% for HSN ${e.target.value}`,
+                              );
+                            }
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -268,14 +306,17 @@ export default function NewProductPage() {
                       <FormLabel>GST Rate (%) *</FormLabel>
                       <Select
                         onValueChange={(val) => field.onChange(Number(val))}
-                        defaultValue={String(field.value)}
+                        value={String(field.value)}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select GST Rate" />
+                            <SelectValue placeholder="Select GST Rate">
+                              {getGstLabel(field.value)}
+                            </SelectValue>
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="0">0% (Exempt)</SelectItem>
                           <SelectItem value="5">5%</SelectItem>
                           <SelectItem value="12">12%</SelectItem>
                           <SelectItem value="18">18%</SelectItem>
@@ -289,17 +330,76 @@ export default function NewProductPage() {
 
                 <FormField
                   control={control}
-                  name="hsnCode"
+                  name="baseUnit"
                   render={({ field }) => (
-                    <FormItem className="md:col-span-3 lg:col-span-1">
-                      <FormLabel>HSN Code *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. 8467" {...field} />
-                      </FormControl>
+                    <FormItem>
+                      <FormLabel>Base Unit (Smallest e.g. PCS) *</FormLabel>
+                      <Select
+                        onValueChange={(val) => field.onChange(val)}
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Base Unit">
+                              {getUnitLabel(field.value)}
+                            </SelectValue>
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {PRODUCT_UNITS.map((unit) => (
+                            <SelectItem key={unit.value} value={unit.value}>
+                              {unit.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={control}
+                  name="purchaseUnit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Purchase Unit (Bulk e.g. BOX)</FormLabel>
+                      <Select
+                        onValueChange={(val) => field.onChange(val)}
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Purchase Unit">
+                              {getUnitLabel(field.value)}
+                            </SelectValue>
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {PRODUCT_UNITS.map((unit) => (
+                            <SelectItem key={unit.value} value={unit.value}>
+                              {unit.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {watch("purchaseUnit") && watch("baseUnit") && (
+                  <div className="md:col-span-1 lg:col-span-1 flex items-center p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                    <Info className="w-5 h-5 text-indigo-400 mr-3" />
+                    <p className="text-xs font-medium text-indigo-300">
+                      <span className="font-bold">Conversion:</span> 1{" "}
+                      {watch("purchaseUnit")} will be auto-converted to its base{" "}
+                      {watch("baseUnit")} count during inventory updates.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -321,6 +421,7 @@ export default function NewProductPage() {
                     purchasePrice: 0,
                     sellingPrice: 0,
                     pricingMethod: "MANUAL",
+                    markupPercent: 0,
                     minStockLevel: 0,
                     specifications: {},
                   })
@@ -379,12 +480,15 @@ export default function NewProductPage() {
                               Classification *
                             </FormLabel>
                             <Select
-                              onValueChange={field.onChange}
+                              onValueChange={(val) => field.onChange(val)}
                               defaultValue={field.value}
+                              value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger className="h-8">
-                                  <SelectValue placeholder="Cat..." />
+                                  <SelectValue placeholder="Cat...">
+                                    {getCategoryName(field.value)}
+                                  </SelectValue>
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -409,7 +513,32 @@ export default function NewProductPage() {
                               Cost Price *
                             </FormLabel>
                             <FormControl>
-                              <Input type="number" step="0.01" {...field} />
+                              <Input
+                                type="number"
+                                step="0.01"
+                                {...field}
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  const val = Number(e.target.value);
+                                  const method = watch(
+                                    `variants.${index}.pricingMethod`,
+                                  );
+                                  if (method === "MARKUP") {
+                                    const margin =
+                                      watch(
+                                        `variants.${index}.markupPercent`,
+                                      ) || 0;
+                                    const sell =
+                                      Math.round(
+                                        val * (1 + margin / 100) * 100,
+                                      ) / 100;
+                                    form.setValue(
+                                      `variants.${index}.sellingPrice`,
+                                      sell,
+                                    );
+                                  }
+                                }}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -425,12 +554,41 @@ export default function NewProductPage() {
                               Pricing Logic
                             </FormLabel>
                             <Select
-                              onValueChange={field.onChange}
+                              onValueChange={(
+                                val: "MANUAL" | "MARKUP" | null,
+                              ) => {
+                                if (!val) return;
+                                field.onChange(val);
+                                if (val === "MARKUP") {
+                                  const cost =
+                                    watch(`variants.${index}.purchasePrice`) ||
+                                    0;
+                                  const margin =
+                                    watch(`variants.${index}.markupPercent`) ||
+                                    0;
+                                  const sell =
+                                    Math.round(
+                                      cost * (1 + margin / 100) * 100,
+                                    ) / 100;
+                                  form.setValue(
+                                    `variants.${index}.sellingPrice`,
+                                    sell,
+                                    { shouldTouch: true },
+                                  );
+                                }
+                              }}
                               defaultValue={field.value}
+                              value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue />
+                                  <SelectValue>
+                                    {field.value === "MARKUP"
+                                      ? "% Markup"
+                                      : field.value === "MANUAL"
+                                        ? "Manual Entry"
+                                        : undefined}
+                                  </SelectValue>
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -460,6 +618,23 @@ export default function NewProductPage() {
                                   step="0.1"
                                   className="border-indigo-500/30 bg-indigo-500/5 focus-visible:ring-indigo-500/40"
                                   {...field}
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    const margin = Number(e.target.value);
+                                    const cost =
+                                      watch(
+                                        `variants.${index}.purchasePrice`,
+                                      ) || 0;
+                                    const sell =
+                                      Math.round(
+                                        cost * (1 + margin / 100) * 100,
+                                      ) / 100;
+                                    form.setValue(
+                                      `variants.${index}.sellingPrice`,
+                                      sell,
+                                      { shouldTouch: true },
+                                    );
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -482,6 +657,20 @@ export default function NewProductPage() {
                             </FormItem>
                           )}
                         />
+                      )}
+
+                      {method === "MARKUP" && (
+                        <div className="flex flex-col justify-center">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase">
+                            Auto Selling Price
+                          </label>
+                          <p className="text-sm font-black text-emerald-400">
+                            ₹{" "}
+                            {(
+                              watch(`variants.${index}.sellingPrice`) || 0
+                            ).toFixed(2)}
+                          </p>
+                        </div>
                       )}
 
                       <FormField

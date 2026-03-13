@@ -23,23 +23,10 @@ import { createPriceList } from "@/actions/price-lists";
 import { getParties } from "@/actions/parties";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useOutletStore } from "@/store/use-outlet-store";
-
-const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  description: z.string().optional(),
-  isActive: z.boolean().default(true),
-  entries: z
-    .array(
-      z.object({
-        variantId: z.string().min(1, "Please select a variant."),
-        price: z.coerce.number().min(0, "Price must be >= 0"),
-      }),
-    )
-    .min(1, "Add at least one product price."),
-  partyIds: z.array(z.string()).default([]),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import {
+  PriceListFormValues,
+  priceListFormSchema,
+} from "@/validations/price-list.validation";
 
 export function PriceListForm({ variants }: { variants: any[] }) {
   const router = useRouter();
@@ -55,8 +42,8 @@ export function PriceListForm({ variants }: { variants: any[] }) {
     );
   }, []);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
+  const form = useForm<PriceListFormValues>({
+    resolver: zodResolver(priceListFormSchema),
     defaultValues: {
       name: "",
       description: "",
@@ -71,7 +58,7 @@ export function PriceListForm({ variants }: { variants: any[] }) {
     control: form.control,
   });
 
-  async function onSubmit(data: FormValues) {
+  async function onSubmit(data: PriceListFormValues) {
     try {
       setIsSubmitting(true);
       setError(null);
@@ -104,10 +91,7 @@ export function PriceListForm({ variants }: { variants: any[] }) {
       />
 
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit as any)}
-          className="space-y-8"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {error && (
             <div className="p-3 bg-red-100 text-red-700 rounded text-sm font-medium">
               {error}
@@ -120,7 +104,7 @@ export function PriceListForm({ variants }: { variants: any[] }) {
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem className="col-span-2">
@@ -136,7 +120,7 @@ export function PriceListForm({ variants }: { variants: any[] }) {
                 )}
               />
               <FormField
-                control={form.control as any}
+                control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem className="col-span-2">
@@ -164,7 +148,7 @@ export function PriceListForm({ variants }: { variants: any[] }) {
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 border rounded-xl p-4 max-h-60 overflow-y-auto bg-slate-50/50 shadow-inner">
                 <FormField
-                  control={form.control as any}
+                  control={form.control}
                   name="partyIds"
                   render={({ field }) => (
                     <>
@@ -245,7 +229,7 @@ export function PriceListForm({ variants }: { variants: any[] }) {
                   className="grid grid-cols-12 gap-4 items-start"
                 >
                   <FormField
-                    control={form.control as any}
+                    control={form.control}
                     name={`entries.${index}.variantId`}
                     render={({ field }) => (
                       <FormItem className="col-span-8">
@@ -271,12 +255,20 @@ export function PriceListForm({ variants }: { variants: any[] }) {
                   />
 
                   <FormField
-                    control={form.control as any}
+                    control={form.control}
                     name={`entries.${index}.price`}
                     render={({ field }) => (
                       <FormItem className="col-span-3">
                         <FormControl>
-                          <Input type="number" step="0.01" min="0" {...field} />
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseFloat(e.target.value) || 0)
+                            }
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

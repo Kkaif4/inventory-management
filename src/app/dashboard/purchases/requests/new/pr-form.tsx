@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ import {
 import { PageHeader } from "@/components/ui/page-header";
 import { createPurchaseRequest } from "@/actions/purchases/requests";
 import { useOutletStore } from "@/store/use-outlet-store";
-import { AlertTriangle } from "lucide-react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 const formSchema = z.object({
   items: z
@@ -52,6 +52,17 @@ export function PRForm({ variants }: { variants: any[] }) {
     control: form.control,
   });
 
+  const variantOptions = useMemo(() => {
+    return variants.map((v) => ({
+      value: v.id,
+      label: v.product.name,
+      subLabel: v.sku,
+      searchTerms: [v.product.name, v.sku, v.product.brand].filter(
+        Boolean,
+      ) as string[],
+    }));
+  }, [variants]);
+
   async function onSubmit(data: any) {
     try {
       if (!currentOutletId) throw new Error("Please select an outlet");
@@ -64,7 +75,8 @@ export function PRForm({ variants }: { variants: any[] }) {
         outletId: currentOutletId,
         userId: session.user.id,
       });
-      router.push("/dashboard/purchases/requests");
+      router.push("/dashboard/purchases");
+      router.refresh();
     } catch (err: any) {
       setError(err.message || "An error occurred");
       setIsSubmitting(false);
@@ -78,8 +90,8 @@ export function PRForm({ variants }: { variants: any[] }) {
         subtitle="Raise a PR for management approval"
         breadcrumbs={[
           { label: "Purchases", href: "/dashboard/purchases" },
-          { label: "Requests", href: "/dashboard/purchases/requests" },
-          { label: "New Array" },
+          { label: "Requests", href: "/dashboard/purchases" },
+          { label: "New Request" },
         ]}
       />
 
@@ -129,17 +141,13 @@ export function PRForm({ variants }: { variants: any[] }) {
                     render={({ field }) => (
                       <FormItem className="col-span-8">
                         <FormControl>
-                          <select
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-                            {...field}
-                          >
-                            <option value="">-- Select Product --</option>
-                            {variants.map((v) => (
-                              <option key={v.id} value={v.id}>
-                                {v.product.name} ({v.sku})
-                              </option>
-                            ))}
-                          </select>
+                          <SearchableSelect
+                            options={variantOptions}
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Search item or SKU..."
+                            className="h-10 border-slate-200"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -151,7 +159,12 @@ export function PRForm({ variants }: { variants: any[] }) {
                     render={({ field }) => (
                       <FormItem className="col-span-3">
                         <FormControl>
-                          <Input type="number" min="1" {...field} />
+                          <Input
+                            type="number"
+                            min="1"
+                            {...field}
+                            className="h-10 border-slate-200"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -163,7 +176,7 @@ export function PRForm({ variants }: { variants: any[] }) {
                       variant="ghost"
                       size="icon"
                       onClick={() => remove(index)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 h-10 w-10"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -171,7 +184,7 @@ export function PRForm({ variants }: { variants: any[] }) {
                 </div>
               ))}
               {fields.length === 0 && (
-                <div className="text-center p-6 text-text-muted border border-dashed rounded">
+                <div className="text-center p-6 text-text-muted border border-dashed rounded italic font-medium">
                   No items added to request.
                 </div>
               )}
@@ -179,12 +192,16 @@ export function PRForm({ variants }: { variants: any[] }) {
           </div>
 
           <div className="flex justify-end gap-4 border-t border-border-default pt-6">
-            <Link href="/dashboard/purchases/requests">
+            <Link href="/dashboard/purchases">
               <Button type="button" variant="outline">
                 Cancel
               </Button>
             </Link>
-            <Button type="submit" disabled={isSubmitting} className="min-w-32">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="min-w-32 bg-blue-600 hover:bg-blue-700 font-bold"
+            >
               {isSubmitting ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : null}
@@ -203,17 +220,17 @@ export function PRForm({ variants }: { variants: any[] }) {
               <h3 className="text-2xl font-bold text-slate-900">
                 Selection Required
               </h3>
-              <p className="text-slate-500">
+              <p className="text-slate-500 font-medium">
                 Please select an active outlet from the switcher in the top
                 navigation bar before raising a purchase request.
               </p>
             </div>
             <Button
-              onClick={() => router.push("/dashboard/purchases/requests")}
+              onClick={() => router.push("/dashboard/purchases")}
               variant="outline"
               className="w-full py-6 rounded-2xl font-bold"
             >
-              Go Back to Requests
+              Go Back to Procurement
             </Button>
           </div>
         </div>

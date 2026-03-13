@@ -16,29 +16,39 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Missing email or password");
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          include: { outlets: true },
-        });
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+            include: { outlets: true },
+          });
 
-        if (
-          !user ||
-          !(await bcrypt.compare(credentials.password, user.password))
-        ) {
-          throw new Error("Invalid email or password");
+          if (
+            !user ||
+            !(await bcrypt.compare(credentials.password, user.password))
+          ) {
+            throw new Error("Invalid email or password");
+          }
+
+          if (!user.isActive) {
+            throw new Error("Your account has been deactivated");
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            outletId: user.outlets?.[0]?.id?.toString() || "",
+          };
+        } catch (error: any) {
+          console.error("Auth Authorize Error:", error);
+          if (error.code === "P2022") {
+            throw new Error(
+              "Database configuration error. Please run 'npx prisma db push'.",
+            );
+          }
+          throw error;
         }
-
-        if (!user.isActive) {
-          throw new Error("Your account has been deactivated");
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          outletId: user.outlets?.[0]?.id?.toString() || "",
-        };
       },
     }),
   ],
@@ -48,16 +58,22 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
 
-        const userWithOutlets = await prisma.user.findUnique({
-          where: { id: user.id },
-          include: { outlets: true },
-        });
-        token.outletId = userWithOutlets?.outlets[0]?.id?.toString() || "";
-        token.availableOutlets =
-          userWithOutlets?.outlets.map((o) => ({
-            id: o.id,
-            name: o.name,
-          })) || [];
+        try {
+          const userWithOutlets = await prisma.user.findUnique({
+            where: { id: user.id },
+            include: { outlets: true },
+          });
+          token.outletId = userWithOutlets?.outlets[0]?.id?.toString() || "";
+          token.availableOutlets =
+            userWithOutlets?.outlets.map((o) => ({
+              id: o.id,
+              name: o.name,
+            })) || [];
+        } catch (error: any) {
+          console.error("Auth JWT Callback Error:", error);
+          token.outletId = "";
+          token.availableOutlets = [];
+        }
       }
       return token;
     },
