@@ -4,6 +4,9 @@ import { getLedgerEntries } from "@/actions/financials/reports";
 import { LedgerClient } from "./ledger-client";
 
 export default async function LedgerPage() {
-  const entries = await getLedgerEntries();
-  return <LedgerClient entries={entries} />;
+  const res = await getLedgerEntries();
+  if (!res.success || !res.data) {
+    return <div>Failed to load ledger: {res.error?.message}</div>;
+  }
+  return <LedgerClient entries={res.data} />;
 }

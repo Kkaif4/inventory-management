@@ -78,11 +78,22 @@ export const AccountingService = {
       difference,
     };
   },
+
+  async getPartyBalance(partyId: string) {
+    const totals = await prisma.ledgerEntry.aggregate({
+      where: { partyId },
+      _sum: {
+        debit: true,
+        credit: true,
+      },
+    });
+
+    const debit = totals._sum.debit || 0;
+    const credit = totals._sum.credit || 0;
+    return roundToTwo(debit - credit);
+  },
 };
 
-/**
- * Chart of Accounts (COA) Initializer
- */
 export async function initializeCOA(outletId: string) {
   const accounts = [
     // Assets

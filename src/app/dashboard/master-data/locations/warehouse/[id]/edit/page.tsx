@@ -10,11 +10,11 @@ export default async function WarehouseEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const warehouse = await getWarehouseById(id);
+  const res = await getWarehouseById(id);
 
-  if (!warehouse) {
+  if (!res.success || !res.data) {
     notFound();
   }
 
-  return <WarehouseEditClient warehouse={warehouse} />;
+  return <WarehouseEditClient warehouse={res.data} />;
 }

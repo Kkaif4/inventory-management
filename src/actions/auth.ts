@@ -2,13 +2,10 @@
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { withErrorHandler } from "@/lib/error-handler";
 
 export async function getCurrentSession() {
-  try {
-    const session = await getServerSession(authOptions);
-    return session;
-  } catch (error) {
-    console.error("Error getting session:", error);
-    return null;
-  }
+  return withErrorHandler(async () => {
+    return await getServerSession(authOptions);
+  });
 }

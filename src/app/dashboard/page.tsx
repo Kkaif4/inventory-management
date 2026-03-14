@@ -20,7 +20,21 @@ export default async function DashboardRoot() {
     redirect("/no-outlet");
   }
 
-  const stats = await getDashboardStats(outletId);
+  const response = await getDashboardStats(outletId);
 
-  return <DashboardClient stats={stats} userName={session.user?.name || ""} />;
+  if (!response.success) {
+    return (
+      <div className="p-8 bg-red-50 border border-red-200 rounded-3xl text-red-600">
+        <h2 className="text-xl font-bold">Failed to load dashboard</h2>
+        <p className="text-sm mt-2">{response.error?.message}</p>
+      </div>
+    );
+  }
+
+  return (
+    <DashboardClient
+      stats={response.data!}
+      userName={session.user?.name || ""}
+    />
+  );
 }

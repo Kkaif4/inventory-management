@@ -7,6 +7,7 @@ import { useOutletStore } from "@/store/use-outlet-store";
 import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
+import { toast } from "sonner";
 
 interface Party {
   id: string;
@@ -107,7 +108,13 @@ export default function PartiesPage() {
     if (currentOutletId) {
       setIsLoading(true);
       getParties(currentOutletId)
-        .then(setParties)
+        .then((res) => {
+          if (res.success) {
+            setParties(res.data!);
+          } else {
+            toast.error("Failed to load parties: " + res.error?.message);
+          }
+        })
         .finally(() => setIsLoading(false));
     }
   }, [currentOutletId]);

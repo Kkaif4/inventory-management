@@ -43,7 +43,13 @@ export default function NewGRNPage() {
   }
 
   useEffect(() => {
-    getPurchaseOrders(currentOutlet.id).then(setPurchaseOrders);
+    getPurchaseOrders(currentOutlet.id).then((res) => {
+      if (res.success) {
+        setPurchaseOrders(res.data!);
+      } else {
+        toast.error("Failed to load purchase orders: " + res.error?.message);
+      }
+    });
   }, []);
 
   const {
@@ -123,7 +129,7 @@ export default function NewGRNPage() {
   const onSubmit = async (data: GRNFormValues) => {
     try {
       setIsSubmitting(true);
-      await createGRN({
+      const res = await createGRN({
         poId: data.poId,
         items: data.items.map((i) => ({
           variantId: i.variantId,
@@ -131,8 +137,13 @@ export default function NewGRNPage() {
         })),
         userId: session?.user?.id!,
       });
-      router.push("/dashboard/inventory/current-stock");
-      router.refresh();
+      if (res.success) {
+        toast.success("GRN created successfully");
+        router.push("/dashboard/inventory/current-stock");
+        router.refresh();
+      } else {
+        toast.error("Failed to create GRN: " + res.error?.message);
+      }
     } catch (error) {
       console.error(error);
       toast.error("Failed to process GRN");

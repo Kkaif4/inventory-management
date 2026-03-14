@@ -2,7 +2,6 @@
 
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -76,7 +75,13 @@ export function ProductEditClient({
   const { data: session } = useSession();
 
   useEffect(() => {
-    getCategories().then((res) => setCategories(res));
+    getCategories().then((res) => {
+      if (res.success) {
+        setCategories(res.data!);
+      } else {
+        toast.error("Failed to load categories: " + res.error?.message);
+      }
+    });
   }, []);
 
   const getCategoryName = (id?: string | null) =>
@@ -130,7 +135,7 @@ export function ProductEditClient({
         throw new Error("Unauthorized");
       }
       setIsSubmitting(true);
-      await updateProduct(product.id, {
+      const res = await updateProduct(product.id, {
         name: data.name,
         brand: data.brand || null,
         hsnCode: data.hsnCode,
@@ -149,14 +154,16 @@ export function ProductEditClient({
           markupPercent: v.markupPercent,
         })),
       });
-      toast.success("Product updated successfully");
-      router.push("/dashboard/master-data/products");
-      router.refresh();
+
+      if (res.success) {
+        toast.success("Product updated successfully");
+        router.push("/dashboard/master-data/products");
+      } else {
+        toast.error("Failed to update product: " + res.error?.message);
+      }
     } catch (error) {
-      console.error("Failed to update product:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update product",
-      );
+      console.error(error);
+      toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }

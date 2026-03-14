@@ -21,11 +21,15 @@ export default function VendorMetricsPage() {
 
   if (!currentOutletId) return;
   useEffect(() => {
-    getVendorMetrics(currentOutletId).then((data) => {
-      setVendorData(data);
+    getVendorMetrics(currentOutletId).then((res) => {
+      if (res.success) {
+        setVendorData(res.data!);
+      } else {
+        console.error("Failed to load vendor metrics:", res.error?.message);
+      }
       setIsLoading(false);
     });
-  }, []);
+  }, [currentOutletId]);
 
   // Aggregate metrics
   const totalVendors = vendorData.length;

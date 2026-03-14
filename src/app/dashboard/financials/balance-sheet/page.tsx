@@ -4,6 +4,9 @@ import { getBalanceSheet } from "@/actions/financials/reports";
 import { BalanceSheetClient } from "./balance-sheet-client";
 
 export default async function BalanceSheetPage() {
-  const data = await getBalanceSheet();
-  return <BalanceSheetClient data={data} />;
+  const res = await getBalanceSheet();
+  if (!res.success || !res.data) {
+    return <div>Failed to load balance sheet: {res.error?.message}</div>;
+  }
+  return <BalanceSheetClient data={res.data} />;
 }

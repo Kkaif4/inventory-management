@@ -9,7 +9,11 @@ export default async function GSTSummaryPage() {
   startDate.setMonth(startDate.getMonth() - 1);
   const endDate = new Date();
 
-  const data = await getGSTSummary(startDate, endDate);
+  const res = await getGSTSummary(startDate, endDate);
+  if (!res.success) {
+    throw new Error(res.error?.message || "Failed to load GST summary");
+  }
+  const data = res.data!;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">

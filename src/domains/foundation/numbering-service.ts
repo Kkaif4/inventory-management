@@ -5,7 +5,11 @@ export type DocumentType =
   | "PURCHASE_ORDER"
   | "GRN"
   | "STOCK_TRANSFER"
-  | "STOCK_ADJUSTMENT";
+  | "STOCK_ADJUSTMENT"
+  | "CASH_MEMO"
+  | "CREDIT_NOTE"
+  | "STOCK_RETURN"
+  | "QUOTATION";
 
 export const NumberingService = {
   async getNextNumber(
@@ -82,6 +86,10 @@ export const NumberingService = {
       GRN: "GRN",
       STOCK_TRANSFER: "TRF",
       STOCK_ADJUSTMENT: "ADJ",
+      CASH_MEMO: "CM",
+      CREDIT_NOTE: "CN",
+      STOCK_RETURN: "SR",
+      QUOTATION: "QTN",
     };
     return prefixes[type];
   },

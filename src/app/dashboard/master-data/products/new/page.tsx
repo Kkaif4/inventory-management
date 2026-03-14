@@ -74,7 +74,13 @@ export default function NewProductPage() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    getCategories().then((res) => setCategories(res));
+    getCategories().then((res) => {
+      if (res.success) {
+        setCategories(res.data!);
+      } else {
+        toast.error("Failed to load categories: " + res.error?.message);
+      }
+    });
   }, []);
 
   const getCategoryName = (id?: string | null) =>
@@ -133,17 +139,21 @@ export default function NewProductPage() {
         throw new Error("Unauthorized or no active outlet selected.");
       }
       setIsSubmitting(true);
-      await createProduct({
+      const res = await createProduct({
         ...data,
         outletId: currentOutletId,
         userId: session.user.id,
       });
-      router.push("/dashboard/master-data/products");
+
+      if (res.success) {
+        toast.success("Product created successfully");
+        router.push("/dashboard/master-data/products");
+      } else {
+        toast.error("Failed to create product: " + res.error?.message);
+      }
     } catch (error) {
       console.error("Failed to create product:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create product",
-      );
+      toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }

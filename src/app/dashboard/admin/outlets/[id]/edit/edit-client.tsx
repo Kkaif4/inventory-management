@@ -64,9 +64,13 @@ export function OutletEditClient({
   const onSubmit: SubmitHandler<OutletFormValues> = async (data) => {
     try {
       setIsSubmitting(true);
-      await updateOutlet(outlet.id, data);
-      toast.success("Outlet details synchronized");
-      router.push("/dashboard/admin/outlets");
+      const res = await updateOutlet(outlet.id, data);
+      if (res.success) {
+        toast.success("Outlet details synchronized");
+        router.push("/dashboard/admin/outlets");
+      } else {
+        toast.error("Failed to update outlet: " + res.error?.message);
+      }
     } catch (error) {
       console.error("Failed to update outlet:", error);
       toast.error(

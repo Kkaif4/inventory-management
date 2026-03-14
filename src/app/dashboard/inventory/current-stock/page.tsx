@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getCurrentStock } from "@/actions/inventory";
 import { CurrentStockClient } from "./current-stock-client";
 import { useOutletStore } from "@/store/use-outlet-store";
+import { toast } from "sonner";
 
 export default function CurrentStockPage() {
   const [stocks, setStocks] = useState<any[]>([]);
@@ -11,7 +12,10 @@ export default function CurrentStockPage() {
 
   useEffect(() => {
     if (currentOutletId) {
-      getCurrentStock(currentOutletId).then(setStocks);
+      getCurrentStock(currentOutletId).then((res) => {
+        if (res.success) setStocks(res.data!);
+        else toast.error("Failed to load current stock");
+      });
     }
   }, [currentOutletId]);
 

@@ -39,12 +39,21 @@ export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
   const onSubmit = async (data: WarehouseFormValues) => {
     try {
       setIsSubmitting(true);
-      await updateWarehouse(warehouse.id, data);
-      toast.success("Warehouse updated successfully");
-      router.push("/dashboard/master-data/locations");
+      const res = await updateWarehouse(warehouse.id, data);
+
+      if (res.success) {
+        toast.success("Warehouse updated successfully");
+        router.refresh();
+        router.push("/dashboard/master-data/locations");
+      } else {
+        toast.error(
+          "Failed to update warehouse: " +
+            (res.error?.message || "Unknown error"),
+        );
+      }
     } catch (error) {
       console.error("Failed to update warehouse:", error);
-      toast.error("Failed to update warehouse. Please try again.");
+      toast.error("A technical error occurred while updating the warehouse.");
     } finally {
       setIsSubmitting(false);
     }

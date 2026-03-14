@@ -23,12 +23,20 @@ export default function NewPaymentMadePage() {
   const { currentOutletId } = useOutletStore();
   if (!currentOutletId) return null;
   useEffect(() => {
-    getParties(currentOutletId).then((res) =>
-      setVendors(res.filter((p) => p.type === "VENDOR")),
-    );
-    getAccounts(currentOutletId).then((res) =>
-      setAccounts(res.filter((a) => a.group === "ASSET")),
-    ); // Only banks/cash
+    getParties(currentOutletId).then((res) => {
+      if (res.success) {
+        setVendors(res.data!.filter((p) => p.type === "VENDOR"));
+      } else {
+        toast.error("Failed to load vendors: " + res.error?.message);
+      }
+    });
+    getAccounts(currentOutletId).then((res) => {
+      if (res.success) {
+        setAccounts(res.data!.filter((a) => a.group === "ASSET"));
+      } else {
+        toast.error("Failed to load accounts: " + res.error?.message);
+      }
+    }); // Only banks/cash
   }, []);
 
   const {
@@ -45,14 +53,19 @@ export default function NewPaymentMadePage() {
   const onSubmit = async (data: PaymentFormValues) => {
     try {
       setIsSubmitting(true);
-      await createPayment({
+      const res = await createPayment({
         ...data,
         outletId: currentOutletId,
         date: new Date(data.date),
         type: "PAYMENT_MADE",
       });
-      router.push("/dashboard/master-data/parties");
-      router.refresh();
+      if (res.success) {
+        toast.success("Payment recorded successfully");
+        router.push("/dashboard/master-data/parties");
+        router.refresh();
+      } else {
+        toast.error("Failed to record payment: " + res.error?.message);
+      }
     } catch (error) {
       console.error(error);
       toast.error("Failed to record payment");

@@ -17,8 +17,18 @@ export default function NewProformaPage() {
   useEffect(() => {
     if (currentOutletId) {
       Promise.all([getCustomers(currentOutletId), getAllVariants()]).then(
-        ([customers, variants]) => {
-          setData({ customers, variants });
+        ([resCustomers, resVariants]) => {
+          if (resCustomers.success && resVariants.success) {
+            setData({
+              customers: resCustomers.data!,
+              variants: resVariants.data!,
+            });
+          } else {
+            console.error("Failed to load proforma data:", {
+              customers: resCustomers.error?.message,
+              variants: resVariants.error?.message,
+            });
+          }
         },
       );
     }

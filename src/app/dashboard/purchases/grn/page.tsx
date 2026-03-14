@@ -11,7 +11,13 @@ export default function GRNPage() {
 
   useEffect(() => {
     if (currentOutletId) {
-      getGRNs(currentOutletId).then(setGrns);
+      getGRNs(currentOutletId).then((res) => {
+        if (res.success) {
+          setGrns(res.data!);
+        } else {
+          console.error("Failed to load GRNs:", res.error?.message);
+        }
+      });
     }
   }, [currentOutletId]);
 

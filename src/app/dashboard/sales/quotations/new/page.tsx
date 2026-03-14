@@ -6,6 +6,7 @@ import { QuotationForm } from "./quotation-form";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function NewQuotationPage() {
   const { currentOutletId } = useOutletStore();
@@ -16,11 +17,19 @@ export default function NewQuotationPage() {
 
   useEffect(() => {
     if (currentOutletId) {
-      Promise.all([getCustomers(currentOutletId), getAllVariants()]).then(
-        ([customers, variants]) => {
-          setData({ customers, variants });
-        },
-      );
+      Promise.all([getCustomers(currentOutletId), getAllVariants()])
+        .then(([customerRes, variantRes]) => {
+          if (!customerRes.success) throw new Error(customerRes.error?.message);
+          if (!variantRes.success) throw new Error(variantRes.error?.message);
+
+          setData({
+            customers: customerRes.data!,
+            variants: variantRes.data!,
+          });
+        })
+        .catch((err) => {
+          toast.error("Failed to initialize quotation: " + err.message);
+        });
     }
   }, [currentOutletId]);
 

@@ -47,11 +47,11 @@ export function ProductsClient({
 
   const fetchProducts = async () => {
     startTransition(async () => {
-      try {
-        const result = await getProducts(outletId, filters);
-        setData(result);
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
+      const res = await getProducts(outletId, filters);
+      if (res.success) {
+        setData(res.data!);
+      } else {
+        toast.error("Failed to fetch products: " + res.error?.message);
       }
     });
   };
@@ -72,14 +72,16 @@ export function ProductsClient({
 
     try {
       setIsDeleting(true);
-      await deleteProduct(deleteId, session.user.id);
-      toast.success("Product deleted successfully");
-      await fetchProducts();
+      const res = await deleteProduct(deleteId, session.user.id);
+      if (res.success) {
+        toast.success("Product deleted successfully");
+        await fetchProducts();
+      } else {
+        toast.error("Failed to delete product: " + res.error?.message);
+      }
     } catch (error) {
       console.error(error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete product",
-      );
+      toast.error("An unexpected error occurred during deletion");
     } finally {
       setIsDeleting(false);
       setDeleteId(null);

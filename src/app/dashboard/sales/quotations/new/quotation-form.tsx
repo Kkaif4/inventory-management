@@ -10,6 +10,7 @@ import { Plus, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import {
@@ -71,13 +72,19 @@ export function QuotationForm({
 
       setIsSubmitting(true);
       setError(null);
-      await createQuotation({
+      const res = await createQuotation({
         ...data,
         outletId: currentOutletId,
         userId: session.user.id,
       });
-      router.push("/dashboard/sales/quotations");
-      router.refresh();
+
+      if (res.success) {
+        toast.success("Quotation generated successfully");
+        router.push("/dashboard/sales/quotations");
+        router.refresh();
+      } else {
+        toast.error("Failed to create quotation: " + res.error?.message);
+      }
     } catch (e: any) {
       setError(e.message || "Failed to create quotation");
       setIsSubmitting(false);

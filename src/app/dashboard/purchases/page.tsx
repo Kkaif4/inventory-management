@@ -12,12 +12,26 @@ export default async function PurchasesPage() {
     redirect("/dashboard");
   }
 
-  const [requests, orders, bills, returns] = await Promise.all([
+  const [resRequests, resOrders, resBills, resReturns] = await Promise.all([
     getPurchaseRequests(currentOutletId),
     getPurchaseOrders(currentOutletId),
     getBills(currentOutletId),
     getPurchaseReturns(currentOutletId),
   ]);
+
+  if (
+    !resRequests.success ||
+    !resOrders.success ||
+    !resBills.success ||
+    !resReturns.success
+  ) {
+    throw new Error("Failed to load purchase data");
+  }
+
+  const requests = resRequests.data!;
+  const orders = resOrders.data!;
+  const bills = resBills.data!;
+  const returns = resReturns.data!;
 
   return (
     <PurchasesClient

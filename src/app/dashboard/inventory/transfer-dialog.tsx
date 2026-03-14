@@ -58,8 +58,9 @@ export function TransferDialog({
   const handleSearch = async (val: string) => {
     setSearchQuery(val);
     if (val.length > 2) {
-      const results = await searchVariants(outletId, val);
-      setSearchResults(results);
+      const res = await searchVariants(outletId, val);
+      if (res.success) setSearchResults(res.data!);
+      else setSearchResults([]);
     } else {
       setSearchResults([]);
     }

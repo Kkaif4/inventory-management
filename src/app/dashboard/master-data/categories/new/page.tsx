@@ -26,7 +26,10 @@ export default function NewCategoryPage() {
   );
 
   useEffect(() => {
-    getCategories().then((res) => setCategories(res));
+    getCategories().then((res) => {
+      if (res.success) setCategories(res.data!);
+      else toast.error("Failed to load categories");
+    });
   }, []);
 
   const {
@@ -46,13 +49,19 @@ export default function NewCategoryPage() {
     try {
       setIsSubmitting(true);
 
-      await createCategory({
+      const res = await createCategory({
         name: data.name,
         parentId: data.parentId === "" ? undefined : data.parentId,
         userId: session.user.id,
         outletId: currentOutletId,
       });
-      router.push("/dashboard/master-data/categories");
+
+      if (res.success) {
+        toast.success("Category created successfully");
+        router.push("/dashboard/master-data/categories");
+      } else {
+        toast.error("Failed to create category: " + res.error?.message);
+      }
     } catch (error) {
       console.error("Failed to create category:", error);
       toast.error("Failed to create category");

@@ -5,9 +5,12 @@ import { StockService } from "@/domains/inventory/stock-service";
 import { AccountingService } from "@/domains/accounting/ledger-service";
 import { roundToTwo } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
+import { NumberingService } from "@/domains/foundation/numbering-service";
+import { withErrorHandler } from "@/lib/error-handler";
+import { ValidationError, NotFoundError } from "@/lib/exceptions";
 
 export async function createSalesInvoice(data: {
-  partyId: string;
+  partyId?: string; // Optional for No.2
   fromOutletId: string;
   items: {
     variantId: string;
@@ -19,134 +22,171 @@ export async function createSalesInvoice(data: {
     igst: number;
   }[];
   date: Date;
-  userId: string; // Mandatory for auditing
+  userId: string;
   freightCost?: number;
+  isInformal?: boolean;
+  buyerName?: string;
+  buyerPhone?: string;
 }) {
-  // 1. Batch Metadata Lookups (Variants & Required Accounts)
-  const variantIds = data.items.map((i) => i.variantId);
-  const accountCodes = ["3001", "1003", "2002", "2003", "2004"];
+  return withErrorHandler(async () => {
+    const isInformal = !!data.isInformal;
+    // 1. Batch Metadata Lookups (Variants & Required Accounts)
+    const variantIds = data.items.map((i) => i.variantId);
+    const accountCodes = ["3001", "1003", "2002", "2003", "2004"];
 
-  const [outlet, variants, accounts] = await Promise.all([
-    prisma.outlet.findUnique({
-      where: { id: data.fromOutletId },
-      include: { warehouses: true },
-    }),
-    prisma.variant.findMany({
-      where: { id: { in: variantIds } },
-      include: { product: true },
-    }),
-    prisma.account.findMany({
-      where: { code: { in: accountCodes } },
-    }),
-  ]);
-
-  if (!outlet) throw new Error("Outlet not found");
-  if (variants.length !== new Set(variantIds).size)
-    throw new Error("Some variants not found");
-
-  const salesAcc = accounts.find((a) => a.code === "3001");
-  const debtorAcc = accounts.find((a) => a.code === "1003");
-  const outputCgstAcc = accounts.find((a) => a.code === "2002");
-  const outputSgstAcc = accounts.find((a) => a.code === "2003");
-  const outputIgstAcc = accounts.find((a) => a.code === "2004");
-
-  if (!salesAcc || !debtorAcc)
-    throw new Error("Required accounts not found. Run COA setup.");
-
-  const allowNegative =
-    outlet.negativeStockPolicy === "WARN" ||
-    outlet.negativeStockPolicy === "ALLOW";
-
-  const totalTaxable = roundToTwo(
-    data.items.reduce((a, b) => a + b.taxableValue, 0),
-  );
-  const totalCgst = roundToTwo(data.items.reduce((a, b) => a + b.cgst, 0));
-  const totalSgst = roundToTwo(data.items.reduce((a, b) => a + b.sgst, 0));
-  const totalIgst = roundToTwo(data.items.reduce((a, b) => a + b.igst, 0));
-  const totalTax = roundToTwo(totalCgst + totalSgst + totalIgst);
-  const freightCost = data.freightCost || 0;
-  const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
-
-  const warehouseId = outlet.warehouses[0]?.id;
-
-  return await prisma.$transaction(async (tx) => {
-    // 1. Transaction Header
-    const invoice = await tx.transaction.create({
-      data: {
-        type: "SALES_INVOICE",
-        txnNumber: `INV-${Date.now()}`,
-        date: data.date,
-        partyId: data.partyId,
-        outletId: data.fromOutletId, // Scoped to outlet
-        fromLocationId: data.fromOutletId,
-        totalTaxable,
-        totalTax,
-        freightCost,
-        grandTotal,
-        status: "POSTED",
-        userId: data.userId, // Storing creator info
-        items: {
-          create: data.items.map((item) => ({
-            variantId: item.variantId,
-            quantity: item.quantity,
-            rate: item.rate,
-            taxableValue: item.taxableValue,
-            cgst: item.cgst,
-            sgst: item.sgst,
-            igst: item.igst,
-          })),
-        },
-      },
-    });
-
-    // 2. Batch Stock Updates
-    await StockService.batchUpdateStock(tx, {
-      transactionId: invoice.id,
-      userId: data.userId,
-      outletId: data.fromOutletId,
-      type: "SALE",
-      items: data.items.map((item) => {
-        const variant = variants.find((v) => v.id === item.variantId)!;
-        return {
-          variantId: item.variantId,
-          locationId: warehouseId || data.fromOutletId,
-          locationType: warehouseId ? "WAREHOUSE" : "OUTLET",
-          quantityChange: -(
-            item.quantity * (variant.product.conversionRatio || 1)
-          ),
-          allowNegative,
-        };
+    const [outlet, variants, accounts] = await Promise.all([
+      prisma.outlet.findUnique({
+        where: { id: data.fromOutletId },
+        include: { warehouses: true },
       }),
-    });
+      prisma.variant.findMany({
+        where: { id: { in: variantIds } },
+        include: { product: true },
+      }),
+      prisma.account.findMany({
+        where: { code: { in: accountCodes } },
+      }),
+    ]);
 
-    // 3. Accounting Entries
-    const entries = [
-      { accountId: salesAcc.id, credit: totalTaxable },
-      { accountId: debtorAcc.id, debit: grandTotal },
-    ];
+    if (!outlet) throw new NotFoundError("Outlet not found");
+    if (variants.length !== new Set(variantIds).size)
+      throw new ValidationError("Some variants not found");
 
-    if (totalCgst > 0 && outputCgstAcc)
-      entries.push({ accountId: outputCgstAcc.id, credit: totalCgst });
-    if (totalSgst > 0 && outputSgstAcc)
-      entries.push({ accountId: outputSgstAcc.id, credit: totalSgst });
-    if (totalIgst > 0 && outputIgstAcc)
-      entries.push({ accountId: outputIgstAcc.id, credit: totalIgst });
+    const salesAcc = accounts.find((a) => a.code === "3001");
+    const debtorAcc = accounts.find((a) => a.code === "1003");
+    const outputCgstAcc = accounts.find((a) => a.code === "2002");
+    const outputSgstAcc = accounts.find((a) => a.code === "2003");
+    const outputIgstAcc = accounts.find((a) => a.code === "2004");
 
-    if (freightCost > 0) {
-      const salesEntry = entries.find((e) => e.accountId === salesAcc.id);
-      if (salesEntry) {
-        salesEntry.credit = roundToTwo((salesEntry.credit || 0) + freightCost);
+    if (!salesAcc || !debtorAcc)
+      throw new Error("Required accounts not found. Run COA setup.");
+
+    const allowNegative =
+      outlet.negativeStockPolicy === "WARN" ||
+      outlet.negativeStockPolicy === "ALLOW";
+
+    const totalTaxable = roundToTwo(
+      data.items.reduce((a, b) => a + b.taxableValue, 0),
+    );
+    const totalCgst = roundToTwo(data.items.reduce((a, b) => a + b.cgst, 0));
+    const totalSgst = roundToTwo(data.items.reduce((a, b) => a + b.sgst, 0));
+    const totalIgst = roundToTwo(data.items.reduce((a, b) => a + b.igst, 0));
+    const totalTax = roundToTwo(totalCgst + totalSgst + totalIgst);
+    const freightCost = data.freightCost || 0;
+    const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
+
+    const warehouseId = outlet.warehouses[0]?.id;
+
+    // 4. Credit Limit Check (Only for Legal/Party Invoices)
+    if (!isInformal && data.partyId) {
+      const party = await prisma.party.findUnique({
+        where: { id: data.partyId },
+      });
+      if (party?.creditLimit && party.creditLimit > 0) {
+        const currentBalance = await AccountingService.getPartyBalance(
+          data.partyId,
+        );
+        if (currentBalance + grandTotal > party.creditLimit) {
+          throw new ValidationError(
+            `Credit limit exceeded. Current: ₹${currentBalance.toLocaleString()}, New: ₹${grandTotal.toLocaleString()}, Limit: ₹${party.creditLimit.toLocaleString()}`,
+          );
+        }
       }
     }
 
-    await AccountingService.postJournalEntry(tx, {
-      transactionId: invoice.id,
-      partyId: data.partyId,
-      entries,
-    });
+    return await prisma.$transaction(async (tx) => {
+      // 1. Generate Transaction Number
+      const txnNumber = await NumberingService.getNextNumber(
+        tx,
+        data.fromOutletId,
+        isInformal ? "CASH_MEMO" : "SALES_INVOICE",
+      );
 
-    revalidatePath("/dashboard/sales/invoices");
-    return invoice;
+      // 2. Transaction Header
+      const invoice = await tx.transaction.create({
+        data: {
+          type: "SALES_INVOICE",
+          txnNumber,
+          date: data.date,
+          partyId: isInformal ? null : data.partyId,
+          isInformal,
+          buyerName: data.buyerName,
+          buyerPhone: data.buyerPhone,
+          outletId: data.fromOutletId,
+          fromLocationId: warehouseId || data.fromOutletId,
+          totalTaxable,
+          totalTax,
+          freightCost,
+          grandTotal,
+          status: "POSTED",
+          userId: data.userId,
+          items: {
+            create: data.items.map((item) => ({
+              variantId: item.variantId,
+              quantity: item.quantity,
+              rate: item.rate,
+              taxableValue: item.taxableValue,
+              cgst: item.cgst,
+              sgst: item.sgst,
+              igst: item.igst,
+            })),
+          },
+        },
+      });
+
+      // 3. Batch Stock Updates
+      await StockService.batchUpdateStock(tx, {
+        transactionId: invoice.id,
+        userId: data.userId,
+        outletId: data.fromOutletId,
+        type: "SALE",
+        items: data.items.map((item) => {
+          const variant = variants.find((v) => v.id === item.variantId)!;
+          return {
+            variantId: item.variantId,
+            locationId: warehouseId || data.fromOutletId,
+            locationType: warehouseId ? "WAREHOUSE" : "OUTLET",
+            quantityChange: -(
+              item.quantity * (variant.product.conversionRatio || 1)
+            ),
+            allowNegative,
+          };
+        }),
+      });
+
+      // 4. Accounting Entries (Skip for No.2 Bills)
+      if (!isInformal) {
+        const entries = [
+          { accountId: salesAcc.id, credit: totalTaxable },
+          { accountId: debtorAcc.id, debit: grandTotal },
+        ];
+
+        if (totalCgst > 0 && outputCgstAcc)
+          entries.push({ accountId: outputCgstAcc.id, credit: totalCgst });
+        if (totalSgst > 0 && outputSgstAcc)
+          entries.push({ accountId: outputSgstAcc.id, credit: totalSgst });
+        if (totalIgst > 0 && outputIgstAcc)
+          entries.push({ accountId: outputIgstAcc.id, credit: totalIgst });
+
+        if (freightCost > 0) {
+          const salesEntry = entries.find((e) => e.accountId === salesAcc.id);
+          if (salesEntry) {
+            salesEntry.credit = roundToTwo(
+              (salesEntry.credit || 0) + freightCost,
+            );
+          }
+        }
+
+        await AccountingService.postJournalEntry(tx, {
+          transactionId: invoice.id,
+          partyId: data.partyId!,
+          entries,
+        });
+      }
+
+      revalidatePath("/dashboard/sales/invoices");
+      return invoice;
+    });
   });
 }
 
@@ -158,13 +198,39 @@ export async function getSalesInvoices(outletId: string, limit = 50) {
       outletId: outletId,
     },
     take: limit,
-    include: {
+    select: {
+      id: true,
+      txnNumber: true,
+      date: true,
+      grandTotal: true,
+      status: true,
+      isInformal: true,
+      buyerName: true,
+      buyerPhone: true,
       party: {
         select: {
           id: true,
           name: true,
           gstin: true,
         },
+      },
+      _count: { select: { items: true } },
+    },
+    orderBy: { date: "desc" },
+  });
+}
+
+export async function getSalesReturns(outletId: string, limit = 50) {
+  return await prisma.transaction.findMany({
+    where: {
+      type: { in: ["CREDIT_NOTE", "STOCK_RETURN"] } as any,
+      outletId,
+    },
+    take: limit,
+    include: {
+      party: true,
+      items: {
+        include: { variant: { include: { product: true } } },
       },
     },
     orderBy: { date: "desc" },

@@ -22,7 +22,13 @@ export default function NewUserPage() {
   const [outlets, setOutlets] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
-    getLocations().then((res) => setOutlets(res.outlets));
+    getLocations().then((res) => {
+      if (res.success) {
+        setOutlets(res.data!.outlets);
+      } else {
+        toast.error("Failed to load locations: " + res.error?.message);
+      }
+    });
   }, []);
 
   const {
@@ -44,8 +50,13 @@ export default function NewUserPage() {
   const onSubmit = async (data: UserFormValues) => {
     try {
       setIsSubmitting(true);
-      await createUser(data);
-      router.push("/dashboard/master-data/users");
+      const res = await createUser(data);
+      if (res.success) {
+        toast.success("User created successfully");
+        router.push("/dashboard/master-data/users");
+      } else {
+        toast.error("Failed to create user: " + res.error?.message);
+      }
     } catch (error) {
       console.error("Failed to create user:", error);
       toast.error("Failed to create user. Ensure email is unique.");

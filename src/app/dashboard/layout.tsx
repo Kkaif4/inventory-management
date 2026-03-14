@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { getUserOutlets } from "@/actions/users";
+import { toast } from "sonner";
 
 export default function DashboardLayout({
   children,
@@ -33,8 +34,12 @@ export default function DashboardLayout({
 
     const fetchOutlets = async () => {
       try {
-        const outlets = await getUserOutlets();
-        setAvailableOutlets(outlets);
+        const res = await getUserOutlets();
+        if (res.success) {
+          setAvailableOutlets(res.data!);
+        } else {
+          toast.error("Failed to load outlets: " + res.error?.message);
+        }
       } catch (error) {
         console.error("Failed to fetch outlets:", error);
       }

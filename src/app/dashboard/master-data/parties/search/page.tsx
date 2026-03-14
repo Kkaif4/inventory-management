@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getProducts } from "@/actions/products";
 import { getVendorsByProduct } from "@/actions/parties";
 import { useOutletStore } from "@/store/use-outlet-store";
+import { toast } from "sonner";
 
 export default function VendorSearchPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -17,8 +18,11 @@ export default function VendorSearchPage() {
   if (!currentOutletId) return;
 
   useEffect(() => {
-    getProducts(currentOutletId).then(setProducts);
-  }, []);
+    getProducts(currentOutletId).then((res) => {
+      if (res.success) setProducts(res.data!);
+      else toast.error("Failed to load products");
+    });
+  }, [currentOutletId]);
 
   const handleSearch = async (variantId: string) => {
     if (!variantId) {
@@ -28,8 +32,12 @@ export default function VendorSearchPage() {
     setIsLoading(true);
     setSelectedVariantId(variantId);
     try {
-      const data = await getVendorsByProduct(variantId, currentOutletId);
-      setResults(data);
+      const res = await getVendorsByProduct(variantId, currentOutletId);
+      if (res.success) {
+        setResults(res.data!);
+      } else {
+        toast.error("Search failed: " + res.error?.message);
+      }
     } catch (error) {
       console.error(error);
     } finally {

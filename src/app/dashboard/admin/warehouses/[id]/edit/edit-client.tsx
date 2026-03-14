@@ -38,13 +38,16 @@ export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
       contactPhone: warehouse.contactPhone || "",
     },
   });
-
   const onSubmit = async (data: WarehouseFormValues) => {
     try {
       setIsSubmitting(true);
-      await updateWarehouse(warehouse.id, data);
-      toast.success("Warehouse records updated");
-      router.push("/dashboard/admin/warehouses");
+      const res = await updateWarehouse(warehouse.id, data);
+      if (res.success) {
+        toast.success("Warehouse records updated");
+        router.push("/dashboard/admin/warehouses");
+      } else {
+        toast.error("Failed to update warehouse: " + res.error?.message);
+      }
     } catch (error: any) {
       console.error("Failed to update warehouse:", error);
       toast.error(error.message || "Failed to update warehouse.");

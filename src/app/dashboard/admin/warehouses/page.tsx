@@ -16,7 +16,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { DeleteLocationButton } from "../_components/delete-location-button";
 
 export default async function WarehousesPage() {
-  const { warehouses } = await getLocations();
+  const res = await getLocations();
+  const warehouses = res.data?.warehouses || [];
 
   return (
     <div className="space-y-8">

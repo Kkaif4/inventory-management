@@ -6,7 +6,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Plus, Printer } from "lucide-react";
+import { Plus, Printer, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 export function QuotationsClient({ quotations }: { quotations: any[] }) {
@@ -73,11 +73,27 @@ export function QuotationsClient({ quotations }: { quotations: any[] }) {
     },
     {
       id: "actions",
-      header: "Actions",
-      cell: () => (
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <Printer className="w-4 h-4 text-text-secondary hover:text-brand" />
-        </Button>
+      header: () => <div className="text-right">Actions</div>,
+      cell: ({ row }) => (
+        <div className="flex items-center justify-end space-x-2">
+          {row.original.status !== "CONVERTED" && (
+            <Link
+              href={`/dashboard/sales/invoices/new?quoteId=${row.original.id}`}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-[10px] font-black uppercase tracking-widest gap-2 bg-blue-50 border-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Convert
+              </Button>
+            </Link>
+          )}
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Printer className="w-4 h-4 text-slate-400 hover:text-brand" />
+          </Button>
+        </div>
       ),
     },
   ];

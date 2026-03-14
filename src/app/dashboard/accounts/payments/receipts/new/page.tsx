@@ -29,12 +29,20 @@ export default function NewPaymentReceiptPage() {
   }
 
   useEffect(() => {
-    getParties(currentOutletId).then((res) =>
-      setCustomers(res.filter((p) => p.type === "CUSTOMER")),
-    );
-    getAccounts(currentOutletId).then((res) =>
-      setAccounts(res.filter((a) => a.group === "ASSET")),
-    );
+    getParties(currentOutletId).then((res) => {
+      if (res.success) {
+        setCustomers(res.data!.filter((p) => p.type === "CUSTOMER"));
+      } else {
+        toast.error("Failed to load customers: " + res.error?.message);
+      }
+    });
+    getAccounts(currentOutletId).then((res) => {
+      if (res.success) {
+        setAccounts(res.data!.filter((a) => a.group === "ASSET"));
+      } else {
+        toast.error("Failed to load accounts: " + res.error?.message);
+      }
+    });
   }, []);
 
   const {
@@ -51,14 +59,19 @@ export default function NewPaymentReceiptPage() {
   const onSubmit = async (data: PaymentFormValues) => {
     try {
       setIsSubmitting(true);
-      await createPayment({
+      const res = await createPayment({
         ...data,
         date: new Date(data.date),
         type: "PAYMENT_RECEIPT",
         outletId: currentOutletId,
       });
-      router.push("/dashboard/master-data/parties");
-      router.refresh();
+      if (res.success) {
+        toast.success("Receipt recorded successfully");
+        router.push("/dashboard/master-data/parties");
+        router.refresh();
+      } else {
+        toast.error("Failed to record receipt: " + res.error?.message);
+      }
     } catch (error) {
       console.error(error);
       toast.error("Failed to record receipt");

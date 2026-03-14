@@ -41,7 +41,13 @@ export default function NewDebitNotePage() {
     return;
   }
   useEffect(() => {
-    getBills(currentOutlet.id).then(setBills);
+    getBills(currentOutlet.id).then((res) => {
+      if (res.success) {
+        setBills(res.data!);
+      } else {
+        toast.error("Failed to load bills: " + res.error?.message);
+      }
+    });
   }, []);
 
   const {
@@ -90,7 +96,7 @@ export default function NewDebitNotePage() {
         return;
       }
 
-      await createDebitNote({
+      const res = await createDebitNote({
         billId: data.billId,
         reason: data.reason,
         items: itemsToReturn.map((i) => ({
@@ -99,8 +105,13 @@ export default function NewDebitNotePage() {
         })),
         userId: session?.user?.id!,
       });
-      router.push("/dashboard/inventory/current-stock");
-      router.refresh();
+      if (res.success) {
+        toast.success("Debit Note recorded successfully");
+        router.push("/dashboard/inventory/current-stock");
+        router.refresh();
+      } else {
+        toast.error("Failed to create Debit Note: " + res.error?.message);
+      }
     } catch (error) {
       console.error(error);
       toast.error("Failed to process Debit Note");

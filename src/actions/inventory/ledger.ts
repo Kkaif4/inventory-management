@@ -2,44 +2,47 @@
 
 import { prisma } from "@/lib/prisma";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
+import { withErrorHandler } from "@/lib/error-handler";
 
 export async function getVariantLedger(
   outletId: string,
   variantId: string,
   warehouseId: string,
 ) {
-  await validateSessionOutletAccess(outletId);
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
 
-  const ledger = await prisma.stockLedger.findMany({
-    where: {
-      outletId,
-      variantId,
-      warehouseId,
-    },
-    include: {
-      transaction: {
-        select: {
-          txnNumber: true,
+    const ledger = await prisma.stockLedger.findMany({
+      where: {
+        outletId,
+        variantId,
+        warehouseId,
+      },
+      include: {
+        transaction: {
+          select: {
+            txnNumber: true,
+          },
+        },
+        user: {
+          select: {
+            name: true,
+          },
         },
       },
-      user: {
-        select: {
-          name: true,
-        },
+      orderBy: {
+        date: "desc",
       },
-    },
-    orderBy: {
-      date: "desc",
-    },
+    });
+
+    return ledger.map((entry) => ({
+      id: entry.id,
+      date: entry.date,
+      quantity: entry.quantity,
+      balance: entry.balance,
+      type: entry.type,
+      reference: entry.transaction.txnNumber,
+      user: entry.user.name,
+    }));
   });
-
-  return ledger.map((entry) => ({
-    id: entry.id,
-    date: entry.date,
-    quantity: entry.quantity,
-    balance: entry.balance,
-    type: entry.type,
-    reference: entry.transaction.txnNumber,
-    user: entry.user.name,
-  }));
 }

@@ -148,7 +148,8 @@ export const TxType: {
   STOCK_TRANSFER: 'STOCK_TRANSFER',
   STOCK_ADJUSTMENT: 'STOCK_ADJUSTMENT',
   QUOTATION: 'QUOTATION',
-  PURCHASE_REQUEST: 'PURCHASE_REQUEST'
+  PURCHASE_REQUEST: 'PURCHASE_REQUEST',
+  STOCK_RETURN: 'STOCK_RETURN'
 };
 
 export type TxType = (typeof TxType)[keyof typeof TxType]
@@ -14665,6 +14666,9 @@ export namespace Prisma {
     freightCost: number | null
     grandTotal: number | null
     status: string | null
+    isInformal: boolean | null
+    buyerName: string | null
+    buyerPhone: string | null
     parentId: string | null
     userId: string | null
     remarks: string | null
@@ -14684,6 +14688,9 @@ export namespace Prisma {
     freightCost: number | null
     grandTotal: number | null
     status: string | null
+    isInformal: boolean | null
+    buyerName: string | null
+    buyerPhone: string | null
     parentId: string | null
     userId: string | null
     remarks: string | null
@@ -14703,6 +14710,9 @@ export namespace Prisma {
     freightCost: number
     grandTotal: number
     status: number
+    isInformal: number
+    buyerName: number
+    buyerPhone: number
     parentId: number
     userId: number
     remarks: number
@@ -14738,6 +14748,9 @@ export namespace Prisma {
     freightCost?: true
     grandTotal?: true
     status?: true
+    isInformal?: true
+    buyerName?: true
+    buyerPhone?: true
     parentId?: true
     userId?: true
     remarks?: true
@@ -14757,6 +14770,9 @@ export namespace Prisma {
     freightCost?: true
     grandTotal?: true
     status?: true
+    isInformal?: true
+    buyerName?: true
+    buyerPhone?: true
     parentId?: true
     userId?: true
     remarks?: true
@@ -14776,6 +14792,9 @@ export namespace Prisma {
     freightCost?: true
     grandTotal?: true
     status?: true
+    isInformal?: true
+    buyerName?: true
+    buyerPhone?: true
     parentId?: true
     userId?: true
     remarks?: true
@@ -14882,6 +14901,9 @@ export namespace Prisma {
     freightCost: number | null
     grandTotal: number
     status: string
+    isInformal: boolean
+    buyerName: string | null
+    buyerPhone: string | null
     parentId: string | null
     userId: string
     remarks: string | null
@@ -14920,6 +14942,9 @@ export namespace Prisma {
     freightCost?: boolean
     grandTotal?: boolean
     status?: boolean
+    isInformal?: boolean
+    buyerName?: boolean
+    buyerPhone?: boolean
     parentId?: boolean
     userId?: boolean
     remarks?: boolean
@@ -14951,6 +14976,9 @@ export namespace Prisma {
     freightCost?: boolean
     grandTotal?: boolean
     status?: boolean
+    isInformal?: boolean
+    buyerName?: boolean
+    buyerPhone?: boolean
     parentId?: boolean
     userId?: boolean
     remarks?: boolean
@@ -14976,6 +15004,9 @@ export namespace Prisma {
     freightCost?: boolean
     grandTotal?: boolean
     status?: boolean
+    isInformal?: boolean
+    buyerName?: boolean
+    buyerPhone?: boolean
     parentId?: boolean
     userId?: boolean
     remarks?: boolean
@@ -15001,12 +15032,15 @@ export namespace Prisma {
     freightCost?: boolean
     grandTotal?: boolean
     status?: boolean
+    isInformal?: boolean
+    buyerName?: boolean
+    buyerPhone?: boolean
     parentId?: boolean
     userId?: boolean
     remarks?: boolean
   }
 
-  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "txnNumber" | "date" | "partyId" | "outletId" | "fromLocationId" | "toLocationId" | "totalTaxable" | "totalTax" | "freightCost" | "grandTotal" | "status" | "parentId" | "userId" | "remarks", ExtArgs["result"]["transaction"]>
+  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "txnNumber" | "date" | "partyId" | "outletId" | "fromLocationId" | "toLocationId" | "totalTaxable" | "totalTax" | "freightCost" | "grandTotal" | "status" | "isInformal" | "buyerName" | "buyerPhone" | "parentId" | "userId" | "remarks", ExtArgs["result"]["transaction"]>
   export type TransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     ledgerEntries?: boolean | Transaction$ledgerEntriesArgs<ExtArgs>
     parent?: boolean | Transaction$parentArgs<ExtArgs>
@@ -15067,6 +15101,9 @@ export namespace Prisma {
       freightCost: number | null
       grandTotal: number
       status: string
+      isInformal: boolean
+      buyerName: string | null
+      buyerPhone: string | null
       parentId: string | null
       userId: string
       remarks: string | null
@@ -15517,6 +15554,9 @@ export namespace Prisma {
     readonly freightCost: FieldRef<"Transaction", 'Float'>
     readonly grandTotal: FieldRef<"Transaction", 'Float'>
     readonly status: FieldRef<"Transaction", 'String'>
+    readonly isInformal: FieldRef<"Transaction", 'Boolean'>
+    readonly buyerName: FieldRef<"Transaction", 'String'>
+    readonly buyerPhone: FieldRef<"Transaction", 'String'>
     readonly parentId: FieldRef<"Transaction", 'String'>
     readonly userId: FieldRef<"Transaction", 'String'>
     readonly remarks: FieldRef<"Transaction", 'String'>
@@ -27714,6 +27754,9 @@ export namespace Prisma {
     freightCost: 'freightCost',
     grandTotal: 'grandTotal',
     status: 'status',
+    isInformal: 'isInformal',
+    buyerName: 'buyerName',
+    buyerPhone: 'buyerPhone',
     parentId: 'parentId',
     userId: 'userId',
     remarks: 'remarks'
@@ -28870,6 +28913,9 @@ export namespace Prisma {
     freightCost?: FloatNullableFilter<"Transaction"> | number | null
     grandTotal?: FloatFilter<"Transaction"> | number
     status?: StringFilter<"Transaction"> | string
+    isInformal?: BoolFilter<"Transaction"> | boolean
+    buyerName?: StringNullableFilter<"Transaction"> | string | null
+    buyerPhone?: StringNullableFilter<"Transaction"> | string | null
     parentId?: StringNullableFilter<"Transaction"> | string | null
     userId?: StringFilter<"Transaction"> | string
     remarks?: StringNullableFilter<"Transaction"> | string | null
@@ -28900,6 +28946,9 @@ export namespace Prisma {
     freightCost?: SortOrderInput | SortOrder
     grandTotal?: SortOrder
     status?: SortOrder
+    isInformal?: SortOrder
+    buyerName?: SortOrderInput | SortOrder
+    buyerPhone?: SortOrderInput | SortOrder
     parentId?: SortOrderInput | SortOrder
     userId?: SortOrder
     remarks?: SortOrderInput | SortOrder
@@ -28933,6 +28982,9 @@ export namespace Prisma {
     freightCost?: FloatNullableFilter<"Transaction"> | number | null
     grandTotal?: FloatFilter<"Transaction"> | number
     status?: StringFilter<"Transaction"> | string
+    isInformal?: BoolFilter<"Transaction"> | boolean
+    buyerName?: StringNullableFilter<"Transaction"> | string | null
+    buyerPhone?: StringNullableFilter<"Transaction"> | string | null
     parentId?: StringNullableFilter<"Transaction"> | string | null
     userId?: StringFilter<"Transaction"> | string
     remarks?: StringNullableFilter<"Transaction"> | string | null
@@ -28963,6 +29015,9 @@ export namespace Prisma {
     freightCost?: SortOrderInput | SortOrder
     grandTotal?: SortOrder
     status?: SortOrder
+    isInformal?: SortOrder
+    buyerName?: SortOrderInput | SortOrder
+    buyerPhone?: SortOrderInput | SortOrder
     parentId?: SortOrderInput | SortOrder
     userId?: SortOrder
     remarks?: SortOrderInput | SortOrder
@@ -28990,6 +29045,9 @@ export namespace Prisma {
     freightCost?: FloatNullableWithAggregatesFilter<"Transaction"> | number | null
     grandTotal?: FloatWithAggregatesFilter<"Transaction"> | number
     status?: StringWithAggregatesFilter<"Transaction"> | string
+    isInformal?: BoolWithAggregatesFilter<"Transaction"> | boolean
+    buyerName?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    buyerPhone?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
     parentId?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
     userId?: StringWithAggregatesFilter<"Transaction"> | string
     remarks?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
@@ -30623,6 +30681,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
@@ -30651,6 +30712,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -30671,6 +30735,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
@@ -30699,6 +30766,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30723,6 +30793,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -30738,6 +30811,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -30755,6 +30831,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32404,6 +32483,9 @@ export namespace Prisma {
     freightCost?: SortOrder
     grandTotal?: SortOrder
     status?: SortOrder
+    isInformal?: SortOrder
+    buyerName?: SortOrder
+    buyerPhone?: SortOrder
     parentId?: SortOrder
     userId?: SortOrder
     remarks?: SortOrder
@@ -32430,6 +32512,9 @@ export namespace Prisma {
     freightCost?: SortOrder
     grandTotal?: SortOrder
     status?: SortOrder
+    isInformal?: SortOrder
+    buyerName?: SortOrder
+    buyerPhone?: SortOrder
     parentId?: SortOrder
     userId?: SortOrder
     remarks?: SortOrder
@@ -32449,6 +32534,9 @@ export namespace Prisma {
     freightCost?: SortOrder
     grandTotal?: SortOrder
     status?: SortOrder
+    isInformal?: SortOrder
+    buyerName?: SortOrder
+    buyerPhone?: SortOrder
     parentId?: SortOrder
     userId?: SortOrder
     remarks?: SortOrder
@@ -35833,6 +35921,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
@@ -35860,6 +35951,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
@@ -36031,6 +36125,9 @@ export namespace Prisma {
     freightCost?: FloatNullableFilter<"Transaction"> | number | null
     grandTotal?: FloatFilter<"Transaction"> | number
     status?: StringFilter<"Transaction"> | string
+    isInformal?: BoolFilter<"Transaction"> | boolean
+    buyerName?: StringNullableFilter<"Transaction"> | string | null
+    buyerPhone?: StringNullableFilter<"Transaction"> | string | null
     parentId?: StringNullableFilter<"Transaction"> | string | null
     userId?: StringFilter<"Transaction"> | string
     remarks?: StringNullableFilter<"Transaction"> | string | null
@@ -36334,6 +36431,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
@@ -36360,6 +36460,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -36390,6 +36493,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
@@ -36416,6 +36522,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -36738,6 +36847,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
@@ -36764,6 +36876,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -39005,6 +39120,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
@@ -39031,6 +39149,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -39268,6 +39389,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
@@ -39295,6 +39419,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -39319,6 +39446,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -39346,6 +39476,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     userId: string
     remarks?: string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
@@ -39693,6 +39826,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
@@ -39720,6 +39856,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40039,6 +40178,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
@@ -40066,6 +40208,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -40144,6 +40289,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
@@ -40171,6 +40319,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40467,6 +40618,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -40494,6 +40648,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -40605,6 +40762,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -40632,6 +40792,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41398,6 +41561,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
@@ -41425,6 +41591,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -41497,6 +41666,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
@@ -41524,6 +41696,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41674,6 +41849,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     remarks?: string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
@@ -41701,6 +41879,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -41918,6 +42099,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
@@ -41945,6 +42129,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42157,6 +42344,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     remarks?: string | null
   }
@@ -42213,6 +42403,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
@@ -42240,6 +42433,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
@@ -42263,6 +42459,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -42412,6 +42611,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -42430,6 +42632,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -42607,6 +42812,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
@@ -42633,6 +42841,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42656,6 +42867,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42671,6 +42885,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
@@ -42697,6 +42914,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42720,6 +42940,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42769,6 +42992,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -43032,6 +43258,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
@@ -43058,6 +43287,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43081,6 +43313,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43869,6 +44104,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
@@ -43924,6 +44162,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
@@ -43950,6 +44191,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43973,6 +44217,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44024,6 +44271,9 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
     userId: string
     remarks?: string | null
   }
@@ -44104,6 +44354,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -44131,6 +44384,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
@@ -44154,6 +44410,9 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
   }

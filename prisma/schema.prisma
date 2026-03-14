@@ -189,6 +189,9 @@ model Transaction {
   freightCost    Float?            @default(0)
   grandTotal     Float             @default(0)
   status         String            @default("DRAFT")
+  isInformal     Boolean           @default(false)
+  buyerName      String?
+  buyerPhone     String?
   parentId       String?
   userId         String
   remarks        String?
@@ -369,6 +372,7 @@ enum TxType {
   STOCK_ADJUSTMENT
   QUOTATION
   PURCHASE_REQUEST
+  STOCK_RETURN
 }
 
 enum AccountGroup {

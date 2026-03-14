@@ -33,7 +33,13 @@ export default function NewPurchaseBillPage() {
 
   useEffect(() => {
     if (currentOutletId) {
-      getGRNs(currentOutletId).then(setGRNs);
+      getGRNs(currentOutletId).then((res) => {
+        if (res.success) {
+          setGRNs(res.data!);
+        } else {
+          toast.error("Failed to load GRNs: " + res.error?.message);
+        }
+      });
     }
   }, [currentOutletId]);
 

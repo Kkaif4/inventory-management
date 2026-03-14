@@ -54,13 +54,25 @@ export default function NewAdjustmentPage() {
     Promise.all([
       getInventoryLocations(currentOutletId),
       getVariantsForSelection(currentOutletId),
-    ]).then(([locs, vars]) => {
+    ]).then(([locsRes, varsRes]) => {
+      if (!locsRes.success || !varsRes.success) {
+        toast.error("Failed to load adjustment resources");
+        return;
+      }
+
+      const locs = locsRes.data!;
+      const vars = varsRes.data!;
+
       // Filter to show only WAREHOUSE
       const warehouseLocs = locs.warehouses.map((w) => ({
         ...w,
         type: "WAREHOUSE",
       }));
-      setLocations(warehouseLocs);
+      const outletLocs = locs.outlets.map((o) => ({
+        ...o,
+        type: "OUTLET",
+      }));
+      setLocations([...warehouseLocs, ...outletLocs] as any);
       setVariants(vars);
     });
   }, []);
@@ -85,7 +97,7 @@ export default function NewAdjustmentPage() {
       const selectedLoc = locations.find((l) => l.id === data.location);
       if (!selectedLoc) return;
 
-      await createStockAdjustment(
+      const res = await createStockAdjustment(
         currentOutletId,
         session?.user?.id as string,
         {
@@ -95,8 +107,13 @@ export default function NewAdjustmentPage() {
         },
       );
 
-      router.push("/dashboard/inventory/current-stock");
-      router.refresh();
+      if (res.success) {
+        toast.success("Inventory adjusted successfully");
+        router.push("/dashboard/inventory/current-stock");
+        router.refresh();
+      } else {
+        toast.error("Failed to adjust inventory: " + res.error?.message);
+      }
     } catch (error) {
       console.error("Failed to adjust stock:", error);
       toast.error(

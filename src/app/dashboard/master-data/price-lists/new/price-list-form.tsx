@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import {
   Form,
   FormItem,
@@ -37,10 +38,14 @@ export function PriceListForm({ variants }: { variants: any[] }) {
   if (!currentOutletId) return;
 
   useEffect(() => {
-    getParties(currentOutletId).then((data) =>
-      setCustomers(data.filter((p) => p.type === "CUSTOMER")),
-    );
-  }, []);
+    getParties(currentOutletId).then((res) => {
+      if (res.success) {
+        setCustomers(res.data!.filter((p) => p.type === "CUSTOMER"));
+      } else {
+        toast.error("Failed to load customers: " + res.error?.message);
+      }
+    });
+  }, [currentOutletId]);
 
   const form = useForm<PriceListFormValues>({
     resolver: zodResolver(priceListFormSchema),

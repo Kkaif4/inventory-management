@@ -19,7 +19,12 @@ import { PageHeader } from "@/components/ui/page-header";
 import { DeleteLocationButton } from "./_components/delete-location-button";
 
 export default async function LocationsPage() {
-  const { warehouses, outlets } = await getLocations();
+  const res = await getLocations();
+  if (!res.success) {
+    throw new Error(res.error?.message || "Failed to load locations");
+  }
+
+  const { warehouses, outlets } = res.data!;
 
   const totalStocks = warehouses.reduce(
     (acc, w) => acc + (w._count?.stocks || 0),

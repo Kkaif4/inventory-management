@@ -11,7 +11,16 @@ export default function ProformaInvoicesPage() {
 
   useEffect(() => {
     if (currentOutletId) {
-      getProformaInvoices(currentOutletId).then(setData);
+      getProformaInvoices(currentOutletId).then((res) => {
+        if (res.success) {
+          setData(res.data!);
+        } else {
+          console.error(
+            "Failed to load proforma invoices:",
+            res.error?.message,
+          );
+        }
+      });
     }
   }, [currentOutletId]);
 

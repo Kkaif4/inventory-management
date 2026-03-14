@@ -51,8 +51,9 @@ export function AdjustmentDialog({
   const handleSearch = async (val: string) => {
     setSearchQuery(val);
     if (val.length > 2) {
-      const results = await searchVariants(outletId, val);
-      setSearchResults(results);
+      const res = await searchVariants(outletId, val);
+      if (res.success) setSearchResults(res.data!);
+      else setSearchResults([]);
     } else {
       setSearchResults([]);
     }
@@ -85,13 +86,19 @@ export function AdjustmentDialog({
 
     startTransition(async () => {
       try {
-        const result = await createAdjustment(outletId, userId, {
+        const res = await createAdjustment(outletId, userId, {
           warehouseId,
           variantId: selectedVariant.id,
           quantity: qty,
           reason,
         });
 
+        if (!res.success) {
+          toast.error(res.error?.message || "Failed to create adjustment");
+          return;
+        }
+
+        const result = res.data!;
         if (result.status === "PENDING_APPROVAL") {
           toast.info("Adjustment exceeds threshold. Sent for Admin approval.");
         } else {
@@ -104,7 +111,7 @@ export function AdjustmentDialog({
         setQuantity("0");
         setReason("");
       } catch (error: any) {
-        toast.error(error.message || "Failed to create adjustment");
+        toast.error("An unexpected error occurred");
       }
     });
   };

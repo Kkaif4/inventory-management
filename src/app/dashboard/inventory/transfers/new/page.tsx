@@ -54,7 +54,22 @@ export default function NewTransferPage() {
     Promise.all([
       getInventoryLocations(currentOutletId),
       getVariantsForSelection(currentOutletId),
-    ]).then(([locs, vars]) => {
+    ]).then(([locsRes, varsRes]) => {
+      if (!locsRes.success) {
+        toast.error(
+          "Failed to load inventory locations: " + locsRes.error?.message,
+        );
+        return;
+      }
+      if (!varsRes.success) {
+        toast.error(
+          "Failed to load product variants: " + varsRes.error?.message,
+        );
+        return;
+      }
+      const locs = locsRes.data!;
+      const vars = varsRes.data!;
+
       const combinedLocs = [
         ...locs.warehouses.map((w) => ({ ...w, type: "WAREHOUSE" })),
         ...locs.outlets.map((o) => ({ ...o, type: "OUTLET" })),
@@ -62,7 +77,7 @@ export default function NewTransferPage() {
       setLocations(combinedLocs);
       setVariants(vars);
     });
-  }, []);
+  }, [currentOutletId]);
 
   const form = useForm<TransferFormValues>({
     resolver: zodResolver(transferSchema),
@@ -77,19 +92,31 @@ export default function NewTransferPage() {
       const fromLoc = locations.find((l) => l.id === data.fromLocation);
       const toLoc = locations.find((l) => l.id === data.toLocation);
 
-      if (!fromLoc || !toLoc) return;
+      if (!fromLoc || !toLoc) {
+        toast.error("Source or destination location not found.");
+        return;
+      }
 
-      await createStockTransfer(currentOutletId!, session?.user?.id!, {
-        variantId: data.variantId,
-        fromLocationId: data.fromLocation,
-        fromLocationType: fromLoc.type as any,
-        toLocationId: data.toLocation,
-        toLocationType: toLoc.type as any,
-        quantity: data.quantity,
-      });
+      const res = await createStockTransfer(
+        currentOutletId!,
+        session?.user?.id as string,
+        {
+          variantId: data.variantId,
+          fromLocationId: data.fromLocation,
+          fromLocationType: fromLoc.type as any,
+          toLocationId: data.toLocation,
+          toLocationType: toLoc.type as any,
+          quantity: data.quantity,
+        },
+      );
 
-      router.push("/dashboard/inventory/current-stock");
-      router.refresh();
+      if (res.success) {
+        toast.success("Stock transfer dispatched!");
+        router.push("/dashboard/inventory");
+        router.refresh();
+      } else {
+        toast.error("Failed to dispatch transfer: " + res.error?.message);
+      }
     } catch (error: any) {
       console.error("Failed to transfer stock:", error);
       toast.error(

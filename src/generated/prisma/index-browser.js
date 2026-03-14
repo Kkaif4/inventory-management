@@ -243,6 +243,9 @@ exports.Prisma.TransactionScalarFieldEnum = {
   freightCost: 'freightCost',
   grandTotal: 'grandTotal',
   status: 'status',
+  isInformal: 'isInformal',
+  buyerName: 'buyerName',
+  buyerPhone: 'buyerPhone',
   parentId: 'parentId',
   userId: 'userId',
   remarks: 'remarks'
@@ -399,7 +402,8 @@ exports.TxType = exports.$Enums.TxType = {
   STOCK_TRANSFER: 'STOCK_TRANSFER',
   STOCK_ADJUSTMENT: 'STOCK_ADJUSTMENT',
   QUOTATION: 'QUOTATION',
-  PURCHASE_REQUEST: 'PURCHASE_REQUEST'
+  PURCHASE_REQUEST: 'PURCHASE_REQUEST',
+  STOCK_RETURN: 'STOCK_RETURN'
 };
 
 exports.AccountGroup = exports.$Enums.AccountGroup = {

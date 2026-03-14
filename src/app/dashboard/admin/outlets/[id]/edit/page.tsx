@@ -8,10 +8,17 @@ export default async function OutletEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [outlet, { warehouses }] = await Promise.all([
+  const [outletRes, locationsRes] = await Promise.all([
     getOutletById(id),
     getLocations(),
   ]);
+
+  if (!outletRes.success || !outletRes.data) {
+    notFound();
+  }
+
+  const outlet = outletRes.data;
+  const warehouses = locationsRes.data?.warehouses || [];
 
   if (!outlet) {
     notFound();

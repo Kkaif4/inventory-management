@@ -103,12 +103,9 @@ export function LedgerSlideOver({
     if (isOpen && variantId && warehouseId) {
       startTransition(async () => {
         try {
-          const ledger = await getVariantLedger(
-            outletId,
-            variantId,
-            warehouseId,
-          );
-          setData(ledger);
+          const res = await getVariantLedger(outletId, variantId, warehouseId);
+          if (res.success) setData(res.data!);
+          else setData([]);
         } catch (error) {
           console.error("Failed to fetch ledger:", error);
         }

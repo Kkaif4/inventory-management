@@ -257,8 +257,9 @@ export function InventoryClient({
   const fetchInventory = () => {
     startTransition(async () => {
       try {
-        const result = await getInventoryData(outletId, filters);
-        setData(result);
+        const res = await getInventoryData(outletId, filters);
+        if (res.success) setData(res.data!);
+        else toast.error("Failed to fetch inventory");
       } catch (error) {
         console.error("Failed to fetch inventory:", error);
       }
@@ -268,8 +269,9 @@ export function InventoryClient({
   const fetchTransfers = () => {
     startTransition(async () => {
       try {
-        const result = await getPendingTransfers(outletId);
-        setPendingTransfers(result);
+        const res = await getPendingTransfers(outletId);
+        if (res.success) setPendingTransfers(res.data!);
+        else toast.error("Failed to fetch transfers");
       } catch (error) {
         console.error("Failed to fetch transfers:", error);
       }
@@ -291,11 +293,15 @@ export function InventoryClient({
   const handleReceive = (txId: string) => {
     startTransition(async () => {
       try {
-        await receiveTransfer(outletId, userId, txId);
-        toast.success("Stock received successfully!");
-        fetchTransfers();
+        const res = await receiveTransfer(outletId, userId, txId);
+        if (res.success) {
+          toast.success("Stock received successfully!");
+          fetchTransfers();
+        } else {
+          toast.error("Failed to receive stock: " + res.error?.message);
+        }
       } catch (error: any) {
-        toast.error(error.message || "Failed to receive stock");
+        toast.error("Failed to receive stock");
       }
     });
   };

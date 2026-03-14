@@ -9,7 +9,10 @@ import { createOutlet, getLocations } from "@/actions/locations";
 import { Store, Save } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { OutletFormValues, outletSchema } from "@/validations/outlet.validation";
+import {
+  OutletFormValues,
+  outletSchema,
+} from "@/validations/outlet.validation";
 
 export default function NewOutletPage() {
   const router = useRouter();
@@ -19,7 +22,13 @@ export default function NewOutletPage() {
   );
 
   useEffect(() => {
-    getLocations().then((res) => setWarehouses(res.warehouses));
+    getLocations().then((res) => {
+      if (res.success) {
+        setWarehouses(res.data!.warehouses);
+      } else {
+        toast.error("Failed to load warehouses: " + res.error?.message);
+      }
+    });
   }, []);
 
   const {
@@ -38,8 +47,13 @@ export default function NewOutletPage() {
   const onSubmit = async (data: OutletFormValues) => {
     try {
       setIsSubmitting(true);
-      await createOutlet(data);
-      router.push("/dashboard/master-data/locations");
+      const res = await createOutlet(data);
+      if (res.success) {
+        toast.success("Outlet created successfully");
+        router.push("/dashboard/master-data/locations");
+      } else {
+        toast.error("Failed to create outlet: " + res.error?.message);
+      }
     } catch (error) {
       console.error("Failed to create outlet:", error);
       toast.error("Failed to create outlet. Please try again.");

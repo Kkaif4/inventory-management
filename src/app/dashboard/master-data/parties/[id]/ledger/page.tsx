@@ -6,6 +6,7 @@ import { useOutletStore } from "@/store/use-outlet-store";
 import { BookOpen, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, use } from "react";
+import { toast } from "sonner";
 
 interface PartyLedgerPageProps {
   params: { id: string };
@@ -25,11 +26,20 @@ export default function PartyLedgerPage({ params }: PartyLedgerPageProps) {
         getParties(currentOutletId),
         getPartyLedger(partyId, currentOutletId),
       ])
-        .then(([parties, entries]) => {
+        .then(([partyRes, ledgerRes]) => {
+          if (!partyRes.success) throw new Error(partyRes.error?.message);
+          if (!ledgerRes.success) throw new Error(ledgerRes.error?.message);
+
+          const parties = partyRes.data!;
+          const entries = ledgerRes.data!;
+
           const party = parties.find((p) => p.id === partyId);
           if (party) {
             setData({ party, entries });
           }
+        })
+        .catch((err) => {
+          toast.error("Failed to load ledger: " + err.message);
         })
         .finally(() => setIsLoading(false));
     }

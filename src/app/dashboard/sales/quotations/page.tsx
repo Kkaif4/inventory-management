@@ -11,7 +11,13 @@ export default function QuotationsPage() {
 
   useEffect(() => {
     if (currentOutletId) {
-      getQuotations(currentOutletId).then(setData);
+      getQuotations(currentOutletId).then((res) => {
+        if (res.success) {
+          setData(res.data!);
+        } else {
+          console.error("Failed to load quotations:", res.error?.message);
+        }
+      });
     }
   }, [currentOutletId]);
 

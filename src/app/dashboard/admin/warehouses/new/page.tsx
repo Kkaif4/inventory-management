@@ -42,8 +42,13 @@ export default function NewWarehousePage() {
   const onSubmit = async (data: WarehouseFormValues) => {
     try {
       setIsSubmitting(true);
-      await createWarehouse(data);
-      router.push("/dashboard/admin/warehouses");
+      const res = await createWarehouse(data);
+      if (res.success) {
+        toast.success("Warehouse established successfully");
+        router.push("/dashboard/admin/warehouses");
+      } else {
+        toast.error("Failed to create warehouse: " + res.error?.message);
+      }
     } catch (error) {
       console.error("Failed to create warehouse:", error);
       toast.error("Failed to create warehouse. Please try again.");

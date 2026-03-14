@@ -10,18 +10,20 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = await getProductWithVariants(id);
+  const res = await getProductWithVariants(id);
 
-  if (!product) {
+  if (!res.success || !res.data) {
     notFound();
   }
 
+  const product = res.data;
+
   const sanitizedProduct = {
     ...product,
-    conversionRatio: product.conversionRatio ?? 1,
-    brand: product.brand ?? null,
-    purchaseUnit: product.purchaseUnit ?? null,
-    variants: product.variants.map((v) => ({
+    conversionRatio: (product as any).conversionRatio ?? 1,
+    brand: (product as any).brand ?? null,
+    purchaseUnit: (product as any).purchaseUnit ?? null,
+    variants: product.variants.map((v: any) => ({
       ...v,
       markupPercent: v.markupPercent ?? null,
     })),

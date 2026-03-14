@@ -76,7 +76,11 @@ const columns: ColumnDef<LowStockItem>[] = [
 ];
 
 export default async function LowStockReportPage() {
-  const data = await getLowStockReport();
+  const res = await getLowStockReport();
+  if (!res.success) {
+    throw new Error(res.error?.message || "Failed to load low stock report");
+  }
+  const data = res.data!;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20">

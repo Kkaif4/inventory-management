@@ -50,16 +50,21 @@ export function CategoriesClient({
   const handleCreate = async () => {
     if (!session?.user?.id || !currentOutletId) return;
     try {
-      await createCategory({
+      const res = await createCategory({
         name: newForm.name,
         parentId: newForm.parentId || undefined,
         userId: session.user.id,
         outletId: currentOutletId,
       });
-      toast.success("Category created successfully");
-      setIsAdding(false);
-      setNewForm({ name: "", parentId: "" });
-      refreshData();
+
+      if (res.success) {
+        toast.success("Category created successfully");
+        setIsAdding(false);
+        setNewForm({ name: "", parentId: "" });
+        refreshData();
+      } else {
+        toast.error("Failed to create category: " + res.error?.message);
+      }
     } catch (err) {
       toast.error("Failed to create category");
     }
@@ -68,15 +73,20 @@ export function CategoriesClient({
   const handleUpdate = async (id: string) => {
     if (!session?.user?.id) return;
     try {
-      await updateCategory({
+      const res = await updateCategory({
         id,
         name: editForm.name,
         description: editForm.description,
         userId: session.user.id,
       });
-      toast.success("Category updated");
-      setEditingId(null);
-      refreshData();
+
+      if (res.success) {
+        toast.success("Category updated");
+        setEditingId(null);
+        refreshData();
+      } else {
+        toast.error("Failed to update category: " + res.error?.message);
+      }
     } catch (err) {
       toast.error("Failed to update category");
     }
@@ -85,34 +95,46 @@ export function CategoriesClient({
   const handleDeactivate = async (id: string) => {
     if (!session?.user?.id) return;
     try {
-      await deactivateCategory(id, session.user.id);
-      toast.success("Category deactivated");
-      refreshData();
+      const res = await deactivateCategory(id, session.user.id);
+      if (res.success) {
+        toast.success("Category deactivated");
+        refreshData();
+      } else {
+        toast.error("Failed to deactivate category: " + res.error?.message);
+      }
     } catch (err: any) {
-      toast.error(err.message || "Failed to deactivate category");
+      toast.error("Failed to deactivate category");
     }
   };
 
   const handleActivate = async (id: string) => {
     if (!session?.user?.id) return;
     try {
-      await activateCategory(id, session.user.id);
-      toast.success("Category activated");
-      refreshData();
+      const res = await activateCategory(id, session.user.id);
+      if (res.success) {
+        toast.success("Category activated");
+        refreshData();
+      } else {
+        toast.error("Failed to activate category: " + res.error?.message);
+      }
     } catch (err: any) {
-      toast.error(err.message || "Failed to activate category");
+      toast.error("Failed to activate category");
     }
   };
 
   const handleDelete = async () => {
     if (!deleteConfirmId || !session?.user?.id) return;
     try {
-      await deleteCategory(deleteConfirmId, session.user.id);
-      toast.success("Category deleted");
-      setDeleteConfirmId(null);
-      refreshData();
+      const res = await deleteCategory(deleteConfirmId, session.user.id);
+      if (res.success) {
+        toast.success("Category deleted");
+        setDeleteConfirmId(null);
+        refreshData();
+      } else {
+        toast.error("Failed to delete category: " + res.error?.message);
+      }
     } catch (err: any) {
-      toast.error(err.message || "Failed to delete category");
+      toast.error("Failed to delete category");
     }
   };
 

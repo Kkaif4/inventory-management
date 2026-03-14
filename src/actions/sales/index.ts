@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { withErrorHandler } from "@/lib/error-handler";
 
 export async function createProformaInvoice(data: {
   partyId: string;
@@ -17,61 +18,65 @@ export async function createProformaInvoice(data: {
   }[];
   userId: string;
 }) {
-  const totalTaxable = data.items.reduce(
-    (sum, item) => sum + item.taxableValue,
-    0,
-  );
-  const totalTax = data.items.reduce(
-    (sum, item) => sum + item.cgst + item.sgst + item.igst,
-    0,
-  );
-  const grandTotal = totalTaxable + totalTax;
+  return withErrorHandler(async () => {
+    const totalTaxable = data.items.reduce(
+      (sum, item) => sum + item.taxableValue,
+      0,
+    );
+    const totalTax = data.items.reduce(
+      (sum, item) => sum + item.cgst + item.sgst + item.igst,
+      0,
+    );
+    const grandTotal = totalTaxable + totalTax;
 
-  const quote = await prisma.transaction.create({
-    data: {
-      type: "PROFORMA_INVOICE",
-      txnNumber: `QTN-${Date.now()}`,
-      partyId: data.partyId,
-      outletId: data.outletId, // Scoped
-      totalTaxable,
-      totalTax,
-      grandTotal,
-      status: "DRAFT",
-      userId: data.userId,
-      items: {
-        create: data.items.map((item) => ({
-          variantId: item.variantId,
-          quantity: item.quantity,
-          rate: item.rate,
-          taxableValue: item.taxableValue,
-          cgst: item.cgst,
-          sgst: item.sgst,
-          igst: item.igst,
-        })),
+    const quote = await prisma.transaction.create({
+      data: {
+        type: "PROFORMA_INVOICE",
+        txnNumber: `QTN-${Date.now()}`,
+        partyId: data.partyId,
+        outletId: data.outletId, // Scoped
+        totalTaxable,
+        totalTax,
+        grandTotal,
+        status: "DRAFT",
+        userId: data.userId,
+        items: {
+          create: data.items.map((item) => ({
+            variantId: item.variantId,
+            quantity: item.quantity,
+            rate: item.rate,
+            taxableValue: item.taxableValue,
+            cgst: item.cgst,
+            sgst: item.sgst,
+            igst: item.igst,
+          })),
+        },
       },
-    },
-  });
+    });
 
-  revalidatePath("/dashboard/sales/quotations");
-  return quote;
+    revalidatePath("/dashboard/sales/quotations");
+    return quote;
+  });
 }
 
 export async function getProformaInvoices(outletId: string) {
-  return await prisma.transaction.findMany({
-    where: {
-      type: "PROFORMA_INVOICE",
-      outletId: outletId,
-    },
-    include: {
-      party: true,
-      items: {
-        include: {
-          variant: {
-            include: { product: true },
+  return withErrorHandler(async () => {
+    return await prisma.transaction.findMany({
+      where: {
+        type: "PROFORMA_INVOICE",
+        outletId: outletId,
+      },
+      include: {
+        party: true,
+        items: {
+          include: {
+            variant: {
+              include: { product: true },
+            },
           },
         },
       },
-    },
-    orderBy: { date: "desc" },
+      orderBy: { date: "desc" },
+    });
   });
 }

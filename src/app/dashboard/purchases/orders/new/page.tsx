@@ -62,16 +62,25 @@ export default function NewPurchaseOrderPage() {
   if (!currentOutletId) return;
 
   useEffect(() => {
-    getOutletById(currentOutletId).then((res) => setOutlet(res));
-    getParties(currentOutletId).then((res: any[]) =>
-      setSuppliers(res.filter((p) => p.type === "VENDOR")),
-    );
-    getInventoryLocations(currentOutletId).then((res: any) =>
-      setLocations(res.warehouses),
-    );
-    getVariantsForSelection(currentOutletId).then((res: any[]) =>
-      setVariants(res),
-    );
+    getOutletById(currentOutletId).then((res) => {
+      if (res.success) setOutlet(res.data);
+      else toast.error("Failed to load outlet details");
+    });
+    getParties(currentOutletId).then((res) => {
+      if (res.success) {
+        setSuppliers(res.data!.filter((p: any) => p.type === "VENDOR"));
+      } else {
+        toast.error("Failed to load vendors");
+      }
+    });
+    getInventoryLocations(currentOutletId).then((res) => {
+      if (res.success) setLocations(res.data!.warehouses);
+      else toast.error("Failed to load warehouses");
+    });
+    getVariantsForSelection(currentOutletId).then((res) => {
+      if (res.success) setVariants(res.data!);
+      else toast.error("Failed to load products");
+    });
   }, [currentOutletId]);
 
   const variantOptions = useMemo(() => {
@@ -133,163 +142,166 @@ export default function NewPurchaseOrderPage() {
     { taxable: 0, tax: 0, grand: 0, isInterState: false },
   );
 
-  const columns: ColumnDef<any>[] = [
-    {
-      id: "item",
-      header: "Item / SKU",
-      cell: ({ row }) => (
-        <div className="min-w-[300px]">
-          <Controller
-            name={`items.${row.index}.variantId`}
-            control={control}
-            render={({ field }) => (
-              <SearchableSelect
-                options={variantOptions}
-                value={field.value}
-                onChange={(val) => {
-                  field.onChange(val);
-                  const variant = variants.find((v) => v.id === val);
-                  if (variant) {
-                    const purchaseUnit = variant.product.purchaseUnit;
-                    const currentUnit =
-                      purchaseUnit || variant.product.baseUnit;
-                    const ratio = purchaseUnit
-                      ? variant.product.conversionRatio || 1
-                      : 1;
-                    setValue(`items.${row.index}.unit`, currentUnit);
-                    setValue(`items.${row.index}.conversionRatio`, ratio);
-                  }
-                }}
-                placeholder="Search item or SKU..."
-                className="border-none bg-transparent shadow-none hover:bg-slate-100 font-medium text-slate-900"
-              />
-            )}
-          />
-          {watchedItems[row.index]?.variantId && (
-            <div className="flex items-center mt-1 space-x-2 ml-1 text-[10px] text-slate-500 font-medium">
-              <span className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                {variants.find(
-                  (v) => v.id === watchedItems[row.index].variantId,
-                )?.product.brand || "Generic"}
-              </span>
-              <span className="text-slate-400">|</span>
-              <span>
-                SKU:{" "}
-                {
-                  variants.find(
-                    (v) => v.id === watchedItems[row.index].variantId,
-                  )?.sku
-                }
-              </span>
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      id: "quantity",
-      header: () => <div className="text-center">Qty</div>,
-      cell: ({ row }) => (
-        <div className="w-32 mx-auto">
-          <div className="flex items-center space-x-1.5">
-            <input
-              type="number"
-              step="0.01"
-              {...register(`items.${row.index}.quantity` as const)}
-              className="w-full px-2 py-1 text-sm border border-slate-200 rounded text-center focus:ring-1 focus:ring-blue-500 font-semibold"
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => [
+      {
+        id: "item",
+        header: "Item / SKU",
+        cell: ({ row }) => (
+          <div className="min-w-[300px]">
+            <Controller
+              name={`items.${row.index}.variantId`}
+              control={control}
+              render={({ field }) => (
+                <SearchableSelect
+                  options={variantOptions}
+                  value={field.value}
+                  onChange={(val) => {
+                    field.onChange(val);
+                    const variant = variants.find((v) => v.id === val);
+                    if (variant) {
+                      const purchaseUnit = variant.product.purchaseUnit;
+                      const currentUnit =
+                        purchaseUnit || variant.product.baseUnit;
+                      const ratio = purchaseUnit
+                        ? variant.product.conversionRatio || 1
+                        : 1;
+                      setValue(`items.${row.index}.unit`, currentUnit);
+                      setValue(`items.${row.index}.conversionRatio`, ratio);
+                    }
+                  }}
+                  placeholder="Search item or SKU..."
+                  className="border-none bg-transparent shadow-none hover:bg-slate-100 font-medium text-slate-900"
+                />
+              )}
             />
             {watchedItems[row.index]?.variantId && (
-              <div className="group relative">
-                <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all z-50 bg-white border border-slate-200 shadow-xl rounded-xl p-2 min-w-[max-content]">
-                  <div className="flex items-center justify-center space-x-1.5">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-1">
-                      Unit:
-                    </span>
-                    <span className="text-xs font-bold text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
-                      {watchedItems[row.index]?.unit || "—"}
-                    </span>
-                    {watchedItems[row.index]?.conversionRatio &&
-                      watchedItems[row.index]?.conversionRatio !== 1 && (
-                        <span className="text-[9px] text-slate-400 italic">
-                          (x{watchedItems[row.index].conversionRatio})
-                        </span>
-                      )}
-                  </div>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-white"></div>
-                </div>
+              <div className="flex items-center mt-1 space-x-2 ml-1 text-[10px] text-slate-500 font-medium">
+                <span className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                  {variants.find(
+                    (v) => v.id === watchedItems[row.index].variantId,
+                  )?.product.brand || "Generic"}
+                </span>
+                <span className="text-slate-400">|</span>
+                <span>
+                  SKU:{" "}
+                  {
+                    variants.find(
+                      (v) => v.id === watchedItems[row.index].variantId,
+                    )?.sku
+                  }
+                </span>
               </div>
             )}
           </div>
-        </div>
-      ),
-    },
-    {
-      id: "rate",
-      header: "Rate (Excl. Tax)",
-      cell: ({ row }) => (
-        <div className="w-40 relative">
-          <span className="absolute left-2 top-1.5 text-slate-400 text-xs">
-            ₹
-          </span>
-          <input
-            type="number"
-            step="0.01"
-            {...register(`items.${row.index}.rate` as const)}
-            className="w-full pl-5 pr-2 py-1 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 font-medium"
-          />
-        </div>
-      ),
-    },
-    {
-      id: "gst",
-      header: "GST %",
-      cell: ({ row }) => (
-        <div className="w-24">
-          <select
-            {...register(`items.${row.index}.gstPercent` as const)}
-            className="w-full px-2 py-1 text-[11px] border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 bg-white font-medium"
-          >
-            <option value="0">0%</option>
-            <option value="5">5%</option>
-            <option value="12">12%</option>
-            <option value="18">18%</option>
-            <option value="28">28%</option>
-          </select>
-        </div>
-      ),
-    },
-    {
-      id: "amount",
-      header: () => <div className="text-right">Amount</div>,
-      cell: ({ row }) => (
-        <div className="text-right font-bold text-slate-900 text-sm">
-          ₹
-          {(
-            (watchedItems[row.index]?.quantity || 0) *
-            (watchedItems[row.index]?.rate || 0)
-          ).toLocaleString()}
-        </div>
-      ),
-    },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => (
-        <div className="w-10">
-          {fields.length > 1 && (
-            <button
-              type="button"
-              onClick={() => remove(row.index)}
-              className="text-slate-400 hover:text-red-500"
+        ),
+      },
+      {
+        id: "quantity",
+        header: () => <div className="text-center">Qty</div>,
+        cell: ({ row }) => (
+          <div className="w-32 mx-auto">
+            <div className="flex items-center space-x-1.5">
+              <input
+                type="number"
+                step="0.01"
+                {...register(`items.${row.index}.quantity` as const)}
+                className="w-full px-2 py-1 text-sm border border-slate-200 rounded text-center focus:ring-1 focus:ring-blue-500 font-semibold"
+              />
+              {watchedItems[row.index]?.variantId && (
+                <div className="group relative">
+                  <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all z-50 bg-white border border-slate-200 shadow-xl rounded-xl p-2 min-w-[max-content]">
+                    <div className="flex items-center justify-center space-x-1.5">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-1">
+                        Unit:
+                      </span>
+                      <span className="text-xs font-bold text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                        {watchedItems[row.index]?.unit || "—"}
+                      </span>
+                      {watchedItems[row.index]?.conversionRatio &&
+                        watchedItems[row.index]?.conversionRatio !== 1 && (
+                          <span className="text-[9px] text-slate-400 italic">
+                            (x{watchedItems[row.index].conversionRatio})
+                          </span>
+                        )}
+                    </div>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-white"></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ),
+      },
+      {
+        id: "rate",
+        header: "Rate (Excl. Tax)",
+        cell: ({ row }) => (
+          <div className="w-40 relative">
+            <span className="absolute left-2 top-1.5 text-slate-400 text-xs">
+              ₹
+            </span>
+            <input
+              type="number"
+              step="0.01"
+              {...register(`items.${row.index}.rate` as const)}
+              className="w-full pl-5 pr-2 py-1 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 font-medium"
+            />
+          </div>
+        ),
+      },
+      {
+        id: "gst",
+        header: "GST %",
+        cell: ({ row }) => (
+          <div className="w-24">
+            <select
+              {...register(`items.${row.index}.gstPercent` as const)}
+              className="w-full px-2 py-1 text-[11px] border border-slate-200 rounded focus:ring-1 focus:ring-blue-500 bg-white font-medium"
             >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      ),
-    },
-  ];
+              <option value="0">0%</option>
+              <option value="5">5%</option>
+              <option value="12">12%</option>
+              <option value="18">18%</option>
+              <option value="28">28%</option>
+            </select>
+          </div>
+        ),
+      },
+      {
+        id: "amount",
+        header: () => <div className="text-right">Amount</div>,
+        cell: ({ row }) => (
+          <div className="text-right font-bold text-slate-900 text-sm">
+            ₹
+            {(
+              (watchedItems[row.index]?.quantity || 0) *
+              (watchedItems[row.index]?.rate || 0)
+            ).toLocaleString()}
+          </div>
+        ),
+      },
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) => (
+          <div className="w-10">
+            {fields.length > 1 && (
+              <button
+                type="button"
+                onClick={() => remove(row.index)}
+                className="text-slate-400 hover:text-red-500"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        ),
+      },
+    ],
+    [control, variantOptions, variants, setValue, watchedItems, fields, remove],
+  );
 
   const onSubmit = async (data: POFormValues) => {
     try {
@@ -318,11 +330,19 @@ export default function NewPurchaseOrderPage() {
         }),
       };
 
-      await createPurchaseOrder(payload as any);
-      router.push("/dashboard/purchases");
+      const res = await createPurchaseOrder(payload as any);
+      if (res.success) {
+        toast.success("Purchase Order issued successfully");
+        router.refresh();
+        router.push("/dashboard/purchases");
+      } else {
+        toast.error(
+          "Failed to issue PO: " + (res.error?.message || "Unknown error"),
+        );
+      }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to create PO");
+      toast.error("A technical error occurred while generating the PO.");
     } finally {
       setIsSubmitting(false);
     }

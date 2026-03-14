@@ -2,7 +2,6 @@
 
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createParty } from "@/actions/parties";
@@ -18,11 +17,6 @@ export default function NewPartyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [priceLists, setPriceLists] = useState<any[]>([]);
   const { currentOutletId } = useOutletStore();
-  if (!currentOutletId) return;
-
-  useEffect(() => {
-    getPriceLists().then(setPriceLists);
-  }, []);
 
   const {
     register,
@@ -39,16 +33,44 @@ export default function NewPartyPage() {
     },
   });
 
+  useEffect(() => {
+    if (currentOutletId) {
+      getPriceLists().then((res) => {
+        if (res.success) {
+          setPriceLists(res.data!);
+        } else {
+          toast.error("Failed to load price lists: " + res.error?.message);
+        }
+      });
+    }
+  }, [currentOutletId]);
+
+  if (!currentOutletId) return null;
+
   const type = watch("type");
 
   const onSubmit: SubmitHandler<PartyFormValues> = async (data) => {
+    if (!currentOutletId) {
+      toast.error("No outlet selected. Please select one to continue.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      await createParty(data, currentOutletId);
-      router.push("/dashboard/master-data/parties");
+      const res = await createParty(data, currentOutletId);
+
+      if (res.success) {
+        toast.success("Party created successfully");
+        router.refresh();
+        router.push("/dashboard/master-data/parties");
+      } else {
+        toast.error(
+          "Failed to create party: " + (res.error?.message || "Unknown error"),
+        );
+      }
     } catch (error) {
       console.error("Failed to create party:", error);
-      toast.error("Failed to create party.");
+      toast.error("A technical error occurred while saving the party.");
     } finally {
       setIsSubmitting(false);
     }
@@ -220,12 +242,14 @@ export default function NewPartyPage() {
               </label>
               <input
                 type="number"
-                {...register("creditPeriod")}
-                onChange={(e) =>
-                  setValue("creditPeriod", Number(e.target.value))
-                }
+                {...register("creditPeriod", { valueAsNumber: true })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
               />
+              {errors.creditPeriod && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.creditPeriod.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -234,13 +258,15 @@ export default function NewPartyPage() {
               </label>
               <input
                 type="number"
-                {...register("openingBalance")}
-                onChange={(e) =>
-                  setValue("openingBalance", Number(e.target.value))
-                }
+                {...register("openingBalance", { valueAsNumber: true })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder="0.00"
               />
+              {errors.openingBalance && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.openingBalance.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -250,16 +276,15 @@ export default function NewPartyPage() {
               <input
                 type="number"
                 step="1000"
-                {...register("creditLimit")}
-                onChange={(e) =>
-                  setValue(
-                    "creditLimit",
-                    e.target.value === "" ? undefined : Number(e.target.value),
-                  )
-                }
+                {...register("creditLimit", { valueAsNumber: true })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder="Optional"
               />
+              {errors.creditLimit && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.creditLimit.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -277,6 +302,11 @@ export default function NewPartyPage() {
                   </option>
                 ))}
               </select>
+              {errors.priceListId && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.priceListId.message}
+                </p>
+              )}
               <p className="text-[10px] text-slate-500 mt-1">
                 Prices will be locked to this list by default.
               </p>

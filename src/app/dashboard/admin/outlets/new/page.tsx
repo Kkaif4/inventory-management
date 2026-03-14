@@ -22,7 +22,10 @@ export default function NewOutletPage() {
   );
 
   useEffect(() => {
-    getLocations().then((res) => setWarehouses(res.warehouses));
+    getLocations().then((res) => {
+      if (res.success) setWarehouses(res.data!.warehouses);
+      else toast.error("Failed to load locations");
+    });
   }, []);
 
   const {
@@ -52,8 +55,13 @@ export default function NewOutletPage() {
   const onSubmit: SubmitHandler<OutletFormValues> = async (values) => {
     try {
       setIsSubmitting(true);
-      await createOutlet(values);
-      router.push("/dashboard/admin/outlets");
+      const res = await createOutlet(values);
+      if (res.success) {
+        toast.success("Outlet established successfully");
+        router.push("/dashboard/admin/outlets");
+      } else {
+        toast.error("Failed to create outlet: " + res.error?.message);
+      }
     } catch (error) {
       console.error("Failed to create outlet:", error);
       toast.error("Failed to create outlet. Please try again.");

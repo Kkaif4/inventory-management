@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export default function AccountsPage() {
   const { currentOutletId } = useOutletStore();
@@ -22,7 +23,13 @@ export default function AccountsPage() {
     if (currentOutletId) {
       setIsLoading(true);
       getAccounts(currentOutletId)
-        .then(setAccounts)
+        .then((res) => {
+          if (res.success) {
+            setAccounts(res.data!);
+          } else {
+            toast.error("Failed to load accounts: " + res.error?.message);
+          }
+        })
         .catch(console.error)
         .finally(() => setIsLoading(false));
     }
@@ -75,12 +82,23 @@ export default function AccountsPage() {
         </div>
 
         {accounts.length === 0 && (
-          <form action={() => setupCOA(currentOutletId)}>
-            <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center text-sm font-medium shadow-sm transition-all active:scale-95">
-              <Settings className="w-4 h-4 mr-2" />
-              Initialize Standard Accounts
-            </button>
-          </form>
+          <button
+            onClick={async () => {
+              const res = await setupCOA(currentOutletId);
+              if (res.success) {
+                toast.success("Standard accounts initialized successfully");
+                window.location.reload(); // Refresh to show new accounts
+              } else {
+                toast.error(
+                  "Failed to initialize accounts: " + res.error?.message,
+                );
+              }
+            }}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center text-sm font-medium shadow-sm transition-all active:scale-95"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Initialize Standard Accounts
+          </button>
         )}
       </div>
 
