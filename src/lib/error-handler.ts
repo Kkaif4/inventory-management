@@ -1,6 +1,6 @@
-import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { AppError, ErrorCode, StandardResponse } from "./exceptions";
+import { Prisma } from "@/generated/prisma";
 
 export function handleError(error: unknown): StandardResponse {
   console.error("[Error Handler]:", error);
