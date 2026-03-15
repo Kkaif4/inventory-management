@@ -1,9 +1,9 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { Pool } from "pg";
-import { PrismaClient, Role } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { initializeCOA } from "../src/domains/accounting/ledger-service";
+import { PrismaClient, Role } from "@/generated/prisma";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
 const adapter = new PrismaPg(pool);
