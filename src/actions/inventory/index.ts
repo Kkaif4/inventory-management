@@ -3,7 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import { withErrorHandler } from "@/lib/error-handler";
-
+import * as adjustment from "./adjustment";
+import * as transfer from "./transfer";
 import { InventoryFilter, StockStatus } from "./types";
 // DO NOT export types from "use server" files.
 // Clients should import types from ./types directly.
@@ -232,9 +233,6 @@ export async function getVariantsForSelection(outletId: string) {
     });
   });
 }
-
-import * as adjustment from "./adjustment";
-import * as transfer from "./transfer";
 
 export async function createStockAdjustment(
   outletId: string,

@@ -142,6 +142,7 @@ export function ProductEditClient({
         gstRate: data.gstRate,
         baseUnit: data.baseUnit,
         purchaseUnit: data.purchaseUnit || null,
+        conversionRatio: data.conversionRatio || 1,
         categoryId: data.categoryId,
         userId: session.user.id,
         variants: data.variants.map((v) => ({

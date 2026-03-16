@@ -400,13 +400,46 @@ export default function NewProductPage() {
                   )}
                 />
 
+                {watch("purchaseUnit") && (
+                  <FormField
+                    control={control}
+                    name="conversionRatio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Conversion Ratio (Units in 1{" "}
+                          {getUnitLabel(watch("purchaseUnit"))})
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            placeholder="How many base units in one purchase unit?"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                            className="border-brand/30 focus-visible:ring-brand/20"
+                          />
+                        </FormControl>
+                        <p className="text-[10px] text-text-muted italic">
+                          How many {getUnitLabel(watch("baseUnit"))} are in 1{" "}
+                          {getUnitLabel(watch("purchaseUnit"))}?
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
                 {watch("purchaseUnit") && watch("baseUnit") && (
                   <div className="md:col-span-1 lg:col-span-1 flex items-center p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
                     <Info className="w-5 h-5 text-indigo-400 mr-3" />
                     <p className="text-xs font-medium text-indigo-300">
                       <span className="font-bold">Conversion:</span> 1{" "}
-                      {watch("purchaseUnit")} will be auto-converted to its base{" "}
-                      {watch("baseUnit")} count during inventory updates.
+                      {watch("purchaseUnit")} = {watch("conversionRatio") || 1}{" "}
+                      {watch("baseUnit")} during inventory updates.
                     </p>
                   </div>
                 )}
@@ -721,7 +754,7 @@ export default function NewProductPage() {
         </form>
       </Form>
       {!currentOutletId && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 text-center">
+        <div className="fixed inset-0 z-100 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 text-center">
           <div className="bg-white rounded-3xl p-10 max-w-md w-full shadow-2xl space-y-6 animate-in zoom-in-95 duration-300">
             <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto">
               <AlertTriangle className="w-10 h-10" />
