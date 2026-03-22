@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { getPriceLists } from "@/actions/price-lists";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { PartyFormValues, partySchema } from "@/validations/party.validation";
+import { INDIAN_STATES } from "@/lib/constants";
 
 export default function NewPartyPage() {
   const router = useRouter();
@@ -205,11 +206,17 @@ export default function NewPartyPage() {
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 State / Province (For IGST Logic) *
               </label>
-              <input
+              <select
                 {...register("state")}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="e.g. Maharashtra"
-              />
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+              >
+                <option value="">Select State...</option>
+                {INDIAN_STATES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
               {errors.state && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.state.message}

@@ -23,6 +23,7 @@ import {
   warehouseSchema,
   WarehouseFormValues,
 } from "@/validations/warehouse.validation";
+import { INDIAN_STATES } from "@/lib/constants";
 
 export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
   const router = useRouter();
@@ -138,10 +139,11 @@ export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
                         className="w-full h-10 px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
                       >
                         <option value="">Select State...</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Delhi">Delhi</option>
+                        {INDIAN_STATES.map((state) => (
+                          <option key={state} value={state}>
+                            {state}
+                          </option>
+                        ))}
                       </select>
                     </FormControl>
                     <FormMessage />

@@ -2,14 +2,17 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { updateOutlet } from "@/actions/locations";
 import { Store, Save } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { OutletFormValues, outletSchema } from "@/validations/outlet.validation";
+import {
+  OutletFormValues,
+  outletSchema,
+} from "@/validations/outlet.validation";
+import { INDIAN_STATES } from "@/lib/constants";
 
 export function OutletEditClient({
   outlet,
@@ -30,8 +33,12 @@ export function OutletEditClient({
     resolver: zodResolver(outletSchema),
     defaultValues: {
       name: outlet.name,
+      address: outlet.address || "",
+      state: outlet.state || "",
       invoicePrefix: outlet.invoicePrefix,
+      invoiceStartingNumber: outlet.invoiceStartingNumber || 1,
       gstin: outlet.gstin || "",
+      defaultWarehouseId: outlet.defaultWarehouseId || "",
       negativeStockPolicy: outlet.negativeStockPolicy as any,
       batchTrackingEnabled: outlet.batchTrackingEnabled || false,
       warehouseIds: outlet.warehouses.map((w: any) => w.id),
@@ -89,8 +96,68 @@ export function OutletEditClient({
                 placeholder="e.g. Retail Showroom"
               />
               {errors.name && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 text-[10px] mt-1">
                   {errors.name.message}
+                </p>
+              )}
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Outlet Address *
+              </label>
+              <input
+                {...register("address")}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Complete physical address"
+              />
+              {errors.address && (
+                <p className="text-red-500 text-[10px] mt-1">
+                  {errors.address.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                State *
+              </label>
+              <select
+                {...register("state")}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+              >
+                <option value="">Select State...</option>
+                {INDIAN_STATES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              {errors.state && (
+                <p className="text-red-500 text-[10px] mt-1">
+                  {errors.state.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Default Warehouse *
+              </label>
+              <select
+                {...register("defaultWarehouseId")}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+              >
+                <option value="">Select Source...</option>
+                {warehouses.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+              {errors.defaultWarehouseId && (
+                <p className="text-red-500 text-[10px] mt-1">
+                  {errors.defaultWarehouseId.message}
                 </p>
               )}
             </div>
@@ -105,8 +172,24 @@ export function OutletEditClient({
                 placeholder="e.g. INV/RT/"
               />
               {errors.invoicePrefix && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 text-[10px] mt-1">
                   {errors.invoicePrefix.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Invoice Starting No. *
+              </label>
+              <input
+                type="number"
+                {...register("invoiceStartingNumber", { valueAsNumber: true })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              {errors.invoiceStartingNumber && (
+                <p className="text-red-500 text-[10px] mt-1">
+                  {errors.invoiceStartingNumber.message}
                 </p>
               )}
             </div>

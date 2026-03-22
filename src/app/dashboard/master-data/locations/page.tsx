@@ -157,9 +157,6 @@ export default async function LocationsPage() {
                         {w._count?.outlets || 0} Linked Outlets
                       </div>
                     </div>
-                    <button className="text-blue-600 text-xs font-black flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      View Details <ArrowRight className="w-3 h-3 ml-1.5" />
-                    </button>
                   </div>
                 </div>
               ))
@@ -253,9 +250,6 @@ export default async function LocationsPage() {
                         {o._count?.users || 0} Users assigned
                       </div>
                     </div>
-                    <button className="text-emerald-600 text-xs font-black flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      Quick Manage <ArrowRight className="w-3 h-3 ml-1.5" />
-                    </button>
                   </div>
                 </div>
               ))

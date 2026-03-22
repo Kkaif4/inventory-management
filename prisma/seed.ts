@@ -23,6 +23,9 @@ async function main() {
       data: {
         name: warehouseName,
         address: "Plot 45, Industrial Area Phase II, Mumbai",
+        state: "Maharashtra",
+        contactName: "Mangesh",
+        contactPhone: "9876543210",
       },
     });
     console.log("Seed: Warehouse created");
@@ -45,6 +48,10 @@ async function main() {
         warehouses: {
           connect: [{ id: warehouse.id }],
         },
+        address: "Plot 45, Industrial Area Phase II, Mumbai",
+        state: "Maharashtra",
+        invoiceStartingNumber: 1,
+        batchTrackingEnabled: true,
       },
     });
     console.log("Seed: Outlet created and linked to Warehouse");

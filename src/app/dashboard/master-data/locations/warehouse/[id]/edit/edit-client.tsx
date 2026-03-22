@@ -23,6 +23,7 @@ import {
   WarehouseFormValues,
   warehouseSchema,
 } from "@/validations/warehouse.validation";
+import { INDIAN_STATES } from "@/lib/constants";
 
 export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
   const router = useRouter();
@@ -33,6 +34,9 @@ export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
     defaultValues: {
       name: warehouse.name,
       address: warehouse.address || "",
+      state: warehouse.state || "",
+      contactName: warehouse.contactName || "",
+      contactPhone: warehouse.contactPhone || "",
     },
   });
 
@@ -116,6 +120,60 @@ export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="state"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>State *</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="w-full h-10 px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+                    >
+                      <option value="">Select State...</option>
+                      {INDIAN_STATES.map((state) => (
+                        <option key={state} value={state}>
+                          {state}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border-default">
+              <FormField
+                control={form.control}
+                name="contactName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Manager Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contactPhone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Number *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="+91 00000 00000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="pt-4 flex justify-end">
               <Button type="submit" disabled={isSubmitting} className="gap-2">

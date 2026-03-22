@@ -74,6 +74,7 @@ export async function updateWarehouse(
       data,
     });
     revalidatePath("/dashboard/admin/warehouses");
+    revalidatePath("/dashboard/master-data/locations");
     return warehouse;
   });
 }
@@ -201,6 +202,7 @@ export async function updateOutlet(
     });
 
     revalidatePath("/dashboard/admin/outlets");
+    revalidatePath("/dashboard/master-data/locations");
     return outlet;
   });
 }
