@@ -3,7 +3,7 @@ import { z } from "zod";
 export const productSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   brand: z.string().optional().nullable(),
-  hsnCode: z.string().min(4, "Invalid HSN Code"),
+  hsnCode: z.string().optional().nullable(),
   gstRate: z.number(),
   baseUnit: z.string().min(1, "Base unit is required"),
   purchaseUnit: z.string().optional().nullable(),

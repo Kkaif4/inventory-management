@@ -69,7 +69,6 @@ model Outlet {
   transactions        Transaction[]
   parties             Party[]
   accounts            Account[]
-  variants            Variant[]
   series              DocumentSeries[]
   batches             CustomBatch[]
   stockLedger         StockLedger[]
@@ -77,40 +76,36 @@ model Outlet {
 
 
 model Category {
-  id             String     @id @default(cuid())
-  name           String
-  parentId       String?
-  parent         Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children       Category[] @relation("CategoryHierarchy")
-  products       Product[]
-  parentProducts Product[]  @relation("ProductParentCategory")
-  variants       Variant[]
-  description    String?
-  isActive       Boolean    @default(true)
-  outletId       String
-  outlet         Outlet      @relation(fields: [outletId], references: [id])
+  id          String     @id @default(cuid())
+  name        String
+  parentId    String?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+  description String?
+  isActive    Boolean    @default(true)
+  outletId    String
+  outlet      Outlet     @relation(fields: [outletId], references: [id])
 
-  @@unique([name, outletId])
+  @@unique([name, parentId, outletId])
 }
 
 model Product {
-  id               String    @id @default(cuid())
-  name             String
-  brand            String?
-  hsnCode          String
-  gstRate          Float
-  baseUnit         String
-  purchaseUnit     String?
-  salesUnit        String?
-  conversionRatio  Float?    @default(1)
-  categoryId       String
-  isArchived       Boolean   @default(false)
-  parentCategoryId String?
-  category         Category  @relation(fields: [categoryId], references: [id])
-  parentCategory   Category? @relation("ProductParentCategory", fields: [parentCategoryId], references: [id])
-  variants         Variant[]
-  outletId         String
-  outlet           Outlet    @relation(fields: [outletId], references: [id])
+  id              String    @id @default(cuid())
+  name            String
+  brand           String?
+  hsnCode         String?
+  gstRate         Float
+  baseUnit        String
+  purchaseUnit    String?
+  salesUnit       String?
+  conversionRatio Float?    @default(1)
+  categoryId      String
+  isArchived      Boolean   @default(false)
+  category        Category  @relation(fields: [categoryId], references: [id])
+  variants        Variant[]
+  outletId        String
+  outlet          Outlet    @relation(fields: [outletId], references: [id])
 
   @@unique([name, outletId])
 }
@@ -125,19 +120,15 @@ model Variant {
   pricingMethod    String            @default("MANUAL")
   markupPercent    Float?
   minStockLevel    Float             @default(0)
-  categoryId       String
-  outletId         String
   priceListEntries PriceListEntry[]
   stocks           Stock[]
   txnItems         TransactionItem[]
   batches          CustomBatch[]
   stockLedger      StockLedger[]
-  category         Category          @relation(fields: [categoryId], references: [id])
   product          Product           @relation(fields: [productId], references: [id])
-  outlet           Outlet            @relation(fields: [outletId], references: [id])
   suppliers        VendorProduct[]
 
-  @@unique([sku, outletId])
+  @@unique([sku])
 }
 
 model Stock {

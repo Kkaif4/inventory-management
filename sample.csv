@@ -1,1 +1,46 @@
-productName,brand,hsnCode,gstRate,baseUnit,purchaseUnit,salesUnit,productCategory,parentCategory,variantSku,purchasePrice,sellingPrice,pricingMethod,markupPercent,minStockLevel
+productName,brand,hsnCode,gstRate,baseUnit,purchaseUnit,salesUnit,conversionRatio,categoryL1,categoryL2,categoryL3,variantSku,variantSpec,purchasePrice,sellingPrice,pricingMethod,markupPercent,minStockLevel,warehouseName,currentStock,batchDate,batchCostPerUnit
+Electric Drill 500W,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-DRL-500,500W Motor,2500,2875,MARKUP,15,10,Main Distribution Center,35,15/02/2026,2500
+Electric Drill 750W,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-DRL-750,750W Motor,3200,3680,MARKUP,15,8,Main Distribution Center,28,15/02/2026,3200
+Angle Grinder 4in,Stanley,84672900,18,Piece,Box,Piece,10,Tools,Power Tools,Grinders,STN-GRN-4,4 Inch Disc,1800,2100,MARKUP,17,12,Main Distribution Center,40,10/02/2026,1800
+Angle Grinder 5in,Stanley,84672900,18,Piece,Box,Piece,10,Tools,Power Tools,Grinders,STN-GRN-5,5 Inch Disc,2200,2600,MARKUP,18,10,Main Distribution Center,32,10/02/2026,2200
+Hammer Drill 800W,DeWalt,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Hammer Drills,DEW-HDR-800,800W Impact Motor,4200,4830,MARKUP,15,6,Main Distribution Center,18,12/02/2026,4200
+Impact Driver 20V,DeWalt,84672900,18,Piece,Box,Piece,10,Tools,Power Tools,Impact Drivers,DEW-IMP-20V,20V Battery Model,5200,6000,MANUAL,,5,Main Distribution Center,12,12/02/2026,5200
+Circular Saw 7in,Makita,84672200,18,Piece,Box,Piece,10,Tools,Power Tools,Saws,MAK-CS-7,7 Inch Blade,4600,5290,MARKUP,15,5,Main Distribution Center,14,11/02/2026,4600
+Bench Grinder,Makita,84672900,18,Piece,Box,Piece,10,Tools,Workshop Tools,Grinders,MAK-BG-01,Industrial Bench Model,3000,3450,MARKUP,15,7,Main Distribution Center,16,09/02/2026,3000
+Steel Hammer 500g,Tata,82052000,12,Piece,Box,Piece,20,Tools,Hand Tools,Hammers,TAT-HMR-500,500g Steel Head,250,320,MANUAL,,30,Main Distribution Center,120,05/02/2026,250
+Steel Hammer 1kg,Tata,82052000,12,Piece,Box,Piece,20,Tools,Hand Tools,Hammers,TAT-HMR-1KG,1kg Steel Head,350,420,MANUAL,,25,Main Distribution Center,100,05/02/2026,350
+Adjustable Wrench 10in,Taparia,82041200,12,Piece,Box,Piece,20,Tools,Hand Tools,Wrenches,TAP-WRN-10,10 Inch Adjustable,280,340,MANUAL,,20,Main Distribution Center,85,06/02/2026,280
+Adjustable Wrench 12in,Taparia,82041200,12,Piece,Box,Piece,20,Tools,Hand Tools,Wrenches,TAP-WRN-12,12 Inch Adjustable,340,410,MANUAL,,20,Main Distribution Center,75,06/02/2026,340
+Screwdriver Set 6pc,Taparia,82054000,12,Set,Box,Set,10,Tools,Hand Tools,Screwdrivers,TAP-SD-6,6 Piece Kit,180,220,MANUAL,,30,Main Distribution Center,140,04/02/2026,180
+Screwdriver Set 12pc,Taparia,82054000,12,Set,Box,Set,10,Tools,Hand Tools,Screwdrivers,TAP-SD-12,12 Piece Kit,320,390,MANUAL,,20,Main Distribution Center,90,04/02/2026,320
+PVC Pipe Cutter,Stanley,82034000,12,Piece,Box,Piece,10,Plumbing,Plumbing Tools,Cutters,STN-PVC-CUT,PVC Pipe Cutter Standard,420,520,MARKUP,20,15,Main Distribution Center,55,07/02/2026,420
+Pipe Wrench 12in,Ridgid,82041200,12,Piece,Box,Piece,10,Plumbing,Plumbing Tools,Wrenches,RID-PW-12,12 Inch Pipe Wrench,950,1140,MARKUP,20,10,Main Distribution Center,30,07/02/2026,950
+Pipe Wrench 18in,Ridgid,82041200,12,Piece,Box,Piece,10,Plumbing,Plumbing Tools,Wrenches,RID-PW-18,18 Inch Pipe Wrench,1350,1620,MARKUP,20,8,Main Distribution Center,22,07/02/2026,1350
+Measuring Tape 5m,Freemans,90178010,18,Piece,Box,Piece,20,Tools,Measuring Tools,Tapes,FRM-MT-5,5 Meter Tape,110,140,MANUAL,,40,Main Distribution Center,200,03/02/2026,110
+Measuring Tape 10m,Freemans,90178010,18,Piece,Box,Piece,20,Tools,Measuring Tools,Tapes,FRM-MT-10,10 Meter Tape,210,260,MANUAL,,35,Main Distribution Center,150,03/02/2026,210
+Spirit Level 24in,Stanley,90318000,18,Piece,Box,Piece,10,Tools,Measuring Tools,Levels,STN-SL-24,24 Inch Level,550,660,MARKUP,20,12,Main Distribution Center,48,08/02/2026,550
+Spirit Level 36in,Stanley,90318000,18,Piece,Box,Piece,10,Tools,Measuring Tools,Levels,STN-SL-36,36 Inch Level,720,860,MARKUP,20,10,Main Distribution Center,36,08/02/2026,720
+Industrial Extension Cord 10m,Havells,85444299,18,Piece,Box,Piece,5,Electrical,Electrical Tools,Cables,HAV-EXT-10,10 Meter Cord,650,780,MARKUP,20,15,Main Distribution Center,60,09/02/2026,650
+Industrial Extension Cord 20m,Havells,85444299,18,Piece,Box,Piece,5,Electrical,Electrical Tools,Cables,HAV-EXT-20,20 Meter Cord,950,1140,MARKUP,20,10,Main Distribution Center,42,09/02/2026,950
+Safety Helmet,3M,65061010,18,Piece,Box,Piece,25,Safety,Safety Equipment,Helmets,3M-HLM-01,Industrial Helmet,320,420,MANUAL,,25,Main Distribution Center,95,02/02/2026,320
+Safety Gloves,3M,61161000,18,Pair,Box,Pair,25,Safety,Safety Equipment,Gloves,3M-GLV-01,Protective Gloves,120,160,MANUAL,,50,Main Distribution Center,180,02/02/2026,120
+Electric Drill 1000W,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-DRL-1000,1000W Motor,3800,4370,MARKUP,15,6,Main Distribution Center,20,15/02/2026,3800
+Cordless Drill 18V,DeWalt,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,DEW-CD-18V,18V Battery Drill,4800,5500,MANUAL,,5,Main Distribution Center,15,16/02/2026,4800
+Rotary Hammer 1200W,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Hammer Drills,BOS-RH-1200,Heavy Duty Hammer,7200,8280,MARKUP,15,4,Main Distribution Center,10,16/02/2026,7200
+Heat Gun 2000W,Stanley,85162900,18,Piece,Box,Piece,10,Tools,Power Tools,Heat Tools,STN-HG-2000,Industrial Heat Gun,1500,1800,MARKUP,20,10,Main Distribution Center,25,14/02/2026,1500
+Jigsaw Machine,Makita,84672200,18,Piece,Box,Piece,10,Tools,Power Tools,Saws,MAK-JS-01,Wood Cutting Jigsaw,3500,4025,MARKUP,15,6,Main Distribution Center,18,13/02/2026,3500
+Bolt Cutter 18in,Taparia,82034000,12,Piece,Box,Piece,10,Tools,Hand Tools,Cutters,TAP-BC-18,18 Inch Cutter,900,1100,MANUAL,,12,Main Distribution Center,40,12/02/2026,900
+Bolt Cutter 24in,Taparia,82034000,12,Piece,Box,Piece,10,Tools,Hand Tools,Cutters,TAP-BC-24,24 Inch Cutter,1400,1700,MANUAL,,10,Main Distribution Center,30,12/02/2026,1400
+Combination Pliers,Taparia,82032000,12,Piece,Box,Piece,20,Tools,Hand Tools,Pliers,TAP-PLR-01,Standard Pliers,180,240,MANUAL,,25,Main Distribution Center,100,11/02/2026,180
+Long Nose Pliers,Taparia,82032000,12,Piece,Box,Piece,20,Tools,Hand Tools,Pliers,TAP-PLR-02,Long Nose Type,200,260,MANUAL,,20,Main Distribution Center,90,11/02/2026,200
+Allen Key Set 9pc,Taparia,82054000,12,Set,Box,Set,10,Tools,Hand Tools,Allen Keys,TAP-AK-9,9 Piece Set,120,160,MANUAL,,30,Main Distribution Center,150,10/02/2026,120
+Allen Key Set 15pc,Taparia,82054000,12,Set,Box,Set,10,Tools,Hand Tools,Allen Keys,TAP-AK-15,15 Piece Set,220,280,MANUAL,,20,Main Distribution Center,110,10/02/2026,220
+Digital Multimeter,Fluke,90303100,18,Piece,Box,Piece,10,Electrical,Electrical Tools,Testing,FLK-DMM-01,Digital Meter,2500,3000,MANUAL,,8,Main Distribution Center,22,09/02/2026,2500
+Wire Stripper,Stanley,82032000,12,Piece,Box,Piece,10,Electrical,Electrical Tools,Strippers,STN-WS-01,Automatic Stripper,350,450,MARKUP,20,20,Main Distribution Center,70,09/02/2026,350
+Crimping Tool,Stanley,82032000,12,Piece,Box,Piece,10,Electrical,Electrical Tools,Crimpers,STN-CR-01,Heavy Duty Crimper,600,750,MARKUP,25,15,Main Distribution Center,50,08/02/2026,600
+Water Pump 1HP,Kirloskar,84137000,18,Piece,Box,Piece,5,Plumbing,Plumbing Tools,Pumps,KIR-WP-1HP,1HP Motor Pump,6500,7800,MARKUP,20,4,Main Distribution Center,12,08/02/2026,6500
+Water Pump 2HP,Kirloskar,84137000,18,Piece,Box,Piece,5,Plumbing,Plumbing Tools,Pumps,KIR-WP-2HP,2HP Motor Pump,9500,11400,MARKUP,20,3,Main Distribution Center,8,08/02/2026,9500
+PVC Pipe 1inch,Astral,39172300,18,Piece,Bundle,Piece,20,Plumbing,Plumbing Materials,Pipes,AST-PVC-1,1 Inch Pipe,120,160,MANUAL,,50,Main Distribution Center,300,07/02/2026,120
+PVC Pipe 2inch,Astral,39172300,18,Piece,Bundle,Piece,20,Plumbing,Plumbing Materials,Pipes,AST-PVC-2,2 Inch Pipe,220,280,MANUAL,,40,Main Distribution Center,200,07/02/2026,220
+Safety Goggles,3M,90049090,18,Piece,Box,Piece,25,Safety,Safety Equipment,Goggles,3M-GOG-01,Protective Goggles,150,200,MANUAL,,35,Main Distribution Center,120,06/02/2026,150
+Reflective Safety Jacket,3M,62104000,18,Piece,Box,Piece,20,Safety,Safety Equipment,Jackets,3M-JKT-01,High Visibility Jacket,400,520,MARKUP,30,20,Main Distribution Center,60,06/02/2026,400

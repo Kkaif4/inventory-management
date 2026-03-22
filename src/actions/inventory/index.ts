@@ -20,7 +20,7 @@ export async function getInventoryData(
 
     // 1. Build where clause
     const andClauses: any[] = [
-      { outletId },
+      { product: { outletId } },
       { product: { isArchived: false } },
     ];
 
@@ -34,7 +34,7 @@ export async function getInventoryData(
     }
 
     if (categoryId) {
-      andClauses.push({ categoryId });
+      andClauses.push({ product: { categoryId } });
     }
 
     if (brand && brand.length > 0) {
@@ -51,10 +51,13 @@ export async function getInventoryData(
     const variants = await prisma.variant.findMany({
       where,
       include: {
-        product: true,
-        category: {
-          select: {
-            name: true,
+        product: {
+          include: {
+            category: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
         stocks: {
@@ -89,7 +92,7 @@ export async function getInventoryData(
         sku: v.sku,
         productName: v.product.name,
         brand: v.product.brand,
-        categoryName: v.category?.name || "N/A",
+        categoryName: v.product?.category?.name || "N/A",
         specifications:
           typeof v.specifications === "string"
             ? v.specifications
@@ -209,8 +212,8 @@ export async function getVariantsForSelection(outletId: string) {
 
     return await prisma.variant.findMany({
       where: {
-        outletId,
         product: {
+          outletId,
           isArchived: false,
         },
       },

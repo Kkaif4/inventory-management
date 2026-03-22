@@ -22,7 +22,6 @@ export async function getProducts(
         OR: [
           { name: { contains: search, mode: "insensitive" } },
           { brand: { contains: search, mode: "insensitive" } },
-          { sku: { contains: search, mode: "insensitive" } },
           {
             variants: {
               some: {
@@ -35,9 +34,7 @@ export async function getProducts(
     }
 
     if (categoryId) {
-      andClauses.push({
-        OR: [{ categoryId }, { variants: { some: { categoryId } } }],
-      });
+      andClauses.push({ categoryId });
     }
 
     if (brand) {
@@ -67,42 +64,14 @@ export async function createProduct(data: {
   purchaseUnit?: string;
   salesUnit?: string;
   conversionRatio?: number;
-  categoryId: string; // Primary category
-  parentCategoryId: string; // Mandatory per FRD
-  outletId: string; // New field for outlet-scoped uniqueness
+  categoryId: string;
+  outletId: string;
   variants: VariantPayload[];
-  userId: string; // For audit logging
+  userId: string;
 }) {
   return withErrorHandler(async () => {
     const { variants, userId, outletId, ...productData } = data;
 
-    const variantCategoryIds = Array.from(
-      new Set(variants.map((v) => v.categoryId)),
-    );
-    const allCategoriesToVerify = Array.from(
-      new Set([data.categoryId, ...variantCategoryIds]),
-    );
-
-    const categories = await prisma.category.findMany({
-      where: { id: { in: allCategoriesToVerify } },
-      select: { id: true, parentId: true },
-    });
-
-    for (const catId of allCategoriesToVerify) {
-      const cat = categories.find((c) => c.id === catId);
-      if (!cat) throw new NotFoundError(`Category ${catId} not found`);
-
-      const isSame = cat.id === data.parentCategoryId;
-      const isChild = cat.parentId === data.parentCategoryId;
-
-      if (!isSame && !isChild) {
-        throw new ValidationError(
-          `Category ${catId} does not belong to the tree of ${data.parentCategoryId}`,
-        );
-      }
-    }
-
-    // Check for existing product name in this outlet (including archived)
     const existingProduct = await prisma.product.findUnique({
       where: {
         name_outletId: {
@@ -124,13 +93,10 @@ export async function createProduct(data: {
       );
     }
 
-    // Pre-validate SKU uniqueness within the outlet
+    // Pre-validate SKU uniqueness
     const skus = variants.map((v) => v.sku);
     const existingVariants = await prisma.variant.findMany({
-      where: {
-        outletId,
-        sku: { in: skus },
-      },
+      where: { sku: { in: skus } },
       select: { sku: true },
     });
 
@@ -148,8 +114,6 @@ export async function createProduct(data: {
         variants: {
           create: variants.map((v) => ({
             sku: v.sku,
-            categoryId: v.categoryId,
-            outletId, // Important: variants are now scoped to outlets
             purchasePrice: v.purchasePrice,
             sellingPrice:
               v.pricingMethod === "MARKUP" && v.markupPercent
@@ -213,7 +177,7 @@ export async function updateProduct(
   data: {
     name: string;
     brand?: string | null;
-    hsnCode: string;
+    hsnCode?: string | null;
     gstRate: number;
     baseUnit: string;
     purchaseUnit?: string | null;

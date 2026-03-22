@@ -186,7 +186,6 @@ exports.Prisma.ProductScalarFieldEnum = {
   conversionRatio: 'conversionRatio',
   categoryId: 'categoryId',
   isArchived: 'isArchived',
-  parentCategoryId: 'parentCategoryId',
   outletId: 'outletId'
 };
 
@@ -199,9 +198,7 @@ exports.Prisma.VariantScalarFieldEnum = {
   sellingPrice: 'sellingPrice',
   pricingMethod: 'pricingMethod',
   markupPercent: 'markupPercent',
-  minStockLevel: 'minStockLevel',
-  categoryId: 'categoryId',
-  outletId: 'outletId'
+  minStockLevel: 'minStockLevel'
 };
 
 exports.Prisma.StockScalarFieldEnum = {

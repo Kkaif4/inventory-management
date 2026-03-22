@@ -2806,7 +2806,6 @@ export namespace Prisma {
     transactions: number
     parties: number
     accounts: number
-    variants: number
     series: number
     batches: number
     stockLedger: number
@@ -2821,7 +2820,6 @@ export namespace Prisma {
     transactions?: boolean | OutletCountOutputTypeCountTransactionsArgs
     parties?: boolean | OutletCountOutputTypeCountPartiesArgs
     accounts?: boolean | OutletCountOutputTypeCountAccountsArgs
-    variants?: boolean | OutletCountOutputTypeCountVariantsArgs
     series?: boolean | OutletCountOutputTypeCountSeriesArgs
     batches?: boolean | OutletCountOutputTypeCountBatchesArgs
     stockLedger?: boolean | OutletCountOutputTypeCountStockLedgerArgs
@@ -2897,13 +2895,6 @@ export namespace Prisma {
   /**
    * OutletCountOutputType without action
    */
-  export type OutletCountOutputTypeCountVariantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: VariantWhereInput
-  }
-
-  /**
-   * OutletCountOutputType without action
-   */
   export type OutletCountOutputTypeCountSeriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DocumentSeriesWhereInput
   }
@@ -2930,15 +2921,11 @@ export namespace Prisma {
   export type CategoryCountOutputType = {
     children: number
     products: number
-    parentProducts: number
-    variants: number
   }
 
   export type CategoryCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     children?: boolean | CategoryCountOutputTypeCountChildrenArgs
     products?: boolean | CategoryCountOutputTypeCountProductsArgs
-    parentProducts?: boolean | CategoryCountOutputTypeCountParentProductsArgs
-    variants?: boolean | CategoryCountOutputTypeCountVariantsArgs
   }
 
   // Custom InputTypes
@@ -2964,20 +2951,6 @@ export namespace Prisma {
    */
   export type CategoryCountOutputTypeCountProductsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProductWhereInput
-  }
-
-  /**
-   * CategoryCountOutputType without action
-   */
-  export type CategoryCountOutputTypeCountParentProductsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProductWhereInput
-  }
-
-  /**
-   * CategoryCountOutputType without action
-   */
-  export type CategoryCountOutputTypeCountVariantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: VariantWhereInput
   }
 
 
@@ -7069,7 +7042,6 @@ export namespace Prisma {
     transactions?: boolean | Outlet$transactionsArgs<ExtArgs>
     parties?: boolean | Outlet$partiesArgs<ExtArgs>
     accounts?: boolean | Outlet$accountsArgs<ExtArgs>
-    variants?: boolean | Outlet$variantsArgs<ExtArgs>
     series?: boolean | Outlet$seriesArgs<ExtArgs>
     batches?: boolean | Outlet$batchesArgs<ExtArgs>
     stockLedger?: boolean | Outlet$stockLedgerArgs<ExtArgs>
@@ -7128,7 +7100,6 @@ export namespace Prisma {
     transactions?: boolean | Outlet$transactionsArgs<ExtArgs>
     parties?: boolean | Outlet$partiesArgs<ExtArgs>
     accounts?: boolean | Outlet$accountsArgs<ExtArgs>
-    variants?: boolean | Outlet$variantsArgs<ExtArgs>
     series?: boolean | Outlet$seriesArgs<ExtArgs>
     batches?: boolean | Outlet$batchesArgs<ExtArgs>
     stockLedger?: boolean | Outlet$stockLedgerArgs<ExtArgs>
@@ -7148,7 +7119,6 @@ export namespace Prisma {
       transactions: Prisma.$TransactionPayload<ExtArgs>[]
       parties: Prisma.$PartyPayload<ExtArgs>[]
       accounts: Prisma.$AccountPayload<ExtArgs>[]
-      variants: Prisma.$VariantPayload<ExtArgs>[]
       series: Prisma.$DocumentSeriesPayload<ExtArgs>[]
       batches: Prisma.$CustomBatchPayload<ExtArgs>[]
       stockLedger: Prisma.$StockLedgerPayload<ExtArgs>[]
@@ -7567,7 +7537,6 @@ export namespace Prisma {
     transactions<T extends Outlet$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     parties<T extends Outlet$partiesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$partiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PartyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     accounts<T extends Outlet$accountsArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    variants<T extends Outlet$variantsArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$variantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VariantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     series<T extends Outlet$seriesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$seriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentSeriesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     batches<T extends Outlet$batchesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$batchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockLedger<T extends Outlet$stockLedgerArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$stockLedgerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -8191,30 +8160,6 @@ export namespace Prisma {
   }
 
   /**
-   * Outlet.variants
-   */
-  export type Outlet$variantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Variant
-     */
-    select?: VariantSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Variant
-     */
-    omit?: VariantOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: VariantInclude<ExtArgs> | null
-    where?: VariantWhereInput
-    orderBy?: VariantOrderByWithRelationInput | VariantOrderByWithRelationInput[]
-    cursor?: VariantWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: VariantScalarFieldEnum | VariantScalarFieldEnum[]
-  }
-
-  /**
    * Outlet.series
    */
   export type Outlet$seriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8480,8 +8425,6 @@ export namespace Prisma {
     parent?: boolean | Category$parentArgs<ExtArgs>
     children?: boolean | Category$childrenArgs<ExtArgs>
     products?: boolean | Category$productsArgs<ExtArgs>
-    parentProducts?: boolean | Category$parentProductsArgs<ExtArgs>
-    variants?: boolean | Category$variantsArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
     _count?: boolean | CategoryCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["category"]>
@@ -8522,8 +8465,6 @@ export namespace Prisma {
     parent?: boolean | Category$parentArgs<ExtArgs>
     children?: boolean | Category$childrenArgs<ExtArgs>
     products?: boolean | Category$productsArgs<ExtArgs>
-    parentProducts?: boolean | Category$parentProductsArgs<ExtArgs>
-    variants?: boolean | Category$variantsArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
     _count?: boolean | CategoryCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -8542,8 +8483,6 @@ export namespace Prisma {
       parent: Prisma.$CategoryPayload<ExtArgs> | null
       children: Prisma.$CategoryPayload<ExtArgs>[]
       products: Prisma.$ProductPayload<ExtArgs>[]
-      parentProducts: Prisma.$ProductPayload<ExtArgs>[]
-      variants: Prisma.$VariantPayload<ExtArgs>[]
       outlet: Prisma.$OutletPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -8950,8 +8889,6 @@ export namespace Prisma {
     parent<T extends Category$parentArgs<ExtArgs> = {}>(args?: Subset<T, Category$parentArgs<ExtArgs>>): Prisma__CategoryClient<$Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     children<T extends Category$childrenArgs<ExtArgs> = {}>(args?: Subset<T, Category$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     products<T extends Category$productsArgs<ExtArgs> = {}>(args?: Subset<T, Category$productsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    parentProducts<T extends Category$parentProductsArgs<ExtArgs> = {}>(args?: Subset<T, Category$parentProductsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    variants<T extends Category$variantsArgs<ExtArgs> = {}>(args?: Subset<T, Category$variantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VariantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     outlet<T extends OutletDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OutletDefaultArgs<ExtArgs>>): Prisma__OutletClient<$Result.GetResult<Prisma.$OutletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -9451,54 +9388,6 @@ export namespace Prisma {
   }
 
   /**
-   * Category.parentProducts
-   */
-  export type Category$parentProductsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Product
-     */
-    select?: ProductSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Product
-     */
-    omit?: ProductOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProductInclude<ExtArgs> | null
-    where?: ProductWhereInput
-    orderBy?: ProductOrderByWithRelationInput | ProductOrderByWithRelationInput[]
-    cursor?: ProductWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ProductScalarFieldEnum | ProductScalarFieldEnum[]
-  }
-
-  /**
-   * Category.variants
-   */
-  export type Category$variantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Variant
-     */
-    select?: VariantSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Variant
-     */
-    omit?: VariantOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: VariantInclude<ExtArgs> | null
-    where?: VariantWhereInput
-    orderBy?: VariantOrderByWithRelationInput | VariantOrderByWithRelationInput[]
-    cursor?: VariantWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: VariantScalarFieldEnum | VariantScalarFieldEnum[]
-  }
-
-  /**
    * Category without action
    */
   export type CategoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9551,7 +9440,6 @@ export namespace Prisma {
     conversionRatio: number | null
     categoryId: string | null
     isArchived: boolean | null
-    parentCategoryId: string | null
     outletId: string | null
   }
 
@@ -9567,7 +9455,6 @@ export namespace Prisma {
     conversionRatio: number | null
     categoryId: string | null
     isArchived: boolean | null
-    parentCategoryId: string | null
     outletId: string | null
   }
 
@@ -9583,7 +9470,6 @@ export namespace Prisma {
     conversionRatio: number
     categoryId: number
     isArchived: number
-    parentCategoryId: number
     outletId: number
     _all: number
   }
@@ -9611,7 +9497,6 @@ export namespace Prisma {
     conversionRatio?: true
     categoryId?: true
     isArchived?: true
-    parentCategoryId?: true
     outletId?: true
   }
 
@@ -9627,7 +9512,6 @@ export namespace Prisma {
     conversionRatio?: true
     categoryId?: true
     isArchived?: true
-    parentCategoryId?: true
     outletId?: true
   }
 
@@ -9643,7 +9527,6 @@ export namespace Prisma {
     conversionRatio?: true
     categoryId?: true
     isArchived?: true
-    parentCategoryId?: true
     outletId?: true
     _all?: true
   }
@@ -9738,7 +9621,7 @@ export namespace Prisma {
     id: string
     name: string
     brand: string | null
-    hsnCode: string
+    hsnCode: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit: string | null
@@ -9746,7 +9629,6 @@ export namespace Prisma {
     conversionRatio: number | null
     categoryId: string
     isArchived: boolean
-    parentCategoryId: string | null
     outletId: string
     _count: ProductCountAggregateOutputType | null
     _avg: ProductAvgAggregateOutputType | null
@@ -9781,10 +9663,8 @@ export namespace Prisma {
     conversionRatio?: boolean
     categoryId?: boolean
     isArchived?: boolean
-    parentCategoryId?: boolean
     outletId?: boolean
     category?: boolean | CategoryDefaultArgs<ExtArgs>
-    parentCategory?: boolean | Product$parentCategoryArgs<ExtArgs>
     variants?: boolean | Product$variantsArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
@@ -9802,10 +9682,8 @@ export namespace Prisma {
     conversionRatio?: boolean
     categoryId?: boolean
     isArchived?: boolean
-    parentCategoryId?: boolean
     outletId?: boolean
     category?: boolean | CategoryDefaultArgs<ExtArgs>
-    parentCategory?: boolean | Product$parentCategoryArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
 
@@ -9821,10 +9699,8 @@ export namespace Prisma {
     conversionRatio?: boolean
     categoryId?: boolean
     isArchived?: boolean
-    parentCategoryId?: boolean
     outletId?: boolean
     category?: boolean | CategoryDefaultArgs<ExtArgs>
-    parentCategory?: boolean | Product$parentCategoryArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
 
@@ -9840,26 +9716,22 @@ export namespace Prisma {
     conversionRatio?: boolean
     categoryId?: boolean
     isArchived?: boolean
-    parentCategoryId?: boolean
     outletId?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "brand" | "hsnCode" | "gstRate" | "baseUnit" | "purchaseUnit" | "salesUnit" | "conversionRatio" | "categoryId" | "isArchived" | "parentCategoryId" | "outletId", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "brand" | "hsnCode" | "gstRate" | "baseUnit" | "purchaseUnit" | "salesUnit" | "conversionRatio" | "categoryId" | "isArchived" | "outletId", ExtArgs["result"]["product"]>
   export type ProductInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     category?: boolean | CategoryDefaultArgs<ExtArgs>
-    parentCategory?: boolean | Product$parentCategoryArgs<ExtArgs>
     variants?: boolean | Product$variantsArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProductIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     category?: boolean | CategoryDefaultArgs<ExtArgs>
-    parentCategory?: boolean | Product$parentCategoryArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
   }
   export type ProductIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     category?: boolean | CategoryDefaultArgs<ExtArgs>
-    parentCategory?: boolean | Product$parentCategoryArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
   }
 
@@ -9867,7 +9739,6 @@ export namespace Prisma {
     name: "Product"
     objects: {
       category: Prisma.$CategoryPayload<ExtArgs>
-      parentCategory: Prisma.$CategoryPayload<ExtArgs> | null
       variants: Prisma.$VariantPayload<ExtArgs>[]
       outlet: Prisma.$OutletPayload<ExtArgs>
     }
@@ -9875,7 +9746,7 @@ export namespace Prisma {
       id: string
       name: string
       brand: string | null
-      hsnCode: string
+      hsnCode: string | null
       gstRate: number
       baseUnit: string
       purchaseUnit: string | null
@@ -9883,7 +9754,6 @@ export namespace Prisma {
       conversionRatio: number | null
       categoryId: string
       isArchived: boolean
-      parentCategoryId: string | null
       outletId: string
     }, ExtArgs["result"]["product"]>
     composites: {}
@@ -10280,7 +10150,6 @@ export namespace Prisma {
   export interface Prisma__ProductClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     category<T extends CategoryDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CategoryDefaultArgs<ExtArgs>>): Prisma__CategoryClient<$Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    parentCategory<T extends Product$parentCategoryArgs<ExtArgs> = {}>(args?: Subset<T, Product$parentCategoryArgs<ExtArgs>>): Prisma__CategoryClient<$Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     variants<T extends Product$variantsArgs<ExtArgs> = {}>(args?: Subset<T, Product$variantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VariantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     outlet<T extends OutletDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OutletDefaultArgs<ExtArgs>>): Prisma__OutletClient<$Result.GetResult<Prisma.$OutletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
@@ -10323,7 +10192,6 @@ export namespace Prisma {
     readonly conversionRatio: FieldRef<"Product", 'Float'>
     readonly categoryId: FieldRef<"Product", 'String'>
     readonly isArchived: FieldRef<"Product", 'Boolean'>
-    readonly parentCategoryId: FieldRef<"Product", 'String'>
     readonly outletId: FieldRef<"Product", 'String'>
   }
     
@@ -10721,25 +10589,6 @@ export namespace Prisma {
   }
 
   /**
-   * Product.parentCategory
-   */
-  export type Product$parentCategoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Category
-     */
-    select?: CategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Category
-     */
-    omit?: CategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CategoryInclude<ExtArgs> | null
-    where?: CategoryWhereInput
-  }
-
-  /**
    * Product.variants
    */
   export type Product$variantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -10817,8 +10666,6 @@ export namespace Prisma {
     pricingMethod: string | null
     markupPercent: number | null
     minStockLevel: number | null
-    categoryId: string | null
-    outletId: string | null
   }
 
   export type VariantMaxAggregateOutputType = {
@@ -10830,8 +10677,6 @@ export namespace Prisma {
     pricingMethod: string | null
     markupPercent: number | null
     minStockLevel: number | null
-    categoryId: string | null
-    outletId: string | null
   }
 
   export type VariantCountAggregateOutputType = {
@@ -10844,8 +10689,6 @@ export namespace Prisma {
     pricingMethod: number
     markupPercent: number
     minStockLevel: number
-    categoryId: number
-    outletId: number
     _all: number
   }
 
@@ -10873,8 +10716,6 @@ export namespace Prisma {
     pricingMethod?: true
     markupPercent?: true
     minStockLevel?: true
-    categoryId?: true
-    outletId?: true
   }
 
   export type VariantMaxAggregateInputType = {
@@ -10886,8 +10727,6 @@ export namespace Prisma {
     pricingMethod?: true
     markupPercent?: true
     minStockLevel?: true
-    categoryId?: true
-    outletId?: true
   }
 
   export type VariantCountAggregateInputType = {
@@ -10900,8 +10739,6 @@ export namespace Prisma {
     pricingMethod?: true
     markupPercent?: true
     minStockLevel?: true
-    categoryId?: true
-    outletId?: true
     _all?: true
   }
 
@@ -11001,8 +10838,6 @@ export namespace Prisma {
     pricingMethod: string
     markupPercent: number | null
     minStockLevel: number
-    categoryId: string
-    outletId: string
     _count: VariantCountAggregateOutputType | null
     _avg: VariantAvgAggregateOutputType | null
     _sum: VariantSumAggregateOutputType | null
@@ -11034,16 +10869,12 @@ export namespace Prisma {
     pricingMethod?: boolean
     markupPercent?: boolean
     minStockLevel?: boolean
-    categoryId?: boolean
-    outletId?: boolean
     priceListEntries?: boolean | Variant$priceListEntriesArgs<ExtArgs>
     stocks?: boolean | Variant$stocksArgs<ExtArgs>
     txnItems?: boolean | Variant$txnItemsArgs<ExtArgs>
     batches?: boolean | Variant$batchesArgs<ExtArgs>
     stockLedger?: boolean | Variant$stockLedgerArgs<ExtArgs>
-    category?: boolean | CategoryDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
-    outlet?: boolean | OutletDefaultArgs<ExtArgs>
     suppliers?: boolean | Variant$suppliersArgs<ExtArgs>
     _count?: boolean | VariantCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["variant"]>
@@ -11058,11 +10889,7 @@ export namespace Prisma {
     pricingMethod?: boolean
     markupPercent?: boolean
     minStockLevel?: boolean
-    categoryId?: boolean
-    outletId?: boolean
-    category?: boolean | CategoryDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
-    outlet?: boolean | OutletDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["variant"]>
 
   export type VariantSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -11075,11 +10902,7 @@ export namespace Prisma {
     pricingMethod?: boolean
     markupPercent?: boolean
     minStockLevel?: boolean
-    categoryId?: boolean
-    outletId?: boolean
-    category?: boolean | CategoryDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
-    outlet?: boolean | OutletDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["variant"]>
 
   export type VariantSelectScalar = {
@@ -11092,32 +10915,24 @@ export namespace Prisma {
     pricingMethod?: boolean
     markupPercent?: boolean
     minStockLevel?: boolean
-    categoryId?: boolean
-    outletId?: boolean
   }
 
-  export type VariantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "productId" | "sku" | "specifications" | "purchasePrice" | "sellingPrice" | "pricingMethod" | "markupPercent" | "minStockLevel" | "categoryId" | "outletId", ExtArgs["result"]["variant"]>
+  export type VariantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "productId" | "sku" | "specifications" | "purchasePrice" | "sellingPrice" | "pricingMethod" | "markupPercent" | "minStockLevel", ExtArgs["result"]["variant"]>
   export type VariantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     priceListEntries?: boolean | Variant$priceListEntriesArgs<ExtArgs>
     stocks?: boolean | Variant$stocksArgs<ExtArgs>
     txnItems?: boolean | Variant$txnItemsArgs<ExtArgs>
     batches?: boolean | Variant$batchesArgs<ExtArgs>
     stockLedger?: boolean | Variant$stockLedgerArgs<ExtArgs>
-    category?: boolean | CategoryDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
-    outlet?: boolean | OutletDefaultArgs<ExtArgs>
     suppliers?: boolean | Variant$suppliersArgs<ExtArgs>
     _count?: boolean | VariantCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type VariantIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    category?: boolean | CategoryDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
-    outlet?: boolean | OutletDefaultArgs<ExtArgs>
   }
   export type VariantIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    category?: boolean | CategoryDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
-    outlet?: boolean | OutletDefaultArgs<ExtArgs>
   }
 
   export type $VariantPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11128,9 +10943,7 @@ export namespace Prisma {
       txnItems: Prisma.$TransactionItemPayload<ExtArgs>[]
       batches: Prisma.$CustomBatchPayload<ExtArgs>[]
       stockLedger: Prisma.$StockLedgerPayload<ExtArgs>[]
-      category: Prisma.$CategoryPayload<ExtArgs>
       product: Prisma.$ProductPayload<ExtArgs>
-      outlet: Prisma.$OutletPayload<ExtArgs>
       suppliers: Prisma.$VendorProductPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -11143,8 +10956,6 @@ export namespace Prisma {
       pricingMethod: string
       markupPercent: number | null
       minStockLevel: number
-      categoryId: string
-      outletId: string
     }, ExtArgs["result"]["variant"]>
     composites: {}
   }
@@ -11544,9 +11355,7 @@ export namespace Prisma {
     txnItems<T extends Variant$txnItemsArgs<ExtArgs> = {}>(args?: Subset<T, Variant$txnItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     batches<T extends Variant$batchesArgs<ExtArgs> = {}>(args?: Subset<T, Variant$batchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockLedger<T extends Variant$stockLedgerArgs<ExtArgs> = {}>(args?: Subset<T, Variant$stockLedgerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    category<T extends CategoryDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CategoryDefaultArgs<ExtArgs>>): Prisma__CategoryClient<$Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     product<T extends ProductDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProductDefaultArgs<ExtArgs>>): Prisma__ProductClient<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    outlet<T extends OutletDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OutletDefaultArgs<ExtArgs>>): Prisma__OutletClient<$Result.GetResult<Prisma.$OutletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     suppliers<T extends Variant$suppliersArgs<ExtArgs> = {}>(args?: Subset<T, Variant$suppliersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -11586,8 +11395,6 @@ export namespace Prisma {
     readonly pricingMethod: FieldRef<"Variant", 'String'>
     readonly markupPercent: FieldRef<"Variant", 'Float'>
     readonly minStockLevel: FieldRef<"Variant", 'Float'>
-    readonly categoryId: FieldRef<"Variant", 'String'>
-    readonly outletId: FieldRef<"Variant", 'String'>
   }
     
 
@@ -27685,7 +27492,6 @@ export namespace Prisma {
     conversionRatio: 'conversionRatio',
     categoryId: 'categoryId',
     isArchived: 'isArchived',
-    parentCategoryId: 'parentCategoryId',
     outletId: 'outletId'
   };
 
@@ -27701,9 +27507,7 @@ export namespace Prisma {
     sellingPrice: 'sellingPrice',
     pricingMethod: 'pricingMethod',
     markupPercent: 'markupPercent',
-    minStockLevel: 'minStockLevel',
-    categoryId: 'categoryId',
-    outletId: 'outletId'
+    minStockLevel: 'minStockLevel'
   };
 
   export type VariantScalarFieldEnum = (typeof VariantScalarFieldEnum)[keyof typeof VariantScalarFieldEnum]
@@ -28326,7 +28130,6 @@ export namespace Prisma {
     transactions?: TransactionListRelationFilter
     parties?: PartyListRelationFilter
     accounts?: AccountListRelationFilter
-    variants?: VariantListRelationFilter
     series?: DocumentSeriesListRelationFilter
     batches?: CustomBatchListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
@@ -28352,7 +28155,6 @@ export namespace Prisma {
     transactions?: TransactionOrderByRelationAggregateInput
     parties?: PartyOrderByRelationAggregateInput
     accounts?: AccountOrderByRelationAggregateInput
-    variants?: VariantOrderByRelationAggregateInput
     series?: DocumentSeriesOrderByRelationAggregateInput
     batches?: CustomBatchOrderByRelationAggregateInput
     stockLedger?: StockLedgerOrderByRelationAggregateInput
@@ -28381,7 +28183,6 @@ export namespace Prisma {
     transactions?: TransactionListRelationFilter
     parties?: PartyListRelationFilter
     accounts?: AccountListRelationFilter
-    variants?: VariantListRelationFilter
     series?: DocumentSeriesListRelationFilter
     batches?: CustomBatchListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
@@ -28436,8 +28237,6 @@ export namespace Prisma {
     parent?: XOR<CategoryNullableScalarRelationFilter, CategoryWhereInput> | null
     children?: CategoryListRelationFilter
     products?: ProductListRelationFilter
-    parentProducts?: ProductListRelationFilter
-    variants?: VariantListRelationFilter
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
   }
 
@@ -28451,14 +28250,12 @@ export namespace Prisma {
     parent?: CategoryOrderByWithRelationInput
     children?: CategoryOrderByRelationAggregateInput
     products?: ProductOrderByRelationAggregateInput
-    parentProducts?: ProductOrderByRelationAggregateInput
-    variants?: VariantOrderByRelationAggregateInput
     outlet?: OutletOrderByWithRelationInput
   }
 
   export type CategoryWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    name_outletId?: CategoryNameOutletIdCompoundUniqueInput
+    name_parentId_outletId?: CategoryNameParentIdOutletIdCompoundUniqueInput
     AND?: CategoryWhereInput | CategoryWhereInput[]
     OR?: CategoryWhereInput[]
     NOT?: CategoryWhereInput | CategoryWhereInput[]
@@ -28470,10 +28267,8 @@ export namespace Prisma {
     parent?: XOR<CategoryNullableScalarRelationFilter, CategoryWhereInput> | null
     children?: CategoryListRelationFilter
     products?: ProductListRelationFilter
-    parentProducts?: ProductListRelationFilter
-    variants?: VariantListRelationFilter
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
-  }, "id" | "name_outletId">
+  }, "id" | "name_parentId_outletId">
 
   export type CategoryOrderByWithAggregationInput = {
     id?: SortOrder
@@ -28506,7 +28301,7 @@ export namespace Prisma {
     id?: StringFilter<"Product"> | string
     name?: StringFilter<"Product"> | string
     brand?: StringNullableFilter<"Product"> | string | null
-    hsnCode?: StringFilter<"Product"> | string
+    hsnCode?: StringNullableFilter<"Product"> | string | null
     gstRate?: FloatFilter<"Product"> | number
     baseUnit?: StringFilter<"Product"> | string
     purchaseUnit?: StringNullableFilter<"Product"> | string | null
@@ -28514,10 +28309,8 @@ export namespace Prisma {
     conversionRatio?: FloatNullableFilter<"Product"> | number | null
     categoryId?: StringFilter<"Product"> | string
     isArchived?: BoolFilter<"Product"> | boolean
-    parentCategoryId?: StringNullableFilter<"Product"> | string | null
     outletId?: StringFilter<"Product"> | string
     category?: XOR<CategoryScalarRelationFilter, CategoryWhereInput>
-    parentCategory?: XOR<CategoryNullableScalarRelationFilter, CategoryWhereInput> | null
     variants?: VariantListRelationFilter
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
   }
@@ -28526,7 +28319,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     brand?: SortOrderInput | SortOrder
-    hsnCode?: SortOrder
+    hsnCode?: SortOrderInput | SortOrder
     gstRate?: SortOrder
     baseUnit?: SortOrder
     purchaseUnit?: SortOrderInput | SortOrder
@@ -28534,10 +28327,8 @@ export namespace Prisma {
     conversionRatio?: SortOrderInput | SortOrder
     categoryId?: SortOrder
     isArchived?: SortOrder
-    parentCategoryId?: SortOrderInput | SortOrder
     outletId?: SortOrder
     category?: CategoryOrderByWithRelationInput
-    parentCategory?: CategoryOrderByWithRelationInput
     variants?: VariantOrderByRelationAggregateInput
     outlet?: OutletOrderByWithRelationInput
   }
@@ -28550,7 +28341,7 @@ export namespace Prisma {
     NOT?: ProductWhereInput | ProductWhereInput[]
     name?: StringFilter<"Product"> | string
     brand?: StringNullableFilter<"Product"> | string | null
-    hsnCode?: StringFilter<"Product"> | string
+    hsnCode?: StringNullableFilter<"Product"> | string | null
     gstRate?: FloatFilter<"Product"> | number
     baseUnit?: StringFilter<"Product"> | string
     purchaseUnit?: StringNullableFilter<"Product"> | string | null
@@ -28558,10 +28349,8 @@ export namespace Prisma {
     conversionRatio?: FloatNullableFilter<"Product"> | number | null
     categoryId?: StringFilter<"Product"> | string
     isArchived?: BoolFilter<"Product"> | boolean
-    parentCategoryId?: StringNullableFilter<"Product"> | string | null
     outletId?: StringFilter<"Product"> | string
     category?: XOR<CategoryScalarRelationFilter, CategoryWhereInput>
-    parentCategory?: XOR<CategoryNullableScalarRelationFilter, CategoryWhereInput> | null
     variants?: VariantListRelationFilter
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
   }, "id" | "name_outletId">
@@ -28570,7 +28359,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     brand?: SortOrderInput | SortOrder
-    hsnCode?: SortOrder
+    hsnCode?: SortOrderInput | SortOrder
     gstRate?: SortOrder
     baseUnit?: SortOrder
     purchaseUnit?: SortOrderInput | SortOrder
@@ -28578,7 +28367,6 @@ export namespace Prisma {
     conversionRatio?: SortOrderInput | SortOrder
     categoryId?: SortOrder
     isArchived?: SortOrder
-    parentCategoryId?: SortOrderInput | SortOrder
     outletId?: SortOrder
     _count?: ProductCountOrderByAggregateInput
     _avg?: ProductAvgOrderByAggregateInput
@@ -28594,7 +28382,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Product"> | string
     name?: StringWithAggregatesFilter<"Product"> | string
     brand?: StringNullableWithAggregatesFilter<"Product"> | string | null
-    hsnCode?: StringWithAggregatesFilter<"Product"> | string
+    hsnCode?: StringNullableWithAggregatesFilter<"Product"> | string | null
     gstRate?: FloatWithAggregatesFilter<"Product"> | number
     baseUnit?: StringWithAggregatesFilter<"Product"> | string
     purchaseUnit?: StringNullableWithAggregatesFilter<"Product"> | string | null
@@ -28602,7 +28390,6 @@ export namespace Prisma {
     conversionRatio?: FloatNullableWithAggregatesFilter<"Product"> | number | null
     categoryId?: StringWithAggregatesFilter<"Product"> | string
     isArchived?: BoolWithAggregatesFilter<"Product"> | boolean
-    parentCategoryId?: StringNullableWithAggregatesFilter<"Product"> | string | null
     outletId?: StringWithAggregatesFilter<"Product"> | string
   }
 
@@ -28619,16 +28406,12 @@ export namespace Prisma {
     pricingMethod?: StringFilter<"Variant"> | string
     markupPercent?: FloatNullableFilter<"Variant"> | number | null
     minStockLevel?: FloatFilter<"Variant"> | number
-    categoryId?: StringFilter<"Variant"> | string
-    outletId?: StringFilter<"Variant"> | string
     priceListEntries?: PriceListEntryListRelationFilter
     stocks?: StockListRelationFilter
     txnItems?: TransactionItemListRelationFilter
     batches?: CustomBatchListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
-    category?: XOR<CategoryScalarRelationFilter, CategoryWhereInput>
     product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
-    outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
     suppliers?: VendorProductListRelationFilter
   }
 
@@ -28642,45 +28425,36 @@ export namespace Prisma {
     pricingMethod?: SortOrder
     markupPercent?: SortOrderInput | SortOrder
     minStockLevel?: SortOrder
-    categoryId?: SortOrder
-    outletId?: SortOrder
     priceListEntries?: PriceListEntryOrderByRelationAggregateInput
     stocks?: StockOrderByRelationAggregateInput
     txnItems?: TransactionItemOrderByRelationAggregateInput
     batches?: CustomBatchOrderByRelationAggregateInput
     stockLedger?: StockLedgerOrderByRelationAggregateInput
-    category?: CategoryOrderByWithRelationInput
     product?: ProductOrderByWithRelationInput
-    outlet?: OutletOrderByWithRelationInput
     suppliers?: VendorProductOrderByRelationAggregateInput
   }
 
   export type VariantWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    sku_outletId?: VariantSkuOutletIdCompoundUniqueInput
+    sku?: string
     AND?: VariantWhereInput | VariantWhereInput[]
     OR?: VariantWhereInput[]
     NOT?: VariantWhereInput | VariantWhereInput[]
     productId?: StringFilter<"Variant"> | string
-    sku?: StringFilter<"Variant"> | string
     specifications?: JsonNullableFilter<"Variant">
     purchasePrice?: FloatFilter<"Variant"> | number
     sellingPrice?: FloatFilter<"Variant"> | number
     pricingMethod?: StringFilter<"Variant"> | string
     markupPercent?: FloatNullableFilter<"Variant"> | number | null
     minStockLevel?: FloatFilter<"Variant"> | number
-    categoryId?: StringFilter<"Variant"> | string
-    outletId?: StringFilter<"Variant"> | string
     priceListEntries?: PriceListEntryListRelationFilter
     stocks?: StockListRelationFilter
     txnItems?: TransactionItemListRelationFilter
     batches?: CustomBatchListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
-    category?: XOR<CategoryScalarRelationFilter, CategoryWhereInput>
     product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
-    outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
     suppliers?: VendorProductListRelationFilter
-  }, "id" | "sku_outletId">
+  }, "id" | "sku">
 
   export type VariantOrderByWithAggregationInput = {
     id?: SortOrder
@@ -28692,8 +28466,6 @@ export namespace Prisma {
     pricingMethod?: SortOrder
     markupPercent?: SortOrderInput | SortOrder
     minStockLevel?: SortOrder
-    categoryId?: SortOrder
-    outletId?: SortOrder
     _count?: VariantCountOrderByAggregateInput
     _avg?: VariantAvgOrderByAggregateInput
     _max?: VariantMaxOrderByAggregateInput
@@ -28714,8 +28486,6 @@ export namespace Prisma {
     pricingMethod?: StringWithAggregatesFilter<"Variant"> | string
     markupPercent?: FloatNullableWithAggregatesFilter<"Variant"> | number | null
     minStockLevel?: FloatWithAggregatesFilter<"Variant"> | number
-    categoryId?: StringWithAggregatesFilter<"Variant"> | string
-    outletId?: StringWithAggregatesFilter<"Variant"> | string
   }
 
   export type StockWhereInput = {
@@ -30054,7 +29824,6 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
@@ -30080,7 +29849,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
@@ -30106,7 +29874,6 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
@@ -30132,7 +29899,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
@@ -30188,8 +29954,6 @@ export namespace Prisma {
     parent?: CategoryCreateNestedOneWithoutChildrenInput
     children?: CategoryCreateNestedManyWithoutParentInput
     products?: ProductCreateNestedManyWithoutCategoryInput
-    parentProducts?: ProductCreateNestedManyWithoutParentCategoryInput
-    variants?: VariantCreateNestedManyWithoutCategoryInput
     outlet: OutletCreateNestedOneWithoutCategoriesInput
   }
 
@@ -30202,8 +29966,6 @@ export namespace Prisma {
     outletId: string
     children?: CategoryUncheckedCreateNestedManyWithoutParentInput
     products?: ProductUncheckedCreateNestedManyWithoutCategoryInput
-    parentProducts?: ProductUncheckedCreateNestedManyWithoutParentCategoryInput
-    variants?: VariantUncheckedCreateNestedManyWithoutCategoryInput
   }
 
   export type CategoryUpdateInput = {
@@ -30214,8 +29976,6 @@ export namespace Prisma {
     parent?: CategoryUpdateOneWithoutChildrenNestedInput
     children?: CategoryUpdateManyWithoutParentNestedInput
     products?: ProductUpdateManyWithoutCategoryNestedInput
-    parentProducts?: ProductUpdateManyWithoutParentCategoryNestedInput
-    variants?: VariantUpdateManyWithoutCategoryNestedInput
     outlet?: OutletUpdateOneRequiredWithoutCategoriesNestedInput
   }
 
@@ -30228,8 +29988,6 @@ export namespace Prisma {
     outletId?: StringFieldUpdateOperationsInput | string
     children?: CategoryUncheckedUpdateManyWithoutParentNestedInput
     products?: ProductUncheckedUpdateManyWithoutCategoryNestedInput
-    parentProducts?: ProductUncheckedUpdateManyWithoutParentCategoryNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutCategoryNestedInput
   }
 
   export type CategoryCreateManyInput = {
@@ -30261,7 +30019,7 @@ export namespace Prisma {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
@@ -30269,7 +30027,6 @@ export namespace Prisma {
     conversionRatio?: number | null
     isArchived?: boolean
     category: CategoryCreateNestedOneWithoutProductsInput
-    parentCategory?: CategoryCreateNestedOneWithoutParentProductsInput
     variants?: VariantCreateNestedManyWithoutProductInput
     outlet: OutletCreateNestedOneWithoutProductsInput
   }
@@ -30278,7 +30035,7 @@ export namespace Prisma {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
@@ -30286,7 +30043,6 @@ export namespace Prisma {
     conversionRatio?: number | null
     categoryId: string
     isArchived?: boolean
-    parentCategoryId?: string | null
     outletId: string
     variants?: VariantUncheckedCreateNestedManyWithoutProductInput
   }
@@ -30295,7 +30051,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30303,7 +30059,6 @@ export namespace Prisma {
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
-    parentCategory?: CategoryUpdateOneWithoutParentProductsNestedInput
     variants?: VariantUpdateManyWithoutProductNestedInput
     outlet?: OutletUpdateOneRequiredWithoutProductsNestedInput
   }
@@ -30312,7 +30067,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30320,7 +30075,6 @@ export namespace Prisma {
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     categoryId?: StringFieldUpdateOperationsInput | string
     isArchived?: BoolFieldUpdateOperationsInput | boolean
-    parentCategoryId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
     variants?: VariantUncheckedUpdateManyWithoutProductNestedInput
   }
@@ -30329,7 +30083,7 @@ export namespace Prisma {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
@@ -30337,7 +30091,6 @@ export namespace Prisma {
     conversionRatio?: number | null
     categoryId: string
     isArchived?: boolean
-    parentCategoryId?: string | null
     outletId: string
   }
 
@@ -30345,7 +30098,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30358,7 +30111,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30366,7 +30119,6 @@ export namespace Prisma {
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     categoryId?: StringFieldUpdateOperationsInput | string
     isArchived?: BoolFieldUpdateOperationsInput | boolean
-    parentCategoryId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -30384,9 +30136,7 @@ export namespace Prisma {
     txnItems?: TransactionItemCreateNestedManyWithoutVariantInput
     batches?: CustomBatchCreateNestedManyWithoutVariantInput
     stockLedger?: StockLedgerCreateNestedManyWithoutVariantInput
-    category: CategoryCreateNestedOneWithoutVariantsInput
     product: ProductCreateNestedOneWithoutVariantsInput
-    outlet: OutletCreateNestedOneWithoutVariantsInput
     suppliers?: VendorProductCreateNestedManyWithoutVariantInput
   }
 
@@ -30400,8 +30150,6 @@ export namespace Prisma {
     pricingMethod?: string
     markupPercent?: number | null
     minStockLevel?: number
-    categoryId: string
-    outletId: string
     priceListEntries?: PriceListEntryUncheckedCreateNestedManyWithoutVariantInput
     stocks?: StockUncheckedCreateNestedManyWithoutVariantInput
     txnItems?: TransactionItemUncheckedCreateNestedManyWithoutVariantInput
@@ -30424,9 +30172,7 @@ export namespace Prisma {
     txnItems?: TransactionItemUpdateManyWithoutVariantNestedInput
     batches?: CustomBatchUpdateManyWithoutVariantNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutVariantNestedInput
-    category?: CategoryUpdateOneRequiredWithoutVariantsNestedInput
     product?: ProductUpdateOneRequiredWithoutVariantsNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutVariantsNestedInput
     suppliers?: VendorProductUpdateManyWithoutVariantNestedInput
   }
 
@@ -30440,8 +30186,6 @@ export namespace Prisma {
     pricingMethod?: StringFieldUpdateOperationsInput | string
     markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
     minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    outletId?: StringFieldUpdateOperationsInput | string
     priceListEntries?: PriceListEntryUncheckedUpdateManyWithoutVariantNestedInput
     stocks?: StockUncheckedUpdateManyWithoutVariantNestedInput
     txnItems?: TransactionItemUncheckedUpdateManyWithoutVariantNestedInput
@@ -30460,8 +30204,6 @@ export namespace Prisma {
     pricingMethod?: string
     markupPercent?: number | null
     minStockLevel?: number
-    categoryId: string
-    outletId: string
   }
 
   export type VariantUpdateManyMutationInput = {
@@ -30485,8 +30227,6 @@ export namespace Prisma {
     pricingMethod?: StringFieldUpdateOperationsInput | string
     markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
     minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    outletId?: StringFieldUpdateOperationsInput | string
   }
 
   export type StockCreateInput = {
@@ -31924,12 +31664,6 @@ export namespace Prisma {
     none?: AccountWhereInput
   }
 
-  export type VariantListRelationFilter = {
-    every?: VariantWhereInput
-    some?: VariantWhereInput
-    none?: VariantWhereInput
-  }
-
   export type DocumentSeriesListRelationFilter = {
     every?: DocumentSeriesWhereInput
     some?: DocumentSeriesWhereInput
@@ -31957,10 +31691,6 @@ export namespace Prisma {
   }
 
   export type AccountOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type VariantOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -32044,8 +31774,9 @@ export namespace Prisma {
     isNot?: OutletWhereInput
   }
 
-  export type CategoryNameOutletIdCompoundUniqueInput = {
+  export type CategoryNameParentIdOutletIdCompoundUniqueInput = {
     name: string
+    parentId: string
     outletId: string
   }
 
@@ -32103,6 +31834,16 @@ export namespace Prisma {
     isNot?: CategoryWhereInput
   }
 
+  export type VariantListRelationFilter = {
+    every?: VariantWhereInput
+    some?: VariantWhereInput
+    none?: VariantWhereInput
+  }
+
+  export type VariantOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type ProductNameOutletIdCompoundUniqueInput = {
     name: string
     outletId: string
@@ -32120,7 +31861,6 @@ export namespace Prisma {
     conversionRatio?: SortOrder
     categoryId?: SortOrder
     isArchived?: SortOrder
-    parentCategoryId?: SortOrder
     outletId?: SortOrder
   }
 
@@ -32141,7 +31881,6 @@ export namespace Prisma {
     conversionRatio?: SortOrder
     categoryId?: SortOrder
     isArchived?: SortOrder
-    parentCategoryId?: SortOrder
     outletId?: SortOrder
   }
 
@@ -32157,7 +31896,6 @@ export namespace Prisma {
     conversionRatio?: SortOrder
     categoryId?: SortOrder
     isArchived?: SortOrder
-    parentCategoryId?: SortOrder
     outletId?: SortOrder
   }
 
@@ -32233,11 +31971,6 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type VariantSkuOutletIdCompoundUniqueInput = {
-    sku: string
-    outletId: string
-  }
-
   export type VariantCountOrderByAggregateInput = {
     id?: SortOrder
     productId?: SortOrder
@@ -32248,8 +31981,6 @@ export namespace Prisma {
     pricingMethod?: SortOrder
     markupPercent?: SortOrder
     minStockLevel?: SortOrder
-    categoryId?: SortOrder
-    outletId?: SortOrder
   }
 
   export type VariantAvgOrderByAggregateInput = {
@@ -32268,8 +31999,6 @@ export namespace Prisma {
     pricingMethod?: SortOrder
     markupPercent?: SortOrder
     minStockLevel?: SortOrder
-    categoryId?: SortOrder
-    outletId?: SortOrder
   }
 
   export type VariantMinOrderByAggregateInput = {
@@ -32281,8 +32010,6 @@ export namespace Prisma {
     pricingMethod?: SortOrder
     markupPercent?: SortOrder
     minStockLevel?: SortOrder
-    categoryId?: SortOrder
-    outletId?: SortOrder
   }
 
   export type VariantSumOrderByAggregateInput = {
@@ -33548,13 +33275,6 @@ export namespace Prisma {
     connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
   }
 
-  export type VariantCreateNestedManyWithoutOutletInput = {
-    create?: XOR<VariantCreateWithoutOutletInput, VariantUncheckedCreateWithoutOutletInput> | VariantCreateWithoutOutletInput[] | VariantUncheckedCreateWithoutOutletInput[]
-    connectOrCreate?: VariantCreateOrConnectWithoutOutletInput | VariantCreateOrConnectWithoutOutletInput[]
-    createMany?: VariantCreateManyOutletInputEnvelope
-    connect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-  }
-
   export type DocumentSeriesCreateNestedManyWithoutOutletInput = {
     create?: XOR<DocumentSeriesCreateWithoutOutletInput, DocumentSeriesUncheckedCreateWithoutOutletInput> | DocumentSeriesCreateWithoutOutletInput[] | DocumentSeriesUncheckedCreateWithoutOutletInput[]
     connectOrCreate?: DocumentSeriesCreateOrConnectWithoutOutletInput | DocumentSeriesCreateOrConnectWithoutOutletInput[]
@@ -33628,13 +33348,6 @@ export namespace Prisma {
     connectOrCreate?: AccountCreateOrConnectWithoutOutletInput | AccountCreateOrConnectWithoutOutletInput[]
     createMany?: AccountCreateManyOutletInputEnvelope
     connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
-  }
-
-  export type VariantUncheckedCreateNestedManyWithoutOutletInput = {
-    create?: XOR<VariantCreateWithoutOutletInput, VariantUncheckedCreateWithoutOutletInput> | VariantCreateWithoutOutletInput[] | VariantUncheckedCreateWithoutOutletInput[]
-    connectOrCreate?: VariantCreateOrConnectWithoutOutletInput | VariantCreateOrConnectWithoutOutletInput[]
-    createMany?: VariantCreateManyOutletInputEnvelope
-    connect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
   }
 
   export type DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput = {
@@ -33774,20 +33487,6 @@ export namespace Prisma {
     update?: AccountUpdateWithWhereUniqueWithoutOutletInput | AccountUpdateWithWhereUniqueWithoutOutletInput[]
     updateMany?: AccountUpdateManyWithWhereWithoutOutletInput | AccountUpdateManyWithWhereWithoutOutletInput[]
     deleteMany?: AccountScalarWhereInput | AccountScalarWhereInput[]
-  }
-
-  export type VariantUpdateManyWithoutOutletNestedInput = {
-    create?: XOR<VariantCreateWithoutOutletInput, VariantUncheckedCreateWithoutOutletInput> | VariantCreateWithoutOutletInput[] | VariantUncheckedCreateWithoutOutletInput[]
-    connectOrCreate?: VariantCreateOrConnectWithoutOutletInput | VariantCreateOrConnectWithoutOutletInput[]
-    upsert?: VariantUpsertWithWhereUniqueWithoutOutletInput | VariantUpsertWithWhereUniqueWithoutOutletInput[]
-    createMany?: VariantCreateManyOutletInputEnvelope
-    set?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    disconnect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    delete?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    connect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    update?: VariantUpdateWithWhereUniqueWithoutOutletInput | VariantUpdateWithWhereUniqueWithoutOutletInput[]
-    updateMany?: VariantUpdateManyWithWhereWithoutOutletInput | VariantUpdateManyWithWhereWithoutOutletInput[]
-    deleteMany?: VariantScalarWhereInput | VariantScalarWhereInput[]
   }
 
   export type DocumentSeriesUpdateManyWithoutOutletNestedInput = {
@@ -33942,20 +33641,6 @@ export namespace Prisma {
     deleteMany?: AccountScalarWhereInput | AccountScalarWhereInput[]
   }
 
-  export type VariantUncheckedUpdateManyWithoutOutletNestedInput = {
-    create?: XOR<VariantCreateWithoutOutletInput, VariantUncheckedCreateWithoutOutletInput> | VariantCreateWithoutOutletInput[] | VariantUncheckedCreateWithoutOutletInput[]
-    connectOrCreate?: VariantCreateOrConnectWithoutOutletInput | VariantCreateOrConnectWithoutOutletInput[]
-    upsert?: VariantUpsertWithWhereUniqueWithoutOutletInput | VariantUpsertWithWhereUniqueWithoutOutletInput[]
-    createMany?: VariantCreateManyOutletInputEnvelope
-    set?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    disconnect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    delete?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    connect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    update?: VariantUpdateWithWhereUniqueWithoutOutletInput | VariantUpdateWithWhereUniqueWithoutOutletInput[]
-    updateMany?: VariantUpdateManyWithWhereWithoutOutletInput | VariantUpdateManyWithWhereWithoutOutletInput[]
-    deleteMany?: VariantScalarWhereInput | VariantScalarWhereInput[]
-  }
-
   export type DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput = {
     create?: XOR<DocumentSeriesCreateWithoutOutletInput, DocumentSeriesUncheckedCreateWithoutOutletInput> | DocumentSeriesCreateWithoutOutletInput[] | DocumentSeriesUncheckedCreateWithoutOutletInput[]
     connectOrCreate?: DocumentSeriesCreateOrConnectWithoutOutletInput | DocumentSeriesCreateOrConnectWithoutOutletInput[]
@@ -34018,20 +33703,6 @@ export namespace Prisma {
     connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
   }
 
-  export type ProductCreateNestedManyWithoutParentCategoryInput = {
-    create?: XOR<ProductCreateWithoutParentCategoryInput, ProductUncheckedCreateWithoutParentCategoryInput> | ProductCreateWithoutParentCategoryInput[] | ProductUncheckedCreateWithoutParentCategoryInput[]
-    connectOrCreate?: ProductCreateOrConnectWithoutParentCategoryInput | ProductCreateOrConnectWithoutParentCategoryInput[]
-    createMany?: ProductCreateManyParentCategoryInputEnvelope
-    connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-  }
-
-  export type VariantCreateNestedManyWithoutCategoryInput = {
-    create?: XOR<VariantCreateWithoutCategoryInput, VariantUncheckedCreateWithoutCategoryInput> | VariantCreateWithoutCategoryInput[] | VariantUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: VariantCreateOrConnectWithoutCategoryInput | VariantCreateOrConnectWithoutCategoryInput[]
-    createMany?: VariantCreateManyCategoryInputEnvelope
-    connect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-  }
-
   export type OutletCreateNestedOneWithoutCategoriesInput = {
     create?: XOR<OutletCreateWithoutCategoriesInput, OutletUncheckedCreateWithoutCategoriesInput>
     connectOrCreate?: OutletCreateOrConnectWithoutCategoriesInput
@@ -34050,20 +33721,6 @@ export namespace Prisma {
     connectOrCreate?: ProductCreateOrConnectWithoutCategoryInput | ProductCreateOrConnectWithoutCategoryInput[]
     createMany?: ProductCreateManyCategoryInputEnvelope
     connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-  }
-
-  export type ProductUncheckedCreateNestedManyWithoutParentCategoryInput = {
-    create?: XOR<ProductCreateWithoutParentCategoryInput, ProductUncheckedCreateWithoutParentCategoryInput> | ProductCreateWithoutParentCategoryInput[] | ProductUncheckedCreateWithoutParentCategoryInput[]
-    connectOrCreate?: ProductCreateOrConnectWithoutParentCategoryInput | ProductCreateOrConnectWithoutParentCategoryInput[]
-    createMany?: ProductCreateManyParentCategoryInputEnvelope
-    connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-  }
-
-  export type VariantUncheckedCreateNestedManyWithoutCategoryInput = {
-    create?: XOR<VariantCreateWithoutCategoryInput, VariantUncheckedCreateWithoutCategoryInput> | VariantCreateWithoutCategoryInput[] | VariantUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: VariantCreateOrConnectWithoutCategoryInput | VariantCreateOrConnectWithoutCategoryInput[]
-    createMany?: VariantCreateManyCategoryInputEnvelope
-    connect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
   }
 
   export type CategoryUpdateOneWithoutChildrenNestedInput = {
@@ -34104,34 +33761,6 @@ export namespace Prisma {
     deleteMany?: ProductScalarWhereInput | ProductScalarWhereInput[]
   }
 
-  export type ProductUpdateManyWithoutParentCategoryNestedInput = {
-    create?: XOR<ProductCreateWithoutParentCategoryInput, ProductUncheckedCreateWithoutParentCategoryInput> | ProductCreateWithoutParentCategoryInput[] | ProductUncheckedCreateWithoutParentCategoryInput[]
-    connectOrCreate?: ProductCreateOrConnectWithoutParentCategoryInput | ProductCreateOrConnectWithoutParentCategoryInput[]
-    upsert?: ProductUpsertWithWhereUniqueWithoutParentCategoryInput | ProductUpsertWithWhereUniqueWithoutParentCategoryInput[]
-    createMany?: ProductCreateManyParentCategoryInputEnvelope
-    set?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-    disconnect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-    delete?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-    connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-    update?: ProductUpdateWithWhereUniqueWithoutParentCategoryInput | ProductUpdateWithWhereUniqueWithoutParentCategoryInput[]
-    updateMany?: ProductUpdateManyWithWhereWithoutParentCategoryInput | ProductUpdateManyWithWhereWithoutParentCategoryInput[]
-    deleteMany?: ProductScalarWhereInput | ProductScalarWhereInput[]
-  }
-
-  export type VariantUpdateManyWithoutCategoryNestedInput = {
-    create?: XOR<VariantCreateWithoutCategoryInput, VariantUncheckedCreateWithoutCategoryInput> | VariantCreateWithoutCategoryInput[] | VariantUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: VariantCreateOrConnectWithoutCategoryInput | VariantCreateOrConnectWithoutCategoryInput[]
-    upsert?: VariantUpsertWithWhereUniqueWithoutCategoryInput | VariantUpsertWithWhereUniqueWithoutCategoryInput[]
-    createMany?: VariantCreateManyCategoryInputEnvelope
-    set?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    disconnect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    delete?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    connect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    update?: VariantUpdateWithWhereUniqueWithoutCategoryInput | VariantUpdateWithWhereUniqueWithoutCategoryInput[]
-    updateMany?: VariantUpdateManyWithWhereWithoutCategoryInput | VariantUpdateManyWithWhereWithoutCategoryInput[]
-    deleteMany?: VariantScalarWhereInput | VariantScalarWhereInput[]
-  }
-
   export type OutletUpdateOneRequiredWithoutCategoriesNestedInput = {
     create?: XOR<OutletCreateWithoutCategoriesInput, OutletUncheckedCreateWithoutCategoriesInput>
     connectOrCreate?: OutletCreateOrConnectWithoutCategoriesInput
@@ -34168,43 +33797,9 @@ export namespace Prisma {
     deleteMany?: ProductScalarWhereInput | ProductScalarWhereInput[]
   }
 
-  export type ProductUncheckedUpdateManyWithoutParentCategoryNestedInput = {
-    create?: XOR<ProductCreateWithoutParentCategoryInput, ProductUncheckedCreateWithoutParentCategoryInput> | ProductCreateWithoutParentCategoryInput[] | ProductUncheckedCreateWithoutParentCategoryInput[]
-    connectOrCreate?: ProductCreateOrConnectWithoutParentCategoryInput | ProductCreateOrConnectWithoutParentCategoryInput[]
-    upsert?: ProductUpsertWithWhereUniqueWithoutParentCategoryInput | ProductUpsertWithWhereUniqueWithoutParentCategoryInput[]
-    createMany?: ProductCreateManyParentCategoryInputEnvelope
-    set?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-    disconnect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-    delete?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-    connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
-    update?: ProductUpdateWithWhereUniqueWithoutParentCategoryInput | ProductUpdateWithWhereUniqueWithoutParentCategoryInput[]
-    updateMany?: ProductUpdateManyWithWhereWithoutParentCategoryInput | ProductUpdateManyWithWhereWithoutParentCategoryInput[]
-    deleteMany?: ProductScalarWhereInput | ProductScalarWhereInput[]
-  }
-
-  export type VariantUncheckedUpdateManyWithoutCategoryNestedInput = {
-    create?: XOR<VariantCreateWithoutCategoryInput, VariantUncheckedCreateWithoutCategoryInput> | VariantCreateWithoutCategoryInput[] | VariantUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: VariantCreateOrConnectWithoutCategoryInput | VariantCreateOrConnectWithoutCategoryInput[]
-    upsert?: VariantUpsertWithWhereUniqueWithoutCategoryInput | VariantUpsertWithWhereUniqueWithoutCategoryInput[]
-    createMany?: VariantCreateManyCategoryInputEnvelope
-    set?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    disconnect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    delete?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    connect?: VariantWhereUniqueInput | VariantWhereUniqueInput[]
-    update?: VariantUpdateWithWhereUniqueWithoutCategoryInput | VariantUpdateWithWhereUniqueWithoutCategoryInput[]
-    updateMany?: VariantUpdateManyWithWhereWithoutCategoryInput | VariantUpdateManyWithWhereWithoutCategoryInput[]
-    deleteMany?: VariantScalarWhereInput | VariantScalarWhereInput[]
-  }
-
   export type CategoryCreateNestedOneWithoutProductsInput = {
     create?: XOR<CategoryCreateWithoutProductsInput, CategoryUncheckedCreateWithoutProductsInput>
     connectOrCreate?: CategoryCreateOrConnectWithoutProductsInput
-    connect?: CategoryWhereUniqueInput
-  }
-
-  export type CategoryCreateNestedOneWithoutParentProductsInput = {
-    create?: XOR<CategoryCreateWithoutParentProductsInput, CategoryUncheckedCreateWithoutParentProductsInput>
-    connectOrCreate?: CategoryCreateOrConnectWithoutParentProductsInput
     connect?: CategoryWhereUniqueInput
   }
 
@@ -34250,16 +33845,6 @@ export namespace Prisma {
     upsert?: CategoryUpsertWithoutProductsInput
     connect?: CategoryWhereUniqueInput
     update?: XOR<XOR<CategoryUpdateToOneWithWhereWithoutProductsInput, CategoryUpdateWithoutProductsInput>, CategoryUncheckedUpdateWithoutProductsInput>
-  }
-
-  export type CategoryUpdateOneWithoutParentProductsNestedInput = {
-    create?: XOR<CategoryCreateWithoutParentProductsInput, CategoryUncheckedCreateWithoutParentProductsInput>
-    connectOrCreate?: CategoryCreateOrConnectWithoutParentProductsInput
-    upsert?: CategoryUpsertWithoutParentProductsInput
-    disconnect?: CategoryWhereInput | boolean
-    delete?: CategoryWhereInput | boolean
-    connect?: CategoryWhereUniqueInput
-    update?: XOR<XOR<CategoryUpdateToOneWithWhereWithoutParentProductsInput, CategoryUpdateWithoutParentProductsInput>, CategoryUncheckedUpdateWithoutParentProductsInput>
   }
 
   export type VariantUpdateManyWithoutProductNestedInput = {
@@ -34333,22 +33918,10 @@ export namespace Prisma {
     connect?: StockLedgerWhereUniqueInput | StockLedgerWhereUniqueInput[]
   }
 
-  export type CategoryCreateNestedOneWithoutVariantsInput = {
-    create?: XOR<CategoryCreateWithoutVariantsInput, CategoryUncheckedCreateWithoutVariantsInput>
-    connectOrCreate?: CategoryCreateOrConnectWithoutVariantsInput
-    connect?: CategoryWhereUniqueInput
-  }
-
   export type ProductCreateNestedOneWithoutVariantsInput = {
     create?: XOR<ProductCreateWithoutVariantsInput, ProductUncheckedCreateWithoutVariantsInput>
     connectOrCreate?: ProductCreateOrConnectWithoutVariantsInput
     connect?: ProductWhereUniqueInput
-  }
-
-  export type OutletCreateNestedOneWithoutVariantsInput = {
-    create?: XOR<OutletCreateWithoutVariantsInput, OutletUncheckedCreateWithoutVariantsInput>
-    connectOrCreate?: OutletCreateOrConnectWithoutVariantsInput
-    connect?: OutletWhereUniqueInput
   }
 
   export type VendorProductCreateNestedManyWithoutVariantInput = {
@@ -34470,28 +34043,12 @@ export namespace Prisma {
     deleteMany?: StockLedgerScalarWhereInput | StockLedgerScalarWhereInput[]
   }
 
-  export type CategoryUpdateOneRequiredWithoutVariantsNestedInput = {
-    create?: XOR<CategoryCreateWithoutVariantsInput, CategoryUncheckedCreateWithoutVariantsInput>
-    connectOrCreate?: CategoryCreateOrConnectWithoutVariantsInput
-    upsert?: CategoryUpsertWithoutVariantsInput
-    connect?: CategoryWhereUniqueInput
-    update?: XOR<XOR<CategoryUpdateToOneWithWhereWithoutVariantsInput, CategoryUpdateWithoutVariantsInput>, CategoryUncheckedUpdateWithoutVariantsInput>
-  }
-
   export type ProductUpdateOneRequiredWithoutVariantsNestedInput = {
     create?: XOR<ProductCreateWithoutVariantsInput, ProductUncheckedCreateWithoutVariantsInput>
     connectOrCreate?: ProductCreateOrConnectWithoutVariantsInput
     upsert?: ProductUpsertWithoutVariantsInput
     connect?: ProductWhereUniqueInput
     update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutVariantsInput, ProductUpdateWithoutVariantsInput>, ProductUncheckedUpdateWithoutVariantsInput>
-  }
-
-  export type OutletUpdateOneRequiredWithoutVariantsNestedInput = {
-    create?: XOR<OutletCreateWithoutVariantsInput, OutletUncheckedCreateWithoutVariantsInput>
-    connectOrCreate?: OutletCreateOrConnectWithoutVariantsInput
-    upsert?: OutletUpsertWithoutVariantsInput
-    connect?: OutletWhereUniqueInput
-    update?: XOR<XOR<OutletUpdateToOneWithWhereWithoutVariantsInput, OutletUpdateWithoutVariantsInput>, OutletUncheckedUpdateWithoutVariantsInput>
   }
 
   export type VendorProductUpdateManyWithoutVariantNestedInput = {
@@ -35992,7 +35549,6 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
@@ -36017,7 +35573,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
@@ -36315,7 +35870,6 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
@@ -36340,7 +35894,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
@@ -36769,8 +36322,6 @@ export namespace Prisma {
     parent?: CategoryCreateNestedOneWithoutChildrenInput
     children?: CategoryCreateNestedManyWithoutParentInput
     products?: ProductCreateNestedManyWithoutCategoryInput
-    parentProducts?: ProductCreateNestedManyWithoutParentCategoryInput
-    variants?: VariantCreateNestedManyWithoutCategoryInput
   }
 
   export type CategoryUncheckedCreateWithoutOutletInput = {
@@ -36781,8 +36332,6 @@ export namespace Prisma {
     isActive?: boolean
     children?: CategoryUncheckedCreateNestedManyWithoutParentInput
     products?: ProductUncheckedCreateNestedManyWithoutCategoryInput
-    parentProducts?: ProductUncheckedCreateNestedManyWithoutParentCategoryInput
-    variants?: VariantUncheckedCreateNestedManyWithoutCategoryInput
   }
 
   export type CategoryCreateOrConnectWithoutOutletInput = {
@@ -36799,7 +36348,7 @@ export namespace Prisma {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
@@ -36807,7 +36356,6 @@ export namespace Prisma {
     conversionRatio?: number | null
     isArchived?: boolean
     category: CategoryCreateNestedOneWithoutProductsInput
-    parentCategory?: CategoryCreateNestedOneWithoutParentProductsInput
     variants?: VariantCreateNestedManyWithoutProductInput
   }
 
@@ -36815,7 +36363,7 @@ export namespace Prisma {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
@@ -36823,7 +36371,6 @@ export namespace Prisma {
     conversionRatio?: number | null
     categoryId: string
     isArchived?: boolean
-    parentCategoryId?: string | null
     variants?: VariantUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -36970,54 +36517,6 @@ export namespace Prisma {
 
   export type AccountCreateManyOutletInputEnvelope = {
     data: AccountCreateManyOutletInput | AccountCreateManyOutletInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type VariantCreateWithoutOutletInput = {
-    id?: string
-    sku: string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice: number
-    sellingPrice: number
-    pricingMethod?: string
-    markupPercent?: number | null
-    minStockLevel?: number
-    priceListEntries?: PriceListEntryCreateNestedManyWithoutVariantInput
-    stocks?: StockCreateNestedManyWithoutVariantInput
-    txnItems?: TransactionItemCreateNestedManyWithoutVariantInput
-    batches?: CustomBatchCreateNestedManyWithoutVariantInput
-    stockLedger?: StockLedgerCreateNestedManyWithoutVariantInput
-    category: CategoryCreateNestedOneWithoutVariantsInput
-    product: ProductCreateNestedOneWithoutVariantsInput
-    suppliers?: VendorProductCreateNestedManyWithoutVariantInput
-  }
-
-  export type VariantUncheckedCreateWithoutOutletInput = {
-    id?: string
-    productId: string
-    sku: string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice: number
-    sellingPrice: number
-    pricingMethod?: string
-    markupPercent?: number | null
-    minStockLevel?: number
-    categoryId: string
-    priceListEntries?: PriceListEntryUncheckedCreateNestedManyWithoutVariantInput
-    stocks?: StockUncheckedCreateNestedManyWithoutVariantInput
-    txnItems?: TransactionItemUncheckedCreateNestedManyWithoutVariantInput
-    batches?: CustomBatchUncheckedCreateNestedManyWithoutVariantInput
-    stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutVariantInput
-    suppliers?: VendorProductUncheckedCreateNestedManyWithoutVariantInput
-  }
-
-  export type VariantCreateOrConnectWithoutOutletInput = {
-    where: VariantWhereUniqueInput
-    create: XOR<VariantCreateWithoutOutletInput, VariantUncheckedCreateWithoutOutletInput>
-  }
-
-  export type VariantCreateManyOutletInputEnvelope = {
-    data: VariantCreateManyOutletInput | VariantCreateManyOutletInput[]
     skipDuplicates?: boolean
   }
 
@@ -37244,7 +36743,7 @@ export namespace Prisma {
     id?: StringFilter<"Product"> | string
     name?: StringFilter<"Product"> | string
     brand?: StringNullableFilter<"Product"> | string | null
-    hsnCode?: StringFilter<"Product"> | string
+    hsnCode?: StringNullableFilter<"Product"> | string | null
     gstRate?: FloatFilter<"Product"> | number
     baseUnit?: StringFilter<"Product"> | string
     purchaseUnit?: StringNullableFilter<"Product"> | string | null
@@ -37252,7 +36751,6 @@ export namespace Prisma {
     conversionRatio?: FloatNullableFilter<"Product"> | number | null
     categoryId?: StringFilter<"Product"> | string
     isArchived?: BoolFilter<"Product"> | boolean
-    parentCategoryId?: StringNullableFilter<"Product"> | string | null
     outletId?: StringFilter<"Product"> | string
   }
 
@@ -37335,39 +36833,6 @@ export namespace Prisma {
     outletId?: StringFilter<"Account"> | string
   }
 
-  export type VariantUpsertWithWhereUniqueWithoutOutletInput = {
-    where: VariantWhereUniqueInput
-    update: XOR<VariantUpdateWithoutOutletInput, VariantUncheckedUpdateWithoutOutletInput>
-    create: XOR<VariantCreateWithoutOutletInput, VariantUncheckedCreateWithoutOutletInput>
-  }
-
-  export type VariantUpdateWithWhereUniqueWithoutOutletInput = {
-    where: VariantWhereUniqueInput
-    data: XOR<VariantUpdateWithoutOutletInput, VariantUncheckedUpdateWithoutOutletInput>
-  }
-
-  export type VariantUpdateManyWithWhereWithoutOutletInput = {
-    where: VariantScalarWhereInput
-    data: XOR<VariantUpdateManyMutationInput, VariantUncheckedUpdateManyWithoutOutletInput>
-  }
-
-  export type VariantScalarWhereInput = {
-    AND?: VariantScalarWhereInput | VariantScalarWhereInput[]
-    OR?: VariantScalarWhereInput[]
-    NOT?: VariantScalarWhereInput | VariantScalarWhereInput[]
-    id?: StringFilter<"Variant"> | string
-    productId?: StringFilter<"Variant"> | string
-    sku?: StringFilter<"Variant"> | string
-    specifications?: JsonNullableFilter<"Variant">
-    purchasePrice?: FloatFilter<"Variant"> | number
-    sellingPrice?: FloatFilter<"Variant"> | number
-    pricingMethod?: StringFilter<"Variant"> | string
-    markupPercent?: FloatNullableFilter<"Variant"> | number | null
-    minStockLevel?: FloatFilter<"Variant"> | number
-    categoryId?: StringFilter<"Variant"> | string
-    outletId?: StringFilter<"Variant"> | string
-  }
-
   export type DocumentSeriesUpsertWithWhereUniqueWithoutOutletInput = {
     where: DocumentSeriesWhereUniqueInput
     update: XOR<DocumentSeriesUpdateWithoutOutletInput, DocumentSeriesUncheckedUpdateWithoutOutletInput>
@@ -37436,8 +36901,6 @@ export namespace Prisma {
     isActive?: boolean
     parent?: CategoryCreateNestedOneWithoutChildrenInput
     products?: ProductCreateNestedManyWithoutCategoryInput
-    parentProducts?: ProductCreateNestedManyWithoutParentCategoryInput
-    variants?: VariantCreateNestedManyWithoutCategoryInput
     outlet: OutletCreateNestedOneWithoutCategoriesInput
   }
 
@@ -37449,8 +36912,6 @@ export namespace Prisma {
     isActive?: boolean
     outletId: string
     products?: ProductUncheckedCreateNestedManyWithoutCategoryInput
-    parentProducts?: ProductUncheckedCreateNestedManyWithoutParentCategoryInput
-    variants?: VariantUncheckedCreateNestedManyWithoutCategoryInput
   }
 
   export type CategoryCreateOrConnectWithoutChildrenInput = {
@@ -37465,8 +36926,6 @@ export namespace Prisma {
     isActive?: boolean
     children?: CategoryCreateNestedManyWithoutParentInput
     products?: ProductCreateNestedManyWithoutCategoryInput
-    parentProducts?: ProductCreateNestedManyWithoutParentCategoryInput
-    variants?: VariantCreateNestedManyWithoutCategoryInput
     outlet: OutletCreateNestedOneWithoutCategoriesInput
   }
 
@@ -37478,8 +36937,6 @@ export namespace Prisma {
     outletId: string
     children?: CategoryUncheckedCreateNestedManyWithoutParentInput
     products?: ProductUncheckedCreateNestedManyWithoutCategoryInput
-    parentProducts?: ProductUncheckedCreateNestedManyWithoutParentCategoryInput
-    variants?: VariantUncheckedCreateNestedManyWithoutCategoryInput
   }
 
   export type CategoryCreateOrConnectWithoutParentInput = {
@@ -37496,14 +36953,13 @@ export namespace Prisma {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
     salesUnit?: string | null
     conversionRatio?: number | null
     isArchived?: boolean
-    parentCategory?: CategoryCreateNestedOneWithoutParentProductsInput
     variants?: VariantCreateNestedManyWithoutProductInput
     outlet: OutletCreateNestedOneWithoutProductsInput
   }
@@ -37512,14 +36968,13 @@ export namespace Prisma {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
     salesUnit?: string | null
     conversionRatio?: number | null
     isArchived?: boolean
-    parentCategoryId?: string | null
     outletId: string
     variants?: VariantUncheckedCreateNestedManyWithoutProductInput
   }
@@ -37531,96 +36986,6 @@ export namespace Prisma {
 
   export type ProductCreateManyCategoryInputEnvelope = {
     data: ProductCreateManyCategoryInput | ProductCreateManyCategoryInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type ProductCreateWithoutParentCategoryInput = {
-    id?: string
-    name: string
-    brand?: string | null
-    hsnCode: string
-    gstRate: number
-    baseUnit: string
-    purchaseUnit?: string | null
-    salesUnit?: string | null
-    conversionRatio?: number | null
-    isArchived?: boolean
-    category: CategoryCreateNestedOneWithoutProductsInput
-    variants?: VariantCreateNestedManyWithoutProductInput
-    outlet: OutletCreateNestedOneWithoutProductsInput
-  }
-
-  export type ProductUncheckedCreateWithoutParentCategoryInput = {
-    id?: string
-    name: string
-    brand?: string | null
-    hsnCode: string
-    gstRate: number
-    baseUnit: string
-    purchaseUnit?: string | null
-    salesUnit?: string | null
-    conversionRatio?: number | null
-    categoryId: string
-    isArchived?: boolean
-    outletId: string
-    variants?: VariantUncheckedCreateNestedManyWithoutProductInput
-  }
-
-  export type ProductCreateOrConnectWithoutParentCategoryInput = {
-    where: ProductWhereUniqueInput
-    create: XOR<ProductCreateWithoutParentCategoryInput, ProductUncheckedCreateWithoutParentCategoryInput>
-  }
-
-  export type ProductCreateManyParentCategoryInputEnvelope = {
-    data: ProductCreateManyParentCategoryInput | ProductCreateManyParentCategoryInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type VariantCreateWithoutCategoryInput = {
-    id?: string
-    sku: string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice: number
-    sellingPrice: number
-    pricingMethod?: string
-    markupPercent?: number | null
-    minStockLevel?: number
-    priceListEntries?: PriceListEntryCreateNestedManyWithoutVariantInput
-    stocks?: StockCreateNestedManyWithoutVariantInput
-    txnItems?: TransactionItemCreateNestedManyWithoutVariantInput
-    batches?: CustomBatchCreateNestedManyWithoutVariantInput
-    stockLedger?: StockLedgerCreateNestedManyWithoutVariantInput
-    product: ProductCreateNestedOneWithoutVariantsInput
-    outlet: OutletCreateNestedOneWithoutVariantsInput
-    suppliers?: VendorProductCreateNestedManyWithoutVariantInput
-  }
-
-  export type VariantUncheckedCreateWithoutCategoryInput = {
-    id?: string
-    productId: string
-    sku: string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice: number
-    sellingPrice: number
-    pricingMethod?: string
-    markupPercent?: number | null
-    minStockLevel?: number
-    outletId: string
-    priceListEntries?: PriceListEntryUncheckedCreateNestedManyWithoutVariantInput
-    stocks?: StockUncheckedCreateNestedManyWithoutVariantInput
-    txnItems?: TransactionItemUncheckedCreateNestedManyWithoutVariantInput
-    batches?: CustomBatchUncheckedCreateNestedManyWithoutVariantInput
-    stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutVariantInput
-    suppliers?: VendorProductUncheckedCreateNestedManyWithoutVariantInput
-  }
-
-  export type VariantCreateOrConnectWithoutCategoryInput = {
-    where: VariantWhereUniqueInput
-    create: XOR<VariantCreateWithoutCategoryInput, VariantUncheckedCreateWithoutCategoryInput>
-  }
-
-  export type VariantCreateManyCategoryInputEnvelope = {
-    data: VariantCreateManyCategoryInput | VariantCreateManyCategoryInput[]
     skipDuplicates?: boolean
   }
 
@@ -37643,7 +37008,6 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
@@ -37668,7 +37032,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
@@ -37697,8 +37060,6 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     parent?: CategoryUpdateOneWithoutChildrenNestedInput
     products?: ProductUpdateManyWithoutCategoryNestedInput
-    parentProducts?: ProductUpdateManyWithoutParentCategoryNestedInput
-    variants?: VariantUpdateManyWithoutCategoryNestedInput
     outlet?: OutletUpdateOneRequiredWithoutCategoriesNestedInput
   }
 
@@ -37710,8 +37071,6 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     outletId?: StringFieldUpdateOperationsInput | string
     products?: ProductUncheckedUpdateManyWithoutCategoryNestedInput
-    parentProducts?: ProductUncheckedUpdateManyWithoutParentCategoryNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutCategoryNestedInput
   }
 
   export type CategoryUpsertWithWhereUniqueWithoutParentInput = {
@@ -37746,38 +37105,6 @@ export namespace Prisma {
     data: XOR<ProductUpdateManyMutationInput, ProductUncheckedUpdateManyWithoutCategoryInput>
   }
 
-  export type ProductUpsertWithWhereUniqueWithoutParentCategoryInput = {
-    where: ProductWhereUniqueInput
-    update: XOR<ProductUpdateWithoutParentCategoryInput, ProductUncheckedUpdateWithoutParentCategoryInput>
-    create: XOR<ProductCreateWithoutParentCategoryInput, ProductUncheckedCreateWithoutParentCategoryInput>
-  }
-
-  export type ProductUpdateWithWhereUniqueWithoutParentCategoryInput = {
-    where: ProductWhereUniqueInput
-    data: XOR<ProductUpdateWithoutParentCategoryInput, ProductUncheckedUpdateWithoutParentCategoryInput>
-  }
-
-  export type ProductUpdateManyWithWhereWithoutParentCategoryInput = {
-    where: ProductScalarWhereInput
-    data: XOR<ProductUpdateManyMutationInput, ProductUncheckedUpdateManyWithoutParentCategoryInput>
-  }
-
-  export type VariantUpsertWithWhereUniqueWithoutCategoryInput = {
-    where: VariantWhereUniqueInput
-    update: XOR<VariantUpdateWithoutCategoryInput, VariantUncheckedUpdateWithoutCategoryInput>
-    create: XOR<VariantCreateWithoutCategoryInput, VariantUncheckedCreateWithoutCategoryInput>
-  }
-
-  export type VariantUpdateWithWhereUniqueWithoutCategoryInput = {
-    where: VariantWhereUniqueInput
-    data: XOR<VariantUpdateWithoutCategoryInput, VariantUncheckedUpdateWithoutCategoryInput>
-  }
-
-  export type VariantUpdateManyWithWhereWithoutCategoryInput = {
-    where: VariantScalarWhereInput
-    data: XOR<VariantUpdateManyMutationInput, VariantUncheckedUpdateManyWithoutCategoryInput>
-  }
-
   export type OutletUpsertWithoutCategoriesInput = {
     update: XOR<OutletUpdateWithoutCategoriesInput, OutletUncheckedUpdateWithoutCategoriesInput>
     create: XOR<OutletCreateWithoutCategoriesInput, OutletUncheckedCreateWithoutCategoriesInput>
@@ -37808,7 +37135,6 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
@@ -37833,7 +37159,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
@@ -37846,8 +37171,6 @@ export namespace Prisma {
     isActive?: boolean
     parent?: CategoryCreateNestedOneWithoutChildrenInput
     children?: CategoryCreateNestedManyWithoutParentInput
-    parentProducts?: ProductCreateNestedManyWithoutParentCategoryInput
-    variants?: VariantCreateNestedManyWithoutCategoryInput
     outlet: OutletCreateNestedOneWithoutCategoriesInput
   }
 
@@ -37859,42 +37182,11 @@ export namespace Prisma {
     isActive?: boolean
     outletId: string
     children?: CategoryUncheckedCreateNestedManyWithoutParentInput
-    parentProducts?: ProductUncheckedCreateNestedManyWithoutParentCategoryInput
-    variants?: VariantUncheckedCreateNestedManyWithoutCategoryInput
   }
 
   export type CategoryCreateOrConnectWithoutProductsInput = {
     where: CategoryWhereUniqueInput
     create: XOR<CategoryCreateWithoutProductsInput, CategoryUncheckedCreateWithoutProductsInput>
-  }
-
-  export type CategoryCreateWithoutParentProductsInput = {
-    id?: string
-    name: string
-    description?: string | null
-    isActive?: boolean
-    parent?: CategoryCreateNestedOneWithoutChildrenInput
-    children?: CategoryCreateNestedManyWithoutParentInput
-    products?: ProductCreateNestedManyWithoutCategoryInput
-    variants?: VariantCreateNestedManyWithoutCategoryInput
-    outlet: OutletCreateNestedOneWithoutCategoriesInput
-  }
-
-  export type CategoryUncheckedCreateWithoutParentProductsInput = {
-    id?: string
-    name: string
-    parentId?: string | null
-    description?: string | null
-    isActive?: boolean
-    outletId: string
-    children?: CategoryUncheckedCreateNestedManyWithoutParentInput
-    products?: ProductUncheckedCreateNestedManyWithoutCategoryInput
-    variants?: VariantUncheckedCreateNestedManyWithoutCategoryInput
-  }
-
-  export type CategoryCreateOrConnectWithoutParentProductsInput = {
-    where: CategoryWhereUniqueInput
-    create: XOR<CategoryCreateWithoutParentProductsInput, CategoryUncheckedCreateWithoutParentProductsInput>
   }
 
   export type VariantCreateWithoutProductInput = {
@@ -37911,8 +37203,6 @@ export namespace Prisma {
     txnItems?: TransactionItemCreateNestedManyWithoutVariantInput
     batches?: CustomBatchCreateNestedManyWithoutVariantInput
     stockLedger?: StockLedgerCreateNestedManyWithoutVariantInput
-    category: CategoryCreateNestedOneWithoutVariantsInput
-    outlet: OutletCreateNestedOneWithoutVariantsInput
     suppliers?: VendorProductCreateNestedManyWithoutVariantInput
   }
 
@@ -37925,8 +37215,6 @@ export namespace Prisma {
     pricingMethod?: string
     markupPercent?: number | null
     minStockLevel?: number
-    categoryId: string
-    outletId: string
     priceListEntries?: PriceListEntryUncheckedCreateNestedManyWithoutVariantInput
     stocks?: StockUncheckedCreateNestedManyWithoutVariantInput
     txnItems?: TransactionItemUncheckedCreateNestedManyWithoutVariantInput
@@ -37964,7 +37252,6 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
@@ -37989,7 +37276,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
@@ -38018,8 +37304,6 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     parent?: CategoryUpdateOneWithoutChildrenNestedInput
     children?: CategoryUpdateManyWithoutParentNestedInput
-    parentProducts?: ProductUpdateManyWithoutParentCategoryNestedInput
-    variants?: VariantUpdateManyWithoutCategoryNestedInput
     outlet?: OutletUpdateOneRequiredWithoutCategoriesNestedInput
   }
 
@@ -38031,43 +37315,6 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     outletId?: StringFieldUpdateOperationsInput | string
     children?: CategoryUncheckedUpdateManyWithoutParentNestedInput
-    parentProducts?: ProductUncheckedUpdateManyWithoutParentCategoryNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutCategoryNestedInput
-  }
-
-  export type CategoryUpsertWithoutParentProductsInput = {
-    update: XOR<CategoryUpdateWithoutParentProductsInput, CategoryUncheckedUpdateWithoutParentProductsInput>
-    create: XOR<CategoryCreateWithoutParentProductsInput, CategoryUncheckedCreateWithoutParentProductsInput>
-    where?: CategoryWhereInput
-  }
-
-  export type CategoryUpdateToOneWithWhereWithoutParentProductsInput = {
-    where?: CategoryWhereInput
-    data: XOR<CategoryUpdateWithoutParentProductsInput, CategoryUncheckedUpdateWithoutParentProductsInput>
-  }
-
-  export type CategoryUpdateWithoutParentProductsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    parent?: CategoryUpdateOneWithoutChildrenNestedInput
-    children?: CategoryUpdateManyWithoutParentNestedInput
-    products?: ProductUpdateManyWithoutCategoryNestedInput
-    variants?: VariantUpdateManyWithoutCategoryNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutCategoriesNestedInput
-  }
-
-  export type CategoryUncheckedUpdateWithoutParentProductsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    outletId?: StringFieldUpdateOperationsInput | string
-    children?: CategoryUncheckedUpdateManyWithoutParentNestedInput
-    products?: ProductUncheckedUpdateManyWithoutCategoryNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutCategoryNestedInput
   }
 
   export type VariantUpsertWithWhereUniqueWithoutProductInput = {
@@ -38084,6 +37331,21 @@ export namespace Prisma {
   export type VariantUpdateManyWithWhereWithoutProductInput = {
     where: VariantScalarWhereInput
     data: XOR<VariantUpdateManyMutationInput, VariantUncheckedUpdateManyWithoutProductInput>
+  }
+
+  export type VariantScalarWhereInput = {
+    AND?: VariantScalarWhereInput | VariantScalarWhereInput[]
+    OR?: VariantScalarWhereInput[]
+    NOT?: VariantScalarWhereInput | VariantScalarWhereInput[]
+    id?: StringFilter<"Variant"> | string
+    productId?: StringFilter<"Variant"> | string
+    sku?: StringFilter<"Variant"> | string
+    specifications?: JsonNullableFilter<"Variant">
+    purchasePrice?: FloatFilter<"Variant"> | number
+    sellingPrice?: FloatFilter<"Variant"> | number
+    pricingMethod?: StringFilter<"Variant"> | string
+    markupPercent?: FloatNullableFilter<"Variant"> | number | null
+    minStockLevel?: FloatFilter<"Variant"> | number
   }
 
   export type OutletUpsertWithoutProductsInput = {
@@ -38116,7 +37378,6 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
@@ -38141,7 +37402,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
@@ -38303,40 +37563,11 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type CategoryCreateWithoutVariantsInput = {
-    id?: string
-    name: string
-    description?: string | null
-    isActive?: boolean
-    parent?: CategoryCreateNestedOneWithoutChildrenInput
-    children?: CategoryCreateNestedManyWithoutParentInput
-    products?: ProductCreateNestedManyWithoutCategoryInput
-    parentProducts?: ProductCreateNestedManyWithoutParentCategoryInput
-    outlet: OutletCreateNestedOneWithoutCategoriesInput
-  }
-
-  export type CategoryUncheckedCreateWithoutVariantsInput = {
-    id?: string
-    name: string
-    parentId?: string | null
-    description?: string | null
-    isActive?: boolean
-    outletId: string
-    children?: CategoryUncheckedCreateNestedManyWithoutParentInput
-    products?: ProductUncheckedCreateNestedManyWithoutCategoryInput
-    parentProducts?: ProductUncheckedCreateNestedManyWithoutParentCategoryInput
-  }
-
-  export type CategoryCreateOrConnectWithoutVariantsInput = {
-    where: CategoryWhereUniqueInput
-    create: XOR<CategoryCreateWithoutVariantsInput, CategoryUncheckedCreateWithoutVariantsInput>
-  }
-
   export type ProductCreateWithoutVariantsInput = {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
@@ -38344,7 +37575,6 @@ export namespace Prisma {
     conversionRatio?: number | null
     isArchived?: boolean
     category: CategoryCreateNestedOneWithoutProductsInput
-    parentCategory?: CategoryCreateNestedOneWithoutParentProductsInput
     outlet: OutletCreateNestedOneWithoutProductsInput
   }
 
@@ -38352,7 +37582,7 @@ export namespace Prisma {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
@@ -38360,68 +37590,12 @@ export namespace Prisma {
     conversionRatio?: number | null
     categoryId: string
     isArchived?: boolean
-    parentCategoryId?: string | null
     outletId: string
   }
 
   export type ProductCreateOrConnectWithoutVariantsInput = {
     where: ProductWhereUniqueInput
     create: XOR<ProductCreateWithoutVariantsInput, ProductUncheckedCreateWithoutVariantsInput>
-  }
-
-  export type OutletCreateWithoutVariantsInput = {
-    id?: string
-    name: string
-    address?: string | null
-    state?: string | null
-    invoicePrefix: string
-    invoiceStartingNumber?: number
-    gstin?: string | null
-    bankDetails?: string | null
-    defaultWarehouseId?: string | null
-    negativeStockPolicy?: string
-    batchTrackingEnabled?: boolean
-    stocks?: StockCreateNestedManyWithoutOutletInput
-    users?: UserCreateNestedManyWithoutOutletsInput
-    warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
-    categories?: CategoryCreateNestedManyWithoutOutletInput
-    products?: ProductCreateNestedManyWithoutOutletInput
-    transactions?: TransactionCreateNestedManyWithoutOutletInput
-    parties?: PartyCreateNestedManyWithoutOutletInput
-    accounts?: AccountCreateNestedManyWithoutOutletInput
-    series?: DocumentSeriesCreateNestedManyWithoutOutletInput
-    batches?: CustomBatchCreateNestedManyWithoutOutletInput
-    stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
-  }
-
-  export type OutletUncheckedCreateWithoutVariantsInput = {
-    id?: string
-    name: string
-    address?: string | null
-    state?: string | null
-    invoicePrefix: string
-    invoiceStartingNumber?: number
-    gstin?: string | null
-    bankDetails?: string | null
-    defaultWarehouseId?: string | null
-    negativeStockPolicy?: string
-    batchTrackingEnabled?: boolean
-    stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
-    users?: UserUncheckedCreateNestedManyWithoutOutletsInput
-    warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
-    categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
-    products?: ProductUncheckedCreateNestedManyWithoutOutletInput
-    transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
-    parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
-    accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
-    batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
-    stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
-  }
-
-  export type OutletCreateOrConnectWithoutVariantsInput = {
-    where: OutletWhereUniqueInput
-    create: XOR<OutletCreateWithoutVariantsInput, OutletUncheckedCreateWithoutVariantsInput>
   }
 
   export type VendorProductCreateWithoutVariantInput = {
@@ -38556,41 +37730,6 @@ export namespace Prisma {
     data: XOR<StockLedgerUpdateManyMutationInput, StockLedgerUncheckedUpdateManyWithoutVariantInput>
   }
 
-  export type CategoryUpsertWithoutVariantsInput = {
-    update: XOR<CategoryUpdateWithoutVariantsInput, CategoryUncheckedUpdateWithoutVariantsInput>
-    create: XOR<CategoryCreateWithoutVariantsInput, CategoryUncheckedCreateWithoutVariantsInput>
-    where?: CategoryWhereInput
-  }
-
-  export type CategoryUpdateToOneWithWhereWithoutVariantsInput = {
-    where?: CategoryWhereInput
-    data: XOR<CategoryUpdateWithoutVariantsInput, CategoryUncheckedUpdateWithoutVariantsInput>
-  }
-
-  export type CategoryUpdateWithoutVariantsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    parent?: CategoryUpdateOneWithoutChildrenNestedInput
-    children?: CategoryUpdateManyWithoutParentNestedInput
-    products?: ProductUpdateManyWithoutCategoryNestedInput
-    parentProducts?: ProductUpdateManyWithoutParentCategoryNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutCategoriesNestedInput
-  }
-
-  export type CategoryUncheckedUpdateWithoutVariantsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    outletId?: StringFieldUpdateOperationsInput | string
-    children?: CategoryUncheckedUpdateManyWithoutParentNestedInput
-    products?: ProductUncheckedUpdateManyWithoutCategoryNestedInput
-    parentProducts?: ProductUncheckedUpdateManyWithoutParentCategoryNestedInput
-  }
-
   export type ProductUpsertWithoutVariantsInput = {
     update: XOR<ProductUpdateWithoutVariantsInput, ProductUncheckedUpdateWithoutVariantsInput>
     create: XOR<ProductCreateWithoutVariantsInput, ProductUncheckedCreateWithoutVariantsInput>
@@ -38606,7 +37745,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38614,7 +37753,6 @@ export namespace Prisma {
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
-    parentCategory?: CategoryUpdateOneWithoutParentProductsNestedInput
     outlet?: OutletUpdateOneRequiredWithoutProductsNestedInput
   }
 
@@ -38622,7 +37760,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38630,69 +37768,7 @@ export namespace Prisma {
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     categoryId?: StringFieldUpdateOperationsInput | string
     isArchived?: BoolFieldUpdateOperationsInput | boolean
-    parentCategoryId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type OutletUpsertWithoutVariantsInput = {
-    update: XOR<OutletUpdateWithoutVariantsInput, OutletUncheckedUpdateWithoutVariantsInput>
-    create: XOR<OutletCreateWithoutVariantsInput, OutletUncheckedCreateWithoutVariantsInput>
-    where?: OutletWhereInput
-  }
-
-  export type OutletUpdateToOneWithWhereWithoutVariantsInput = {
-    where?: OutletWhereInput
-    data: XOR<OutletUpdateWithoutVariantsInput, OutletUncheckedUpdateWithoutVariantsInput>
-  }
-
-  export type OutletUpdateWithoutVariantsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    state?: NullableStringFieldUpdateOperationsInput | string | null
-    invoicePrefix?: StringFieldUpdateOperationsInput | string
-    invoiceStartingNumber?: IntFieldUpdateOperationsInput | number
-    gstin?: NullableStringFieldUpdateOperationsInput | string | null
-    bankDetails?: NullableStringFieldUpdateOperationsInput | string | null
-    defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
-    negativeStockPolicy?: StringFieldUpdateOperationsInput | string
-    batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
-    stocks?: StockUpdateManyWithoutOutletNestedInput
-    users?: UserUpdateManyWithoutOutletsNestedInput
-    warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
-    categories?: CategoryUpdateManyWithoutOutletNestedInput
-    products?: ProductUpdateManyWithoutOutletNestedInput
-    transactions?: TransactionUpdateManyWithoutOutletNestedInput
-    parties?: PartyUpdateManyWithoutOutletNestedInput
-    accounts?: AccountUpdateManyWithoutOutletNestedInput
-    series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
-    batches?: CustomBatchUpdateManyWithoutOutletNestedInput
-    stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
-  }
-
-  export type OutletUncheckedUpdateWithoutVariantsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    state?: NullableStringFieldUpdateOperationsInput | string | null
-    invoicePrefix?: StringFieldUpdateOperationsInput | string
-    invoiceStartingNumber?: IntFieldUpdateOperationsInput | number
-    gstin?: NullableStringFieldUpdateOperationsInput | string | null
-    bankDetails?: NullableStringFieldUpdateOperationsInput | string | null
-    defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
-    negativeStockPolicy?: StringFieldUpdateOperationsInput | string
-    batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
-    stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
-    users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
-    warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
-    categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
-    products?: ProductUncheckedUpdateManyWithoutOutletNestedInput
-    transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
-    parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
-    accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
-    batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
-    stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type VendorProductUpsertWithWhereUniqueWithoutVariantInput = {
@@ -38741,7 +37817,6 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
@@ -38766,7 +37841,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
@@ -38790,9 +37864,7 @@ export namespace Prisma {
     txnItems?: TransactionItemCreateNestedManyWithoutVariantInput
     batches?: CustomBatchCreateNestedManyWithoutVariantInput
     stockLedger?: StockLedgerCreateNestedManyWithoutVariantInput
-    category: CategoryCreateNestedOneWithoutVariantsInput
     product: ProductCreateNestedOneWithoutVariantsInput
-    outlet: OutletCreateNestedOneWithoutVariantsInput
     suppliers?: VendorProductCreateNestedManyWithoutVariantInput
   }
 
@@ -38806,8 +37878,6 @@ export namespace Prisma {
     pricingMethod?: string
     markupPercent?: number | null
     minStockLevel?: number
-    categoryId: string
-    outletId: string
     priceListEntries?: PriceListEntryUncheckedCreateNestedManyWithoutVariantInput
     txnItems?: TransactionItemUncheckedCreateNestedManyWithoutVariantInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutVariantInput
@@ -38883,7 +37953,6 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
@@ -38908,7 +37977,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
@@ -38938,9 +38006,7 @@ export namespace Prisma {
     txnItems?: TransactionItemUpdateManyWithoutVariantNestedInput
     batches?: CustomBatchUpdateManyWithoutVariantNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutVariantNestedInput
-    category?: CategoryUpdateOneRequiredWithoutVariantsNestedInput
     product?: ProductUpdateOneRequiredWithoutVariantsNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutVariantsNestedInput
     suppliers?: VendorProductUpdateManyWithoutVariantNestedInput
   }
 
@@ -38954,8 +38020,6 @@ export namespace Prisma {
     pricingMethod?: StringFieldUpdateOperationsInput | string
     markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
     minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    outletId?: StringFieldUpdateOperationsInput | string
     priceListEntries?: PriceListEntryUncheckedUpdateManyWithoutVariantNestedInput
     txnItems?: TransactionItemUncheckedUpdateManyWithoutVariantNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutVariantNestedInput
@@ -39021,7 +38085,6 @@ export namespace Prisma {
     products?: ProductCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
@@ -39046,7 +38109,6 @@ export namespace Prisma {
     products?: ProductUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
@@ -39226,7 +38288,6 @@ export namespace Prisma {
     products?: ProductUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
@@ -39251,7 +38312,6 @@ export namespace Prisma {
     products?: ProductUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
@@ -39558,7 +38618,6 @@ export namespace Prisma {
     products?: ProductCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
@@ -39583,7 +38642,6 @@ export namespace Prisma {
     products?: ProductUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
@@ -39961,7 +39019,6 @@ export namespace Prisma {
     products?: ProductUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
@@ -39986,7 +39043,6 @@ export namespace Prisma {
     products?: ProductUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
@@ -40238,9 +39294,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutVariantInput
     batches?: CustomBatchCreateNestedManyWithoutVariantInput
     stockLedger?: StockLedgerCreateNestedManyWithoutVariantInput
-    category: CategoryCreateNestedOneWithoutVariantsInput
     product: ProductCreateNestedOneWithoutVariantsInput
-    outlet: OutletCreateNestedOneWithoutVariantsInput
     suppliers?: VendorProductCreateNestedManyWithoutVariantInput
   }
 
@@ -40254,8 +39308,6 @@ export namespace Prisma {
     pricingMethod?: string
     markupPercent?: number | null
     minStockLevel?: number
-    categoryId: string
-    outletId: string
     priceListEntries?: PriceListEntryUncheckedCreateNestedManyWithoutVariantInput
     stocks?: StockUncheckedCreateNestedManyWithoutVariantInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutVariantInput
@@ -40355,9 +39407,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutVariantNestedInput
     batches?: CustomBatchUpdateManyWithoutVariantNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutVariantNestedInput
-    category?: CategoryUpdateOneRequiredWithoutVariantsNestedInput
     product?: ProductUpdateOneRequiredWithoutVariantsNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutVariantsNestedInput
     suppliers?: VendorProductUpdateManyWithoutVariantNestedInput
   }
 
@@ -40371,8 +39421,6 @@ export namespace Prisma {
     pricingMethod?: StringFieldUpdateOperationsInput | string
     markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
     minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    outletId?: StringFieldUpdateOperationsInput | string
     priceListEntries?: PriceListEntryUncheckedUpdateManyWithoutVariantNestedInput
     stocks?: StockUncheckedUpdateManyWithoutVariantNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutVariantNestedInput
@@ -40399,7 +39447,6 @@ export namespace Prisma {
     products?: ProductCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
@@ -40424,7 +39471,6 @@ export namespace Prisma {
     products?: ProductUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
@@ -40497,7 +39543,6 @@ export namespace Prisma {
     products?: ProductUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
@@ -40522,7 +39567,6 @@ export namespace Prisma {
     products?: ProductUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
@@ -40818,9 +39862,7 @@ export namespace Prisma {
     txnItems?: TransactionItemCreateNestedManyWithoutVariantInput
     batches?: CustomBatchCreateNestedManyWithoutVariantInput
     stockLedger?: StockLedgerCreateNestedManyWithoutVariantInput
-    category: CategoryCreateNestedOneWithoutVariantsInput
     product: ProductCreateNestedOneWithoutVariantsInput
-    outlet: OutletCreateNestedOneWithoutVariantsInput
   }
 
   export type VariantUncheckedCreateWithoutSuppliersInput = {
@@ -40833,8 +39875,6 @@ export namespace Prisma {
     pricingMethod?: string
     markupPercent?: number | null
     minStockLevel?: number
-    categoryId: string
-    outletId: string
     priceListEntries?: PriceListEntryUncheckedCreateNestedManyWithoutVariantInput
     stocks?: StockUncheckedCreateNestedManyWithoutVariantInput
     txnItems?: TransactionItemUncheckedCreateNestedManyWithoutVariantInput
@@ -40913,9 +39953,7 @@ export namespace Prisma {
     txnItems?: TransactionItemUpdateManyWithoutVariantNestedInput
     batches?: CustomBatchUpdateManyWithoutVariantNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutVariantNestedInput
-    category?: CategoryUpdateOneRequiredWithoutVariantsNestedInput
     product?: ProductUpdateOneRequiredWithoutVariantsNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutVariantsNestedInput
   }
 
   export type VariantUncheckedUpdateWithoutSuppliersInput = {
@@ -40928,8 +39966,6 @@ export namespace Prisma {
     pricingMethod?: StringFieldUpdateOperationsInput | string
     markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
     minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    outletId?: StringFieldUpdateOperationsInput | string
     priceListEntries?: PriceListEntryUncheckedUpdateManyWithoutVariantNestedInput
     stocks?: StockUncheckedUpdateManyWithoutVariantNestedInput
     txnItems?: TransactionItemUncheckedUpdateManyWithoutVariantNestedInput
@@ -41104,7 +40140,6 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
   }
@@ -41129,7 +40164,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -41170,7 +40204,6 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
   }
@@ -41195,7 +40228,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -41213,9 +40245,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutVariantInput
     txnItems?: TransactionItemCreateNestedManyWithoutVariantInput
     stockLedger?: StockLedgerCreateNestedManyWithoutVariantInput
-    category: CategoryCreateNestedOneWithoutVariantsInput
     product: ProductCreateNestedOneWithoutVariantsInput
-    outlet: OutletCreateNestedOneWithoutVariantsInput
     suppliers?: VendorProductCreateNestedManyWithoutVariantInput
   }
 
@@ -41229,8 +40259,6 @@ export namespace Prisma {
     pricingMethod?: string
     markupPercent?: number | null
     minStockLevel?: number
-    categoryId: string
-    outletId: string
     priceListEntries?: PriceListEntryUncheckedCreateNestedManyWithoutVariantInput
     stocks?: StockUncheckedCreateNestedManyWithoutVariantInput
     txnItems?: TransactionItemUncheckedCreateNestedManyWithoutVariantInput
@@ -41296,7 +40324,6 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
   }
@@ -41321,7 +40348,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -41379,9 +40405,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutVariantNestedInput
     txnItems?: TransactionItemUpdateManyWithoutVariantNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutVariantNestedInput
-    category?: CategoryUpdateOneRequiredWithoutVariantsNestedInput
     product?: ProductUpdateOneRequiredWithoutVariantsNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutVariantsNestedInput
     suppliers?: VendorProductUpdateManyWithoutVariantNestedInput
   }
 
@@ -41395,8 +40419,6 @@ export namespace Prisma {
     pricingMethod?: StringFieldUpdateOperationsInput | string
     markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
     minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    outletId?: StringFieldUpdateOperationsInput | string
     priceListEntries?: PriceListEntryUncheckedUpdateManyWithoutVariantNestedInput
     stocks?: StockUncheckedUpdateManyWithoutVariantNestedInput
     txnItems?: TransactionItemUncheckedUpdateManyWithoutVariantNestedInput
@@ -41474,7 +40496,6 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
   }
@@ -41499,7 +40520,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -41721,9 +40741,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutVariantInput
     txnItems?: TransactionItemCreateNestedManyWithoutVariantInput
     batches?: CustomBatchCreateNestedManyWithoutVariantInput
-    category: CategoryCreateNestedOneWithoutVariantsInput
     product: ProductCreateNestedOneWithoutVariantsInput
-    outlet: OutletCreateNestedOneWithoutVariantsInput
     suppliers?: VendorProductCreateNestedManyWithoutVariantInput
   }
 
@@ -41737,8 +40755,6 @@ export namespace Prisma {
     pricingMethod?: string
     markupPercent?: number | null
     minStockLevel?: number
-    categoryId: string
-    outletId: string
     priceListEntries?: PriceListEntryUncheckedCreateNestedManyWithoutVariantInput
     stocks?: StockUncheckedCreateNestedManyWithoutVariantInput
     txnItems?: TransactionItemUncheckedCreateNestedManyWithoutVariantInput
@@ -41804,7 +40820,6 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     accounts?: AccountCreateNestedManyWithoutOutletInput
-    variants?: VariantCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
   }
@@ -41829,7 +40844,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
-    variants?: VariantUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -41953,9 +40967,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutVariantNestedInput
     txnItems?: TransactionItemUpdateManyWithoutVariantNestedInput
     batches?: CustomBatchUpdateManyWithoutVariantNestedInput
-    category?: CategoryUpdateOneRequiredWithoutVariantsNestedInput
     product?: ProductUpdateOneRequiredWithoutVariantsNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutVariantsNestedInput
     suppliers?: VendorProductUpdateManyWithoutVariantNestedInput
   }
 
@@ -41969,8 +40981,6 @@ export namespace Prisma {
     pricingMethod?: StringFieldUpdateOperationsInput | string
     markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
     minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    outletId?: StringFieldUpdateOperationsInput | string
     priceListEntries?: PriceListEntryUncheckedUpdateManyWithoutVariantNestedInput
     stocks?: StockUncheckedUpdateManyWithoutVariantNestedInput
     txnItems?: TransactionItemUncheckedUpdateManyWithoutVariantNestedInput
@@ -42048,7 +41058,6 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
   }
@@ -42073,7 +41082,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -42214,9 +41222,7 @@ export namespace Prisma {
     txnItems?: TransactionItemCreateNestedManyWithoutVariantInput
     batches?: CustomBatchCreateNestedManyWithoutVariantInput
     stockLedger?: StockLedgerCreateNestedManyWithoutVariantInput
-    category: CategoryCreateNestedOneWithoutVariantsInput
     product: ProductCreateNestedOneWithoutVariantsInput
-    outlet: OutletCreateNestedOneWithoutVariantsInput
     suppliers?: VendorProductCreateNestedManyWithoutVariantInput
   }
 
@@ -42230,8 +41236,6 @@ export namespace Prisma {
     pricingMethod?: string
     markupPercent?: number | null
     minStockLevel?: number
-    categoryId: string
-    outletId: string
     stocks?: StockUncheckedCreateNestedManyWithoutVariantInput
     txnItems?: TransactionItemUncheckedCreateNestedManyWithoutVariantInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutVariantInput
@@ -42295,9 +41299,7 @@ export namespace Prisma {
     txnItems?: TransactionItemUpdateManyWithoutVariantNestedInput
     batches?: CustomBatchUpdateManyWithoutVariantNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutVariantNestedInput
-    category?: CategoryUpdateOneRequiredWithoutVariantsNestedInput
     product?: ProductUpdateOneRequiredWithoutVariantsNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutVariantsNestedInput
     suppliers?: VendorProductUpdateManyWithoutVariantNestedInput
   }
 
@@ -42311,8 +41313,6 @@ export namespace Prisma {
     pricingMethod?: StringFieldUpdateOperationsInput | string
     markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
     minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    outletId?: StringFieldUpdateOperationsInput | string
     stocks?: StockUncheckedUpdateManyWithoutVariantNestedInput
     txnItems?: TransactionItemUncheckedUpdateManyWithoutVariantNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutVariantNestedInput
@@ -42485,7 +41485,6 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
@@ -42510,7 +41509,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
@@ -42683,7 +41681,6 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     accounts?: AccountUpdateManyWithoutOutletNestedInput
-    variants?: VariantUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
@@ -42708,7 +41705,6 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
@@ -42968,7 +41964,7 @@ export namespace Prisma {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
@@ -42976,7 +41972,6 @@ export namespace Prisma {
     conversionRatio?: number | null
     categoryId: string
     isArchived?: boolean
-    parentCategoryId?: string | null
   }
 
   export type TransactionCreateManyOutletInput = {
@@ -43021,19 +42016,6 @@ export namespace Prisma {
     name: string
     group: $Enums.AccountGroup
     isSystem?: boolean
-  }
-
-  export type VariantCreateManyOutletInput = {
-    id?: string
-    productId: string
-    sku: string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice: number
-    sellingPrice: number
-    pricingMethod?: string
-    markupPercent?: number | null
-    minStockLevel?: number
-    categoryId: string
   }
 
   export type DocumentSeriesCreateManyOutletInput = {
@@ -43177,8 +42159,6 @@ export namespace Prisma {
     parent?: CategoryUpdateOneWithoutChildrenNestedInput
     children?: CategoryUpdateManyWithoutParentNestedInput
     products?: ProductUpdateManyWithoutCategoryNestedInput
-    parentProducts?: ProductUpdateManyWithoutParentCategoryNestedInput
-    variants?: VariantUpdateManyWithoutCategoryNestedInput
   }
 
   export type CategoryUncheckedUpdateWithoutOutletInput = {
@@ -43189,8 +42169,6 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     children?: CategoryUncheckedUpdateManyWithoutParentNestedInput
     products?: ProductUncheckedUpdateManyWithoutCategoryNestedInput
-    parentProducts?: ProductUncheckedUpdateManyWithoutParentCategoryNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutCategoryNestedInput
   }
 
   export type CategoryUncheckedUpdateManyWithoutOutletInput = {
@@ -43205,7 +42183,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43213,7 +42191,6 @@ export namespace Prisma {
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
-    parentCategory?: CategoryUpdateOneWithoutParentProductsNestedInput
     variants?: VariantUpdateManyWithoutProductNestedInput
   }
 
@@ -43221,7 +42198,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43229,7 +42206,6 @@ export namespace Prisma {
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     categoryId?: StringFieldUpdateOperationsInput | string
     isArchived?: BoolFieldUpdateOperationsInput | boolean
-    parentCategoryId?: NullableStringFieldUpdateOperationsInput | string | null
     variants?: VariantUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -43237,7 +42213,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43245,7 +42221,6 @@ export namespace Prisma {
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     categoryId?: StringFieldUpdateOperationsInput | string
     isArchived?: BoolFieldUpdateOperationsInput | boolean
-    parentCategoryId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TransactionUpdateWithoutOutletInput = {
@@ -43398,57 +42373,6 @@ export namespace Prisma {
     isSystem?: BoolFieldUpdateOperationsInput | boolean
   }
 
-  export type VariantUpdateWithoutOutletInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sku?: StringFieldUpdateOperationsInput | string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice?: FloatFieldUpdateOperationsInput | number
-    sellingPrice?: FloatFieldUpdateOperationsInput | number
-    pricingMethod?: StringFieldUpdateOperationsInput | string
-    markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
-    minStockLevel?: FloatFieldUpdateOperationsInput | number
-    priceListEntries?: PriceListEntryUpdateManyWithoutVariantNestedInput
-    stocks?: StockUpdateManyWithoutVariantNestedInput
-    txnItems?: TransactionItemUpdateManyWithoutVariantNestedInput
-    batches?: CustomBatchUpdateManyWithoutVariantNestedInput
-    stockLedger?: StockLedgerUpdateManyWithoutVariantNestedInput
-    category?: CategoryUpdateOneRequiredWithoutVariantsNestedInput
-    product?: ProductUpdateOneRequiredWithoutVariantsNestedInput
-    suppliers?: VendorProductUpdateManyWithoutVariantNestedInput
-  }
-
-  export type VariantUncheckedUpdateWithoutOutletInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    productId?: StringFieldUpdateOperationsInput | string
-    sku?: StringFieldUpdateOperationsInput | string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice?: FloatFieldUpdateOperationsInput | number
-    sellingPrice?: FloatFieldUpdateOperationsInput | number
-    pricingMethod?: StringFieldUpdateOperationsInput | string
-    markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
-    minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    priceListEntries?: PriceListEntryUncheckedUpdateManyWithoutVariantNestedInput
-    stocks?: StockUncheckedUpdateManyWithoutVariantNestedInput
-    txnItems?: TransactionItemUncheckedUpdateManyWithoutVariantNestedInput
-    batches?: CustomBatchUncheckedUpdateManyWithoutVariantNestedInput
-    stockLedger?: StockLedgerUncheckedUpdateManyWithoutVariantNestedInput
-    suppliers?: VendorProductUncheckedUpdateManyWithoutVariantNestedInput
-  }
-
-  export type VariantUncheckedUpdateManyWithoutOutletInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    productId?: StringFieldUpdateOperationsInput | string
-    sku?: StringFieldUpdateOperationsInput | string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice?: FloatFieldUpdateOperationsInput | number
-    sellingPrice?: FloatFieldUpdateOperationsInput | number
-    pricingMethod?: StringFieldUpdateOperationsInput | string
-    markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
-    minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-  }
-
   export type DocumentSeriesUpdateWithoutOutletInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -43562,42 +42486,13 @@ export namespace Prisma {
     id?: string
     name: string
     brand?: string | null
-    hsnCode: string
+    hsnCode?: string | null
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
     salesUnit?: string | null
     conversionRatio?: number | null
     isArchived?: boolean
-    parentCategoryId?: string | null
-    outletId: string
-  }
-
-  export type ProductCreateManyParentCategoryInput = {
-    id?: string
-    name: string
-    brand?: string | null
-    hsnCode: string
-    gstRate: number
-    baseUnit: string
-    purchaseUnit?: string | null
-    salesUnit?: string | null
-    conversionRatio?: number | null
-    categoryId: string
-    isArchived?: boolean
-    outletId: string
-  }
-
-  export type VariantCreateManyCategoryInput = {
-    id?: string
-    productId: string
-    sku: string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice: number
-    sellingPrice: number
-    pricingMethod?: string
-    markupPercent?: number | null
-    minStockLevel?: number
     outletId: string
   }
 
@@ -43608,8 +42503,6 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     children?: CategoryUpdateManyWithoutParentNestedInput
     products?: ProductUpdateManyWithoutCategoryNestedInput
-    parentProducts?: ProductUpdateManyWithoutParentCategoryNestedInput
-    variants?: VariantUpdateManyWithoutCategoryNestedInput
     outlet?: OutletUpdateOneRequiredWithoutCategoriesNestedInput
   }
 
@@ -43621,8 +42514,6 @@ export namespace Prisma {
     outletId?: StringFieldUpdateOperationsInput | string
     children?: CategoryUncheckedUpdateManyWithoutParentNestedInput
     products?: ProductUncheckedUpdateManyWithoutCategoryNestedInput
-    parentProducts?: ProductUncheckedUpdateManyWithoutParentCategoryNestedInput
-    variants?: VariantUncheckedUpdateManyWithoutCategoryNestedInput
   }
 
   export type CategoryUncheckedUpdateManyWithoutParentInput = {
@@ -43637,14 +42528,13 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
     salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
-    parentCategory?: CategoryUpdateOneWithoutParentProductsNestedInput
     variants?: VariantUpdateManyWithoutProductNestedInput
     outlet?: OutletUpdateOneRequiredWithoutProductsNestedInput
   }
@@ -43653,14 +42543,13 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
     salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
-    parentCategoryId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
     variants?: VariantUncheckedUpdateManyWithoutProductNestedInput
   }
@@ -43669,112 +42558,13 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
+    hsnCode?: NullableStringFieldUpdateOperationsInput | string | null
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
     salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
-    parentCategoryId?: NullableStringFieldUpdateOperationsInput | string | null
-    outletId?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type ProductUpdateWithoutParentCategoryInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
-    gstRate?: FloatFieldUpdateOperationsInput | number
-    baseUnit?: StringFieldUpdateOperationsInput | string
-    purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
-    variants?: VariantUpdateManyWithoutProductNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutProductsNestedInput
-  }
-
-  export type ProductUncheckedUpdateWithoutParentCategoryInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
-    gstRate?: FloatFieldUpdateOperationsInput | number
-    baseUnit?: StringFieldUpdateOperationsInput | string
-    purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
-    categoryId?: StringFieldUpdateOperationsInput | string
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    outletId?: StringFieldUpdateOperationsInput | string
-    variants?: VariantUncheckedUpdateManyWithoutProductNestedInput
-  }
-
-  export type ProductUncheckedUpdateManyWithoutParentCategoryInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    brand?: NullableStringFieldUpdateOperationsInput | string | null
-    hsnCode?: StringFieldUpdateOperationsInput | string
-    gstRate?: FloatFieldUpdateOperationsInput | number
-    baseUnit?: StringFieldUpdateOperationsInput | string
-    purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
-    categoryId?: StringFieldUpdateOperationsInput | string
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    outletId?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type VariantUpdateWithoutCategoryInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sku?: StringFieldUpdateOperationsInput | string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice?: FloatFieldUpdateOperationsInput | number
-    sellingPrice?: FloatFieldUpdateOperationsInput | number
-    pricingMethod?: StringFieldUpdateOperationsInput | string
-    markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
-    minStockLevel?: FloatFieldUpdateOperationsInput | number
-    priceListEntries?: PriceListEntryUpdateManyWithoutVariantNestedInput
-    stocks?: StockUpdateManyWithoutVariantNestedInput
-    txnItems?: TransactionItemUpdateManyWithoutVariantNestedInput
-    batches?: CustomBatchUpdateManyWithoutVariantNestedInput
-    stockLedger?: StockLedgerUpdateManyWithoutVariantNestedInput
-    product?: ProductUpdateOneRequiredWithoutVariantsNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutVariantsNestedInput
-    suppliers?: VendorProductUpdateManyWithoutVariantNestedInput
-  }
-
-  export type VariantUncheckedUpdateWithoutCategoryInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    productId?: StringFieldUpdateOperationsInput | string
-    sku?: StringFieldUpdateOperationsInput | string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice?: FloatFieldUpdateOperationsInput | number
-    sellingPrice?: FloatFieldUpdateOperationsInput | number
-    pricingMethod?: StringFieldUpdateOperationsInput | string
-    markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
-    minStockLevel?: FloatFieldUpdateOperationsInput | number
-    outletId?: StringFieldUpdateOperationsInput | string
-    priceListEntries?: PriceListEntryUncheckedUpdateManyWithoutVariantNestedInput
-    stocks?: StockUncheckedUpdateManyWithoutVariantNestedInput
-    txnItems?: TransactionItemUncheckedUpdateManyWithoutVariantNestedInput
-    batches?: CustomBatchUncheckedUpdateManyWithoutVariantNestedInput
-    stockLedger?: StockLedgerUncheckedUpdateManyWithoutVariantNestedInput
-    suppliers?: VendorProductUncheckedUpdateManyWithoutVariantNestedInput
-  }
-
-  export type VariantUncheckedUpdateManyWithoutCategoryInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    productId?: StringFieldUpdateOperationsInput | string
-    sku?: StringFieldUpdateOperationsInput | string
-    specifications?: NullableJsonNullValueInput | InputJsonValue
-    purchasePrice?: FloatFieldUpdateOperationsInput | number
-    sellingPrice?: FloatFieldUpdateOperationsInput | number
-    pricingMethod?: StringFieldUpdateOperationsInput | string
-    markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
-    minStockLevel?: FloatFieldUpdateOperationsInput | number
     outletId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -43787,8 +42577,6 @@ export namespace Prisma {
     pricingMethod?: string
     markupPercent?: number | null
     minStockLevel?: number
-    categoryId: string
-    outletId: string
   }
 
   export type VariantUpdateWithoutProductInput = {
@@ -43805,8 +42593,6 @@ export namespace Prisma {
     txnItems?: TransactionItemUpdateManyWithoutVariantNestedInput
     batches?: CustomBatchUpdateManyWithoutVariantNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutVariantNestedInput
-    category?: CategoryUpdateOneRequiredWithoutVariantsNestedInput
-    outlet?: OutletUpdateOneRequiredWithoutVariantsNestedInput
     suppliers?: VendorProductUpdateManyWithoutVariantNestedInput
   }
 
@@ -43819,8 +42605,6 @@ export namespace Prisma {
     pricingMethod?: StringFieldUpdateOperationsInput | string
     markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
     minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    outletId?: StringFieldUpdateOperationsInput | string
     priceListEntries?: PriceListEntryUncheckedUpdateManyWithoutVariantNestedInput
     stocks?: StockUncheckedUpdateManyWithoutVariantNestedInput
     txnItems?: TransactionItemUncheckedUpdateManyWithoutVariantNestedInput
@@ -43838,8 +42622,6 @@ export namespace Prisma {
     pricingMethod?: StringFieldUpdateOperationsInput | string
     markupPercent?: NullableFloatFieldUpdateOperationsInput | number | null
     minStockLevel?: FloatFieldUpdateOperationsInput | number
-    categoryId?: StringFieldUpdateOperationsInput | string
-    outletId?: StringFieldUpdateOperationsInput | string
   }
 
   export type PriceListEntryCreateManyVariantInput = {

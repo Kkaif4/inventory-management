@@ -111,6 +111,47 @@ async function main() {
     console.log("Seed: Staff user created (arjun@enterprise.com / staff123)");
   }
 
+  // 5. Create a Vendor
+  const vendorName = "Niharika Suppliers";
+  let vendor = await prisma.party.findFirst({
+    where: { name: vendorName, type: "VENDOR" },
+  });
+
+  if (!vendor) {
+    vendor = await prisma.party.create({
+      data: {
+        type: "VENDOR",
+        name: vendorName,
+        gstin: "27AABBCCDD1234E",
+        address: "Industrial Estate, Kurla",
+        state: "Maharashtra",
+        contactInfo: "niharika@suppliers.com",
+        outletId: outlet.id,
+      },
+    });
+    console.log("Seed: Vendor created");
+  }
+
+  // 6. Create a Customer
+  const customerName = "Retail Hardware Traders";
+  let customer = await prisma.party.findFirst({
+    where: { name: customerName, type: "CUSTOMER" },
+  });
+
+  if (!customer) {
+    customer = await prisma.party.create({
+      data: {
+        type: "CUSTOMER",
+        name: customerName,
+        address: "Linking Road, Santacruz",
+        state: "Maharashtra",
+        contactInfo: "contact@retailhardware.com",
+        outletId: outlet.id,
+      },
+    });
+    console.log("Seed: Customer created");
+  }
+
   console.log("Seed: Completed successfully");
 }
 

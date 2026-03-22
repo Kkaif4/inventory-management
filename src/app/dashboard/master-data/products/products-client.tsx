@@ -1,19 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Edit, AlertTriangle } from "lucide-react";
+import { Plus, Edit, AlertTriangle, FileSpreadsheet } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { TableToolbar } from "@/components/ui/table-toolbar";
-import { Pagination } from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
 
 import { useState, useEffect, useTransition } from "react";
 import { getProducts, deleteProduct } from "@/actions/products";
-import { Trash2 } from "lucide-react";
+import { Trash2, Download } from "lucide-react";
 import { toast } from "sonner";
+import { ImportProductsDialog } from "./import-products-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +44,7 @@ export function ProductsClient({
   });
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const fetchProducts = async () => {
     startTransition(async () => {
@@ -202,6 +203,12 @@ export function ProductsClient({
 
   const actions = [
     {
+      label: "Import Products",
+      icon: FileSpreadsheet,
+      variant: "outline" as const,
+      onClick: () => setImportDialogOpen(true),
+    },
+    {
       label: "Add Product",
       icon: Plus,
       onClick: () => router.push("/dashboard/master-data/products/new"),
@@ -227,15 +234,6 @@ export function ProductsClient({
         columns={columns}
         data={data}
         loading={isPending || isDeleting}
-      />
-
-      <Pagination
-        currentPage={1}
-        totalPages={1}
-        pageSize={10}
-        totalResults={data.length}
-        onPageChange={() => {}}
-        onPageSizeChange={() => {}}
       />
 
       <AlertDialog
@@ -275,6 +273,12 @@ export function ProductsClient({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ImportProductsDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        outletId={outletId}
+      />
     </div>
   );
 }

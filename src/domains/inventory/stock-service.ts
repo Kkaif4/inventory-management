@@ -18,6 +18,8 @@ export type StockMoveInput = {
   userId: string;
   allowNegative?: boolean;
   costPerUnit?: number; // Optional, used for Purchases to create batches
+  batchNumber?: string;
+  batchDate?: Date;
 };
 
 export const StockService = {
@@ -95,10 +97,12 @@ export const StockService = {
         // INCOMING: Create new batch
         await tx.customBatch.create({
           data: {
-            batchNumber: `B-${Date.now()}-${variantId.slice(-4)}`,
+            batchNumber:
+              input.batchNumber || `B-${Date.now()}-${variantId.slice(-4)}`,
             variantId,
             warehouseId: warehouseId as string,
             outletId,
+            receivedDate: input.batchDate || new Date(),
             quantityReceived: quantity,
             costPerUnit: costPerUnit || 0,
           },

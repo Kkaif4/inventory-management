@@ -62,7 +62,7 @@ export function InventoryClient({
   const [activeTab, setActiveTab] = useState("inventory");
   const [filters, setFilters] = useState<InventoryFilter>({
     status: "ALL",
-    warehouseId: undefined,
+    warehouseId: warehouses.length > 0 ? warehouses[0].id : undefined,
     search: "",
   });
   const [searchTerm, setSearchTerm] = useState("");
@@ -421,24 +421,21 @@ export function InventoryClient({
 
                 <div className="flex items-center gap-2 w-full md:w-auto">
                   <Select
-                    value={filters.warehouseId || "all"}
+                    value={filters.warehouseId}
                     onValueChange={(val) =>
-                      setFilters((f) => {
-                        const next = { ...f };
-                        if (val === "all" || !val) {
-                          delete next.warehouseId;
-                        } else {
-                          next.warehouseId = val;
-                        }
-                        return next;
-                      })
+                      setFilters((f) => ({
+                        ...f,
+                        warehouseId: val || undefined,
+                      }))
                     }
                   >
                     <SelectTrigger className="w-full md:w-[200px] bg-slate-50/50 border-slate-200">
-                      <SelectValue placeholder="All Warehouses" />
+                      <SelectValue placeholder="Select Warehouse">
+                        {warehouses.find((w) => w.id === filters.warehouseId)
+                          ?.name || "Select Warehouse"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Warehouses</SelectItem>
                       {warehouses.map((w) => (
                         <SelectItem key={w.id} value={w.id}>
                           {w.name}
@@ -462,7 +459,12 @@ export function InventoryClient({
                     }
                   >
                     <SelectTrigger className="w-full md:w-[180px] bg-slate-50/50 border-slate-200">
-                      <SelectValue placeholder="Category" />
+                      <SelectValue placeholder="Category">
+                        {filters.categoryId && filters.categoryId !== "all"
+                          ? categories.find((c) => c.id === filters.categoryId)
+                              ?.name
+                          : "All Categories"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>

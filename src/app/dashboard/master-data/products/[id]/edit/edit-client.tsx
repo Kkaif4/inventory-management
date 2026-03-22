@@ -138,7 +138,7 @@ export function ProductEditClient({
       const res = await updateProduct(product.id, {
         name: data.name,
         brand: data.brand || null,
-        hsnCode: data.hsnCode,
+        hsnCode: data.hsnCode || null,
         gstRate: data.gstRate,
         baseUnit: data.baseUnit,
         purchaseUnit: data.purchaseUnit || null,
@@ -275,6 +275,7 @@ export function ProductEditClient({
                         <Input
                           placeholder="e.g. 8467"
                           {...field}
+                          value={field.value || ""}
                           onBlur={(e) => {
                             const rate = getGstRateByHsn(e.target.value);
                             if (rate !== null) {
