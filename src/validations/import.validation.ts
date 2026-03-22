@@ -2,9 +2,25 @@ import { z } from "zod";
 
 export const IMPORT_GST_SLABS = [0, 0.25, 3, 5, 12, 18, 28] as const;
 
+export const PRODUCT_LEVEL_FIELDS = [
+  "brand",
+  "hsnCode",
+  "gstRate",
+  "baseUnit",
+  "purchaseUnit",
+  "salesUnit",
+  "conversionRatio",
+  "categoryL1",
+  "categoryL2",
+  "categoryL3",
+] as const;
+
 export const importRowSchema = z
   .object({
-    productName: z.coerce.string().min(1, "Product name is required").max(120),
+    productGroupName: z.coerce
+      .string()
+      .min(1, "Product group name is required")
+      .max(120),
     brand: z.coerce.string().optional().nullable(),
     hsnCode: z.coerce.string().optional().nullable(),
     gstRate: z.coerce
@@ -92,5 +108,9 @@ export const importRowSchema = z
       path: ["conversionRatio"],
     },
   );
+
+// NOTE: Rule 5 (batch) - batchDate required if batchTrackingEnabled AND currentStock > 0
+// This rule is context-dependent (needs outlet config), so it is validated in
+// import-logic.ts after fetching outlet, not here in the schema. Do not add it here.
 
 export type ImportRow = z.infer<typeof importRowSchema>;

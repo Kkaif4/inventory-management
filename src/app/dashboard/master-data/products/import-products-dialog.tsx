@@ -20,15 +20,18 @@ import {
   Database,
   ArrowRight,
   Loader2,
+  ChevronDown,
+  ChevronRight,
+  FileWarning,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 
-type Step = "UPLOAD" | "PROGRESS" | "RESULT";
+type Step = "UPLOAD" | "PREVIEW" | "PROGRESS" | "RESULT";
 
 // Fixed header keys (must match CSV/Excel column names exactly)
 const FIELD_KEYS = [
-  "productName",
+  "productGroupName",
   "brand",
   "hsnCode",
   "gstRate",
@@ -67,43 +70,213 @@ export function ImportProductsDialog({
   const [isRunning, setIsRunning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Preview state
+  const [parsedData, setParsedData] = useState<any[]>([]);
+  const [hasLegacyColumn, setHasLegacyColumn] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) setFile(selectedFile);
   };
 
   const downloadTemplate = () => {
-    const worksheet = XLSX.utils.aoa_to_sheet([FIELD_KEYS]);
     const workbook = XLSX.utils.book_new();
+
+    // Tab 1: Products (with dummy data demonstrating variants)
+    const exampleRows = [
+      [
+        "Adjustable Wrench",
+        "Taparia",
+        "82041200",
+        12,
+        "Piece",
+        "Box",
+        "Piece",
+        20,
+        "Tools",
+        "Hand Tools",
+        "Wrenches",
+        "TAP-WRN-10",
+        "10 Inch Adjustable",
+        280,
+        340,
+        "MANUAL",
+        "",
+        20,
+        "Main Distribution Center",
+        85,
+        "06/02/2026",
+        280,
+      ],
+      [
+        "Adjustable Wrench",
+        "Taparia",
+        "82041200",
+        12,
+        "Piece",
+        "Box",
+        "Piece",
+        20,
+        "Tools",
+        "Hand Tools",
+        "Wrenches",
+        "TAP-WRN-12",
+        "12 Inch Adjustable",
+        340,
+        410,
+        "MANUAL",
+        "",
+        20,
+        "Main Distribution Center",
+        75,
+        "06/02/2026",
+        340,
+      ],
+      [
+        "Measuring Tape",
+        "Freemans",
+        "90178010",
+        18,
+        "Piece",
+        "Box",
+        "Piece",
+        20,
+        "Tools",
+        "Measuring Tools",
+        "Tapes",
+        "FRM-MT-5",
+        "5 Meter Tape",
+        110,
+        "",
+        "MARKUP",
+        25,
+        40,
+        "Main Distribution Center",
+        200,
+        "03/02/2026",
+        110,
+      ],
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet([FIELD_KEYS, ...exampleRows]);
     XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
-    XLSX.writeFile(workbook, "product_import_template.csv");
+
+    // Tab 2: Instructions
+    const instructions = [
+      ["Column", "Required", "Description"],
+      [
+        "productGroupName",
+        "Yes",
+        "The overall name of the product. Repeat this on every row for the same product to group variants together.",
+      ],
+      [
+        "variantSku",
+        "Yes",
+        "Globally unique identifier for this specific variant.",
+      ],
+      [
+        "variantSpec",
+        "No",
+        "What makes this variant different (e.g. '10 Inch', '500W', 'Blue').",
+      ],
+      [
+        "brand, hsnCode, gstRate, baseUnit, categories...",
+        "Yes/No",
+        "Product-level fields. These MUST be identical for all rows sharing the same productGroupName.",
+      ],
+      [
+        "pricingMethod",
+        "Yes",
+        "MANUAL or MARKUP. Defines how selling price is calculated.",
+      ],
+      ["purchasePrice", "Yes", "Per variant purchase cost."],
+      [
+        "sellingPrice",
+        "Depends",
+        "Required if pricingMethod is MANUAL. Leave blank if MARKUP.",
+      ],
+      [
+        "markupPercent",
+        "Depends",
+        "Required if pricingMethod is MARKUP. Leave blank if MANUAL.",
+      ],
+      [
+        "currentStock, warehouseName",
+        "No",
+        "Provides opening stock. warehouseName required if currentStock > 0.",
+      ],
+      [
+        "batchDate",
+        "Depends",
+        "Only needed if batch tracking is ENABLD for this outlet and currentStock > 0.",
+      ],
+    ];
+    const instructionsSheet = XLSX.utils.aoa_to_sheet(instructions);
+    XLSX.utils.book_append_sheet(workbook, instructionsSheet, "Instructions");
+
+    XLSX.writeFile(workbook, "product_import_template_v2.xlsx");
   };
 
-  const executeImport = async () => {
+  const processFileForPreview = async () => {
     if (!file) return;
-    setStep("PROGRESS");
-    setIsRunning(true);
 
     try {
-      // Parse file
       const arrayBuffer = await file.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rawRows: any[] = XLSX.utils.sheet_to_json(worksheet);
+      const rawRows: any[] = XLSX.utils.sheet_to_json(worksheet, {
+        defval: "",
+      });
 
-      // Map by key directly (CSV headers must match FIELD_KEYS)
+      if (rawRows.length === 0) {
+        toast.error("The selected file is empty.");
+        return;
+      }
+
+      // Check for legacy column
+      const hasLegacy = Object.keys(rawRows[0]).includes("productName");
+      setHasLegacyColumn(hasLegacy);
+
+      // Map rows
       const rows = rawRows.map((row) => {
         const mapped: Record<string, any> = {};
         FIELD_KEYS.forEach((key) => {
-          mapped[key] = row[key] ?? null;
+          // If legacy column exists, fallback to it for productGroupName if mapped is empty
+          if (key === "productGroupName" && hasLegacy && !row[key]) {
+            mapped[key] = row["productName"] || "";
+          } else {
+            mapped[key] = row[key] !== "" ? row[key] : null;
+          }
         });
         return mapped;
       });
 
+      setParsedData(rows);
+      setStep("PREVIEW");
+      setExpandedGroups(new Set()); // Start collapsed
+    } catch (err: any) {
+      toast.error("Failed to parse file: " + err.message);
+    }
+  };
+
+  const toggleGroup = (groupName: string) => {
+    const next = new Set(expandedGroups);
+    if (next.has(groupName)) next.delete(groupName);
+    else next.add(groupName);
+    setExpandedGroups(next);
+  };
+
+  const executeImport = async () => {
+    if (!parsedData.length) return;
+    setStep("PROGRESS");
+    setIsRunning(true);
+
+    try {
       const response = await fetch("/api/products/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ outletId, rows }),
+        body: JSON.stringify({ outletId, rows: parsedData }),
       });
 
       if (!response.body) throw new Error("No response body");
@@ -147,6 +320,7 @@ export function ImportProductsDialog({
   const downloadErrorReport = () => {
     if (!progress?.errors?.length) return;
     const errorRows = progress.errors.map((e: any) => ({
+      Row: e.row,
       SKU: e.sku,
       Field: e.field,
       Message: e.message,
@@ -161,9 +335,27 @@ export function ImportProductsDialog({
     setStep("UPLOAD");
     setFile(null);
     setProgress(null);
+    setParsedData([]);
+    setHasLegacyColumn(false);
     setIsRunning(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  // Group data for preview
+  const groupedPreview = parsedData.reduce(
+    (acc, row) => {
+      const key = (row.productGroupName || "Unnamed Product").trim();
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(row);
+      return acc;
+    },
+    {} as Record<string, any[]>,
+  );
+
+  const totalGroups = Object.keys(groupedPreview).length;
+  const totalStockEntries = parsedData.filter(
+    (r) => (r.currentStock || 0) > 0,
+  ).length;
 
   return (
     <Dialog
@@ -175,19 +367,23 @@ export function ImportProductsDialog({
         }
       }}
     >
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-green-600" />
             Import Products
           </DialogTitle>
           <DialogDescription>
-            Upload a CSV or Excel file with the standard product template
-            headers.
+            {step === "UPLOAD" &&
+              "Upload a CSV or Excel file using the standard template."}
+            {step === "PREVIEW" &&
+              "Review your matched products and variants before importing."}
+            {step === "PROGRESS" && "Importing data into the system."}
+            {step === "RESULT" && "Import complete."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="py-4 overflow-y-auto flex-1 px-1">
           {/* UPLOAD */}
           {step === "UPLOAD" && (
             <div className="space-y-4">
@@ -219,8 +415,135 @@ export function ImportProductsDialog({
                 className="text-xs text-text-muted underline underline-offset-2 w-full text-center hover:text-text-primary"
               >
                 <Download className="w-3 h-3 inline mr-1" />
-                Download template with required headers
+                Download template with multi-variant format
               </button>
+            </div>
+          )}
+
+          {/* PREVIEW */}
+          {step === "PREVIEW" && (
+            <div className="space-y-4">
+              {hasLegacyColumn && (
+                <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-start gap-3">
+                  <FileWarning className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                  <div className="text-sm text-amber-900">
+                    <strong>Legacy Column Detected:</strong> Your sheet uses the
+                    old <code>productName</code> column. We automatically mapped
+                    it to <code>productGroupName</code> for this import. Please{" "}
+                    <button
+                      onClick={downloadTemplate}
+                      className="underline font-semibold cursor-pointer"
+                    >
+                      download our new template
+                    </button>{" "}
+                    for future imports.
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                <h4 className="text-sm font-bold text-slate-800 mb-1">
+                  Import Summary
+                </h4>
+                <div className="text-xs font-semibold text-slate-600 flex gap-4">
+                  <span>📦 {totalGroups} product groups</span>
+                  <span>🔄 {parsedData.length} total variants</span>
+                  <span>📦 {totalStockEntries} stock entries</span>
+                </div>
+              </div>
+
+              <div className="border rounded-lg overflow-hidden flex flex-col max-h-[40vh]">
+                <div className="bg-slate-100 px-4 py-2 border-b text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Product Group Breakdown
+                </div>
+                <div className="overflow-y-auto divide-y">
+                  {Object.entries(groupedPreview).map(
+                    ([groupName, groupData]) => {
+                      const rows = groupData as any[];
+                      const isExpanded = expandedGroups.has(groupName);
+                      return (
+                        <div key={groupName} className="text-sm">
+                          <button
+                            onClick={() => toggleGroup(groupName)}
+                            className="w-full flex items-center justify-between p-3 hover:bg-slate-50 text-left transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              {isExpanded ? (
+                                <ChevronDown className="w-4 h-4 text-slate-400" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4 text-slate-400" />
+                              )}
+                              <span className="font-semibold text-slate-900">
+                                {groupName}
+                              </span>
+                              <span className="text-xs px-2 py-0.5 bg-slate-100 rounded-full font-medium text-slate-600">
+                                {rows.length} variant{rows.length !== 1 && "s"}
+                              </span>
+                            </div>
+                            <span className="text-xs text-slate-500 truncate max-w-[200px]">
+                              {rows[0].brand} · {rows[0].categoryL1}
+                            </span>
+                          </button>
+
+                          {isExpanded && (
+                            <div className="bg-slate-50 border-t p-3 pl-9 overflow-x-auto">
+                              <table className="w-full text-xs text-left">
+                                <thead>
+                                  <tr className="text-slate-500 pb-2">
+                                    <th className="font-medium pb-2 pr-4">
+                                      SKU
+                                    </th>
+                                    <th className="font-medium pb-2 pr-4">
+                                      Spec
+                                    </th>
+                                    <th className="font-medium pb-2 pr-4 text-right">
+                                      Price
+                                    </th>
+                                    <th className="font-medium pb-2 text-right">
+                                      Stock
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                  {rows.map((r, i) => (
+                                    <tr key={i}>
+                                      <td className="py-2 pr-4 font-medium text-slate-700">
+                                        {r.variantSku || "Missing SKU"}
+                                      </td>
+                                      <td className="py-2 pr-4 text-slate-600 truncate max-w-[150px]">
+                                        {r.variantSpec || "-"}
+                                      </td>
+                                      <td className="py-2 pr-4 text-right">
+                                        ₹{r.purchasePrice || 0}
+                                      </td>
+                                      <td className="py-2 text-right flex items-center justify-end gap-1">
+                                        {(r.currentStock || 0) > 0 ? (
+                                          <>
+                                            <span className="font-semibold text-emerald-600">
+                                              {r.currentStock}
+                                            </span>
+                                            <span className="text-slate-400 text-[10px]">
+                                              @{r.warehouseName || "?"}
+                                            </span>
+                                          </>
+                                        ) : (
+                                          <span className="text-slate-400">
+                                            -
+                                          </span>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -248,7 +571,9 @@ export function ImportProductsDialog({
                 </div>
                 <Progress
                   value={
-                    progress ? (progress.processed / progress.total) * 100 : 0
+                    progress
+                      ? (progress.processed / Math.max(progress.total, 1)) * 100
+                      : 0
                   }
                   className="h-2"
                 />
@@ -306,7 +631,8 @@ export function ImportProductsDialog({
                     Variants
                   </p>
                   <p className="font-black">
-                    {progress?.variantsCreated || 0} Added
+                    {progress?.variantsCreated || 0} Added /{" "}
+                    {progress?.variantsUpdated || 0} Updated
                   </p>
                 </div>
                 <div>
@@ -324,49 +650,84 @@ export function ImportProductsDialog({
               </div>
 
               {progress?.errors?.length > 0 && (
-                <div className="w-full p-3 bg-red-50 border border-red-100 rounded-xl flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-red-700">
-                    <AlertCircle className="w-4 h-4" />
-                    <span className="text-sm font-semibold">
-                      {progress.errors.length} rows skipped
-                    </span>
+                <div className="w-full p-3 bg-red-50 border border-red-100 rounded-xl flex flex-col gap-2 relative group overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-red-700">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-sm font-semibold">
+                        {progress.errors.length} errors during import
+                      </span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-white border-red-200 text-red-700 hover:bg-red-50 py-0 h-7"
+                      onClick={downloadErrorReport}
+                    >
+                      <Download className="w-3 h-3 mr-1" />
+                      Download
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-white border-red-200 text-red-700 hover:bg-red-50"
-                    onClick={downloadErrorReport}
-                  >
-                    <Download className="w-3 h-3 mr-1" />
-                    Download
-                  </Button>
+                  <pre className="text-[10px] text-red-800/80 bg-red-100/50 p-2 rounded max-h-24 overflow-y-auto whitespace-pre-wrap">
+                    {progress.errors
+                      .map(
+                        (e: any, i: number) =>
+                          `Row ${e.row} [${e.sku}]: ${e.message}`,
+                      )
+                      .join("\n")}
+                  </pre>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="border-t pt-4 mt-2">
           {step === "UPLOAD" && (
-            <Button
-              disabled={!file}
-              onClick={executeImport}
-              className="rounded-xl px-8"
-            >
-              Import
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
+            <div className="flex gap-2 w-full justify-end">
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button
+                disabled={!file}
+                onClick={processFileForPreview}
+                className="rounded-xl px-8"
+              >
+                Next
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
+          )}
+          {step === "PREVIEW" && (
+            <div className="flex gap-2 w-full justify-between items-center px-1">
+              <Button
+                variant="ghost"
+                onClick={() => setStep("UPLOAD")}
+                className="text-slate-500 hover:text-slate-700"
+              >
+                Back Config
+              </Button>
+              <Button
+                onClick={executeImport}
+                className="rounded-xl px-8 bg-blue-600 hover:bg-blue-700"
+              >
+                Start Import
+                <Upload className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
           )}
           {step === "RESULT" && (
-            <Button
-              className="rounded-xl px-10"
-              onClick={() => {
-                reset();
-                onOpenChange(false);
-              }}
-            >
-              Done
-            </Button>
+            <div className="w-full flex justify-end">
+              <Button
+                className="rounded-xl px-10"
+                onClick={() => {
+                  reset();
+                  onOpenChange(false);
+                }}
+              >
+                Done
+              </Button>
+            </div>
           )}
         </DialogFooter>
       </DialogContent>

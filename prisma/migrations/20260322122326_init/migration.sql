@@ -84,7 +84,7 @@ CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "brand" TEXT,
-    "hsnCode" TEXT NOT NULL,
+    "hsnCode" TEXT,
     "gstRate" DOUBLE PRECISION NOT NULL,
     "baseUnit" TEXT NOT NULL,
     "purchaseUnit" TEXT,
@@ -92,7 +92,6 @@ CREATE TABLE "Product" (
     "conversionRatio" DOUBLE PRECISION DEFAULT 1,
     "categoryId" TEXT NOT NULL,
     "isArchived" BOOLEAN NOT NULL DEFAULT false,
-    "parentCategoryId" TEXT,
     "outletId" TEXT NOT NULL,
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
@@ -109,8 +108,6 @@ CREATE TABLE "Variant" (
     "pricingMethod" TEXT NOT NULL DEFAULT 'MANUAL',
     "markupPercent" DOUBLE PRECISION,
     "minStockLevel" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "categoryId" TEXT NOT NULL,
-    "outletId" TEXT NOT NULL,
 
     CONSTRAINT "Variant_pkey" PRIMARY KEY ("id")
 );
@@ -323,13 +320,13 @@ CREATE TABLE "_OutletToWarehouse" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Category_name_outletId_key" ON "Category"("name", "outletId");
+CREATE UNIQUE INDEX "Category_name_parentId_outletId_key" ON "Category"("name", "parentId", "outletId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Product_name_outletId_key" ON "Product"("name", "outletId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Variant_sku_outletId_key" ON "Variant"("sku", "outletId");
+CREATE UNIQUE INDEX "Variant_sku_key" ON "Variant"("sku");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Stock_variantId_warehouseId_outletId_key" ON "Stock"("variantId", "warehouseId", "outletId");
@@ -377,19 +374,10 @@ ALTER TABLE "Category" ADD CONSTRAINT "Category_outletId_fkey" FOREIGN KEY ("out
 ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_parentCategoryId_fkey" FOREIGN KEY ("parentCategoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Variant" ADD CONSTRAINT "Variant_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Variant" ADD CONSTRAINT "Variant_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Variant" ADD CONSTRAINT "Variant_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Stock" ADD CONSTRAINT "Stock_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { ImportRow } from "@/validations/import.validation";
+import {
+  ImportRow,
+  importRowSchema,
+  PRODUCT_LEVEL_FIELDS,
+} from "@/validations/import.validation";
 import { StockService } from "@/domains/inventory/stock-service";
 import { NumberingService } from "@/domains/foundation/numbering-service";
 import { AuditService } from "@/domains/audit/audit-service";
@@ -47,12 +51,70 @@ export async function processProductImport(
 
   if (!outlet) throw new Error("Outlet not found");
 
-  // Group rows by productName
+  // Zod Validation & Global Duplicate SKU Check
+  const skuSet = new Set<string>();
+  const validRows: ImportRow[] = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const rawRow = rows[i];
+    let row: ImportRow;
+
+    // A. Zod Parsing
+    try {
+      const normalized = { ...rawRow } as any;
+      if (typeof normalized.pricingMethod === "string") {
+        normalized.pricingMethod = normalized.pricingMethod
+          .toUpperCase()
+          .trim();
+      }
+      if (typeof normalized.gstRate === "string") {
+        normalized.gstRate = parseFloat(
+          normalized.gstRate.replace("%", "").trim(),
+        );
+      }
+      row = importRowSchema.parse(normalized);
+    } catch (e: any) {
+      let message = e.message;
+      if (e.name === "ZodError" && e.issues) {
+        message = e.issues
+          .map((iss: any) => `${iss.path.join(".")}: ${iss.message}`)
+          .join(", ");
+      }
+      progress.errors.push({
+        row: i + 1,
+        sku: rawRow.variantSku || "Unknown SKU",
+        field: "validation",
+        message: `Schema error: ${message}`,
+      });
+      if (!skipOnError)
+        throw new Error(`Row ${i + 1} validation failed: ${message}`);
+      continue; // Skip invalid row
+    }
+
+    // B. Duplicate SKU Check
+    if (skuSet.has(row.variantSku)) {
+      progress.errors.push({
+        row: i + 1,
+        sku: row.variantSku,
+        field: "variantSku",
+        message: `Duplicate SKU '${row.variantSku}' found in sheet. SKUs must be uniquely defined.`,
+      });
+      if (!skipOnError) {
+        throw new Error(`Duplicate SKU '${row.variantSku}' in sheet.`);
+      }
+    } else {
+      skuSet.add(row.variantSku);
+      validRows.push(row);
+    }
+  }
+
+  // Group rows by productGroupName (case-insensitive trim)
   const productGroups = new Map<string, ImportRow[]>();
-  rows.forEach((row) => {
-    const group = productGroups.get(row.productName) || [];
+  validRows.forEach((row) => {
+    const key = row.productGroupName.trim().toLowerCase();
+    const group = productGroups.get(key) || [];
     group.push(row);
-    productGroups.set(row.productName, group);
+    productGroups.set(key, group);
   });
 
   progress.total = productGroups.size;
@@ -65,25 +127,26 @@ export async function processProductImport(
   const categoryCache = new Map<string, string>(); // namePath -> id
   const warehouseCache = new Map<string, string>(); // name -> id
 
-  for (const [productName, groupRows] of productGroups.entries()) {
+  for (const [groupKey, groupRows] of productGroups.entries()) {
+    // We use the first row's original casing for the product name
+    const productName = groupRows[0].productGroupName.trim();
+
     console.log(
-      `[Import Debug] [Outlet: ${outletId}] Processing product: "${productName}" (${groupRows.length} variants)`,
+      `[Import Debug] [Outlet: ${outletId}] Processing product group: "${productName}" (${groupRows.length} variants)`,
     );
     try {
       await prisma.$transaction(async (tx) => {
         // 1. Validate product-level consistency across variants in the group
         const firstRow = groupRows[0];
-        const inconsistent = groupRows.find(
-          (r) =>
-            r.hsnCode !== firstRow.hsnCode ||
-            r.gstRate !== firstRow.gstRate ||
-            r.baseUnit !== firstRow.baseUnit ||
-            r.categoryL1 !== firstRow.categoryL1,
-        );
+        const inconsistent = groupRows.find((row) => {
+          return PRODUCT_LEVEL_FIELDS.some(
+            (field) => row[field] !== firstRow[field],
+          );
+        });
 
         if (inconsistent) {
           throw new Error(
-            `Inconsistent product details (HSN, GST, Unit, or Category) for product "${productName}". All variants must share the same product-level attributes.`,
+            `Inconsistent product-level details found for product "${productName}". All variants must share identical product-level attributes (brand, hsnCode, gstRate, category, etc.).`,
           );
         }
 
@@ -129,12 +192,7 @@ export async function processProductImport(
           `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Resolved category path to ID: ${finalCategoryId}`,
         );
 
-        // 3. Brand Resolution
-        let brandId: string | null = null;
-        if (firstRow.brand) {
-          // In this schema, brand is just a string on Product, so we don't have a separate table.
-          // brand is String? on Product
-        }
+        // 3. Brand is handled directly in productData creation since it is a String field.
 
         // 4. Product Upsert
         let product = await tx.product.findFirst({
@@ -178,9 +236,27 @@ export async function processProductImport(
 
         // 5. Variant Upsert
         for (const row of groupRows) {
+          // Dynamic validation for batchDate
+          if (
+            row.currentStock > 0 &&
+            outlet.batchTrackingEnabled &&
+            !row.batchDate
+          ) {
+            throw new Error(
+              `batchDate is required for SKU ${row.variantSku} when batch tracking is enabled and initial stock is provided.`,
+            );
+          }
+
           let variant = await tx.variant.findFirst({
             where: { sku: row.variantSku },
           });
+
+          // Idempotency check: if variant exists, it MUST belong to the current product!
+          if (variant && variant.productId !== product!.id) {
+            throw new Error(
+              `SKU '${row.variantSku}' already exists under a different product. SKUs cannot be reassigned across products.`,
+            );
+          }
 
           const sellingPrice =
             row.pricingMethod === "MARKUP" &&
@@ -228,7 +304,7 @@ export async function processProductImport(
             // Warehouse Resolution
             if (!row.warehouseName) {
               throw new Error(
-                `Warehouse name is required for SKU ${row.variantSku} with clinical stock.`,
+                `Warehouse name is required for SKU ${row.variantSku} with initial stock.`,
               );
             }
 
