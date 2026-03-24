@@ -1,6 +1,49 @@
 Product Group Name,Brand,HSN Code,GST Rate,Base Unit,Purchase Unit,Conversion Ratio,Category L1,Category L2,Category L3,Variant SKU,Variant Spec,Purchase Price,Selling Price,Pricing Method,Markup Percent,Min Stock Level,Warehouse Name,Current Stock,Batch Date,Batch Cost Per Unit
-Electric Drill,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-DRL-500,500W Motor,2500,,MARKUP,15,10,Main Distribution Center,50,15/02/2026,2500
-Electric Drill,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-DRL-750,750W Motor,3200,,MARKUP,15,8,Main Distribution Center,40,15/02/2026,3200
-Angle Grinder,Stanley,84672900,18,Piece,Box,10,Tools,Power Tools,Grinders,STN-GRN-4,4 Inch Disc,1800,2200,MANUAL,,12,Main Distribution Center,30,10/02/2026,1800
-Steel Hammer,Tata,82052000,12,Piece,Box,20,Tools,Hand Tools,Hammers,TAT-HMR-500,500g Steel Head,250,320,MANUAL,,25,Main Distribution Center,100,05/02/2026,250
-Measuring Tape,Freemans,90178010,18,Piece,Box,20,Tools,Measuring Tools,Tapes,FRM-MT-5,5 Meter Tape,110,140,MANUAL,,40,Main Distribution Center,200,03/02/2026,110
+Electric Drill,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-DRL-1000,1000W Motor,3800,,MARKUP,15,6,Main Distribution Center,25,15/02/2026,3800
+Electric Drill,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-DRL-1200,1200W Motor,4200,,MARKUP,15,5,Main Distribution Center,20,15/02/2026,4200
+Angle Grinder,Stanley,84672900,18,Piece,Box,10,Tools,Power Tools,Grinders,STN-GRN-5,5 Inch Disc,2200,2600,MANUAL,,10,Main Distribution Center,35,10/02/2026,2200
+Angle Grinder,Stanley,84672900,18,Piece,Box,10,Tools,Power Tools,Grinders,STN-GRN-7,7 Inch Disc,2800,3300,MANUAL,,8,Main Distribution Center,20,10/02/2026,2800
+Hammer Drill,DeWalt,84672100,18,Piece,Box,10,Tools,Power Tools,Hammer Drills,DEW-HDR-800,800W Motor,4200,,MARKUP,15,6,Main Distribution Center,18,12/02/2026,4200
+Hammer Drill,DeWalt,84672100,18,Piece,Box,10,Tools,Power Tools,Hammer Drills,DEW-HDR-1000,1000W Motor,5000,,MARKUP,15,5,Main Distribution Center,15,12/02/2026,5000
+Impact Driver,DeWalt,84672900,18,Piece,Box,10,Tools,Power Tools,Impact Drivers,DEW-IMP-20V,20V Model,5200,6000,MANUAL,,5,Main Distribution Center,12,12/02/2026,5200
+Impact Driver,DeWalt,84672900,18,Piece,Box,10,Tools,Power Tools,Impact Drivers,DEW-IMP-18V,18V Model,4800,5500,MANUAL,,5,Main Distribution Center,10,12/02/2026,4800
+Circular Saw,Makita,84672200,18,Piece,Box,10,Tools,Power Tools,Saws,MAK-CS-7,7 Inch Blade,4600,,MARKUP,15,5,Main Distribution Center,14,11/02/2026,4600
+Circular Saw,Makita,84672200,18,Piece,Box,10,Tools,Power Tools,Saws,MAK-CS-9,9 Inch Blade,5200,,MARKUP,15,4,Main Distribution Center,10,11/02/2026,5200
+Bench Grinder,Makita,84672900,18,Piece,Box,10,Tools,Workshop Tools,Grinders,MAK-BG-01,Standard Model,3000,,MARKUP,15,7,Main Distribution Center,16,09/02/2026,3000
+Bench Grinder,Makita,84672900,18,Piece,Box,10,Tools,Workshop Tools,Grinders,MAK-BG-02,Heavy Duty,3800,,MARKUP,15,6,Main Distribution Center,12,09/02/2026,3800
+Steel Hammer,Tata,82052000,12,Piece,Box,20,Tools,Hand Tools,Hammers,TAT-HMR-1KG,1kg Head,350,420,MANUAL,,20,Main Distribution Center,90,05/02/2026,350
+Steel Hammer,Tata,82052000,12,Piece,Box,20,Tools,Hand Tools,Hammers,TAT-HMR-2KG,2kg Head,550,700,MANUAL,,15,Main Distribution Center,60,05/02/2026,550
+Adjustable Wrench,Taparia,82041200,12,Piece,Box,20,Tools,Hand Tools,Wrenches,TAP-WRN-10,10 Inch,280,340,MANUAL,,20,Main Distribution Center,80,06/02/2026,280
+Adjustable Wrench,Taparia,82041200,12,Piece,Box,20,Tools,Hand Tools,Wrenches,TAP-WRN-12,12 Inch,340,410,MANUAL,,20,Main Distribution Center,70,06/02/2026,340
+Adjustable Wrench,Taparia,82041200,12,Piece,Box,20,Tools,Hand Tools,Wrenches,TAP-WRN-15,15 Inch,420,520,MANUAL,,15,Main Distribution Center,50,06/02/2026,420
+Screwdriver Set,Taparia,82054000,12,Set,Box,10,Tools,Hand Tools,Screwdrivers,TAP-SD-6,6 Piece Set,180,220,MANUAL,,30,Main Distribution Center,140,04/02/2026,180
+Screwdriver Set,Taparia,82054000,12,Set,Box,10,Tools,Hand Tools,Screwdrivers,TAP-SD-12,12 Piece Set,320,390,MANUAL,,20,Main Distribution Center,90,04/02/2026,320
+Screwdriver Set,Taparia,82054000,12,Set,Box,10,Tools,Hand Tools,Screwdrivers,TAP-SD-24,24 Piece Set,550,700,MANUAL,,15,Main Distribution Center,60,04/02/2026,550
+Measuring Tape,Freemans,90178010,18,Piece,Box,20,Tools,Measuring Tools,Tapes,FRM-MT-10,10 Meter,210,260,MANUAL,,35,Main Distribution Center,150,03/02/2026,210
+Measuring Tape,Freemans,90178010,18,Piece,Box,20,Tools,Measuring Tools,Tapes,FRM-MT-20,20 Meter,350,420,MANUAL,,25,Main Distribution Center,100,03/02/2026,350
+Spirit Level,Stanley,90318000,18,Piece,Box,10,Tools,Measuring Tools,Levels,STN-SL-24,24 Inch,550,,MARKUP,20,12,Main Distribution Center,40,08/02/2026,550
+Spirit Level,Stanley,90318000,18,Piece,Box,10,Tools,Measuring Tools,Levels,STN-SL-36,36 Inch,720,,MARKUP,20,10,Main Distribution Center,30,08/02/2026,720
+Spirit Level,Stanley,90318000,18,Piece,Box,10,Tools,Measuring Tools,Levels,STN-SL-48,48 Inch,900,,MARKUP,20,8,Main Distribution Center,20,08/02/2026,900
+Extension Cord,Havells,85444299,18,Piece,Box,5,Electrical,Electrical Tools,Cables,HAV-EXT-10,10 Meter,650,,MARKUP,20,15,Main Distribution Center,60,09/02/2026,650
+Extension Cord,Havells,85444299,18,Piece,Box,5,Electrical,Electrical Tools,Cables,HAV-EXT-20,20 Meter,950,,MARKUP,20,10,Main Distribution Center,40,09/02/2026,950
+Extension Cord,Havells,85444299,18,Piece,Box,5,Electrical,Electrical Tools,Cables,HAV-EXT-30,30 Meter,1200,,MARKUP,20,8,Main Distribution Center,25,09/02/2026,1200
+PVC Pipe,Astral,39172300,18,Piece,Bundle,20,Plumbing,Plumbing Materials,Pipes,AST-PVC-1,1 Inch,120,160,MANUAL,,50,Main Distribution Center,300,07/02/2026,120
+PVC Pipe,Astral,39172300,18,Piece,Bundle,20,Plumbing,Plumbing Materials,Pipes,AST-PVC-2,2 Inch,220,280,MANUAL,,40,Main Distribution Center,200,07/02/2026,220
+PVC Pipe,Astral,39172300,18,Piece,Bundle,20,Plumbing,Plumbing Materials,Pipes,AST-PVC-3,3 Inch,350,450,MANUAL,,30,Main Distribution Center,150,07/02/2026,350
+Pipe Wrench,Ridgid,82041200,12,Piece,Box,10,Plumbing,Plumbing Tools,Wrenches,RID-PW-12,12 Inch,950,,MARKUP,20,10,Main Distribution Center,30,07/02/2026,950
+Pipe Wrench,Ridgid,82041200,12,Piece,Box,10,Plumbing,Plumbing Tools,Wrenches,RID-PW-18,18 Inch,1350,,MARKUP,20,8,Main Distribution Center,20,07/02/2026,1350
+Pipe Wrench,Ridgid,82041200,12,Piece,Box,10,Plumbing,Plumbing Tools,Wrenches,RID-PW-24,24 Inch,1800,,MARKUP,20,6,Main Distribution Center,15,07/02/2026,1800
+Safety Helmet,3M,65061010,18,Piece,Box,25,Safety,Safety Equipment,Helmets,3M-HLM-01,Standard Helmet,320,420,MANUAL,,25,Main Distribution Center,90,02/02/2026,320
+Safety Helmet,3M,65061010,18,Piece,Box,25,Safety,Safety Equipment,Helmets,3M-HLM-02,Heavy Duty Helmet,450,600,MANUAL,,20,Main Distribution Center,70,02/02/2026,450
+Safety Gloves,3M,61161000,18,Pair,Box,25,Safety,Safety Equipment,Gloves,3M-GLV-01,Standard Gloves,120,160,MANUAL,,50,Main Distribution Center,180,02/02/2026,120
+Safety Gloves,3M,61161000,18,Pair,Box,25,Safety,Safety Equipment,Gloves,3M-GLV-02,Heavy Gloves,180,240,MANUAL,,40,Main Distribution Center,120,02/02/2026,180
+Safety Goggles,3M,90049090,18,Piece,Box,25,Safety,Safety Equipment,Goggles,3M-GOG-01,Clear Lens,150,200,MANUAL,,35,Main Distribution Center,100,02/02/2026,150
+Safety Goggles,3M,90049090,18,Piece,Box,25,Safety,Safety Equipment,Goggles,3M-GOG-02,Anti Fog,220,300,MANUAL,,30,Main Distribution Center,80,02/02/2026,220
+Reflective Jacket,3M,62104000,18,Piece,Box,20,Safety,Safety Equipment,Jackets,3M-JKT-01,Standard,400,,MARKUP,30,20,Main Distribution Center,60,02/02/2026,400
+Reflective Jacket,3M,62104000,18,Piece,Box,20,Safety,Safety Equipment,Jackets,3M-JKT-02,Premium,600,,MARKUP,30,15,Main Distribution Center,40,02/02/2026,600
+Multimeter,Fluke,90303100,18,Piece,Box,10,Electrical,Electrical Tools,Testing,FLK-DMM-01,Digital,2500,3000,MANUAL,,10,Main Distribution Center,20,01/02/2026,2500
+Multimeter,Fluke,90303100,18,Piece,Box,10,Electrical,Electrical Tools,Testing,FLK-DMM-02,Advanced,3500,4200,MANUAL,,8,Main Distribution Center,15,01/02/2026,3500
+Wire Stripper,Stanley,82032000,12,Piece,Box,10,Electrical,Electrical Tools,Strippers,STN-WS-01,Standard,350,,MARKUP,20,20,Main Distribution Center,70,01/02/2026,350
+Wire Stripper,Stanley,82032000,12,Piece,Box,10,Electrical,Electrical Tools,Strippers,STN-WS-02,Heavy Duty,500,,MARKUP,20,15,Main Distribution Center,50,01/02/2026,500
+Crimping Tool,Stanley,82032000,12,Piece,Box,10,Electrical,Electrical Tools,Crimpers,STN-CR-01,Standard,600,,MARKUP,25,15,Main Distribution Center,50,01/02/2026,600
+Crimping Tool,Stanley,82032000,12,Piece,Box,10,Electrical,Electrical Tools,Crimpers,STN-CR-02,Heavy Duty,900,,MARKUP,25,10,Main Distribution Center,30,01/02/2026,900

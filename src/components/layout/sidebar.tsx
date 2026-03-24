@@ -37,6 +37,21 @@ const navigation = [
     items: [{ name: "Dashboard", href: "/dashboard", icon: LayoutDashboard }],
   },
   {
+    group: "SALES",
+    items: [
+      {
+        name: "Quotations & Delivery",
+        href: "/dashboard/sales/quotations-and-delivery",
+        icon: Quote,
+      },
+      {
+        name: "Sales Transactions",
+        href: "/dashboard/sales/transactions",
+        icon: ReceiptIndianRupee,
+      },
+    ],
+  },
+  {
     group: "PRODUCTS & STOCK",
     items: [
       {
@@ -84,21 +99,6 @@ const navigation = [
         name: "Vendors",
         href: "/dashboard/purchase/vendors",
         icon: Truck,
-      },
-    ],
-  },
-  {
-    group: "SALES",
-    items: [
-      {
-        name: "Quotations & Delivery",
-        href: "/dashboard/sales/quotations-and-delivery",
-        icon: Quote,
-      },
-      {
-        name: "Sales Transactions",
-        href: "/dashboard/sales/transactions",
-        icon: ReceiptIndianRupee,
       },
     ],
   },
