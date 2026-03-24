@@ -1,13 +1,15 @@
-export const dynamic = "force-dynamic";
-import { getSalesReturns } from "@/actions/sales/returns";
+"use client";
 
-import { SalesReturnsClient } from "./returns-client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export default async function SalesReturnsPage() {
-  const res = await getSalesReturns();
-  if (!res.success) {
-    throw new Error(res.error?.message || "Failed to load sales returns");
-  }
-  const returns = res.data!;
-  return <SalesReturnsClient returns={returns} />;
+export default function SalesReturnsPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to the new unified sales transactions page
+    router.replace("/dashboard/sales/transactions");
+  }, [router]);
+
+  return null;
 }

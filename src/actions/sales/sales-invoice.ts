@@ -10,56 +10,66 @@ import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError } from "@/lib/exceptions";
 
 export async function createSalesInvoice(data: {
-  partyId?: string; // Optional for No.2
+  billType: "NO1" | "NO2";
+  partyId?: string;
   fromOutletId: string;
   items: {
     variantId: string;
     quantity: number;
     rate: number;
+    discountPercent?: number;
     taxableValue: number;
     cgst: number;
     sgst: number;
     igst: number;
+    hsnCode?: string;
+    gstRate?: number;
   }[];
   date: Date;
   userId: string;
   freightCost?: number;
-  isInformal?: boolean;
+  remarks?: string;
   buyerName?: string;
   buyerPhone?: string;
 }) {
   return withErrorHandler(async () => {
-    const isInformal = !!data.isInformal;
-    // 1. Batch Metadata Lookups (Variants & Required Accounts)
-    const variantIds = data.items.map((i) => i.variantId);
-    const accountCodes = ["3001", "1003", "2002", "2003", "2004"];
+    const isNo2 = data.billType === "NO2";
 
-    const [outlet, variants, accounts] = await Promise.all([
+    // 1. Fetch metadata & check permissions
+    const [outlet, variants] = await Promise.all([
       prisma.outlet.findUnique({
         where: { id: data.fromOutletId },
         include: { warehouses: true },
       }),
       prisma.variant.findMany({
-        where: { id: { in: variantIds } },
+        where: { id: { in: data.items.map((i) => i.variantId) } },
         include: { product: true },
-      }),
-      prisma.account.findMany({
-        where: { code: { in: accountCodes } },
       }),
     ]);
 
     if (!outlet) throw new NotFoundError("Outlet not found");
-    if (variants.length !== new Set(variantIds).size)
-      throw new ValidationError("Some variants not found");
+    if (isNo2 && !outlet.allowRawCashBills) {
+      throw new ValidationError(
+        "Raw Cash Bills are not enabled for this outlet.",
+      );
+    }
 
-    const salesAcc = accounts.find((a) => a.code === "3001");
-    const debtorAcc = accounts.find((a) => a.code === "1003");
-    const outputCgstAcc = accounts.find((a) => a.code === "2002");
-    const outputSgstAcc = accounts.find((a) => a.code === "2003");
-    const outputIgstAcc = accounts.find((a) => a.code === "2004");
-
-    if (!salesAcc || !debtorAcc)
-      throw new Error("Required accounts not found. Run COA setup.");
+    // 2. Prep Accounting Accounts (Only for NO1)
+    let accounts: any[] = [];
+    if (!isNo2) {
+      const accountCodes = ["3001", "1003", "2002", "2003", "2004"];
+      accounts = await prisma.account.findMany({
+        where: { code: { in: accountCodes }, outletId: data.fromOutletId },
+      });
+      if (
+        !accounts.find((a) => a.code === "3001") ||
+        !accounts.find((a) => a.code === "1003")
+      ) {
+        throw new Error(
+          "Core accounting labels (Sales/Debtors) missing for this outlet.",
+        );
+      }
+    }
 
     const allowNegative =
       outlet.negativeStockPolicy === "WARN" ||
@@ -68,17 +78,23 @@ export async function createSalesInvoice(data: {
     const totalTaxable = roundToTwo(
       data.items.reduce((a, b) => a + b.taxableValue, 0),
     );
-    const totalCgst = roundToTwo(data.items.reduce((a, b) => a + b.cgst, 0));
-    const totalSgst = roundToTwo(data.items.reduce((a, b) => a + b.sgst, 0));
-    const totalIgst = roundToTwo(data.items.reduce((a, b) => a + b.igst, 0));
+    const totalCgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.cgst || 0), 0),
+    );
+    const totalSgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.sgst || 0), 0),
+    );
+    const totalIgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.igst || 0), 0),
+    );
     const totalTax = roundToTwo(totalCgst + totalSgst + totalIgst);
     const freightCost = data.freightCost || 0;
     const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
 
     const warehouseId = outlet.warehouses[0]?.id;
 
-    // 4. Credit Limit Check (Only for Legal/Party Invoices)
-    if (!isInformal && data.partyId) {
+    // 3. Credit Limit Check (Strictly NO1)
+    if (!isNo2 && data.partyId) {
       const party = await prisma.party.findUnique({
         where: { id: data.partyId },
       });
@@ -88,28 +104,29 @@ export async function createSalesInvoice(data: {
         );
         if (currentBalance + grandTotal > party.creditLimit) {
           throw new ValidationError(
-            `Credit limit exceeded. Current: ₹${currentBalance.toLocaleString()}, New: ₹${grandTotal.toLocaleString()}, Limit: ₹${party.creditLimit.toLocaleString()}`,
+            `Credit limit exceeded. Limit: ₹${party.creditLimit}, New Balance: ₹${currentBalance + grandTotal}`,
           );
         }
       }
     }
 
     return await prisma.$transaction(async (tx) => {
-      // 1. Generate Transaction Number
+      // 1. Generate Transaction Number (CM vs INV)
       const txnNumber = await NumberingService.getNextNumber(
         tx,
         data.fromOutletId,
-        isInformal ? "CASH_MEMO" : "SALES_INVOICE",
+        isNo2 ? "CASH_MEMO" : "SALES_INVOICE",
       );
 
-      // 2. Transaction Header
+      // 2. Create Header & Items
       const invoice = await tx.transaction.create({
         data: {
           type: "SALES_INVOICE",
+          billType: data.billType,
           txnNumber,
           date: data.date,
-          partyId: isInformal ? null : data.partyId,
-          isInformal,
+          partyId: isNo2 ? null : data.partyId,
+          isInformal: isNo2,
           buyerName: data.buyerName,
           buyerPhone: data.buyerPhone,
           outletId: data.fromOutletId,
@@ -120,42 +137,49 @@ export async function createSalesInvoice(data: {
           grandTotal,
           status: "POSTED",
           userId: data.userId,
+          remarks: data.remarks,
           items: {
             create: data.items.map((item) => ({
               variantId: item.variantId,
               quantity: item.quantity,
               rate: item.rate,
+              conversionRatio:
+                variants.find((v) => v.id === item.variantId)?.product
+                  .conversionRatio || 1,
               taxableValue: item.taxableValue,
-              cgst: item.cgst,
-              sgst: item.sgst,
-              igst: item.igst,
+              cgst: item.cgst || 0,
+              sgst: item.sgst || 0,
+              igst: item.igst || 0,
             })),
           },
         },
       });
 
-      // 3. Batch Stock Updates
+      // 3. Stock Update (Constant for both)
       await StockService.batchUpdateStock(tx, {
         transactionId: invoice.id,
         userId: data.userId,
         outletId: data.fromOutletId,
         type: "SALE",
         items: data.items.map((item) => {
-          const variant = variants.find((v) => v.id === item.variantId)!;
           return {
             variantId: item.variantId,
             locationId: warehouseId || data.fromOutletId,
             locationType: warehouseId ? "WAREHOUSE" : "OUTLET",
-            quantityChange: -(
-              item.quantity * (variant.product.conversionRatio || 1)
-            ),
+            quantityChange: -item.quantity,
             allowNegative,
           };
         }),
       });
 
-      // 4. Accounting Entries (Skip for No.2 Bills)
-      if (!isInformal) {
+      // 4. Accounting Entries (Conditional Block - NO1 ONLY)
+      if (!isNo2) {
+        const salesAcc = accounts.find((a) => a.code === "3001")!;
+        const debtorAcc = accounts.find((a) => a.code === "1003")!;
+        const outputCgstAcc = accounts.find((a) => a.code === "2002");
+        const outputSgstAcc = accounts.find((a) => a.code === "2003");
+        const outputIgstAcc = accounts.find((a) => a.code === "2004");
+
         const entries = [
           { accountId: salesAcc.id, credit: totalTaxable },
           { accountId: debtorAcc.id, debit: grandTotal },
@@ -170,17 +194,27 @@ export async function createSalesInvoice(data: {
 
         if (freightCost > 0) {
           const salesEntry = entries.find((e) => e.accountId === salesAcc.id);
-          if (salesEntry) {
+          if (salesEntry)
             salesEntry.credit = roundToTwo(
               (salesEntry.credit || 0) + freightCost,
             );
-          }
         }
 
         await AccountingService.postJournalEntry(tx, {
           transactionId: invoice.id,
           partyId: data.partyId!,
           entries,
+        });
+
+        // 5. Update Customer Outstanding Balance (increment denormalized cache)
+        // Outstanding represents unpaid amount from sales invoices
+        await tx.party.update({
+          where: { id: data.partyId },
+          data: {
+            outstandingBalance: {
+              increment: grandTotal,
+            },
+          },
         });
       }
 
@@ -205,6 +239,7 @@ export async function getSalesInvoices(outletId: string, limit = 50) {
       grandTotal: true,
       status: true,
       isInformal: true,
+      billType: true,
       buyerName: true,
       buyerPhone: true,
       party: {
@@ -215,8 +250,52 @@ export async function getSalesInvoices(outletId: string, limit = 50) {
         },
       },
       _count: { select: { items: true } },
+      payments: { select: { amount: true } },
     },
     orderBy: { date: "desc" },
+  });
+}
+
+export async function getSalesInvoice(invoiceId: string) {
+  return await prisma.transaction.findUnique({
+    where: { id: invoiceId },
+    include: {
+      party: { select: { id: true, name: true, gstin: true, state: true } },
+      outlet: {
+        select: {
+          id: true,
+          name: true,
+          state: true,
+          address: true,
+          gstin: true,
+          bankDetails: true,
+        },
+      },
+      items: {
+        include: {
+          variant: {
+            include: {
+              product: { select: { name: true, hsnCode: true, gstRate: true } },
+            },
+          },
+        },
+      },
+      payments: {
+        select: {
+          id: true,
+          txnNumber: true,
+          paymentDate: true,
+          amount: true,
+          paymentMode: true,
+          referenceNo: true,
+          notes: true,
+          bankAccount: { select: { name: true } },
+          creator: { select: { name: true } },
+        },
+        orderBy: { paymentDate: "asc" },
+      },
+      user: { select: { id: true, name: true } },
+    },
   });
 }
 

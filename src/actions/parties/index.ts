@@ -176,7 +176,7 @@ export async function createParty(
       newValues: data,
     });
 
-    revalidatePath("/dashboard/master-data/parties");
+    revalidatePath("/dashboard/sales/customers");
     return party;
   });
 }

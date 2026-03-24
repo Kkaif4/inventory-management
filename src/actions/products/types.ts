@@ -9,8 +9,7 @@ export type VariantPayload = {
   purchasePrice: number;
   sellingPrice: number;
   pricingMethod: "MANUAL" | "MARKUP";
-  markupPercent?: number;
+  markupPercent?: number | null;
   minStockLevel: number;
   specifications: any;
-  categoryId: string;
 };

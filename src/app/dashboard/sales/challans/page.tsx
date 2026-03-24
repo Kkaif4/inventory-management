@@ -1,13 +1,15 @@
-export const dynamic = "force-dynamic";
-import { getDeliveryChallans } from "@/actions/sales/challans";
+"use client";
 
-import { DeliveryChallansClient } from "./challans-client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export default async function DeliveryChallansPage() {
-  const res = await getDeliveryChallans();
-  if (!res.success) {
-    throw new Error(res.error?.message || "Failed to load challans");
-  }
-  const data = res.data!;
-  return <DeliveryChallansClient challans={data} />;
+export default function DeliveryChallansPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to the new unified quotations and delivery page
+    router.replace("/dashboard/sales/quotations-and-delivery");
+  }, [router]);
+
+  return null;
 }

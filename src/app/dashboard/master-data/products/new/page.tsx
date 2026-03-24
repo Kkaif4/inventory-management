@@ -2,10 +2,8 @@
 
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
 import { createProduct } from "@/actions/products";
 import { getCategories } from "@/actions/categories";
 import { PackageX, Save, Plus, Trash2 } from "lucide-react";
@@ -15,53 +13,29 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Form,
-  FormControl,
-  FormField,
   FormItem,
   FormLabel,
+  FormField,
+  FormControl,
   FormMessage,
 } from "@/components/ui/form";
 import {
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
+  SelectTrigger,
+  SelectContent,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { useSession } from "next-auth/react";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { PRODUCT_UNITS } from "@/lib/constants";
 import { AlertTriangle, Info } from "lucide-react";
 import { getGstRateByHsn } from "@/lib/hsn-data";
-
-const variantSchema = z.object({
-  sku: z.string().min(2, "SKU required").max(50),
-  categoryId: z.string().min(1, "Classification is required"),
-  purchasePrice: z.coerce.number().min(0),
-  sellingPrice: z.coerce.number().min(0),
-  pricingMethod: z.enum(["MANUAL", "MARKUP"]),
-  markupPercent: z.coerce.number().optional(),
-  minStockLevel: z.coerce.number().min(0).default(0),
-  specifications: z.any().optional().default({}),
-});
-
-const productSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  brand: z.string().optional(),
-  hsnCode: z.string().min(4, "Invalid HSN Code"),
-  gstRate: z.coerce.number(),
-  baseUnit: z.string().min(1, "Base unit is required"),
-  purchaseUnit: z.string().optional(),
-  salesUnit: z.string().optional(),
-  conversionRatio: z.coerce.number().min(1).default(1),
-  categoryId: z.string().min(1, "Category is required"),
-  parentCategoryId: z.string().min(1, "Parent Category is required"),
-  variants: z.array(variantSchema).min(1, "At least one variant is required"),
-});
-
-type ProductFormValues = z.infer<typeof productSchema>;
+import {
+  productCreateSchema,
+  ProductFormValues,
+} from "@/validations/product.validation";
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -94,7 +68,7 @@ export default function NewProductPage() {
   };
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema) as any,
+    resolver: zodResolver(productCreateSchema) as any,
     defaultValues: {
       name: "",
       brand: "",
@@ -102,14 +76,11 @@ export default function NewProductPage() {
       gstRate: 18,
       baseUnit: "",
       purchaseUnit: "",
-      salesUnit: "",
       conversionRatio: 1,
       categoryId: "",
-      parentCategoryId: "",
       variants: [
         {
           sku: "",
-          categoryId: "",
           purchasePrice: 0,
           sellingPrice: 0,
           pricingMethod: "MANUAL",
@@ -141,6 +112,9 @@ export default function NewProductPage() {
       setIsSubmitting(true);
       const res = await createProduct({
         ...data,
+        brand: data.brand || null,
+        hsnCode: data.hsnCode || null,
+        purchaseUnit: data.purchaseUnit || null,
         outletId: currentOutletId,
         userId: session.user.id,
       });
@@ -213,39 +187,12 @@ export default function NewProductPage() {
                     <FormItem>
                       <FormLabel>Brand</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Bosch" {...field} />
+                        <Input
+                          placeholder="e.g. Bosch"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={control}
-                  name="parentCategoryId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Parent Category (Product Type) *</FormLabel>
-                      <Select
-                        onValueChange={(val) => field.onChange(val)}
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Parent...">
-                              {getCategoryName(field.value)}
-                            </SelectValue>
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {categories.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>
-                              {c.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -287,12 +234,29 @@ export default function NewProductPage() {
                   name="hsnCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>HSN Code *</FormLabel>
+                      <FormLabel>HSN Code</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="e.g. 8467"
                           {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            if (
+                              !e.target.value ||
+                              e.target.value.trim() === ""
+                            ) {
+                              form.setValue("gstRate", 0);
+                            }
+                          }}
                           onBlur={(e) => {
+                            if (
+                              !e.target.value ||
+                              e.target.value.trim() === ""
+                            ) {
+                              form.setValue("gstRate", 0);
+                              return;
+                            }
                             const rate = getGstRateByHsn(e.target.value);
                             if (rate !== null) {
                               form.setValue("gstRate", rate);
@@ -460,7 +424,6 @@ export default function NewProductPage() {
                 onClick={() =>
                   append({
                     sku: "",
-                    categoryId: "",
                     purchasePrice: 0,
                     sellingPrice: 0,
                     pricingMethod: "MANUAL",
@@ -509,39 +472,6 @@ export default function NewProductPage() {
                             <FormControl>
                               <Input placeholder="Unique ID" {...field} />
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={control}
-                        name={`variants.${index}.categoryId`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs">
-                              Classification *
-                            </FormLabel>
-                            <Select
-                              onValueChange={(val) => field.onChange(val)}
-                              defaultValue={field.value}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="h-8">
-                                  <SelectValue placeholder="Cat...">
-                                    {getCategoryName(field.value)}
-                                  </SelectValue>
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {categories.map((c) => (
-                                  <SelectItem key={c.id} value={c.id}>
-                                    {c.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -660,9 +590,12 @@ export default function NewProductPage() {
                                   type="number"
                                   step="0.1"
                                   className="border-indigo-500/30 bg-indigo-500/5 focus-visible:ring-indigo-500/40"
-                                  {...field}
+                                  value={field.value ?? ""}
+                                  onBlur={field.onBlur}
                                   onChange={(e) => {
-                                    field.onChange(e);
+                                    field.onChange(
+                                      Number(e.target.value) || null,
+                                    );
                                     const margin = Number(e.target.value);
                                     const cost =
                                       watch(

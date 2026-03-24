@@ -6,6 +6,7 @@ import { StockService } from "@/domains/inventory/stock-service";
 import { AccountingService } from "@/domains/accounting/ledger-service";
 import { AuditService } from "@/domains/audit/audit-service";
 import { roundToTwo } from "@/lib/utils";
+import { normalizeToStockQty } from "@/lib/unit-conversion";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ForbiddenError, NotFoundError } from "@/lib/exceptions";
@@ -122,7 +123,11 @@ export async function createGRN(data: {
 
       // 3. Update physical stock for each item (Convert to Base Unit)
       for (const item of itemsData) {
-        const baseQuantity = item.quantity * (item.conversionRatio || 1);
+        const baseQuantity = normalizeToStockQty({
+          quantity: item.quantity,
+          isPurchase: true,
+          conversionRatio: item.conversionRatio,
+        });
         await StockService.moveStock(tx, {
           variantId: item.variantId,
           warehouseId: po.toLocationId!,
@@ -419,7 +424,11 @@ export async function createDebitNote(data: {
 
       // 3. Reduce stock for returned items (Convert to Base Unit)
       for (const item of itemsData) {
-        const baseQuantity = -item.quantity * (item.conversionRatio || 1);
+        const baseQuantity = -normalizeToStockQty({
+          quantity: item.quantity,
+          isPurchase: true,
+          conversionRatio: item.conversionRatio,
+        });
         await StockService.moveStock(tx, {
           variantId: item.variantId,
           warehouseId: bill.toLocationId!,
@@ -466,7 +475,11 @@ export async function acceptPurchaseOrder(
 
       // 2. Update Stock for each item (Convert to Base Unit)
       for (const item of po.items) {
-        const baseQuantity = item.quantity * (item.conversionRatio || 1);
+        const baseQuantity = normalizeToStockQty({
+          quantity: item.quantity,
+          isPurchase: true,
+          conversionRatio: item.conversionRatio,
+        });
         await StockService.moveStock(tx, {
           variantId: item.variantId,
           warehouseId: po.toLocationId!, // POs have a destination warehouse

@@ -17,3 +17,12 @@ export function formatCurrency(amount: number) {
 export function roundToTwo(num: number) {
   return Math.round((num + Number.EPSILON) * 100) / 100;
 }
+
+export function formatDate(date: Date | string) {
+  if (!date) return "—";
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(date));
+}

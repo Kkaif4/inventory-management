@@ -35,7 +35,7 @@ export default function NewOutletPage() {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<z.infer<typeof outletSchema>>({
+  } = useForm<OutletFormValues>({
     resolver: zodResolver(outletSchema),
     defaultValues: {
       name: "",
@@ -48,6 +48,9 @@ export default function NewOutletPage() {
       negativeStockPolicy: "WARN",
       warehouseIds: [],
       batchTrackingEnabled: false,
+      inventoryValuationMethod: "NONE",
+      allowRawCashBills: false,
+      bankDetails: "",
     },
   });
 
@@ -203,6 +206,47 @@ export default function NewOutletPage() {
                 <option value="BLOCK">Strict Block</option>
                 <option value="ALLOW">Allow Silently</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Inventory Valuation Method *
+              </label>
+              <select
+                {...register("inventoryValuationMethod")}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+              >
+                <option value="NONE">Standard (No Batch Tracking)</option>
+                <option value="FIFO">FIFO (Batch Tracking)</option>
+              </select>
+            </div>
+
+            <div className="flex items-center space-x-3 pt-6">
+              <input
+                type="checkbox"
+                {...register("allowRawCashBills")}
+                className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+              <div className="space-y-0.5">
+                <label className="text-sm font-bold text-slate-900">
+                  Allow Raw Cash Bills (No.2)
+                </label>
+                <p className="text-[10px] text-slate-500">
+                  Enable informal billing mode for this outlet.
+                </p>
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Bank Details (Invoice Footer)
+              </label>
+              <textarea
+                {...register("bankDetails")}
+                rows={3}
+                placeholder="e.g. Bank: XYZ, A/C: 123456789, IFSC: SBIN000123"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+              />
             </div>
 
             <div>

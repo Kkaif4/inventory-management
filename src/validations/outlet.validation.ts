@@ -11,6 +11,9 @@ export const outletSchema = z.object({
   negativeStockPolicy: z.enum(["WARN", "BLOCK", "ALLOW"]),
   warehouseIds: z.array(z.string()).min(1, "Must link at least one warehouse"),
   batchTrackingEnabled: z.boolean(),
+  inventoryValuationMethod: z.string().min(1),
+  allowRawCashBills: z.boolean(),
+  bankDetails: z.string().optional(),
 });
 
 export type OutletFormValues = z.infer<typeof outletSchema>;

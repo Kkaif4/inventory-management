@@ -8,7 +8,6 @@ export const PRODUCT_LEVEL_FIELDS = [
   "gstRate",
   "baseUnit",
   "purchaseUnit",
-  "salesUnit",
   "conversionRatio",
   "categoryL1",
   "categoryL2",
@@ -30,7 +29,6 @@ export const importRowSchema = z
       }),
     baseUnit: z.coerce.string().min(1, "Base unit is required"),
     purchaseUnit: z.coerce.string().optional().nullable(),
-    salesUnit: z.coerce.string().optional().nullable(),
     conversionRatio: z.coerce.number().default(1),
     categoryL1: z.coerce.string().min(1, "Category L1 is required"),
     categoryL2: z.coerce.string().optional().nullable(),
@@ -95,8 +93,7 @@ export const importRowSchema = z
   .refine(
     (data) => {
       const needsRatio =
-        (data.purchaseUnit && data.purchaseUnit !== data.baseUnit) ||
-        (data.salesUnit && data.salesUnit !== data.baseUnit);
+        data.purchaseUnit && data.purchaseUnit !== data.baseUnit;
       if (needsRatio && data.conversionRatio <= 1) {
         return false;
       }
@@ -104,7 +101,7 @@ export const importRowSchema = z
     },
     {
       message:
-        "Conversion ratio must be greater than 1 if purchase or sales unit differs from base unit",
+        "Conversion ratio must be greater than 1 if purchase unit differs from base unit",
       path: ["conversionRatio"],
     },
   );
@@ -114,3 +111,8 @@ export const importRowSchema = z
 // import-logic.ts after fetching outlet, not here in the schema. Do not add it here.
 
 export type ImportRow = z.infer<typeof importRowSchema>;
+
+// ISSUE #2: Extend type with sheet row metadata for error reporting
+export type ImportRowWithMeta = ImportRow & {
+  _sheetRow: number; // 1-based sheet row number
+};

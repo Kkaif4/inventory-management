@@ -158,23 +158,36 @@ export async function getInventoryLocations(outletId: string) {
     }
     const masterData = masterResponse.data!;
 
-    const outlets = await prisma.outlet.findMany({
-      where: {
-        id: { not: outletId },
-      },
-      select: {
-        id: true,
-        name: true,
-        negativeStockPolicy: true,
-        warehouses: {
-          select: { id: true },
+    const [currentOutlet, otherOutlets] = await Promise.all([
+      prisma.outlet.findUnique({
+        where: { id: outletId },
+        select: {
+          id: true,
+          name: true,
+          state: true,
+          allowRawCashBills: true,
+          negativeStockPolicy: true,
         },
-      },
-    });
+      }),
+      prisma.outlet.findMany({
+        where: {
+          id: { not: outletId },
+        },
+        select: {
+          id: true,
+          name: true,
+          negativeStockPolicy: true,
+          warehouses: {
+            select: { id: true },
+          },
+        },
+      }),
+    ]);
 
     return {
       ...masterData,
-      outlets,
+      currentOutlet,
+      outlets: otherOutlets,
     };
   });
 }

@@ -9,7 +9,8 @@ export type DocumentType =
   | "CASH_MEMO"
   | "CREDIT_NOTE"
   | "STOCK_RETURN"
-  | "QUOTATION";
+  | "QUOTATION"
+  | "RECEIPT";
 
 export const NumberingService = {
   async getNextNumber(
@@ -90,6 +91,7 @@ export const NumberingService = {
       CREDIT_NOTE: "CN",
       STOCK_RETURN: "SR",
       QUOTATION: "QTN",
+      RECEIPT: "RCP",
     };
     return prefixes[type];
   },

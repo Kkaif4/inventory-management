@@ -162,7 +162,9 @@ exports.Prisma.OutletScalarFieldEnum = {
   bankDetails: 'bankDetails',
   defaultWarehouseId: 'defaultWarehouseId',
   negativeStockPolicy: 'negativeStockPolicy',
-  batchTrackingEnabled: 'batchTrackingEnabled'
+  batchTrackingEnabled: 'batchTrackingEnabled',
+  inventoryValuationMethod: 'inventoryValuationMethod',
+  allowRawCashBills: 'allowRawCashBills'
 };
 
 exports.Prisma.CategoryScalarFieldEnum = {
@@ -182,7 +184,6 @@ exports.Prisma.ProductScalarFieldEnum = {
   gstRate: 'gstRate',
   baseUnit: 'baseUnit',
   purchaseUnit: 'purchaseUnit',
-  salesUnit: 'salesUnit',
   conversionRatio: 'conversionRatio',
   categoryId: 'categoryId',
   isArchived: 'isArchived',
@@ -219,9 +220,19 @@ exports.Prisma.PartyScalarFieldEnum = {
   address: 'address',
   state: 'state',
   contactInfo: 'contactInfo',
+  phone: 'phone',
+  email: 'email',
+  isActive: 'isActive',
+  bankName: 'bankName',
+  bankAccountName: 'bankAccountName',
+  bankAccountNumber: 'bankAccountNumber',
+  bankIfsc: 'bankIfsc',
   creditPeriod: 'creditPeriod',
   creditLimit: 'creditLimit',
   openingBalance: 'openingBalance',
+  openingBalanceLocked: 'openingBalanceLocked',
+  outstandingBalance: 'outstandingBalance',
+  creditBalance: 'creditBalance',
   priceListId: 'priceListId',
   outletId: 'outletId'
 };
@@ -240,12 +251,14 @@ exports.Prisma.TransactionScalarFieldEnum = {
   freightCost: 'freightCost',
   grandTotal: 'grandTotal',
   status: 'status',
+  billType: 'billType',
   isInformal: 'isInformal',
   buyerName: 'buyerName',
   buyerPhone: 'buyerPhone',
   parentId: 'parentId',
   userId: 'userId',
-  remarks: 'remarks'
+  remarks: 'remarks',
+  paidAt: 'paidAt'
 };
 
 exports.Prisma.TransactionItemScalarFieldEnum = {
@@ -340,7 +353,24 @@ exports.Prisma.StockLedgerScalarFieldEnum = {
   quantity: 'quantity',
   balance: 'balance',
   type: 'type',
+  costPerUnit: 'costPerUnit',
   userId: 'userId'
+};
+
+exports.Prisma.PaymentScalarFieldEnum = {
+  id: 'id',
+  txnNumber: 'txnNumber',
+  invoiceId: 'invoiceId',
+  outletId: 'outletId',
+  partyId: 'partyId',
+  amount: 'amount',
+  paymentDate: 'paymentDate',
+  paymentMode: 'paymentMode',
+  bankAccountId: 'bankAccountId',
+  referenceNo: 'referenceNo',
+  notes: 'notes',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.PriceListEntryScalarFieldEnum = {
@@ -403,6 +433,11 @@ exports.TxType = exports.$Enums.TxType = {
   STOCK_RETURN: 'STOCK_RETURN'
 };
 
+exports.BillType = exports.$Enums.BillType = {
+  NO1: 'NO1',
+  NO2: 'NO2'
+};
+
 exports.AccountGroup = exports.$Enums.AccountGroup = {
   ASSET: 'ASSET',
   LIABILITY: 'LIABILITY',
@@ -431,6 +466,7 @@ exports.Prisma.ModelName = {
   CustomBatch: 'CustomBatch',
   BatchMovement: 'BatchMovement',
   StockLedger: 'StockLedger',
+  Payment: 'Payment',
   PriceListEntry: 'PriceListEntry'
 };
 

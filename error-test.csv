@@ -1,34 +1,34 @@
-productName,brand,hsnCode,gstRate,baseUnit,purchaseUnit,salesUnit,conversionRatio,categoryL1,categoryL2,categoryL3,variantSku,variantSpec,purchasePrice,sellingPrice,pricingMethod,markupPercent,minStockLevel,warehouseName,currentStock,batchDate,batchCostPerUnit
-,Bosch,84672100,,Piece,Box,Piece,10,Tools,,,BOS-ERR-01,,2500,,MARKUP,15,10,Main Warehouse,10,01/01/2026,2500
-Invalid GST Product,Bosch,84672100,15,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-02,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Negative Price Product,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-03,,-100,,MARKUP,10,10,Main Warehouse,10,01/01/2026,-100
-Markup Missing,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-04,,2500,,MARKUP,,10,Main Warehouse,10,01/01/2026,2500
-Manual Missing,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-05,,2500,,MANUAL,,10,Main Warehouse,10,01/01/2026,2500
-Bad Conversion,Bosch,84672100,18,Piece,Box,Piece,1,Tools,Power Tools,Drills,BOS-ERR-06,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Stock No Warehouse,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-07,,2500,,MARKUP,10,10,,50,01/01/2026,2500
-Duplicate Product,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-GRP-01,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Duplicate Product,Bosch,84672100,12,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-GRP-02,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Case Category,Bosch,84672100,18,Piece,Box,Piece,10,Hardware,,,BOS-CAT-01,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Case Category,Bosch,84672100,18,Piece,Box,Piece,10,hardware,,,BOS-CAT-02,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Duplicate SKU,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-DUP-01,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Duplicate SKU,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-DUP-01,,3000,,MARKUP,20,5,Main Warehouse,20,01/01/2026,3000
-Stock Duplicate,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-STK-01,,2500,,MARKUP,10,10,Main Warehouse,50,01/01/2026,2500
-Stock Duplicate,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-STK-01,,2500,,MARKUP,10,10,Main Warehouse,50,01/01/2026,2500
-Zero Stock,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-STK-02,,2500,,MARKUP,10,10,Main Warehouse,0,01/01/2026,2500
-New Warehouse,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-STK-03,,2500,,MARKUP,10,10,Unknown Warehouse,20,01/01/2026,2500
+productName,brand,hsnCode,gstRate,baseUnit,purchaseUnit,conversionRatio,categoryL1,categoryL2,categoryL3,variantSku,variantSpec,purchasePrice,sellingPrice,pricingMethod,markupPercent,minStockLevel,warehouseName,currentStock,batchDate,batchCostPerUnit
+,Bosch,84672100,,Piece,Box,10,Tools,,,BOS-ERR-01,,2500,,MARKUP,15,10,Main Warehouse,10,01/01/2026,2500
+Invalid GST Product,Bosch,84672100,15,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-02,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Negative Price Product,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-03,,-100,,MARKUP,10,10,Main Warehouse,10,01/01/2026,-100
+Markup Missing,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-04,,2500,,MARKUP,,10,Main Warehouse,10,01/01/2026,2500
+Manual Missing,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-05,,2500,,MANUAL,,10,Main Warehouse,10,01/01/2026,2500
+Bad Conversion,Bosch,84672100,18,Piece,Box,1,Tools,Power Tools,Drills,BOS-ERR-06,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Stock No Warehouse,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-07,,2500,,MARKUP,10,10,,50,01/01/2026,2500
+Duplicate Product,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-GRP-01,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Duplicate Product,Bosch,84672100,12,Piece,Box,10,Tools,Power Tools,Drills,BOS-GRP-02,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Case Category,Bosch,84672100,18,Piece,Box,10,Hardware,,,BOS-CAT-01,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Case Category,Bosch,84672100,18,Piece,Box,10,hardware,,,BOS-CAT-02,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Duplicate SKU,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-DUP-01,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Duplicate SKU,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-DUP-01,,3000,,MARKUP,20,5,Main Warehouse,20,01/01/2026,3000
+Stock Duplicate,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-STK-01,,2500,,MARKUP,10,10,Main Warehouse,50,01/01/2026,2500
+Stock Duplicate,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-STK-01,,2500,,MARKUP,10,10,Main Warehouse,50,01/01/2026,2500
+Zero Stock,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-STK-02,,2500,,MARKUP,10,10,Main Warehouse,0,01/01/2026,2500
+New Warehouse,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-STK-03,,2500,,MARKUP,10,10,Unknown Warehouse,20,01/01/2026,2500
 
-Invalid HSN,Bosch,ABC123,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-08,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Missing SKU,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,,Spec,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Negative Stock,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-09,,2500,,MARKUP,10,10,Main Warehouse,-10,01/01/2026,2500
-Invalid Date,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-10,,2500,,MARKUP,10,10,Main Warehouse,10,2026-01-01,2500
-Zero Conversion,Bosch,84672100,18,Piece,Box,Piece,0,Tools,Power Tools,Drills,BOS-ERR-11,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Missing Category,Bosch,84672100,18,Piece,Box,Piece,10,,Power Tools,Drills,BOS-ERR-12,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Invalid Pricing Combo,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-13,,2500,3000,MARKUP,,10,Main Warehouse,10,01/01/2026,2500
-Manual With Markup,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-14,,2500,3000,MANUAL,20,10,Main Warehouse,10,01/01/2026,2500
-Invalid Unit,Bosch,84672100,18,Unknown,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-15,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Missing Purchase Price,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-16,,,3000,MANUAL,,10,Main Warehouse,10,01/01/2026,2500
-Negative Batch Cost,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-17,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,-500
-Huge Markup,Bosch,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-18,,2500,,MARKUP,500,10,Main Warehouse,10,01/01/2026,2500
-Missing Base Unit,Bosch,84672100,18,,Box,Piece,10,Tools,Power Tools,Drills,BOS-ERR-19,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Same Units Wrong Ratio,Bosch,84672100,18,Piece,Piece,Piece,10,Tools,Power Tools,Drills,BOS-ERR-20,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
-Duplicate SKU Different Product,Stanley,84672100,18,Piece,Box,Piece,10,Tools,Power Tools,Drills,BOS-DUP-01,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Invalid HSN,Bosch,ABC123,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-08,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Missing SKU,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,,Spec,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Negative Stock,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-09,,2500,,MARKUP,10,10,Main Warehouse,-10,01/01/2026,2500
+Invalid Date,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-10,,2500,,MARKUP,10,10,Main Warehouse,10,2026-01-01,2500
+Zero Conversion,Bosch,84672100,18,Piece,Box,0,Tools,Power Tools,Drills,BOS-ERR-11,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Missing Category,Bosch,84672100,18,Piece,Box,10,,Power Tools,Drills,BOS-ERR-12,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Invalid Pricing Combo,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-13,,2500,3000,MARKUP,,10,Main Warehouse,10,01/01/2026,2500
+Manual With Markup,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-14,,2500,3000,MANUAL,20,10,Main Warehouse,10,01/01/2026,2500
+Invalid Unit,Bosch,84672100,18,Unknown,Box,10,Tools,Power Tools,Drills,BOS-ERR-15,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Missing Purchase Price,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-16,,,3000,MANUAL,,10,Main Warehouse,10,01/01/2026,2500
+Negative Batch Cost,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-17,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,-500
+Huge Markup,Bosch,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-ERR-18,,2500,,MARKUP,500,10,Main Warehouse,10,01/01/2026,2500
+Missing Base Unit,Bosch,84672100,18,,Box,10,Tools,Power Tools,Drills,BOS-ERR-19,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Same Units Wrong Ratio,Bosch,84672100,18,Piece,Piece,10,Tools,Power Tools,Drills,BOS-ERR-20,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500
+Duplicate SKU Different Product,Stanley,84672100,18,Piece,Box,10,Tools,Power Tools,Drills,BOS-DUP-01,,2500,,MARKUP,10,10,Main Warehouse,10,01/01/2026,2500

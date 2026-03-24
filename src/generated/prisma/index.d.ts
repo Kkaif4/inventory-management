@@ -109,6 +109,11 @@ export type BatchMovement = $Result.DefaultSelection<Prisma.$BatchMovementPayloa
  */
 export type StockLedger = $Result.DefaultSelection<Prisma.$StockLedgerPayload>
 /**
+ * Model Payment
+ * 
+ */
+export type Payment = $Result.DefaultSelection<Prisma.$PaymentPayload>
+/**
  * Model PriceListEntry
  * 
  */
@@ -165,6 +170,14 @@ export const AccountGroup: {
 
 export type AccountGroup = (typeof AccountGroup)[keyof typeof AccountGroup]
 
+
+export const BillType: {
+  NO1: 'NO1',
+  NO2: 'NO2'
+};
+
+export type BillType = (typeof BillType)[keyof typeof BillType]
+
 }
 
 export type Role = $Enums.Role
@@ -182,6 +195,10 @@ export const TxType: typeof $Enums.TxType
 export type AccountGroup = $Enums.AccountGroup
 
 export const AccountGroup: typeof $Enums.AccountGroup
+
+export type BillType = $Enums.BillType
+
+export const BillType: typeof $Enums.BillType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -493,6 +510,16 @@ export class PrismaClient<
     * ```
     */
   get stockLedger(): Prisma.StockLedgerDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.payment`: Exposes CRUD operations for the **Payment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Payments
+    * const payments = await prisma.payment.findMany()
+    * ```
+    */
+  get payment(): Prisma.PaymentDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.priceListEntry`: Exposes CRUD operations for the **PriceListEntry** model.
@@ -956,6 +983,7 @@ export namespace Prisma {
     CustomBatch: 'CustomBatch',
     BatchMovement: 'BatchMovement',
     StockLedger: 'StockLedger',
+    Payment: 'Payment',
     PriceListEntry: 'PriceListEntry'
   };
 
@@ -972,7 +1000,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "auditLog" | "warehouse" | "outlet" | "category" | "product" | "variant" | "stock" | "party" | "transaction" | "transactionItem" | "account" | "ledgerEntry" | "vendorProduct" | "priceList" | "documentSeries" | "customBatch" | "batchMovement" | "stockLedger" | "priceListEntry"
+      modelProps: "user" | "auditLog" | "warehouse" | "outlet" | "category" | "product" | "variant" | "stock" | "party" | "transaction" | "transactionItem" | "account" | "ledgerEntry" | "vendorProduct" | "priceList" | "documentSeries" | "customBatch" | "batchMovement" | "stockLedger" | "payment" | "priceListEntry"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2382,6 +2410,80 @@ export namespace Prisma {
           }
         }
       }
+      Payment: {
+        payload: Prisma.$PaymentPayload<ExtArgs>
+        fields: Prisma.PaymentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PaymentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PaymentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload>
+          }
+          findFirst: {
+            args: Prisma.PaymentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PaymentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload>
+          }
+          findMany: {
+            args: Prisma.PaymentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload>[]
+          }
+          create: {
+            args: Prisma.PaymentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload>
+          }
+          createMany: {
+            args: Prisma.PaymentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PaymentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload>[]
+          }
+          delete: {
+            args: Prisma.PaymentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload>
+          }
+          update: {
+            args: Prisma.PaymentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload>
+          }
+          deleteMany: {
+            args: Prisma.PaymentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PaymentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PaymentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload>[]
+          }
+          upsert: {
+            args: Prisma.PaymentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentPayload>
+          }
+          aggregate: {
+            args: Prisma.PaymentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePayment>
+          }
+          groupBy: {
+            args: Prisma.PaymentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PaymentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PaymentCountArgs<ExtArgs>
+            result: $Utils.Optional<PaymentCountAggregateOutputType> | number
+          }
+        }
+      }
       PriceListEntry: {
         payload: Prisma.$PriceListEntryPayload<ExtArgs>
         fields: Prisma.PriceListEntryFieldRefs
@@ -2583,6 +2685,7 @@ export namespace Prisma {
     customBatch?: CustomBatchOmit
     batchMovement?: BatchMovementOmit
     stockLedger?: StockLedgerOmit
+    payment?: PaymentOmit
     priceListEntry?: PriceListEntryOmit
   }
 
@@ -2668,6 +2771,7 @@ export namespace Prisma {
     transactions: number
     outlets: number
     stockLedger: number
+    payments: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2675,6 +2779,7 @@ export namespace Prisma {
     transactions?: boolean | UserCountOutputTypeCountTransactionsArgs
     outlets?: boolean | UserCountOutputTypeCountOutletsArgs
     stockLedger?: boolean | UserCountOutputTypeCountStockLedgerArgs
+    payments?: boolean | UserCountOutputTypeCountPaymentsArgs
   }
 
   // Custom InputTypes
@@ -2714,6 +2819,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountStockLedgerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: StockLedgerWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PaymentWhereInput
   }
 
 
@@ -2809,6 +2921,7 @@ export namespace Prisma {
     series: number
     batches: number
     stockLedger: number
+    payments: number
   }
 
   export type OutletCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2823,6 +2936,7 @@ export namespace Prisma {
     series?: boolean | OutletCountOutputTypeCountSeriesArgs
     batches?: boolean | OutletCountOutputTypeCountBatchesArgs
     stockLedger?: boolean | OutletCountOutputTypeCountStockLedgerArgs
+    payments?: boolean | OutletCountOutputTypeCountPaymentsArgs
   }
 
   // Custom InputTypes
@@ -2911,6 +3025,13 @@ export namespace Prisma {
    */
   export type OutletCountOutputTypeCountStockLedgerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: StockLedgerWhereInput
+  }
+
+  /**
+   * OutletCountOutputType without action
+   */
+  export type OutletCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PaymentWhereInput
   }
 
 
@@ -3069,12 +3190,14 @@ export namespace Prisma {
     ledgerEntries: number
     transactions: number
     suppliedProducts: number
+    payments: number
   }
 
   export type PartyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     ledgerEntries?: boolean | PartyCountOutputTypeCountLedgerEntriesArgs
     transactions?: boolean | PartyCountOutputTypeCountTransactionsArgs
     suppliedProducts?: boolean | PartyCountOutputTypeCountSuppliedProductsArgs
+    payments?: boolean | PartyCountOutputTypeCountPaymentsArgs
   }
 
   // Custom InputTypes
@@ -3109,6 +3232,13 @@ export namespace Prisma {
     where?: VendorProductWhereInput
   }
 
+  /**
+   * PartyCountOutputType without action
+   */
+  export type PartyCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PaymentWhereInput
+  }
+
 
   /**
    * Count Type TransactionCountOutputType
@@ -3120,6 +3250,7 @@ export namespace Prisma {
     items: number
     batchMovements: number
     stockLedger: number
+    payments: number
   }
 
   export type TransactionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3128,6 +3259,7 @@ export namespace Prisma {
     items?: boolean | TransactionCountOutputTypeCountItemsArgs
     batchMovements?: boolean | TransactionCountOutputTypeCountBatchMovementsArgs
     stockLedger?: boolean | TransactionCountOutputTypeCountStockLedgerArgs
+    payments?: boolean | TransactionCountOutputTypeCountPaymentsArgs
   }
 
   // Custom InputTypes
@@ -3176,6 +3308,13 @@ export namespace Prisma {
     where?: StockLedgerWhereInput
   }
 
+  /**
+   * TransactionCountOutputType without action
+   */
+  export type TransactionCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PaymentWhereInput
+  }
+
 
   /**
    * Count Type AccountCountOutputType
@@ -3183,10 +3322,12 @@ export namespace Prisma {
 
   export type AccountCountOutputType = {
     entries: number
+    payments: number
   }
 
   export type AccountCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     entries?: boolean | AccountCountOutputTypeCountEntriesArgs
+    payments?: boolean | AccountCountOutputTypeCountPaymentsArgs
   }
 
   // Custom InputTypes
@@ -3205,6 +3346,13 @@ export namespace Prisma {
    */
   export type AccountCountOutputTypeCountEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LedgerEntryWhereInput
+  }
+
+  /**
+   * AccountCountOutputType without action
+   */
+  export type AccountCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PaymentWhereInput
   }
 
 
@@ -3475,6 +3623,7 @@ export namespace Prisma {
     transactions?: boolean | User$transactionsArgs<ExtArgs>
     outlets?: boolean | User$outletsArgs<ExtArgs>
     stockLedger?: boolean | User$stockLedgerArgs<ExtArgs>
+    payments?: boolean | User$paymentsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3517,6 +3666,7 @@ export namespace Prisma {
     transactions?: boolean | User$transactionsArgs<ExtArgs>
     outlets?: boolean | User$outletsArgs<ExtArgs>
     stockLedger?: boolean | User$stockLedgerArgs<ExtArgs>
+    payments?: boolean | User$paymentsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3529,6 +3679,7 @@ export namespace Prisma {
       transactions: Prisma.$TransactionPayload<ExtArgs>[]
       outlets: Prisma.$OutletPayload<ExtArgs>[]
       stockLedger: Prisma.$StockLedgerPayload<ExtArgs>[]
+      payments: Prisma.$PaymentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3937,6 +4088,7 @@ export namespace Prisma {
     transactions<T extends User$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, User$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     outlets<T extends User$outletsArgs<ExtArgs> = {}>(args?: Subset<T, User$outletsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OutletPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockLedger<T extends User$stockLedgerArgs<ExtArgs> = {}>(args?: Subset<T, User$stockLedgerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    payments<T extends User$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, User$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4455,6 +4607,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: StockLedgerScalarFieldEnum | StockLedgerScalarFieldEnum[]
+  }
+
+  /**
+   * User.payments
+   */
+  export type User$paymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    where?: PaymentWhereInput
+    orderBy?: PaymentOrderByWithRelationInput | PaymentOrderByWithRelationInput[]
+    cursor?: PaymentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
   }
 
   /**
@@ -6820,6 +6996,8 @@ export namespace Prisma {
     defaultWarehouseId: string | null
     negativeStockPolicy: string | null
     batchTrackingEnabled: boolean | null
+    inventoryValuationMethod: string | null
+    allowRawCashBills: boolean | null
   }
 
   export type OutletMaxAggregateOutputType = {
@@ -6834,6 +7012,8 @@ export namespace Prisma {
     defaultWarehouseId: string | null
     negativeStockPolicy: string | null
     batchTrackingEnabled: boolean | null
+    inventoryValuationMethod: string | null
+    allowRawCashBills: boolean | null
   }
 
   export type OutletCountAggregateOutputType = {
@@ -6848,6 +7028,8 @@ export namespace Prisma {
     defaultWarehouseId: number
     negativeStockPolicy: number
     batchTrackingEnabled: number
+    inventoryValuationMethod: number
+    allowRawCashBills: number
     _all: number
   }
 
@@ -6872,6 +7054,8 @@ export namespace Prisma {
     defaultWarehouseId?: true
     negativeStockPolicy?: true
     batchTrackingEnabled?: true
+    inventoryValuationMethod?: true
+    allowRawCashBills?: true
   }
 
   export type OutletMaxAggregateInputType = {
@@ -6886,6 +7070,8 @@ export namespace Prisma {
     defaultWarehouseId?: true
     negativeStockPolicy?: true
     batchTrackingEnabled?: true
+    inventoryValuationMethod?: true
+    allowRawCashBills?: true
   }
 
   export type OutletCountAggregateInputType = {
@@ -6900,6 +7086,8 @@ export namespace Prisma {
     defaultWarehouseId?: true
     negativeStockPolicy?: true
     batchTrackingEnabled?: true
+    inventoryValuationMethod?: true
+    allowRawCashBills?: true
     _all?: true
   }
 
@@ -7001,6 +7189,8 @@ export namespace Prisma {
     defaultWarehouseId: string | null
     negativeStockPolicy: string
     batchTrackingEnabled: boolean
+    inventoryValuationMethod: string
+    allowRawCashBills: boolean
     _count: OutletCountAggregateOutputType | null
     _avg: OutletAvgAggregateOutputType | null
     _sum: OutletSumAggregateOutputType | null
@@ -7034,6 +7224,8 @@ export namespace Prisma {
     defaultWarehouseId?: boolean
     negativeStockPolicy?: boolean
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: boolean
+    allowRawCashBills?: boolean
     stocks?: boolean | Outlet$stocksArgs<ExtArgs>
     users?: boolean | Outlet$usersArgs<ExtArgs>
     warehouses?: boolean | Outlet$warehousesArgs<ExtArgs>
@@ -7045,6 +7237,7 @@ export namespace Prisma {
     series?: boolean | Outlet$seriesArgs<ExtArgs>
     batches?: boolean | Outlet$batchesArgs<ExtArgs>
     stockLedger?: boolean | Outlet$stockLedgerArgs<ExtArgs>
+    payments?: boolean | Outlet$paymentsArgs<ExtArgs>
     _count?: boolean | OutletCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["outlet"]>
 
@@ -7060,6 +7253,8 @@ export namespace Prisma {
     defaultWarehouseId?: boolean
     negativeStockPolicy?: boolean
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: boolean
+    allowRawCashBills?: boolean
   }, ExtArgs["result"]["outlet"]>
 
   export type OutletSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -7074,6 +7269,8 @@ export namespace Prisma {
     defaultWarehouseId?: boolean
     negativeStockPolicy?: boolean
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: boolean
+    allowRawCashBills?: boolean
   }, ExtArgs["result"]["outlet"]>
 
   export type OutletSelectScalar = {
@@ -7088,9 +7285,11 @@ export namespace Prisma {
     defaultWarehouseId?: boolean
     negativeStockPolicy?: boolean
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: boolean
+    allowRawCashBills?: boolean
   }
 
-  export type OutletOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "address" | "state" | "invoicePrefix" | "invoiceStartingNumber" | "gstin" | "bankDetails" | "defaultWarehouseId" | "negativeStockPolicy" | "batchTrackingEnabled", ExtArgs["result"]["outlet"]>
+  export type OutletOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "address" | "state" | "invoicePrefix" | "invoiceStartingNumber" | "gstin" | "bankDetails" | "defaultWarehouseId" | "negativeStockPolicy" | "batchTrackingEnabled" | "inventoryValuationMethod" | "allowRawCashBills", ExtArgs["result"]["outlet"]>
   export type OutletInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     stocks?: boolean | Outlet$stocksArgs<ExtArgs>
     users?: boolean | Outlet$usersArgs<ExtArgs>
@@ -7103,6 +7302,7 @@ export namespace Prisma {
     series?: boolean | Outlet$seriesArgs<ExtArgs>
     batches?: boolean | Outlet$batchesArgs<ExtArgs>
     stockLedger?: boolean | Outlet$stockLedgerArgs<ExtArgs>
+    payments?: boolean | Outlet$paymentsArgs<ExtArgs>
     _count?: boolean | OutletCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OutletIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -7122,6 +7322,7 @@ export namespace Prisma {
       series: Prisma.$DocumentSeriesPayload<ExtArgs>[]
       batches: Prisma.$CustomBatchPayload<ExtArgs>[]
       stockLedger: Prisma.$StockLedgerPayload<ExtArgs>[]
+      payments: Prisma.$PaymentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7135,6 +7336,8 @@ export namespace Prisma {
       defaultWarehouseId: string | null
       negativeStockPolicy: string
       batchTrackingEnabled: boolean
+      inventoryValuationMethod: string
+      allowRawCashBills: boolean
     }, ExtArgs["result"]["outlet"]>
     composites: {}
   }
@@ -7540,6 +7743,7 @@ export namespace Prisma {
     series<T extends Outlet$seriesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$seriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentSeriesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     batches<T extends Outlet$batchesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$batchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockLedger<T extends Outlet$stockLedgerArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$stockLedgerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    payments<T extends Outlet$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7580,6 +7784,8 @@ export namespace Prisma {
     readonly defaultWarehouseId: FieldRef<"Outlet", 'String'>
     readonly negativeStockPolicy: FieldRef<"Outlet", 'String'>
     readonly batchTrackingEnabled: FieldRef<"Outlet", 'Boolean'>
+    readonly inventoryValuationMethod: FieldRef<"Outlet", 'String'>
+    readonly allowRawCashBills: FieldRef<"Outlet", 'Boolean'>
   }
     
 
@@ -8229,6 +8435,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: StockLedgerScalarFieldEnum | StockLedgerScalarFieldEnum[]
+  }
+
+  /**
+   * Outlet.payments
+   */
+  export type Outlet$paymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    where?: PaymentWhereInput
+    orderBy?: PaymentOrderByWithRelationInput | PaymentOrderByWithRelationInput[]
+    cursor?: PaymentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
   }
 
   /**
@@ -9436,7 +9666,6 @@ export namespace Prisma {
     gstRate: number | null
     baseUnit: string | null
     purchaseUnit: string | null
-    salesUnit: string | null
     conversionRatio: number | null
     categoryId: string | null
     isArchived: boolean | null
@@ -9451,7 +9680,6 @@ export namespace Prisma {
     gstRate: number | null
     baseUnit: string | null
     purchaseUnit: string | null
-    salesUnit: string | null
     conversionRatio: number | null
     categoryId: string | null
     isArchived: boolean | null
@@ -9466,7 +9694,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: number
     purchaseUnit: number
-    salesUnit: number
     conversionRatio: number
     categoryId: number
     isArchived: number
@@ -9493,7 +9720,6 @@ export namespace Prisma {
     gstRate?: true
     baseUnit?: true
     purchaseUnit?: true
-    salesUnit?: true
     conversionRatio?: true
     categoryId?: true
     isArchived?: true
@@ -9508,7 +9734,6 @@ export namespace Prisma {
     gstRate?: true
     baseUnit?: true
     purchaseUnit?: true
-    salesUnit?: true
     conversionRatio?: true
     categoryId?: true
     isArchived?: true
@@ -9523,7 +9748,6 @@ export namespace Prisma {
     gstRate?: true
     baseUnit?: true
     purchaseUnit?: true
-    salesUnit?: true
     conversionRatio?: true
     categoryId?: true
     isArchived?: true
@@ -9625,7 +9849,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit: string | null
-    salesUnit: string | null
     conversionRatio: number | null
     categoryId: string
     isArchived: boolean
@@ -9659,7 +9882,6 @@ export namespace Prisma {
     gstRate?: boolean
     baseUnit?: boolean
     purchaseUnit?: boolean
-    salesUnit?: boolean
     conversionRatio?: boolean
     categoryId?: boolean
     isArchived?: boolean
@@ -9678,7 +9900,6 @@ export namespace Prisma {
     gstRate?: boolean
     baseUnit?: boolean
     purchaseUnit?: boolean
-    salesUnit?: boolean
     conversionRatio?: boolean
     categoryId?: boolean
     isArchived?: boolean
@@ -9695,7 +9916,6 @@ export namespace Prisma {
     gstRate?: boolean
     baseUnit?: boolean
     purchaseUnit?: boolean
-    salesUnit?: boolean
     conversionRatio?: boolean
     categoryId?: boolean
     isArchived?: boolean
@@ -9712,14 +9932,13 @@ export namespace Prisma {
     gstRate?: boolean
     baseUnit?: boolean
     purchaseUnit?: boolean
-    salesUnit?: boolean
     conversionRatio?: boolean
     categoryId?: boolean
     isArchived?: boolean
     outletId?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "brand" | "hsnCode" | "gstRate" | "baseUnit" | "purchaseUnit" | "salesUnit" | "conversionRatio" | "categoryId" | "isArchived" | "outletId", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "brand" | "hsnCode" | "gstRate" | "baseUnit" | "purchaseUnit" | "conversionRatio" | "categoryId" | "isArchived" | "outletId", ExtArgs["result"]["product"]>
   export type ProductInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     category?: boolean | CategoryDefaultArgs<ExtArgs>
     variants?: boolean | Product$variantsArgs<ExtArgs>
@@ -9750,7 +9969,6 @@ export namespace Prisma {
       gstRate: number
       baseUnit: string
       purchaseUnit: string | null
-      salesUnit: string | null
       conversionRatio: number | null
       categoryId: string
       isArchived: boolean
@@ -10188,7 +10406,6 @@ export namespace Prisma {
     readonly gstRate: FieldRef<"Product", 'Float'>
     readonly baseUnit: FieldRef<"Product", 'String'>
     readonly purchaseUnit: FieldRef<"Product", 'String'>
-    readonly salesUnit: FieldRef<"Product", 'String'>
     readonly conversionRatio: FieldRef<"Product", 'Float'>
     readonly categoryId: FieldRef<"Product", 'String'>
     readonly isArchived: FieldRef<"Product", 'Boolean'>
@@ -13132,12 +13349,16 @@ export namespace Prisma {
     creditPeriod: number | null
     creditLimit: number | null
     openingBalance: number | null
+    outstandingBalance: number | null
+    creditBalance: number | null
   }
 
   export type PartySumAggregateOutputType = {
     creditPeriod: number | null
     creditLimit: number | null
     openingBalance: number | null
+    outstandingBalance: number | null
+    creditBalance: number | null
   }
 
   export type PartyMinAggregateOutputType = {
@@ -13149,9 +13370,19 @@ export namespace Prisma {
     address: string | null
     state: string | null
     contactInfo: string | null
+    phone: string | null
+    email: string | null
+    isActive: boolean | null
+    bankName: string | null
+    bankAccountName: string | null
+    bankAccountNumber: string | null
+    bankIfsc: string | null
     creditPeriod: number | null
     creditLimit: number | null
     openingBalance: number | null
+    openingBalanceLocked: boolean | null
+    outstandingBalance: number | null
+    creditBalance: number | null
     priceListId: string | null
     outletId: string | null
   }
@@ -13165,9 +13396,19 @@ export namespace Prisma {
     address: string | null
     state: string | null
     contactInfo: string | null
+    phone: string | null
+    email: string | null
+    isActive: boolean | null
+    bankName: string | null
+    bankAccountName: string | null
+    bankAccountNumber: string | null
+    bankIfsc: string | null
     creditPeriod: number | null
     creditLimit: number | null
     openingBalance: number | null
+    openingBalanceLocked: boolean | null
+    outstandingBalance: number | null
+    creditBalance: number | null
     priceListId: string | null
     outletId: string | null
   }
@@ -13181,9 +13422,19 @@ export namespace Prisma {
     address: number
     state: number
     contactInfo: number
+    phone: number
+    email: number
+    isActive: number
+    bankName: number
+    bankAccountName: number
+    bankAccountNumber: number
+    bankIfsc: number
     creditPeriod: number
     creditLimit: number
     openingBalance: number
+    openingBalanceLocked: number
+    outstandingBalance: number
+    creditBalance: number
     priceListId: number
     outletId: number
     _all: number
@@ -13194,12 +13445,16 @@ export namespace Prisma {
     creditPeriod?: true
     creditLimit?: true
     openingBalance?: true
+    outstandingBalance?: true
+    creditBalance?: true
   }
 
   export type PartySumAggregateInputType = {
     creditPeriod?: true
     creditLimit?: true
     openingBalance?: true
+    outstandingBalance?: true
+    creditBalance?: true
   }
 
   export type PartyMinAggregateInputType = {
@@ -13211,9 +13466,19 @@ export namespace Prisma {
     address?: true
     state?: true
     contactInfo?: true
+    phone?: true
+    email?: true
+    isActive?: true
+    bankName?: true
+    bankAccountName?: true
+    bankAccountNumber?: true
+    bankIfsc?: true
     creditPeriod?: true
     creditLimit?: true
     openingBalance?: true
+    openingBalanceLocked?: true
+    outstandingBalance?: true
+    creditBalance?: true
     priceListId?: true
     outletId?: true
   }
@@ -13227,9 +13492,19 @@ export namespace Prisma {
     address?: true
     state?: true
     contactInfo?: true
+    phone?: true
+    email?: true
+    isActive?: true
+    bankName?: true
+    bankAccountName?: true
+    bankAccountNumber?: true
+    bankIfsc?: true
     creditPeriod?: true
     creditLimit?: true
     openingBalance?: true
+    openingBalanceLocked?: true
+    outstandingBalance?: true
+    creditBalance?: true
     priceListId?: true
     outletId?: true
   }
@@ -13243,9 +13518,19 @@ export namespace Prisma {
     address?: true
     state?: true
     contactInfo?: true
+    phone?: true
+    email?: true
+    isActive?: true
+    bankName?: true
+    bankAccountName?: true
+    bankAccountNumber?: true
+    bankIfsc?: true
     creditPeriod?: true
     creditLimit?: true
     openingBalance?: true
+    openingBalanceLocked?: true
+    outstandingBalance?: true
+    creditBalance?: true
     priceListId?: true
     outletId?: true
     _all?: true
@@ -13346,9 +13631,19 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo: string | null
+    phone: string | null
+    email: string | null
+    isActive: boolean
+    bankName: string | null
+    bankAccountName: string | null
+    bankAccountNumber: string | null
+    bankIfsc: string | null
     creditPeriod: number
     creditLimit: number | null
     openingBalance: number
+    openingBalanceLocked: boolean
+    outstandingBalance: number
+    creditBalance: number
     priceListId: string | null
     outletId: string
     _count: PartyCountAggregateOutputType | null
@@ -13381,9 +13676,19 @@ export namespace Prisma {
     address?: boolean
     state?: boolean
     contactInfo?: boolean
+    phone?: boolean
+    email?: boolean
+    isActive?: boolean
+    bankName?: boolean
+    bankAccountName?: boolean
+    bankAccountNumber?: boolean
+    bankIfsc?: boolean
     creditPeriod?: boolean
     creditLimit?: boolean
     openingBalance?: boolean
+    openingBalanceLocked?: boolean
+    outstandingBalance?: boolean
+    creditBalance?: boolean
     priceListId?: boolean
     outletId?: boolean
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
@@ -13391,6 +13696,7 @@ export namespace Prisma {
     priceList?: boolean | Party$priceListArgs<ExtArgs>
     transactions?: boolean | Party$transactionsArgs<ExtArgs>
     suppliedProducts?: boolean | Party$suppliedProductsArgs<ExtArgs>
+    payments?: boolean | Party$paymentsArgs<ExtArgs>
     _count?: boolean | PartyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["party"]>
 
@@ -13403,9 +13709,19 @@ export namespace Prisma {
     address?: boolean
     state?: boolean
     contactInfo?: boolean
+    phone?: boolean
+    email?: boolean
+    isActive?: boolean
+    bankName?: boolean
+    bankAccountName?: boolean
+    bankAccountNumber?: boolean
+    bankIfsc?: boolean
     creditPeriod?: boolean
     creditLimit?: boolean
     openingBalance?: boolean
+    openingBalanceLocked?: boolean
+    outstandingBalance?: boolean
+    creditBalance?: boolean
     priceListId?: boolean
     outletId?: boolean
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
@@ -13421,9 +13737,19 @@ export namespace Prisma {
     address?: boolean
     state?: boolean
     contactInfo?: boolean
+    phone?: boolean
+    email?: boolean
+    isActive?: boolean
+    bankName?: boolean
+    bankAccountName?: boolean
+    bankAccountNumber?: boolean
+    bankIfsc?: boolean
     creditPeriod?: boolean
     creditLimit?: boolean
     openingBalance?: boolean
+    openingBalanceLocked?: boolean
+    outstandingBalance?: boolean
+    creditBalance?: boolean
     priceListId?: boolean
     outletId?: boolean
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
@@ -13439,20 +13765,31 @@ export namespace Prisma {
     address?: boolean
     state?: boolean
     contactInfo?: boolean
+    phone?: boolean
+    email?: boolean
+    isActive?: boolean
+    bankName?: boolean
+    bankAccountName?: boolean
+    bankAccountNumber?: boolean
+    bankIfsc?: boolean
     creditPeriod?: boolean
     creditLimit?: boolean
     openingBalance?: boolean
+    openingBalanceLocked?: boolean
+    outstandingBalance?: boolean
+    creditBalance?: boolean
     priceListId?: boolean
     outletId?: boolean
   }
 
-  export type PartyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "name" | "gstin" | "pan" | "address" | "state" | "contactInfo" | "creditPeriod" | "creditLimit" | "openingBalance" | "priceListId" | "outletId", ExtArgs["result"]["party"]>
+  export type PartyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "name" | "gstin" | "pan" | "address" | "state" | "contactInfo" | "phone" | "email" | "isActive" | "bankName" | "bankAccountName" | "bankAccountNumber" | "bankIfsc" | "creditPeriod" | "creditLimit" | "openingBalance" | "openingBalanceLocked" | "outstandingBalance" | "creditBalance" | "priceListId" | "outletId", ExtArgs["result"]["party"]>
   export type PartyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
     ledgerEntries?: boolean | Party$ledgerEntriesArgs<ExtArgs>
     priceList?: boolean | Party$priceListArgs<ExtArgs>
     transactions?: boolean | Party$transactionsArgs<ExtArgs>
     suppliedProducts?: boolean | Party$suppliedProductsArgs<ExtArgs>
+    payments?: boolean | Party$paymentsArgs<ExtArgs>
     _count?: boolean | PartyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PartyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -13472,6 +13809,7 @@ export namespace Prisma {
       priceList: Prisma.$PriceListPayload<ExtArgs> | null
       transactions: Prisma.$TransactionPayload<ExtArgs>[]
       suppliedProducts: Prisma.$VendorProductPayload<ExtArgs>[]
+      payments: Prisma.$PaymentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -13482,9 +13820,19 @@ export namespace Prisma {
       address: string
       state: string
       contactInfo: string | null
+      phone: string | null
+      email: string | null
+      isActive: boolean
+      bankName: string | null
+      bankAccountName: string | null
+      bankAccountNumber: string | null
+      bankIfsc: string | null
       creditPeriod: number
       creditLimit: number | null
       openingBalance: number
+      openingBalanceLocked: boolean
+      outstandingBalance: number
+      creditBalance: number
       priceListId: string | null
       outletId: string
     }, ExtArgs["result"]["party"]>
@@ -13886,6 +14234,7 @@ export namespace Prisma {
     priceList<T extends Party$priceListArgs<ExtArgs> = {}>(args?: Subset<T, Party$priceListArgs<ExtArgs>>): Prisma__PriceListClient<$Result.GetResult<Prisma.$PriceListPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     transactions<T extends Party$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, Party$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     suppliedProducts<T extends Party$suppliedProductsArgs<ExtArgs> = {}>(args?: Subset<T, Party$suppliedProductsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    payments<T extends Party$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, Party$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -13923,9 +14272,19 @@ export namespace Prisma {
     readonly address: FieldRef<"Party", 'String'>
     readonly state: FieldRef<"Party", 'String'>
     readonly contactInfo: FieldRef<"Party", 'String'>
+    readonly phone: FieldRef<"Party", 'String'>
+    readonly email: FieldRef<"Party", 'String'>
+    readonly isActive: FieldRef<"Party", 'Boolean'>
+    readonly bankName: FieldRef<"Party", 'String'>
+    readonly bankAccountName: FieldRef<"Party", 'String'>
+    readonly bankAccountNumber: FieldRef<"Party", 'String'>
+    readonly bankIfsc: FieldRef<"Party", 'String'>
     readonly creditPeriod: FieldRef<"Party", 'Int'>
     readonly creditLimit: FieldRef<"Party", 'Float'>
     readonly openingBalance: FieldRef<"Party", 'Float'>
+    readonly openingBalanceLocked: FieldRef<"Party", 'Boolean'>
+    readonly outstandingBalance: FieldRef<"Party", 'Float'>
+    readonly creditBalance: FieldRef<"Party", 'Float'>
     readonly priceListId: FieldRef<"Party", 'String'>
     readonly outletId: FieldRef<"Party", 'String'>
   }
@@ -14415,6 +14774,30 @@ export namespace Prisma {
   }
 
   /**
+   * Party.payments
+   */
+  export type Party$paymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    where?: PaymentWhereInput
+    orderBy?: PaymentOrderByWithRelationInput | PaymentOrderByWithRelationInput[]
+    cursor?: PaymentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
+  }
+
+  /**
    * Party without action
    */
   export type PartyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14473,12 +14856,14 @@ export namespace Prisma {
     freightCost: number | null
     grandTotal: number | null
     status: string | null
+    billType: $Enums.BillType | null
     isInformal: boolean | null
     buyerName: string | null
     buyerPhone: string | null
     parentId: string | null
     userId: string | null
     remarks: string | null
+    paidAt: Date | null
   }
 
   export type TransactionMaxAggregateOutputType = {
@@ -14495,12 +14880,14 @@ export namespace Prisma {
     freightCost: number | null
     grandTotal: number | null
     status: string | null
+    billType: $Enums.BillType | null
     isInformal: boolean | null
     buyerName: string | null
     buyerPhone: string | null
     parentId: string | null
     userId: string | null
     remarks: string | null
+    paidAt: Date | null
   }
 
   export type TransactionCountAggregateOutputType = {
@@ -14517,12 +14904,14 @@ export namespace Prisma {
     freightCost: number
     grandTotal: number
     status: number
+    billType: number
     isInformal: number
     buyerName: number
     buyerPhone: number
     parentId: number
     userId: number
     remarks: number
+    paidAt: number
     _all: number
   }
 
@@ -14555,12 +14944,14 @@ export namespace Prisma {
     freightCost?: true
     grandTotal?: true
     status?: true
+    billType?: true
     isInformal?: true
     buyerName?: true
     buyerPhone?: true
     parentId?: true
     userId?: true
     remarks?: true
+    paidAt?: true
   }
 
   export type TransactionMaxAggregateInputType = {
@@ -14577,12 +14968,14 @@ export namespace Prisma {
     freightCost?: true
     grandTotal?: true
     status?: true
+    billType?: true
     isInformal?: true
     buyerName?: true
     buyerPhone?: true
     parentId?: true
     userId?: true
     remarks?: true
+    paidAt?: true
   }
 
   export type TransactionCountAggregateInputType = {
@@ -14599,12 +14992,14 @@ export namespace Prisma {
     freightCost?: true
     grandTotal?: true
     status?: true
+    billType?: true
     isInformal?: true
     buyerName?: true
     buyerPhone?: true
     parentId?: true
     userId?: true
     remarks?: true
+    paidAt?: true
     _all?: true
   }
 
@@ -14708,12 +15103,14 @@ export namespace Prisma {
     freightCost: number | null
     grandTotal: number
     status: string
+    billType: $Enums.BillType
     isInformal: boolean
     buyerName: string | null
     buyerPhone: string | null
     parentId: string | null
     userId: string
     remarks: string | null
+    paidAt: Date | null
     _count: TransactionCountAggregateOutputType | null
     _avg: TransactionAvgAggregateOutputType | null
     _sum: TransactionSumAggregateOutputType | null
@@ -14749,12 +15146,14 @@ export namespace Prisma {
     freightCost?: boolean
     grandTotal?: boolean
     status?: boolean
+    billType?: boolean
     isInformal?: boolean
     buyerName?: boolean
     buyerPhone?: boolean
     parentId?: boolean
     userId?: boolean
     remarks?: boolean
+    paidAt?: boolean
     ledgerEntries?: boolean | Transaction$ledgerEntriesArgs<ExtArgs>
     parent?: boolean | Transaction$parentArgs<ExtArgs>
     children?: boolean | Transaction$childrenArgs<ExtArgs>
@@ -14766,6 +15165,7 @@ export namespace Prisma {
     items?: boolean | Transaction$itemsArgs<ExtArgs>
     batchMovements?: boolean | Transaction$batchMovementsArgs<ExtArgs>
     stockLedger?: boolean | Transaction$stockLedgerArgs<ExtArgs>
+    payments?: boolean | Transaction$paymentsArgs<ExtArgs>
     _count?: boolean | TransactionCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["transaction"]>
 
@@ -14783,12 +15183,14 @@ export namespace Prisma {
     freightCost?: boolean
     grandTotal?: boolean
     status?: boolean
+    billType?: boolean
     isInformal?: boolean
     buyerName?: boolean
     buyerPhone?: boolean
     parentId?: boolean
     userId?: boolean
     remarks?: boolean
+    paidAt?: boolean
     parent?: boolean | Transaction$parentArgs<ExtArgs>
     party?: boolean | Transaction$partyArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
@@ -14811,12 +15213,14 @@ export namespace Prisma {
     freightCost?: boolean
     grandTotal?: boolean
     status?: boolean
+    billType?: boolean
     isInformal?: boolean
     buyerName?: boolean
     buyerPhone?: boolean
     parentId?: boolean
     userId?: boolean
     remarks?: boolean
+    paidAt?: boolean
     parent?: boolean | Transaction$parentArgs<ExtArgs>
     party?: boolean | Transaction$partyArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
@@ -14839,15 +15243,17 @@ export namespace Prisma {
     freightCost?: boolean
     grandTotal?: boolean
     status?: boolean
+    billType?: boolean
     isInformal?: boolean
     buyerName?: boolean
     buyerPhone?: boolean
     parentId?: boolean
     userId?: boolean
     remarks?: boolean
+    paidAt?: boolean
   }
 
-  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "txnNumber" | "date" | "partyId" | "outletId" | "fromLocationId" | "toLocationId" | "totalTaxable" | "totalTax" | "freightCost" | "grandTotal" | "status" | "isInformal" | "buyerName" | "buyerPhone" | "parentId" | "userId" | "remarks", ExtArgs["result"]["transaction"]>
+  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "txnNumber" | "date" | "partyId" | "outletId" | "fromLocationId" | "toLocationId" | "totalTaxable" | "totalTax" | "freightCost" | "grandTotal" | "status" | "billType" | "isInformal" | "buyerName" | "buyerPhone" | "parentId" | "userId" | "remarks" | "paidAt", ExtArgs["result"]["transaction"]>
   export type TransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     ledgerEntries?: boolean | Transaction$ledgerEntriesArgs<ExtArgs>
     parent?: boolean | Transaction$parentArgs<ExtArgs>
@@ -14860,6 +15266,7 @@ export namespace Prisma {
     items?: boolean | Transaction$itemsArgs<ExtArgs>
     batchMovements?: boolean | Transaction$batchMovementsArgs<ExtArgs>
     stockLedger?: boolean | Transaction$stockLedgerArgs<ExtArgs>
+    payments?: boolean | Transaction$paymentsArgs<ExtArgs>
     _count?: boolean | TransactionCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TransactionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14893,6 +15300,7 @@ export namespace Prisma {
       items: Prisma.$TransactionItemPayload<ExtArgs>[]
       batchMovements: Prisma.$BatchMovementPayload<ExtArgs>[]
       stockLedger: Prisma.$StockLedgerPayload<ExtArgs>[]
+      payments: Prisma.$PaymentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -14908,12 +15316,14 @@ export namespace Prisma {
       freightCost: number | null
       grandTotal: number
       status: string
+      billType: $Enums.BillType
       isInformal: boolean
       buyerName: string | null
       buyerPhone: string | null
       parentId: string | null
       userId: string
       remarks: string | null
+      paidAt: Date | null
     }, ExtArgs["result"]["transaction"]>
     composites: {}
   }
@@ -15319,6 +15729,7 @@ export namespace Prisma {
     items<T extends Transaction$itemsArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     batchMovements<T extends Transaction$batchMovementsArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$batchMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BatchMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockLedger<T extends Transaction$stockLedgerArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$stockLedgerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    payments<T extends Transaction$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -15361,12 +15772,14 @@ export namespace Prisma {
     readonly freightCost: FieldRef<"Transaction", 'Float'>
     readonly grandTotal: FieldRef<"Transaction", 'Float'>
     readonly status: FieldRef<"Transaction", 'String'>
+    readonly billType: FieldRef<"Transaction", 'BillType'>
     readonly isInformal: FieldRef<"Transaction", 'Boolean'>
     readonly buyerName: FieldRef<"Transaction", 'String'>
     readonly buyerPhone: FieldRef<"Transaction", 'String'>
     readonly parentId: FieldRef<"Transaction", 'String'>
     readonly userId: FieldRef<"Transaction", 'String'>
     readonly remarks: FieldRef<"Transaction", 'String'>
+    readonly paidAt: FieldRef<"Transaction", 'DateTime'>
   }
     
 
@@ -15956,6 +16369,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: StockLedgerScalarFieldEnum | StockLedgerScalarFieldEnum[]
+  }
+
+  /**
+   * Transaction.payments
+   */
+  export type Transaction$paymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    where?: PaymentWhereInput
+    orderBy?: PaymentOrderByWithRelationInput | PaymentOrderByWithRelationInput[]
+    cursor?: PaymentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
   }
 
   /**
@@ -17370,6 +17807,7 @@ export namespace Prisma {
     outletId?: boolean
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
     entries?: boolean | Account$entriesArgs<ExtArgs>
+    payments?: boolean | Account$paymentsArgs<ExtArgs>
     _count?: boolean | AccountCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["account"]>
 
@@ -17406,6 +17844,7 @@ export namespace Prisma {
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
     entries?: boolean | Account$entriesArgs<ExtArgs>
+    payments?: boolean | Account$paymentsArgs<ExtArgs>
     _count?: boolean | AccountCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type AccountIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17420,6 +17859,7 @@ export namespace Prisma {
     objects: {
       outlet: Prisma.$OutletPayload<ExtArgs>
       entries: Prisma.$LedgerEntryPayload<ExtArgs>[]
+      payments: Prisma.$PaymentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -17824,6 +18264,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     outlet<T extends OutletDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OutletDefaultArgs<ExtArgs>>): Prisma__OutletClient<$Result.GetResult<Prisma.$OutletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     entries<T extends Account$entriesArgs<ExtArgs> = {}>(args?: Subset<T, Account$entriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LedgerEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    payments<T extends Account$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, Account$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18276,6 +18717,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LedgerEntryScalarFieldEnum | LedgerEntryScalarFieldEnum[]
+  }
+
+  /**
+   * Account.payments
+   */
+  export type Account$paymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    where?: PaymentWhereInput
+    orderBy?: PaymentOrderByWithRelationInput | PaymentOrderByWithRelationInput[]
+    cursor?: PaymentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
   }
 
   /**
@@ -25132,11 +25597,13 @@ export namespace Prisma {
   export type StockLedgerAvgAggregateOutputType = {
     quantity: number | null
     balance: number | null
+    costPerUnit: number | null
   }
 
   export type StockLedgerSumAggregateOutputType = {
     quantity: number | null
     balance: number | null
+    costPerUnit: number | null
   }
 
   export type StockLedgerMinAggregateOutputType = {
@@ -25149,6 +25616,7 @@ export namespace Prisma {
     quantity: number | null
     balance: number | null
     type: string | null
+    costPerUnit: number | null
     userId: string | null
   }
 
@@ -25162,6 +25630,7 @@ export namespace Prisma {
     quantity: number | null
     balance: number | null
     type: string | null
+    costPerUnit: number | null
     userId: string | null
   }
 
@@ -25175,6 +25644,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: number
+    costPerUnit: number
     userId: number
     _all: number
   }
@@ -25183,11 +25653,13 @@ export namespace Prisma {
   export type StockLedgerAvgAggregateInputType = {
     quantity?: true
     balance?: true
+    costPerUnit?: true
   }
 
   export type StockLedgerSumAggregateInputType = {
     quantity?: true
     balance?: true
+    costPerUnit?: true
   }
 
   export type StockLedgerMinAggregateInputType = {
@@ -25200,6 +25672,7 @@ export namespace Prisma {
     quantity?: true
     balance?: true
     type?: true
+    costPerUnit?: true
     userId?: true
   }
 
@@ -25213,6 +25686,7 @@ export namespace Prisma {
     quantity?: true
     balance?: true
     type?: true
+    costPerUnit?: true
     userId?: true
   }
 
@@ -25226,6 +25700,7 @@ export namespace Prisma {
     quantity?: true
     balance?: true
     type?: true
+    costPerUnit?: true
     userId?: true
     _all?: true
   }
@@ -25326,6 +25801,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit: number | null
     userId: string
     _count: StockLedgerCountAggregateOutputType | null
     _avg: StockLedgerAvgAggregateOutputType | null
@@ -25358,6 +25834,7 @@ export namespace Prisma {
     quantity?: boolean
     balance?: boolean
     type?: boolean
+    costPerUnit?: boolean
     userId?: boolean
     variant?: boolean | VariantDefaultArgs<ExtArgs>
     warehouse?: boolean | WarehouseDefaultArgs<ExtArgs>
@@ -25376,6 +25853,7 @@ export namespace Prisma {
     quantity?: boolean
     balance?: boolean
     type?: boolean
+    costPerUnit?: boolean
     userId?: boolean
     variant?: boolean | VariantDefaultArgs<ExtArgs>
     warehouse?: boolean | WarehouseDefaultArgs<ExtArgs>
@@ -25394,6 +25872,7 @@ export namespace Prisma {
     quantity?: boolean
     balance?: boolean
     type?: boolean
+    costPerUnit?: boolean
     userId?: boolean
     variant?: boolean | VariantDefaultArgs<ExtArgs>
     warehouse?: boolean | WarehouseDefaultArgs<ExtArgs>
@@ -25412,10 +25891,11 @@ export namespace Prisma {
     quantity?: boolean
     balance?: boolean
     type?: boolean
+    costPerUnit?: boolean
     userId?: boolean
   }
 
-  export type StockLedgerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "variantId" | "warehouseId" | "outletId" | "transactionId" | "date" | "quantity" | "balance" | "type" | "userId", ExtArgs["result"]["stockLedger"]>
+  export type StockLedgerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "variantId" | "warehouseId" | "outletId" | "transactionId" | "date" | "quantity" | "balance" | "type" | "costPerUnit" | "userId", ExtArgs["result"]["stockLedger"]>
   export type StockLedgerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     variant?: boolean | VariantDefaultArgs<ExtArgs>
     warehouse?: boolean | WarehouseDefaultArgs<ExtArgs>
@@ -25457,6 +25937,7 @@ export namespace Prisma {
       quantity: number
       balance: number
       type: string
+      costPerUnit: number | null
       userId: string
     }, ExtArgs["result"]["stockLedger"]>
     composites: {}
@@ -25895,6 +26376,7 @@ export namespace Prisma {
     readonly quantity: FieldRef<"StockLedger", 'Float'>
     readonly balance: FieldRef<"StockLedger", 'Float'>
     readonly type: FieldRef<"StockLedger", 'String'>
+    readonly costPerUnit: FieldRef<"StockLedger", 'Float'>
     readonly userId: FieldRef<"StockLedger", 'String'>
   }
     
@@ -26307,6 +26789,1253 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: StockLedgerInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Payment
+   */
+
+  export type AggregatePayment = {
+    _count: PaymentCountAggregateOutputType | null
+    _avg: PaymentAvgAggregateOutputType | null
+    _sum: PaymentSumAggregateOutputType | null
+    _min: PaymentMinAggregateOutputType | null
+    _max: PaymentMaxAggregateOutputType | null
+  }
+
+  export type PaymentAvgAggregateOutputType = {
+    amount: number | null
+  }
+
+  export type PaymentSumAggregateOutputType = {
+    amount: number | null
+  }
+
+  export type PaymentMinAggregateOutputType = {
+    id: string | null
+    txnNumber: string | null
+    invoiceId: string | null
+    outletId: string | null
+    partyId: string | null
+    amount: number | null
+    paymentDate: Date | null
+    paymentMode: string | null
+    bankAccountId: string | null
+    referenceNo: string | null
+    notes: string | null
+    createdBy: string | null
+    createdAt: Date | null
+  }
+
+  export type PaymentMaxAggregateOutputType = {
+    id: string | null
+    txnNumber: string | null
+    invoiceId: string | null
+    outletId: string | null
+    partyId: string | null
+    amount: number | null
+    paymentDate: Date | null
+    paymentMode: string | null
+    bankAccountId: string | null
+    referenceNo: string | null
+    notes: string | null
+    createdBy: string | null
+    createdAt: Date | null
+  }
+
+  export type PaymentCountAggregateOutputType = {
+    id: number
+    txnNumber: number
+    invoiceId: number
+    outletId: number
+    partyId: number
+    amount: number
+    paymentDate: number
+    paymentMode: number
+    bankAccountId: number
+    referenceNo: number
+    notes: number
+    createdBy: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PaymentAvgAggregateInputType = {
+    amount?: true
+  }
+
+  export type PaymentSumAggregateInputType = {
+    amount?: true
+  }
+
+  export type PaymentMinAggregateInputType = {
+    id?: true
+    txnNumber?: true
+    invoiceId?: true
+    outletId?: true
+    partyId?: true
+    amount?: true
+    paymentDate?: true
+    paymentMode?: true
+    bankAccountId?: true
+    referenceNo?: true
+    notes?: true
+    createdBy?: true
+    createdAt?: true
+  }
+
+  export type PaymentMaxAggregateInputType = {
+    id?: true
+    txnNumber?: true
+    invoiceId?: true
+    outletId?: true
+    partyId?: true
+    amount?: true
+    paymentDate?: true
+    paymentMode?: true
+    bankAccountId?: true
+    referenceNo?: true
+    notes?: true
+    createdBy?: true
+    createdAt?: true
+  }
+
+  export type PaymentCountAggregateInputType = {
+    id?: true
+    txnNumber?: true
+    invoiceId?: true
+    outletId?: true
+    partyId?: true
+    amount?: true
+    paymentDate?: true
+    paymentMode?: true
+    bankAccountId?: true
+    referenceNo?: true
+    notes?: true
+    createdBy?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PaymentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Payment to aggregate.
+     */
+    where?: PaymentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Payments to fetch.
+     */
+    orderBy?: PaymentOrderByWithRelationInput | PaymentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PaymentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Payments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Payments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Payments
+    **/
+    _count?: true | PaymentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PaymentAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PaymentSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PaymentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PaymentMaxAggregateInputType
+  }
+
+  export type GetPaymentAggregateType<T extends PaymentAggregateArgs> = {
+        [P in keyof T & keyof AggregatePayment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePayment[P]>
+      : GetScalarType<T[P], AggregatePayment[P]>
+  }
+
+
+
+
+  export type PaymentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PaymentWhereInput
+    orderBy?: PaymentOrderByWithAggregationInput | PaymentOrderByWithAggregationInput[]
+    by: PaymentScalarFieldEnum[] | PaymentScalarFieldEnum
+    having?: PaymentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PaymentCountAggregateInputType | true
+    _avg?: PaymentAvgAggregateInputType
+    _sum?: PaymentSumAggregateInputType
+    _min?: PaymentMinAggregateInputType
+    _max?: PaymentMaxAggregateInputType
+  }
+
+  export type PaymentGroupByOutputType = {
+    id: string
+    txnNumber: string
+    invoiceId: string
+    outletId: string
+    partyId: string
+    amount: number
+    paymentDate: Date
+    paymentMode: string
+    bankAccountId: string | null
+    referenceNo: string | null
+    notes: string | null
+    createdBy: string
+    createdAt: Date
+    _count: PaymentCountAggregateOutputType | null
+    _avg: PaymentAvgAggregateOutputType | null
+    _sum: PaymentSumAggregateOutputType | null
+    _min: PaymentMinAggregateOutputType | null
+    _max: PaymentMaxAggregateOutputType | null
+  }
+
+  type GetPaymentGroupByPayload<T extends PaymentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PaymentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PaymentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PaymentGroupByOutputType[P]>
+            : GetScalarType<T[P], PaymentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PaymentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    txnNumber?: boolean
+    invoiceId?: boolean
+    outletId?: boolean
+    partyId?: boolean
+    amount?: boolean
+    paymentDate?: boolean
+    paymentMode?: boolean
+    bankAccountId?: boolean
+    referenceNo?: boolean
+    notes?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    invoice?: boolean | TransactionDefaultArgs<ExtArgs>
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    party?: boolean | PartyDefaultArgs<ExtArgs>
+    bankAccount?: boolean | Payment$bankAccountArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["payment"]>
+
+  export type PaymentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    txnNumber?: boolean
+    invoiceId?: boolean
+    outletId?: boolean
+    partyId?: boolean
+    amount?: boolean
+    paymentDate?: boolean
+    paymentMode?: boolean
+    bankAccountId?: boolean
+    referenceNo?: boolean
+    notes?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    invoice?: boolean | TransactionDefaultArgs<ExtArgs>
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    party?: boolean | PartyDefaultArgs<ExtArgs>
+    bankAccount?: boolean | Payment$bankAccountArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["payment"]>
+
+  export type PaymentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    txnNumber?: boolean
+    invoiceId?: boolean
+    outletId?: boolean
+    partyId?: boolean
+    amount?: boolean
+    paymentDate?: boolean
+    paymentMode?: boolean
+    bankAccountId?: boolean
+    referenceNo?: boolean
+    notes?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    invoice?: boolean | TransactionDefaultArgs<ExtArgs>
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    party?: boolean | PartyDefaultArgs<ExtArgs>
+    bankAccount?: boolean | Payment$bankAccountArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["payment"]>
+
+  export type PaymentSelectScalar = {
+    id?: boolean
+    txnNumber?: boolean
+    invoiceId?: boolean
+    outletId?: boolean
+    partyId?: boolean
+    amount?: boolean
+    paymentDate?: boolean
+    paymentMode?: boolean
+    bankAccountId?: boolean
+    referenceNo?: boolean
+    notes?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }
+
+  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "txnNumber" | "invoiceId" | "outletId" | "partyId" | "amount" | "paymentDate" | "paymentMode" | "bankAccountId" | "referenceNo" | "notes" | "createdBy" | "createdAt", ExtArgs["result"]["payment"]>
+  export type PaymentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    invoice?: boolean | TransactionDefaultArgs<ExtArgs>
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    party?: boolean | PartyDefaultArgs<ExtArgs>
+    bankAccount?: boolean | Payment$bankAccountArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type PaymentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    invoice?: boolean | TransactionDefaultArgs<ExtArgs>
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    party?: boolean | PartyDefaultArgs<ExtArgs>
+    bankAccount?: boolean | Payment$bankAccountArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type PaymentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    invoice?: boolean | TransactionDefaultArgs<ExtArgs>
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    party?: boolean | PartyDefaultArgs<ExtArgs>
+    bankAccount?: boolean | Payment$bankAccountArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $PaymentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Payment"
+    objects: {
+      invoice: Prisma.$TransactionPayload<ExtArgs>
+      outlet: Prisma.$OutletPayload<ExtArgs>
+      party: Prisma.$PartyPayload<ExtArgs>
+      bankAccount: Prisma.$AccountPayload<ExtArgs> | null
+      creator: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      txnNumber: string
+      invoiceId: string
+      outletId: string
+      partyId: string
+      amount: number
+      paymentDate: Date
+      paymentMode: string
+      bankAccountId: string | null
+      referenceNo: string | null
+      notes: string | null
+      createdBy: string
+      createdAt: Date
+    }, ExtArgs["result"]["payment"]>
+    composites: {}
+  }
+
+  type PaymentGetPayload<S extends boolean | null | undefined | PaymentDefaultArgs> = $Result.GetResult<Prisma.$PaymentPayload, S>
+
+  type PaymentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PaymentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PaymentCountAggregateInputType | true
+    }
+
+  export interface PaymentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Payment'], meta: { name: 'Payment' } }
+    /**
+     * Find zero or one Payment that matches the filter.
+     * @param {PaymentFindUniqueArgs} args - Arguments to find a Payment
+     * @example
+     * // Get one Payment
+     * const payment = await prisma.payment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PaymentFindUniqueArgs>(args: SelectSubset<T, PaymentFindUniqueArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Payment that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PaymentFindUniqueOrThrowArgs} args - Arguments to find a Payment
+     * @example
+     * // Get one Payment
+     * const payment = await prisma.payment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PaymentFindUniqueOrThrowArgs>(args: SelectSubset<T, PaymentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Payment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentFindFirstArgs} args - Arguments to find a Payment
+     * @example
+     * // Get one Payment
+     * const payment = await prisma.payment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PaymentFindFirstArgs>(args?: SelectSubset<T, PaymentFindFirstArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Payment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentFindFirstOrThrowArgs} args - Arguments to find a Payment
+     * @example
+     * // Get one Payment
+     * const payment = await prisma.payment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PaymentFindFirstOrThrowArgs>(args?: SelectSubset<T, PaymentFindFirstOrThrowArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Payments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Payments
+     * const payments = await prisma.payment.findMany()
+     * 
+     * // Get first 10 Payments
+     * const payments = await prisma.payment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const paymentWithIdOnly = await prisma.payment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PaymentFindManyArgs>(args?: SelectSubset<T, PaymentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Payment.
+     * @param {PaymentCreateArgs} args - Arguments to create a Payment.
+     * @example
+     * // Create one Payment
+     * const Payment = await prisma.payment.create({
+     *   data: {
+     *     // ... data to create a Payment
+     *   }
+     * })
+     * 
+     */
+    create<T extends PaymentCreateArgs>(args: SelectSubset<T, PaymentCreateArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Payments.
+     * @param {PaymentCreateManyArgs} args - Arguments to create many Payments.
+     * @example
+     * // Create many Payments
+     * const payment = await prisma.payment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PaymentCreateManyArgs>(args?: SelectSubset<T, PaymentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Payments and returns the data saved in the database.
+     * @param {PaymentCreateManyAndReturnArgs} args - Arguments to create many Payments.
+     * @example
+     * // Create many Payments
+     * const payment = await prisma.payment.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Payments and only return the `id`
+     * const paymentWithIdOnly = await prisma.payment.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PaymentCreateManyAndReturnArgs>(args?: SelectSubset<T, PaymentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Payment.
+     * @param {PaymentDeleteArgs} args - Arguments to delete one Payment.
+     * @example
+     * // Delete one Payment
+     * const Payment = await prisma.payment.delete({
+     *   where: {
+     *     // ... filter to delete one Payment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PaymentDeleteArgs>(args: SelectSubset<T, PaymentDeleteArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Payment.
+     * @param {PaymentUpdateArgs} args - Arguments to update one Payment.
+     * @example
+     * // Update one Payment
+     * const payment = await prisma.payment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PaymentUpdateArgs>(args: SelectSubset<T, PaymentUpdateArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Payments.
+     * @param {PaymentDeleteManyArgs} args - Arguments to filter Payments to delete.
+     * @example
+     * // Delete a few Payments
+     * const { count } = await prisma.payment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PaymentDeleteManyArgs>(args?: SelectSubset<T, PaymentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Payments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Payments
+     * const payment = await prisma.payment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PaymentUpdateManyArgs>(args: SelectSubset<T, PaymentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Payments and returns the data updated in the database.
+     * @param {PaymentUpdateManyAndReturnArgs} args - Arguments to update many Payments.
+     * @example
+     * // Update many Payments
+     * const payment = await prisma.payment.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Payments and only return the `id`
+     * const paymentWithIdOnly = await prisma.payment.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PaymentUpdateManyAndReturnArgs>(args: SelectSubset<T, PaymentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Payment.
+     * @param {PaymentUpsertArgs} args - Arguments to update or create a Payment.
+     * @example
+     * // Update or create a Payment
+     * const payment = await prisma.payment.upsert({
+     *   create: {
+     *     // ... data to create a Payment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Payment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PaymentUpsertArgs>(args: SelectSubset<T, PaymentUpsertArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Payments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentCountArgs} args - Arguments to filter Payments to count.
+     * @example
+     * // Count the number of Payments
+     * const count = await prisma.payment.count({
+     *   where: {
+     *     // ... the filter for the Payments we want to count
+     *   }
+     * })
+    **/
+    count<T extends PaymentCountArgs>(
+      args?: Subset<T, PaymentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PaymentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Payment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PaymentAggregateArgs>(args: Subset<T, PaymentAggregateArgs>): Prisma.PrismaPromise<GetPaymentAggregateType<T>>
+
+    /**
+     * Group by Payment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PaymentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PaymentGroupByArgs['orderBy'] }
+        : { orderBy?: PaymentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PaymentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPaymentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Payment model
+   */
+  readonly fields: PaymentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Payment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PaymentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    invoice<T extends TransactionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TransactionDefaultArgs<ExtArgs>>): Prisma__TransactionClient<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    outlet<T extends OutletDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OutletDefaultArgs<ExtArgs>>): Prisma__OutletClient<$Result.GetResult<Prisma.$OutletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    party<T extends PartyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PartyDefaultArgs<ExtArgs>>): Prisma__PartyClient<$Result.GetResult<Prisma.$PartyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    bankAccount<T extends Payment$bankAccountArgs<ExtArgs> = {}>(args?: Subset<T, Payment$bankAccountArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Payment model
+   */
+  interface PaymentFieldRefs {
+    readonly id: FieldRef<"Payment", 'String'>
+    readonly txnNumber: FieldRef<"Payment", 'String'>
+    readonly invoiceId: FieldRef<"Payment", 'String'>
+    readonly outletId: FieldRef<"Payment", 'String'>
+    readonly partyId: FieldRef<"Payment", 'String'>
+    readonly amount: FieldRef<"Payment", 'Float'>
+    readonly paymentDate: FieldRef<"Payment", 'DateTime'>
+    readonly paymentMode: FieldRef<"Payment", 'String'>
+    readonly bankAccountId: FieldRef<"Payment", 'String'>
+    readonly referenceNo: FieldRef<"Payment", 'String'>
+    readonly notes: FieldRef<"Payment", 'String'>
+    readonly createdBy: FieldRef<"Payment", 'String'>
+    readonly createdAt: FieldRef<"Payment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Payment findUnique
+   */
+  export type PaymentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
+     * Filter, which Payment to fetch.
+     */
+    where: PaymentWhereUniqueInput
+  }
+
+  /**
+   * Payment findUniqueOrThrow
+   */
+  export type PaymentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
+     * Filter, which Payment to fetch.
+     */
+    where: PaymentWhereUniqueInput
+  }
+
+  /**
+   * Payment findFirst
+   */
+  export type PaymentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
+     * Filter, which Payment to fetch.
+     */
+    where?: PaymentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Payments to fetch.
+     */
+    orderBy?: PaymentOrderByWithRelationInput | PaymentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Payments.
+     */
+    cursor?: PaymentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Payments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Payments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Payments.
+     */
+    distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
+  }
+
+  /**
+   * Payment findFirstOrThrow
+   */
+  export type PaymentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
+     * Filter, which Payment to fetch.
+     */
+    where?: PaymentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Payments to fetch.
+     */
+    orderBy?: PaymentOrderByWithRelationInput | PaymentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Payments.
+     */
+    cursor?: PaymentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Payments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Payments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Payments.
+     */
+    distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
+  }
+
+  /**
+   * Payment findMany
+   */
+  export type PaymentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
+     * Filter, which Payments to fetch.
+     */
+    where?: PaymentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Payments to fetch.
+     */
+    orderBy?: PaymentOrderByWithRelationInput | PaymentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Payments.
+     */
+    cursor?: PaymentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Payments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Payments.
+     */
+    skip?: number
+    distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
+  }
+
+  /**
+   * Payment create
+   */
+  export type PaymentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Payment.
+     */
+    data: XOR<PaymentCreateInput, PaymentUncheckedCreateInput>
+  }
+
+  /**
+   * Payment createMany
+   */
+  export type PaymentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Payments.
+     */
+    data: PaymentCreateManyInput | PaymentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Payment createManyAndReturn
+   */
+  export type PaymentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * The data used to create many Payments.
+     */
+    data: PaymentCreateManyInput | PaymentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Payment update
+   */
+  export type PaymentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Payment.
+     */
+    data: XOR<PaymentUpdateInput, PaymentUncheckedUpdateInput>
+    /**
+     * Choose, which Payment to update.
+     */
+    where: PaymentWhereUniqueInput
+  }
+
+  /**
+   * Payment updateMany
+   */
+  export type PaymentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Payments.
+     */
+    data: XOR<PaymentUpdateManyMutationInput, PaymentUncheckedUpdateManyInput>
+    /**
+     * Filter which Payments to update
+     */
+    where?: PaymentWhereInput
+    /**
+     * Limit how many Payments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Payment updateManyAndReturn
+   */
+  export type PaymentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * The data used to update Payments.
+     */
+    data: XOR<PaymentUpdateManyMutationInput, PaymentUncheckedUpdateManyInput>
+    /**
+     * Filter which Payments to update
+     */
+    where?: PaymentWhereInput
+    /**
+     * Limit how many Payments to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Payment upsert
+   */
+  export type PaymentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Payment to update in case it exists.
+     */
+    where: PaymentWhereUniqueInput
+    /**
+     * In case the Payment found by the `where` argument doesn't exist, create a new Payment with this data.
+     */
+    create: XOR<PaymentCreateInput, PaymentUncheckedCreateInput>
+    /**
+     * In case the Payment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PaymentUpdateInput, PaymentUncheckedUpdateInput>
+  }
+
+  /**
+   * Payment delete
+   */
+  export type PaymentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
+     * Filter which Payment to delete.
+     */
+    where: PaymentWhereUniqueInput
+  }
+
+  /**
+   * Payment deleteMany
+   */
+  export type PaymentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Payments to delete
+     */
+    where?: PaymentWhereInput
+    /**
+     * Limit how many Payments to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Payment.bankAccount
+   */
+  export type Payment$bankAccountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
+    select?: AccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Account
+     */
+    omit?: AccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AccountInclude<ExtArgs> | null
+    where?: AccountWhereInput
+  }
+
+  /**
+   * Payment without action
+   */
+  export type PaymentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
   }
 
 
@@ -27462,7 +29191,9 @@ export namespace Prisma {
     bankDetails: 'bankDetails',
     defaultWarehouseId: 'defaultWarehouseId',
     negativeStockPolicy: 'negativeStockPolicy',
-    batchTrackingEnabled: 'batchTrackingEnabled'
+    batchTrackingEnabled: 'batchTrackingEnabled',
+    inventoryValuationMethod: 'inventoryValuationMethod',
+    allowRawCashBills: 'allowRawCashBills'
   };
 
   export type OutletScalarFieldEnum = (typeof OutletScalarFieldEnum)[keyof typeof OutletScalarFieldEnum]
@@ -27488,7 +29219,6 @@ export namespace Prisma {
     gstRate: 'gstRate',
     baseUnit: 'baseUnit',
     purchaseUnit: 'purchaseUnit',
-    salesUnit: 'salesUnit',
     conversionRatio: 'conversionRatio',
     categoryId: 'categoryId',
     isArchived: 'isArchived',
@@ -27534,9 +29264,19 @@ export namespace Prisma {
     address: 'address',
     state: 'state',
     contactInfo: 'contactInfo',
+    phone: 'phone',
+    email: 'email',
+    isActive: 'isActive',
+    bankName: 'bankName',
+    bankAccountName: 'bankAccountName',
+    bankAccountNumber: 'bankAccountNumber',
+    bankIfsc: 'bankIfsc',
     creditPeriod: 'creditPeriod',
     creditLimit: 'creditLimit',
     openingBalance: 'openingBalance',
+    openingBalanceLocked: 'openingBalanceLocked',
+    outstandingBalance: 'outstandingBalance',
+    creditBalance: 'creditBalance',
     priceListId: 'priceListId',
     outletId: 'outletId'
   };
@@ -27558,12 +29298,14 @@ export namespace Prisma {
     freightCost: 'freightCost',
     grandTotal: 'grandTotal',
     status: 'status',
+    billType: 'billType',
     isInformal: 'isInformal',
     buyerName: 'buyerName',
     buyerPhone: 'buyerPhone',
     parentId: 'parentId',
     userId: 'userId',
-    remarks: 'remarks'
+    remarks: 'remarks',
+    paidAt: 'paidAt'
   };
 
   export type TransactionScalarFieldEnum = (typeof TransactionScalarFieldEnum)[keyof typeof TransactionScalarFieldEnum]
@@ -27685,10 +29427,30 @@ export namespace Prisma {
     quantity: 'quantity',
     balance: 'balance',
     type: 'type',
+    costPerUnit: 'costPerUnit',
     userId: 'userId'
   };
 
   export type StockLedgerScalarFieldEnum = (typeof StockLedgerScalarFieldEnum)[keyof typeof StockLedgerScalarFieldEnum]
+
+
+  export const PaymentScalarFieldEnum: {
+    id: 'id',
+    txnNumber: 'txnNumber',
+    invoiceId: 'invoiceId',
+    outletId: 'outletId',
+    partyId: 'partyId',
+    amount: 'amount',
+    paymentDate: 'paymentDate',
+    paymentMode: 'paymentMode',
+    bankAccountId: 'bankAccountId',
+    referenceNo: 'referenceNo',
+    notes: 'notes',
+    createdBy: 'createdBy',
+    createdAt: 'createdAt'
+  };
+
+  export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
   export const PriceListEntryScalarFieldEnum: {
@@ -27867,6 +29629,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'BillType'
+   */
+  export type EnumBillTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillType'>
+    
+
+
+  /**
+   * Reference to a field of type 'BillType[]'
+   */
+  export type ListEnumBillTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillType[]'>
+    
+
+
+  /**
    * Reference to a field of type 'AccountGroup'
    */
   export type EnumAccountGroupFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccountGroup'>
@@ -27899,6 +29675,7 @@ export namespace Prisma {
     transactions?: TransactionListRelationFilter
     outlets?: OutletListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
+    payments?: PaymentListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -27914,6 +29691,7 @@ export namespace Prisma {
     transactions?: TransactionOrderByRelationAggregateInput
     outlets?: OutletOrderByRelationAggregateInput
     stockLedger?: StockLedgerOrderByRelationAggregateInput
+    payments?: PaymentOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -27932,6 +29710,7 @@ export namespace Prisma {
     transactions?: TransactionListRelationFilter
     outlets?: OutletListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
+    payments?: PaymentListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -28122,6 +29901,8 @@ export namespace Prisma {
     defaultWarehouseId?: StringNullableFilter<"Outlet"> | string | null
     negativeStockPolicy?: StringFilter<"Outlet"> | string
     batchTrackingEnabled?: BoolFilter<"Outlet"> | boolean
+    inventoryValuationMethod?: StringFilter<"Outlet"> | string
+    allowRawCashBills?: BoolFilter<"Outlet"> | boolean
     stocks?: StockListRelationFilter
     users?: UserListRelationFilter
     warehouses?: WarehouseListRelationFilter
@@ -28133,6 +29914,7 @@ export namespace Prisma {
     series?: DocumentSeriesListRelationFilter
     batches?: CustomBatchListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
+    payments?: PaymentListRelationFilter
   }
 
   export type OutletOrderByWithRelationInput = {
@@ -28147,6 +29929,8 @@ export namespace Prisma {
     defaultWarehouseId?: SortOrderInput | SortOrder
     negativeStockPolicy?: SortOrder
     batchTrackingEnabled?: SortOrder
+    inventoryValuationMethod?: SortOrder
+    allowRawCashBills?: SortOrder
     stocks?: StockOrderByRelationAggregateInput
     users?: UserOrderByRelationAggregateInput
     warehouses?: WarehouseOrderByRelationAggregateInput
@@ -28158,6 +29942,7 @@ export namespace Prisma {
     series?: DocumentSeriesOrderByRelationAggregateInput
     batches?: CustomBatchOrderByRelationAggregateInput
     stockLedger?: StockLedgerOrderByRelationAggregateInput
+    payments?: PaymentOrderByRelationAggregateInput
   }
 
   export type OutletWhereUniqueInput = Prisma.AtLeast<{
@@ -28175,6 +29960,8 @@ export namespace Prisma {
     defaultWarehouseId?: StringNullableFilter<"Outlet"> | string | null
     negativeStockPolicy?: StringFilter<"Outlet"> | string
     batchTrackingEnabled?: BoolFilter<"Outlet"> | boolean
+    inventoryValuationMethod?: StringFilter<"Outlet"> | string
+    allowRawCashBills?: BoolFilter<"Outlet"> | boolean
     stocks?: StockListRelationFilter
     users?: UserListRelationFilter
     warehouses?: WarehouseListRelationFilter
@@ -28186,6 +29973,7 @@ export namespace Prisma {
     series?: DocumentSeriesListRelationFilter
     batches?: CustomBatchListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
+    payments?: PaymentListRelationFilter
   }, "id">
 
   export type OutletOrderByWithAggregationInput = {
@@ -28200,6 +29988,8 @@ export namespace Prisma {
     defaultWarehouseId?: SortOrderInput | SortOrder
     negativeStockPolicy?: SortOrder
     batchTrackingEnabled?: SortOrder
+    inventoryValuationMethod?: SortOrder
+    allowRawCashBills?: SortOrder
     _count?: OutletCountOrderByAggregateInput
     _avg?: OutletAvgOrderByAggregateInput
     _max?: OutletMaxOrderByAggregateInput
@@ -28222,6 +30012,8 @@ export namespace Prisma {
     defaultWarehouseId?: StringNullableWithAggregatesFilter<"Outlet"> | string | null
     negativeStockPolicy?: StringWithAggregatesFilter<"Outlet"> | string
     batchTrackingEnabled?: BoolWithAggregatesFilter<"Outlet"> | boolean
+    inventoryValuationMethod?: StringWithAggregatesFilter<"Outlet"> | string
+    allowRawCashBills?: BoolWithAggregatesFilter<"Outlet"> | boolean
   }
 
   export type CategoryWhereInput = {
@@ -28305,7 +30097,6 @@ export namespace Prisma {
     gstRate?: FloatFilter<"Product"> | number
     baseUnit?: StringFilter<"Product"> | string
     purchaseUnit?: StringNullableFilter<"Product"> | string | null
-    salesUnit?: StringNullableFilter<"Product"> | string | null
     conversionRatio?: FloatNullableFilter<"Product"> | number | null
     categoryId?: StringFilter<"Product"> | string
     isArchived?: BoolFilter<"Product"> | boolean
@@ -28323,7 +30114,6 @@ export namespace Prisma {
     gstRate?: SortOrder
     baseUnit?: SortOrder
     purchaseUnit?: SortOrderInput | SortOrder
-    salesUnit?: SortOrderInput | SortOrder
     conversionRatio?: SortOrderInput | SortOrder
     categoryId?: SortOrder
     isArchived?: SortOrder
@@ -28345,7 +30135,6 @@ export namespace Prisma {
     gstRate?: FloatFilter<"Product"> | number
     baseUnit?: StringFilter<"Product"> | string
     purchaseUnit?: StringNullableFilter<"Product"> | string | null
-    salesUnit?: StringNullableFilter<"Product"> | string | null
     conversionRatio?: FloatNullableFilter<"Product"> | number | null
     categoryId?: StringFilter<"Product"> | string
     isArchived?: BoolFilter<"Product"> | boolean
@@ -28363,7 +30152,6 @@ export namespace Prisma {
     gstRate?: SortOrder
     baseUnit?: SortOrder
     purchaseUnit?: SortOrderInput | SortOrder
-    salesUnit?: SortOrderInput | SortOrder
     conversionRatio?: SortOrderInput | SortOrder
     categoryId?: SortOrder
     isArchived?: SortOrder
@@ -28386,7 +30174,6 @@ export namespace Prisma {
     gstRate?: FloatWithAggregatesFilter<"Product"> | number
     baseUnit?: StringWithAggregatesFilter<"Product"> | string
     purchaseUnit?: StringNullableWithAggregatesFilter<"Product"> | string | null
-    salesUnit?: StringNullableWithAggregatesFilter<"Product"> | string | null
     conversionRatio?: FloatNullableWithAggregatesFilter<"Product"> | number | null
     categoryId?: StringWithAggregatesFilter<"Product"> | string
     isArchived?: BoolWithAggregatesFilter<"Product"> | boolean
@@ -28569,9 +30356,19 @@ export namespace Prisma {
     address?: StringFilter<"Party"> | string
     state?: StringFilter<"Party"> | string
     contactInfo?: StringNullableFilter<"Party"> | string | null
+    phone?: StringNullableFilter<"Party"> | string | null
+    email?: StringNullableFilter<"Party"> | string | null
+    isActive?: BoolFilter<"Party"> | boolean
+    bankName?: StringNullableFilter<"Party"> | string | null
+    bankAccountName?: StringNullableFilter<"Party"> | string | null
+    bankAccountNumber?: StringNullableFilter<"Party"> | string | null
+    bankIfsc?: StringNullableFilter<"Party"> | string | null
     creditPeriod?: IntFilter<"Party"> | number
     creditLimit?: FloatNullableFilter<"Party"> | number | null
     openingBalance?: FloatFilter<"Party"> | number
+    openingBalanceLocked?: BoolFilter<"Party"> | boolean
+    outstandingBalance?: FloatFilter<"Party"> | number
+    creditBalance?: FloatFilter<"Party"> | number
     priceListId?: StringNullableFilter<"Party"> | string | null
     outletId?: StringFilter<"Party"> | string
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
@@ -28579,6 +30376,7 @@ export namespace Prisma {
     priceList?: XOR<PriceListNullableScalarRelationFilter, PriceListWhereInput> | null
     transactions?: TransactionListRelationFilter
     suppliedProducts?: VendorProductListRelationFilter
+    payments?: PaymentListRelationFilter
   }
 
   export type PartyOrderByWithRelationInput = {
@@ -28590,9 +30388,19 @@ export namespace Prisma {
     address?: SortOrder
     state?: SortOrder
     contactInfo?: SortOrderInput | SortOrder
+    phone?: SortOrderInput | SortOrder
+    email?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    bankName?: SortOrderInput | SortOrder
+    bankAccountName?: SortOrderInput | SortOrder
+    bankAccountNumber?: SortOrderInput | SortOrder
+    bankIfsc?: SortOrderInput | SortOrder
     creditPeriod?: SortOrder
     creditLimit?: SortOrderInput | SortOrder
     openingBalance?: SortOrder
+    openingBalanceLocked?: SortOrder
+    outstandingBalance?: SortOrder
+    creditBalance?: SortOrder
     priceListId?: SortOrderInput | SortOrder
     outletId?: SortOrder
     outlet?: OutletOrderByWithRelationInput
@@ -28600,6 +30408,7 @@ export namespace Prisma {
     priceList?: PriceListOrderByWithRelationInput
     transactions?: TransactionOrderByRelationAggregateInput
     suppliedProducts?: VendorProductOrderByRelationAggregateInput
+    payments?: PaymentOrderByRelationAggregateInput
   }
 
   export type PartyWhereUniqueInput = Prisma.AtLeast<{
@@ -28614,9 +30423,19 @@ export namespace Prisma {
     address?: StringFilter<"Party"> | string
     state?: StringFilter<"Party"> | string
     contactInfo?: StringNullableFilter<"Party"> | string | null
+    phone?: StringNullableFilter<"Party"> | string | null
+    email?: StringNullableFilter<"Party"> | string | null
+    isActive?: BoolFilter<"Party"> | boolean
+    bankName?: StringNullableFilter<"Party"> | string | null
+    bankAccountName?: StringNullableFilter<"Party"> | string | null
+    bankAccountNumber?: StringNullableFilter<"Party"> | string | null
+    bankIfsc?: StringNullableFilter<"Party"> | string | null
     creditPeriod?: IntFilter<"Party"> | number
     creditLimit?: FloatNullableFilter<"Party"> | number | null
     openingBalance?: FloatFilter<"Party"> | number
+    openingBalanceLocked?: BoolFilter<"Party"> | boolean
+    outstandingBalance?: FloatFilter<"Party"> | number
+    creditBalance?: FloatFilter<"Party"> | number
     priceListId?: StringNullableFilter<"Party"> | string | null
     outletId?: StringFilter<"Party"> | string
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
@@ -28624,6 +30443,7 @@ export namespace Prisma {
     priceList?: XOR<PriceListNullableScalarRelationFilter, PriceListWhereInput> | null
     transactions?: TransactionListRelationFilter
     suppliedProducts?: VendorProductListRelationFilter
+    payments?: PaymentListRelationFilter
   }, "id">
 
   export type PartyOrderByWithAggregationInput = {
@@ -28635,9 +30455,19 @@ export namespace Prisma {
     address?: SortOrder
     state?: SortOrder
     contactInfo?: SortOrderInput | SortOrder
+    phone?: SortOrderInput | SortOrder
+    email?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    bankName?: SortOrderInput | SortOrder
+    bankAccountName?: SortOrderInput | SortOrder
+    bankAccountNumber?: SortOrderInput | SortOrder
+    bankIfsc?: SortOrderInput | SortOrder
     creditPeriod?: SortOrder
     creditLimit?: SortOrderInput | SortOrder
     openingBalance?: SortOrder
+    openingBalanceLocked?: SortOrder
+    outstandingBalance?: SortOrder
+    creditBalance?: SortOrder
     priceListId?: SortOrderInput | SortOrder
     outletId?: SortOrder
     _count?: PartyCountOrderByAggregateInput
@@ -28659,9 +30489,19 @@ export namespace Prisma {
     address?: StringWithAggregatesFilter<"Party"> | string
     state?: StringWithAggregatesFilter<"Party"> | string
     contactInfo?: StringNullableWithAggregatesFilter<"Party"> | string | null
+    phone?: StringNullableWithAggregatesFilter<"Party"> | string | null
+    email?: StringNullableWithAggregatesFilter<"Party"> | string | null
+    isActive?: BoolWithAggregatesFilter<"Party"> | boolean
+    bankName?: StringNullableWithAggregatesFilter<"Party"> | string | null
+    bankAccountName?: StringNullableWithAggregatesFilter<"Party"> | string | null
+    bankAccountNumber?: StringNullableWithAggregatesFilter<"Party"> | string | null
+    bankIfsc?: StringNullableWithAggregatesFilter<"Party"> | string | null
     creditPeriod?: IntWithAggregatesFilter<"Party"> | number
     creditLimit?: FloatNullableWithAggregatesFilter<"Party"> | number | null
     openingBalance?: FloatWithAggregatesFilter<"Party"> | number
+    openingBalanceLocked?: BoolWithAggregatesFilter<"Party"> | boolean
+    outstandingBalance?: FloatWithAggregatesFilter<"Party"> | number
+    creditBalance?: FloatWithAggregatesFilter<"Party"> | number
     priceListId?: StringNullableWithAggregatesFilter<"Party"> | string | null
     outletId?: StringWithAggregatesFilter<"Party"> | string
   }
@@ -28683,12 +30523,14 @@ export namespace Prisma {
     freightCost?: FloatNullableFilter<"Transaction"> | number | null
     grandTotal?: FloatFilter<"Transaction"> | number
     status?: StringFilter<"Transaction"> | string
+    billType?: EnumBillTypeFilter<"Transaction"> | $Enums.BillType
     isInformal?: BoolFilter<"Transaction"> | boolean
     buyerName?: StringNullableFilter<"Transaction"> | string | null
     buyerPhone?: StringNullableFilter<"Transaction"> | string | null
     parentId?: StringNullableFilter<"Transaction"> | string | null
     userId?: StringFilter<"Transaction"> | string
     remarks?: StringNullableFilter<"Transaction"> | string | null
+    paidAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
     ledgerEntries?: LedgerEntryListRelationFilter
     parent?: XOR<TransactionNullableScalarRelationFilter, TransactionWhereInput> | null
     children?: TransactionListRelationFilter
@@ -28700,6 +30542,7 @@ export namespace Prisma {
     items?: TransactionItemListRelationFilter
     batchMovements?: BatchMovementListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
+    payments?: PaymentListRelationFilter
   }
 
   export type TransactionOrderByWithRelationInput = {
@@ -28716,12 +30559,14 @@ export namespace Prisma {
     freightCost?: SortOrderInput | SortOrder
     grandTotal?: SortOrder
     status?: SortOrder
+    billType?: SortOrder
     isInformal?: SortOrder
     buyerName?: SortOrderInput | SortOrder
     buyerPhone?: SortOrderInput | SortOrder
     parentId?: SortOrderInput | SortOrder
     userId?: SortOrder
     remarks?: SortOrderInput | SortOrder
+    paidAt?: SortOrderInput | SortOrder
     ledgerEntries?: LedgerEntryOrderByRelationAggregateInput
     parent?: TransactionOrderByWithRelationInput
     children?: TransactionOrderByRelationAggregateInput
@@ -28733,6 +30578,7 @@ export namespace Prisma {
     items?: TransactionItemOrderByRelationAggregateInput
     batchMovements?: BatchMovementOrderByRelationAggregateInput
     stockLedger?: StockLedgerOrderByRelationAggregateInput
+    payments?: PaymentOrderByRelationAggregateInput
   }
 
   export type TransactionWhereUniqueInput = Prisma.AtLeast<{
@@ -28752,12 +30598,14 @@ export namespace Prisma {
     freightCost?: FloatNullableFilter<"Transaction"> | number | null
     grandTotal?: FloatFilter<"Transaction"> | number
     status?: StringFilter<"Transaction"> | string
+    billType?: EnumBillTypeFilter<"Transaction"> | $Enums.BillType
     isInformal?: BoolFilter<"Transaction"> | boolean
     buyerName?: StringNullableFilter<"Transaction"> | string | null
     buyerPhone?: StringNullableFilter<"Transaction"> | string | null
     parentId?: StringNullableFilter<"Transaction"> | string | null
     userId?: StringFilter<"Transaction"> | string
     remarks?: StringNullableFilter<"Transaction"> | string | null
+    paidAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
     ledgerEntries?: LedgerEntryListRelationFilter
     parent?: XOR<TransactionNullableScalarRelationFilter, TransactionWhereInput> | null
     children?: TransactionListRelationFilter
@@ -28769,6 +30617,7 @@ export namespace Prisma {
     items?: TransactionItemListRelationFilter
     batchMovements?: BatchMovementListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
+    payments?: PaymentListRelationFilter
   }, "id" | "txnNumber">
 
   export type TransactionOrderByWithAggregationInput = {
@@ -28785,12 +30634,14 @@ export namespace Prisma {
     freightCost?: SortOrderInput | SortOrder
     grandTotal?: SortOrder
     status?: SortOrder
+    billType?: SortOrder
     isInformal?: SortOrder
     buyerName?: SortOrderInput | SortOrder
     buyerPhone?: SortOrderInput | SortOrder
     parentId?: SortOrderInput | SortOrder
     userId?: SortOrder
     remarks?: SortOrderInput | SortOrder
+    paidAt?: SortOrderInput | SortOrder
     _count?: TransactionCountOrderByAggregateInput
     _avg?: TransactionAvgOrderByAggregateInput
     _max?: TransactionMaxOrderByAggregateInput
@@ -28815,12 +30666,14 @@ export namespace Prisma {
     freightCost?: FloatNullableWithAggregatesFilter<"Transaction"> | number | null
     grandTotal?: FloatWithAggregatesFilter<"Transaction"> | number
     status?: StringWithAggregatesFilter<"Transaction"> | string
+    billType?: EnumBillTypeWithAggregatesFilter<"Transaction"> | $Enums.BillType
     isInformal?: BoolWithAggregatesFilter<"Transaction"> | boolean
     buyerName?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
     buyerPhone?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
     parentId?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
     userId?: StringWithAggregatesFilter<"Transaction"> | string
     remarks?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    paidAt?: DateTimeNullableWithAggregatesFilter<"Transaction"> | Date | string | null
   }
 
   export type TransactionItemWhereInput = {
@@ -28930,6 +30783,7 @@ export namespace Prisma {
     outletId?: StringFilter<"Account"> | string
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
     entries?: LedgerEntryListRelationFilter
+    payments?: PaymentListRelationFilter
   }
 
   export type AccountOrderByWithRelationInput = {
@@ -28941,6 +30795,7 @@ export namespace Prisma {
     outletId?: SortOrder
     outlet?: OutletOrderByWithRelationInput
     entries?: LedgerEntryOrderByRelationAggregateInput
+    payments?: PaymentOrderByRelationAggregateInput
   }
 
   export type AccountWhereUniqueInput = Prisma.AtLeast<{
@@ -28956,6 +30811,7 @@ export namespace Prisma {
     outletId?: StringFilter<"Account"> | string
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
     entries?: LedgerEntryListRelationFilter
+    payments?: PaymentListRelationFilter
   }, "id" | "code_outletId">
 
   export type AccountOrderByWithAggregationInput = {
@@ -29411,6 +31267,7 @@ export namespace Prisma {
     quantity?: FloatFilter<"StockLedger"> | number
     balance?: FloatFilter<"StockLedger"> | number
     type?: StringFilter<"StockLedger"> | string
+    costPerUnit?: FloatNullableFilter<"StockLedger"> | number | null
     userId?: StringFilter<"StockLedger"> | string
     variant?: XOR<VariantScalarRelationFilter, VariantWhereInput>
     warehouse?: XOR<WarehouseScalarRelationFilter, WarehouseWhereInput>
@@ -29429,6 +31286,7 @@ export namespace Prisma {
     quantity?: SortOrder
     balance?: SortOrder
     type?: SortOrder
+    costPerUnit?: SortOrderInput | SortOrder
     userId?: SortOrder
     variant?: VariantOrderByWithRelationInput
     warehouse?: WarehouseOrderByWithRelationInput
@@ -29450,6 +31308,7 @@ export namespace Prisma {
     quantity?: FloatFilter<"StockLedger"> | number
     balance?: FloatFilter<"StockLedger"> | number
     type?: StringFilter<"StockLedger"> | string
+    costPerUnit?: FloatNullableFilter<"StockLedger"> | number | null
     userId?: StringFilter<"StockLedger"> | string
     variant?: XOR<VariantScalarRelationFilter, VariantWhereInput>
     warehouse?: XOR<WarehouseScalarRelationFilter, WarehouseWhereInput>
@@ -29468,6 +31327,7 @@ export namespace Prisma {
     quantity?: SortOrder
     balance?: SortOrder
     type?: SortOrder
+    costPerUnit?: SortOrderInput | SortOrder
     userId?: SortOrder
     _count?: StockLedgerCountOrderByAggregateInput
     _avg?: StockLedgerAvgOrderByAggregateInput
@@ -29489,7 +31349,117 @@ export namespace Prisma {
     quantity?: FloatWithAggregatesFilter<"StockLedger"> | number
     balance?: FloatWithAggregatesFilter<"StockLedger"> | number
     type?: StringWithAggregatesFilter<"StockLedger"> | string
+    costPerUnit?: FloatNullableWithAggregatesFilter<"StockLedger"> | number | null
     userId?: StringWithAggregatesFilter<"StockLedger"> | string
+  }
+
+  export type PaymentWhereInput = {
+    AND?: PaymentWhereInput | PaymentWhereInput[]
+    OR?: PaymentWhereInput[]
+    NOT?: PaymentWhereInput | PaymentWhereInput[]
+    id?: StringFilter<"Payment"> | string
+    txnNumber?: StringFilter<"Payment"> | string
+    invoiceId?: StringFilter<"Payment"> | string
+    outletId?: StringFilter<"Payment"> | string
+    partyId?: StringFilter<"Payment"> | string
+    amount?: FloatFilter<"Payment"> | number
+    paymentDate?: DateTimeFilter<"Payment"> | Date | string
+    paymentMode?: StringFilter<"Payment"> | string
+    bankAccountId?: StringNullableFilter<"Payment"> | string | null
+    referenceNo?: StringNullableFilter<"Payment"> | string | null
+    notes?: StringNullableFilter<"Payment"> | string | null
+    createdBy?: StringFilter<"Payment"> | string
+    createdAt?: DateTimeFilter<"Payment"> | Date | string
+    invoice?: XOR<TransactionScalarRelationFilter, TransactionWhereInput>
+    outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
+    party?: XOR<PartyScalarRelationFilter, PartyWhereInput>
+    bankAccount?: XOR<AccountNullableScalarRelationFilter, AccountWhereInput> | null
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type PaymentOrderByWithRelationInput = {
+    id?: SortOrder
+    txnNumber?: SortOrder
+    invoiceId?: SortOrder
+    outletId?: SortOrder
+    partyId?: SortOrder
+    amount?: SortOrder
+    paymentDate?: SortOrder
+    paymentMode?: SortOrder
+    bankAccountId?: SortOrderInput | SortOrder
+    referenceNo?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    invoice?: TransactionOrderByWithRelationInput
+    outlet?: OutletOrderByWithRelationInput
+    party?: PartyOrderByWithRelationInput
+    bankAccount?: AccountOrderByWithRelationInput
+    creator?: UserOrderByWithRelationInput
+  }
+
+  export type PaymentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    txnNumber?: string
+    AND?: PaymentWhereInput | PaymentWhereInput[]
+    OR?: PaymentWhereInput[]
+    NOT?: PaymentWhereInput | PaymentWhereInput[]
+    invoiceId?: StringFilter<"Payment"> | string
+    outletId?: StringFilter<"Payment"> | string
+    partyId?: StringFilter<"Payment"> | string
+    amount?: FloatFilter<"Payment"> | number
+    paymentDate?: DateTimeFilter<"Payment"> | Date | string
+    paymentMode?: StringFilter<"Payment"> | string
+    bankAccountId?: StringNullableFilter<"Payment"> | string | null
+    referenceNo?: StringNullableFilter<"Payment"> | string | null
+    notes?: StringNullableFilter<"Payment"> | string | null
+    createdBy?: StringFilter<"Payment"> | string
+    createdAt?: DateTimeFilter<"Payment"> | Date | string
+    invoice?: XOR<TransactionScalarRelationFilter, TransactionWhereInput>
+    outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
+    party?: XOR<PartyScalarRelationFilter, PartyWhereInput>
+    bankAccount?: XOR<AccountNullableScalarRelationFilter, AccountWhereInput> | null
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "txnNumber">
+
+  export type PaymentOrderByWithAggregationInput = {
+    id?: SortOrder
+    txnNumber?: SortOrder
+    invoiceId?: SortOrder
+    outletId?: SortOrder
+    partyId?: SortOrder
+    amount?: SortOrder
+    paymentDate?: SortOrder
+    paymentMode?: SortOrder
+    bankAccountId?: SortOrderInput | SortOrder
+    referenceNo?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    _count?: PaymentCountOrderByAggregateInput
+    _avg?: PaymentAvgOrderByAggregateInput
+    _max?: PaymentMaxOrderByAggregateInput
+    _min?: PaymentMinOrderByAggregateInput
+    _sum?: PaymentSumOrderByAggregateInput
+  }
+
+  export type PaymentScalarWhereWithAggregatesInput = {
+    AND?: PaymentScalarWhereWithAggregatesInput | PaymentScalarWhereWithAggregatesInput[]
+    OR?: PaymentScalarWhereWithAggregatesInput[]
+    NOT?: PaymentScalarWhereWithAggregatesInput | PaymentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Payment"> | string
+    txnNumber?: StringWithAggregatesFilter<"Payment"> | string
+    invoiceId?: StringWithAggregatesFilter<"Payment"> | string
+    outletId?: StringWithAggregatesFilter<"Payment"> | string
+    partyId?: StringWithAggregatesFilter<"Payment"> | string
+    amount?: FloatWithAggregatesFilter<"Payment"> | number
+    paymentDate?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
+    paymentMode?: StringWithAggregatesFilter<"Payment"> | string
+    bankAccountId?: StringNullableWithAggregatesFilter<"Payment"> | string | null
+    referenceNo?: StringNullableWithAggregatesFilter<"Payment"> | string | null
+    notes?: StringNullableWithAggregatesFilter<"Payment"> | string | null
+    createdBy?: StringWithAggregatesFilter<"Payment"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
   }
 
   export type PriceListEntryWhereInput = {
@@ -29561,6 +31531,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     outlets?: OutletCreateNestedManyWithoutUsersInput
     stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -29576,6 +31547,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUpdateInput = {
@@ -29591,6 +31563,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     outlets?: OutletUpdateManyWithoutUsersNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -29606,6 +31579,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -29816,6 +31790,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
@@ -29827,6 +31803,7 @@ export namespace Prisma {
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateInput = {
@@ -29841,6 +31818,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
@@ -29852,6 +31831,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUpdateInput = {
@@ -29866,6 +31846,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
@@ -29877,6 +31859,7 @@ export namespace Prisma {
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateInput = {
@@ -29891,6 +31874,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
@@ -29902,6 +31887,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletCreateManyInput = {
@@ -29916,6 +31902,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
   }
 
   export type OutletUpdateManyMutationInput = {
@@ -29930,6 +31918,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type OutletUncheckedUpdateManyInput = {
@@ -29944,6 +31934,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type CategoryCreateInput = {
@@ -30023,7 +32015,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     isArchived?: boolean
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -30039,7 +32030,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     categoryId: string
     isArchived?: boolean
@@ -30055,7 +32045,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -30071,7 +32060,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     categoryId?: StringFieldUpdateOperationsInput | string
     isArchived?: BoolFieldUpdateOperationsInput | boolean
@@ -30087,7 +32075,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     categoryId: string
     isArchived?: boolean
@@ -30102,7 +32089,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
   }
@@ -30115,7 +32101,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     categoryId?: StringFieldUpdateOperationsInput | string
     isArchived?: BoolFieldUpdateOperationsInput | boolean
@@ -30298,14 +32283,25 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     outlet: OutletCreateNestedOneWithoutPartiesInput
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutPartyInput
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
+    payments?: PaymentCreateNestedManyWithoutPartyInput
   }
 
   export type PartyUncheckedCreateInput = {
@@ -30317,14 +32313,25 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     priceListId?: string | null
     outletId: string
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
   }
 
   export type PartyUpdateInput = {
@@ -30336,14 +32343,25 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     outlet?: OutletUpdateOneRequiredWithoutPartiesNestedInput
     ledgerEntries?: LedgerEntryUpdateManyWithoutPartyNestedInput
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
+    payments?: PaymentUpdateManyWithoutPartyNestedInput
   }
 
   export type PartyUncheckedUpdateInput = {
@@ -30355,14 +32373,25 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     priceListId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
   }
 
   export type PartyCreateManyInput = {
@@ -30374,9 +32403,19 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     priceListId?: string | null
     outletId: string
   }
@@ -30390,9 +32429,19 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
   }
 
   export type PartyUncheckedUpdateManyInput = {
@@ -30404,9 +32453,19 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     priceListId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
   }
@@ -30421,10 +32480,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -30436,6 +32497,7 @@ export namespace Prisma {
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateInput = {
@@ -30452,17 +32514,20 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUpdateInput = {
@@ -30475,10 +32540,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -30490,6 +32557,7 @@ export namespace Prisma {
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateInput = {
@@ -30506,17 +32574,20 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionCreateManyInput = {
@@ -30533,12 +32604,14 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
   }
 
   export type TransactionUpdateManyMutationInput = {
@@ -30551,10 +32624,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TransactionUncheckedUpdateManyInput = {
@@ -30571,12 +32646,14 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TransactionItemCreateInput = {
@@ -30690,6 +32767,7 @@ export namespace Prisma {
     isSystem?: boolean
     outlet: OutletCreateNestedOneWithoutAccountsInput
     entries?: LedgerEntryCreateNestedManyWithoutAccountInput
+    payments?: PaymentCreateNestedManyWithoutBankAccountInput
   }
 
   export type AccountUncheckedCreateInput = {
@@ -30700,6 +32778,7 @@ export namespace Prisma {
     isSystem?: boolean
     outletId: string
     entries?: LedgerEntryUncheckedCreateNestedManyWithoutAccountInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutBankAccountInput
   }
 
   export type AccountUpdateInput = {
@@ -30710,6 +32789,7 @@ export namespace Prisma {
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     outlet?: OutletUpdateOneRequiredWithoutAccountsNestedInput
     entries?: LedgerEntryUpdateManyWithoutAccountNestedInput
+    payments?: PaymentUpdateManyWithoutBankAccountNestedInput
   }
 
   export type AccountUncheckedUpdateInput = {
@@ -30720,6 +32800,7 @@ export namespace Prisma {
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     outletId?: StringFieldUpdateOperationsInput | string
     entries?: LedgerEntryUncheckedUpdateManyWithoutAccountNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutBankAccountNestedInput
   }
 
   export type AccountCreateManyInput = {
@@ -31161,6 +33242,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     variant: VariantCreateNestedOneWithoutStockLedgerInput
     warehouse: WarehouseCreateNestedOneWithoutStockLedgerInput
     outlet: OutletCreateNestedOneWithoutStockLedgerInput
@@ -31178,6 +33260,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     userId: string
   }
 
@@ -31187,6 +33270,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     variant?: VariantUpdateOneRequiredWithoutStockLedgerNestedInput
     warehouse?: WarehouseUpdateOneRequiredWithoutStockLedgerNestedInput
     outlet?: OutletUpdateOneRequiredWithoutStockLedgerNestedInput
@@ -31204,6 +33288,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -31217,6 +33302,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     userId: string
   }
 
@@ -31226,6 +33312,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type StockLedgerUncheckedUpdateManyInput = {
@@ -31238,7 +33325,115 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PaymentCreateInput = {
+    id?: string
+    txnNumber: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    referenceNo?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    invoice: TransactionCreateNestedOneWithoutPaymentsInput
+    outlet: OutletCreateNestedOneWithoutPaymentsInput
+    party: PartyCreateNestedOneWithoutPaymentsInput
+    bankAccount?: AccountCreateNestedOneWithoutPaymentsInput
+    creator: UserCreateNestedOneWithoutPaymentsInput
+  }
+
+  export type PaymentUncheckedCreateInput = {
+    id?: string
+    txnNumber: string
+    invoiceId: string
+    outletId: string
+    partyId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    bankAccountId?: string | null
+    referenceNo?: string | null
+    notes?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PaymentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    invoice?: TransactionUpdateOneRequiredWithoutPaymentsNestedInput
+    outlet?: OutletUpdateOneRequiredWithoutPaymentsNestedInput
+    party?: PartyUpdateOneRequiredWithoutPaymentsNestedInput
+    bankAccount?: AccountUpdateOneWithoutPaymentsNestedInput
+    creator?: UserUpdateOneRequiredWithoutPaymentsNestedInput
+  }
+
+  export type PaymentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    invoiceId?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    bankAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentCreateManyInput = {
+    id?: string
+    txnNumber: string
+    invoiceId: string
+    outletId: string
+    partyId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    bankAccountId?: string | null
+    referenceNo?: string | null
+    notes?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PaymentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    invoiceId?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    bankAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PriceListEntryCreateInput = {
@@ -31350,6 +33545,12 @@ export namespace Prisma {
     none?: StockLedgerWhereInput
   }
 
+  export type PaymentListRelationFilter = {
+    every?: PaymentWhereInput
+    some?: PaymentWhereInput
+    none?: PaymentWhereInput
+  }
+
   export type AuditLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -31363,6 +33564,10 @@ export namespace Prisma {
   }
 
   export type StockLedgerOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PaymentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -31710,6 +33915,8 @@ export namespace Prisma {
     defaultWarehouseId?: SortOrder
     negativeStockPolicy?: SortOrder
     batchTrackingEnabled?: SortOrder
+    inventoryValuationMethod?: SortOrder
+    allowRawCashBills?: SortOrder
   }
 
   export type OutletAvgOrderByAggregateInput = {
@@ -31728,6 +33935,8 @@ export namespace Prisma {
     defaultWarehouseId?: SortOrder
     negativeStockPolicy?: SortOrder
     batchTrackingEnabled?: SortOrder
+    inventoryValuationMethod?: SortOrder
+    allowRawCashBills?: SortOrder
   }
 
   export type OutletMinOrderByAggregateInput = {
@@ -31742,6 +33951,8 @@ export namespace Prisma {
     defaultWarehouseId?: SortOrder
     negativeStockPolicy?: SortOrder
     batchTrackingEnabled?: SortOrder
+    inventoryValuationMethod?: SortOrder
+    allowRawCashBills?: SortOrder
   }
 
   export type OutletSumOrderByAggregateInput = {
@@ -31857,7 +34068,6 @@ export namespace Prisma {
     gstRate?: SortOrder
     baseUnit?: SortOrder
     purchaseUnit?: SortOrder
-    salesUnit?: SortOrder
     conversionRatio?: SortOrder
     categoryId?: SortOrder
     isArchived?: SortOrder
@@ -31877,7 +34087,6 @@ export namespace Prisma {
     gstRate?: SortOrder
     baseUnit?: SortOrder
     purchaseUnit?: SortOrder
-    salesUnit?: SortOrder
     conversionRatio?: SortOrder
     categoryId?: SortOrder
     isArchived?: SortOrder
@@ -31892,7 +34101,6 @@ export namespace Prisma {
     gstRate?: SortOrder
     baseUnit?: SortOrder
     purchaseUnit?: SortOrder
-    salesUnit?: SortOrder
     conversionRatio?: SortOrder
     categoryId?: SortOrder
     isArchived?: SortOrder
@@ -32108,9 +34316,19 @@ export namespace Prisma {
     address?: SortOrder
     state?: SortOrder
     contactInfo?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    isActive?: SortOrder
+    bankName?: SortOrder
+    bankAccountName?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIfsc?: SortOrder
     creditPeriod?: SortOrder
     creditLimit?: SortOrder
     openingBalance?: SortOrder
+    openingBalanceLocked?: SortOrder
+    outstandingBalance?: SortOrder
+    creditBalance?: SortOrder
     priceListId?: SortOrder
     outletId?: SortOrder
   }
@@ -32119,6 +34337,8 @@ export namespace Prisma {
     creditPeriod?: SortOrder
     creditLimit?: SortOrder
     openingBalance?: SortOrder
+    outstandingBalance?: SortOrder
+    creditBalance?: SortOrder
   }
 
   export type PartyMaxOrderByAggregateInput = {
@@ -32130,9 +34350,19 @@ export namespace Prisma {
     address?: SortOrder
     state?: SortOrder
     contactInfo?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    isActive?: SortOrder
+    bankName?: SortOrder
+    bankAccountName?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIfsc?: SortOrder
     creditPeriod?: SortOrder
     creditLimit?: SortOrder
     openingBalance?: SortOrder
+    openingBalanceLocked?: SortOrder
+    outstandingBalance?: SortOrder
+    creditBalance?: SortOrder
     priceListId?: SortOrder
     outletId?: SortOrder
   }
@@ -32146,9 +34376,19 @@ export namespace Prisma {
     address?: SortOrder
     state?: SortOrder
     contactInfo?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    isActive?: SortOrder
+    bankName?: SortOrder
+    bankAccountName?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIfsc?: SortOrder
     creditPeriod?: SortOrder
     creditLimit?: SortOrder
     openingBalance?: SortOrder
+    openingBalanceLocked?: SortOrder
+    outstandingBalance?: SortOrder
+    creditBalance?: SortOrder
     priceListId?: SortOrder
     outletId?: SortOrder
   }
@@ -32157,6 +34397,8 @@ export namespace Prisma {
     creditPeriod?: SortOrder
     creditLimit?: SortOrder
     openingBalance?: SortOrder
+    outstandingBalance?: SortOrder
+    creditBalance?: SortOrder
   }
 
   export type EnumPartyTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -32174,6 +34416,24 @@ export namespace Prisma {
     in?: $Enums.TxType[] | ListEnumTxTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.TxType[] | ListEnumTxTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumTxTypeFilter<$PrismaModel> | $Enums.TxType
+  }
+
+  export type EnumBillTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.BillType | EnumBillTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.BillType[] | ListEnumBillTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BillType[] | ListEnumBillTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumBillTypeFilter<$PrismaModel> | $Enums.BillType
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type TransactionNullableScalarRelationFilter = {
@@ -32210,12 +34470,14 @@ export namespace Prisma {
     freightCost?: SortOrder
     grandTotal?: SortOrder
     status?: SortOrder
+    billType?: SortOrder
     isInformal?: SortOrder
     buyerName?: SortOrder
     buyerPhone?: SortOrder
     parentId?: SortOrder
     userId?: SortOrder
     remarks?: SortOrder
+    paidAt?: SortOrder
   }
 
   export type TransactionAvgOrderByAggregateInput = {
@@ -32239,12 +34501,14 @@ export namespace Prisma {
     freightCost?: SortOrder
     grandTotal?: SortOrder
     status?: SortOrder
+    billType?: SortOrder
     isInformal?: SortOrder
     buyerName?: SortOrder
     buyerPhone?: SortOrder
     parentId?: SortOrder
     userId?: SortOrder
     remarks?: SortOrder
+    paidAt?: SortOrder
   }
 
   export type TransactionMinOrderByAggregateInput = {
@@ -32261,12 +34525,14 @@ export namespace Prisma {
     freightCost?: SortOrder
     grandTotal?: SortOrder
     status?: SortOrder
+    billType?: SortOrder
     isInformal?: SortOrder
     buyerName?: SortOrder
     buyerPhone?: SortOrder
     parentId?: SortOrder
     userId?: SortOrder
     remarks?: SortOrder
+    paidAt?: SortOrder
   }
 
   export type TransactionSumOrderByAggregateInput = {
@@ -32284,6 +34550,30 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTxTypeFilter<$PrismaModel>
     _max?: NestedEnumTxTypeFilter<$PrismaModel>
+  }
+
+  export type EnumBillTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BillType | EnumBillTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.BillType[] | ListEnumBillTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BillType[] | ListEnumBillTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumBillTypeWithAggregatesFilter<$PrismaModel> | $Enums.BillType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBillTypeFilter<$PrismaModel>
+    _max?: NestedEnumBillTypeFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type TransactionScalarRelationFilter = {
@@ -32697,12 +34987,14 @@ export namespace Prisma {
     quantity?: SortOrder
     balance?: SortOrder
     type?: SortOrder
+    costPerUnit?: SortOrder
     userId?: SortOrder
   }
 
   export type StockLedgerAvgOrderByAggregateInput = {
     quantity?: SortOrder
     balance?: SortOrder
+    costPerUnit?: SortOrder
   }
 
   export type StockLedgerMaxOrderByAggregateInput = {
@@ -32715,6 +35007,7 @@ export namespace Prisma {
     quantity?: SortOrder
     balance?: SortOrder
     type?: SortOrder
+    costPerUnit?: SortOrder
     userId?: SortOrder
   }
 
@@ -32728,12 +35021,75 @@ export namespace Prisma {
     quantity?: SortOrder
     balance?: SortOrder
     type?: SortOrder
+    costPerUnit?: SortOrder
     userId?: SortOrder
   }
 
   export type StockLedgerSumOrderByAggregateInput = {
     quantity?: SortOrder
     balance?: SortOrder
+    costPerUnit?: SortOrder
+  }
+
+  export type AccountNullableScalarRelationFilter = {
+    is?: AccountWhereInput | null
+    isNot?: AccountWhereInput | null
+  }
+
+  export type PaymentCountOrderByAggregateInput = {
+    id?: SortOrder
+    txnNumber?: SortOrder
+    invoiceId?: SortOrder
+    outletId?: SortOrder
+    partyId?: SortOrder
+    amount?: SortOrder
+    paymentDate?: SortOrder
+    paymentMode?: SortOrder
+    bankAccountId?: SortOrder
+    referenceNo?: SortOrder
+    notes?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PaymentAvgOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type PaymentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    txnNumber?: SortOrder
+    invoiceId?: SortOrder
+    outletId?: SortOrder
+    partyId?: SortOrder
+    amount?: SortOrder
+    paymentDate?: SortOrder
+    paymentMode?: SortOrder
+    bankAccountId?: SortOrder
+    referenceNo?: SortOrder
+    notes?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PaymentMinOrderByAggregateInput = {
+    id?: SortOrder
+    txnNumber?: SortOrder
+    invoiceId?: SortOrder
+    outletId?: SortOrder
+    partyId?: SortOrder
+    amount?: SortOrder
+    paymentDate?: SortOrder
+    paymentMode?: SortOrder
+    bankAccountId?: SortOrder
+    referenceNo?: SortOrder
+    notes?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PaymentSumOrderByAggregateInput = {
+    amount?: SortOrder
   }
 
   export type PriceListScalarRelationFilter = {
@@ -32802,6 +35158,13 @@ export namespace Prisma {
     connect?: StockLedgerWhereUniqueInput | StockLedgerWhereUniqueInput[]
   }
 
+  export type PaymentCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<PaymentCreateWithoutCreatorInput, PaymentUncheckedCreateWithoutCreatorInput> | PaymentCreateWithoutCreatorInput[] | PaymentUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutCreatorInput | PaymentCreateOrConnectWithoutCreatorInput[]
+    createMany?: PaymentCreateManyCreatorInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
   export type AuditLogUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AuditLogCreateWithoutUserInput, AuditLogUncheckedCreateWithoutUserInput> | AuditLogCreateWithoutUserInput[] | AuditLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AuditLogCreateOrConnectWithoutUserInput | AuditLogCreateOrConnectWithoutUserInput[]
@@ -32827,6 +35190,13 @@ export namespace Prisma {
     connectOrCreate?: StockLedgerCreateOrConnectWithoutUserInput | StockLedgerCreateOrConnectWithoutUserInput[]
     createMany?: StockLedgerCreateManyUserInputEnvelope
     connect?: StockLedgerWhereUniqueInput | StockLedgerWhereUniqueInput[]
+  }
+
+  export type PaymentUncheckedCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<PaymentCreateWithoutCreatorInput, PaymentUncheckedCreateWithoutCreatorInput> | PaymentCreateWithoutCreatorInput[] | PaymentUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutCreatorInput | PaymentCreateOrConnectWithoutCreatorInput[]
+    createMany?: PaymentCreateManyCreatorInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -32900,6 +35270,20 @@ export namespace Prisma {
     deleteMany?: StockLedgerScalarWhereInput | StockLedgerScalarWhereInput[]
   }
 
+  export type PaymentUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<PaymentCreateWithoutCreatorInput, PaymentUncheckedCreateWithoutCreatorInput> | PaymentCreateWithoutCreatorInput[] | PaymentUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutCreatorInput | PaymentCreateOrConnectWithoutCreatorInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutCreatorInput | PaymentUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: PaymentCreateManyCreatorInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutCreatorInput | PaymentUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutCreatorInput | PaymentUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
   export type AuditLogUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AuditLogCreateWithoutUserInput, AuditLogUncheckedCreateWithoutUserInput> | AuditLogCreateWithoutUserInput[] | AuditLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AuditLogCreateOrConnectWithoutUserInput | AuditLogCreateOrConnectWithoutUserInput[]
@@ -32953,6 +35337,20 @@ export namespace Prisma {
     update?: StockLedgerUpdateWithWhereUniqueWithoutUserInput | StockLedgerUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: StockLedgerUpdateManyWithWhereWithoutUserInput | StockLedgerUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: StockLedgerScalarWhereInput | StockLedgerScalarWhereInput[]
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<PaymentCreateWithoutCreatorInput, PaymentUncheckedCreateWithoutCreatorInput> | PaymentCreateWithoutCreatorInput[] | PaymentUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutCreatorInput | PaymentCreateOrConnectWithoutCreatorInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutCreatorInput | PaymentUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: PaymentCreateManyCreatorInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutCreatorInput | PaymentUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutCreatorInput | PaymentUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutActionsInput = {
@@ -33296,6 +35694,13 @@ export namespace Prisma {
     connect?: StockLedgerWhereUniqueInput | StockLedgerWhereUniqueInput[]
   }
 
+  export type PaymentCreateNestedManyWithoutOutletInput = {
+    create?: XOR<PaymentCreateWithoutOutletInput, PaymentUncheckedCreateWithoutOutletInput> | PaymentCreateWithoutOutletInput[] | PaymentUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutOutletInput | PaymentCreateOrConnectWithoutOutletInput[]
+    createMany?: PaymentCreateManyOutletInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
   export type StockUncheckedCreateNestedManyWithoutOutletInput = {
     create?: XOR<StockCreateWithoutOutletInput, StockUncheckedCreateWithoutOutletInput> | StockCreateWithoutOutletInput[] | StockUncheckedCreateWithoutOutletInput[]
     connectOrCreate?: StockCreateOrConnectWithoutOutletInput | StockCreateOrConnectWithoutOutletInput[]
@@ -33369,6 +35774,13 @@ export namespace Prisma {
     connectOrCreate?: StockLedgerCreateOrConnectWithoutOutletInput | StockLedgerCreateOrConnectWithoutOutletInput[]
     createMany?: StockLedgerCreateManyOutletInputEnvelope
     connect?: StockLedgerWhereUniqueInput | StockLedgerWhereUniqueInput[]
+  }
+
+  export type PaymentUncheckedCreateNestedManyWithoutOutletInput = {
+    create?: XOR<PaymentCreateWithoutOutletInput, PaymentUncheckedCreateWithoutOutletInput> | PaymentCreateWithoutOutletInput[] | PaymentUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutOutletInput | PaymentCreateOrConnectWithoutOutletInput[]
+    createMany?: PaymentCreateManyOutletInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -33531,6 +35943,20 @@ export namespace Prisma {
     deleteMany?: StockLedgerScalarWhereInput | StockLedgerScalarWhereInput[]
   }
 
+  export type PaymentUpdateManyWithoutOutletNestedInput = {
+    create?: XOR<PaymentCreateWithoutOutletInput, PaymentUncheckedCreateWithoutOutletInput> | PaymentCreateWithoutOutletInput[] | PaymentUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutOutletInput | PaymentCreateOrConnectWithoutOutletInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutOutletInput | PaymentUpsertWithWhereUniqueWithoutOutletInput[]
+    createMany?: PaymentCreateManyOutletInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutOutletInput | PaymentUpdateWithWhereUniqueWithoutOutletInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutOutletInput | PaymentUpdateManyWithWhereWithoutOutletInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
   export type StockUncheckedUpdateManyWithoutOutletNestedInput = {
     create?: XOR<StockCreateWithoutOutletInput, StockUncheckedCreateWithoutOutletInput> | StockCreateWithoutOutletInput[] | StockUncheckedCreateWithoutOutletInput[]
     connectOrCreate?: StockCreateOrConnectWithoutOutletInput | StockCreateOrConnectWithoutOutletInput[]
@@ -33681,6 +36107,20 @@ export namespace Prisma {
     update?: StockLedgerUpdateWithWhereUniqueWithoutOutletInput | StockLedgerUpdateWithWhereUniqueWithoutOutletInput[]
     updateMany?: StockLedgerUpdateManyWithWhereWithoutOutletInput | StockLedgerUpdateManyWithWhereWithoutOutletInput[]
     deleteMany?: StockLedgerScalarWhereInput | StockLedgerScalarWhereInput[]
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutOutletNestedInput = {
+    create?: XOR<PaymentCreateWithoutOutletInput, PaymentUncheckedCreateWithoutOutletInput> | PaymentCreateWithoutOutletInput[] | PaymentUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutOutletInput | PaymentCreateOrConnectWithoutOutletInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutOutletInput | PaymentUpsertWithWhereUniqueWithoutOutletInput[]
+    createMany?: PaymentCreateManyOutletInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutOutletInput | PaymentUpdateWithWhereUniqueWithoutOutletInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutOutletInput | PaymentUpdateManyWithWhereWithoutOutletInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
   export type CategoryCreateNestedOneWithoutChildrenInput = {
@@ -34228,6 +36668,13 @@ export namespace Prisma {
     connect?: VendorProductWhereUniqueInput | VendorProductWhereUniqueInput[]
   }
 
+  export type PaymentCreateNestedManyWithoutPartyInput = {
+    create?: XOR<PaymentCreateWithoutPartyInput, PaymentUncheckedCreateWithoutPartyInput> | PaymentCreateWithoutPartyInput[] | PaymentUncheckedCreateWithoutPartyInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutPartyInput | PaymentCreateOrConnectWithoutPartyInput[]
+    createMany?: PaymentCreateManyPartyInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
   export type LedgerEntryUncheckedCreateNestedManyWithoutPartyInput = {
     create?: XOR<LedgerEntryCreateWithoutPartyInput, LedgerEntryUncheckedCreateWithoutPartyInput> | LedgerEntryCreateWithoutPartyInput[] | LedgerEntryUncheckedCreateWithoutPartyInput[]
     connectOrCreate?: LedgerEntryCreateOrConnectWithoutPartyInput | LedgerEntryCreateOrConnectWithoutPartyInput[]
@@ -34247,6 +36694,13 @@ export namespace Prisma {
     connectOrCreate?: VendorProductCreateOrConnectWithoutVendorInput | VendorProductCreateOrConnectWithoutVendorInput[]
     createMany?: VendorProductCreateManyVendorInputEnvelope
     connect?: VendorProductWhereUniqueInput | VendorProductWhereUniqueInput[]
+  }
+
+  export type PaymentUncheckedCreateNestedManyWithoutPartyInput = {
+    create?: XOR<PaymentCreateWithoutPartyInput, PaymentUncheckedCreateWithoutPartyInput> | PaymentCreateWithoutPartyInput[] | PaymentUncheckedCreateWithoutPartyInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutPartyInput | PaymentCreateOrConnectWithoutPartyInput[]
+    createMany?: PaymentCreateManyPartyInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
   export type EnumPartyTypeFieldUpdateOperationsInput = {
@@ -34313,6 +36767,20 @@ export namespace Prisma {
     deleteMany?: VendorProductScalarWhereInput | VendorProductScalarWhereInput[]
   }
 
+  export type PaymentUpdateManyWithoutPartyNestedInput = {
+    create?: XOR<PaymentCreateWithoutPartyInput, PaymentUncheckedCreateWithoutPartyInput> | PaymentCreateWithoutPartyInput[] | PaymentUncheckedCreateWithoutPartyInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutPartyInput | PaymentCreateOrConnectWithoutPartyInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutPartyInput | PaymentUpsertWithWhereUniqueWithoutPartyInput[]
+    createMany?: PaymentCreateManyPartyInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutPartyInput | PaymentUpdateWithWhereUniqueWithoutPartyInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutPartyInput | PaymentUpdateManyWithWhereWithoutPartyInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
   export type LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput = {
     create?: XOR<LedgerEntryCreateWithoutPartyInput, LedgerEntryUncheckedCreateWithoutPartyInput> | LedgerEntryCreateWithoutPartyInput[] | LedgerEntryUncheckedCreateWithoutPartyInput[]
     connectOrCreate?: LedgerEntryCreateOrConnectWithoutPartyInput | LedgerEntryCreateOrConnectWithoutPartyInput[]
@@ -34353,6 +36821,20 @@ export namespace Prisma {
     update?: VendorProductUpdateWithWhereUniqueWithoutVendorInput | VendorProductUpdateWithWhereUniqueWithoutVendorInput[]
     updateMany?: VendorProductUpdateManyWithWhereWithoutVendorInput | VendorProductUpdateManyWithWhereWithoutVendorInput[]
     deleteMany?: VendorProductScalarWhereInput | VendorProductScalarWhereInput[]
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutPartyNestedInput = {
+    create?: XOR<PaymentCreateWithoutPartyInput, PaymentUncheckedCreateWithoutPartyInput> | PaymentCreateWithoutPartyInput[] | PaymentUncheckedCreateWithoutPartyInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutPartyInput | PaymentCreateOrConnectWithoutPartyInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutPartyInput | PaymentUpsertWithWhereUniqueWithoutPartyInput[]
+    createMany?: PaymentCreateManyPartyInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutPartyInput | PaymentUpdateWithWhereUniqueWithoutPartyInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutPartyInput | PaymentUpdateManyWithWhereWithoutPartyInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
   export type LedgerEntryCreateNestedManyWithoutTransactionInput = {
@@ -34426,6 +36908,13 @@ export namespace Prisma {
     connect?: StockLedgerWhereUniqueInput | StockLedgerWhereUniqueInput[]
   }
 
+  export type PaymentCreateNestedManyWithoutInvoiceInput = {
+    create?: XOR<PaymentCreateWithoutInvoiceInput, PaymentUncheckedCreateWithoutInvoiceInput> | PaymentCreateWithoutInvoiceInput[] | PaymentUncheckedCreateWithoutInvoiceInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutInvoiceInput | PaymentCreateOrConnectWithoutInvoiceInput[]
+    createMany?: PaymentCreateManyInvoiceInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
   export type LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput = {
     create?: XOR<LedgerEntryCreateWithoutTransactionInput, LedgerEntryUncheckedCreateWithoutTransactionInput> | LedgerEntryCreateWithoutTransactionInput[] | LedgerEntryUncheckedCreateWithoutTransactionInput[]
     connectOrCreate?: LedgerEntryCreateOrConnectWithoutTransactionInput | LedgerEntryCreateOrConnectWithoutTransactionInput[]
@@ -34461,8 +36950,23 @@ export namespace Prisma {
     connect?: StockLedgerWhereUniqueInput | StockLedgerWhereUniqueInput[]
   }
 
+  export type PaymentUncheckedCreateNestedManyWithoutInvoiceInput = {
+    create?: XOR<PaymentCreateWithoutInvoiceInput, PaymentUncheckedCreateWithoutInvoiceInput> | PaymentCreateWithoutInvoiceInput[] | PaymentUncheckedCreateWithoutInvoiceInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutInvoiceInput | PaymentCreateOrConnectWithoutInvoiceInput[]
+    createMany?: PaymentCreateManyInvoiceInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
   export type EnumTxTypeFieldUpdateOperationsInput = {
     set?: $Enums.TxType
+  }
+
+  export type EnumBillTypeFieldUpdateOperationsInput = {
+    set?: $Enums.BillType
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type LedgerEntryUpdateManyWithoutTransactionNestedInput = {
@@ -34591,6 +37095,20 @@ export namespace Prisma {
     deleteMany?: StockLedgerScalarWhereInput | StockLedgerScalarWhereInput[]
   }
 
+  export type PaymentUpdateManyWithoutInvoiceNestedInput = {
+    create?: XOR<PaymentCreateWithoutInvoiceInput, PaymentUncheckedCreateWithoutInvoiceInput> | PaymentCreateWithoutInvoiceInput[] | PaymentUncheckedCreateWithoutInvoiceInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutInvoiceInput | PaymentCreateOrConnectWithoutInvoiceInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutInvoiceInput | PaymentUpsertWithWhereUniqueWithoutInvoiceInput[]
+    createMany?: PaymentCreateManyInvoiceInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutInvoiceInput | PaymentUpdateWithWhereUniqueWithoutInvoiceInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutInvoiceInput | PaymentUpdateManyWithWhereWithoutInvoiceInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
   export type LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput = {
     create?: XOR<LedgerEntryCreateWithoutTransactionInput, LedgerEntryUncheckedCreateWithoutTransactionInput> | LedgerEntryCreateWithoutTransactionInput[] | LedgerEntryUncheckedCreateWithoutTransactionInput[]
     connectOrCreate?: LedgerEntryCreateOrConnectWithoutTransactionInput | LedgerEntryCreateOrConnectWithoutTransactionInput[]
@@ -34661,6 +37179,20 @@ export namespace Prisma {
     deleteMany?: StockLedgerScalarWhereInput | StockLedgerScalarWhereInput[]
   }
 
+  export type PaymentUncheckedUpdateManyWithoutInvoiceNestedInput = {
+    create?: XOR<PaymentCreateWithoutInvoiceInput, PaymentUncheckedCreateWithoutInvoiceInput> | PaymentCreateWithoutInvoiceInput[] | PaymentUncheckedCreateWithoutInvoiceInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutInvoiceInput | PaymentCreateOrConnectWithoutInvoiceInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutInvoiceInput | PaymentUpsertWithWhereUniqueWithoutInvoiceInput[]
+    createMany?: PaymentCreateManyInvoiceInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutInvoiceInput | PaymentUpdateWithWhereUniqueWithoutInvoiceInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutInvoiceInput | PaymentUpdateManyWithWhereWithoutInvoiceInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
   export type TransactionCreateNestedOneWithoutItemsInput = {
     create?: XOR<TransactionCreateWithoutItemsInput, TransactionUncheckedCreateWithoutItemsInput>
     connectOrCreate?: TransactionCreateOrConnectWithoutItemsInput
@@ -34702,11 +37234,25 @@ export namespace Prisma {
     connect?: LedgerEntryWhereUniqueInput | LedgerEntryWhereUniqueInput[]
   }
 
+  export type PaymentCreateNestedManyWithoutBankAccountInput = {
+    create?: XOR<PaymentCreateWithoutBankAccountInput, PaymentUncheckedCreateWithoutBankAccountInput> | PaymentCreateWithoutBankAccountInput[] | PaymentUncheckedCreateWithoutBankAccountInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutBankAccountInput | PaymentCreateOrConnectWithoutBankAccountInput[]
+    createMany?: PaymentCreateManyBankAccountInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
   export type LedgerEntryUncheckedCreateNestedManyWithoutAccountInput = {
     create?: XOR<LedgerEntryCreateWithoutAccountInput, LedgerEntryUncheckedCreateWithoutAccountInput> | LedgerEntryCreateWithoutAccountInput[] | LedgerEntryUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: LedgerEntryCreateOrConnectWithoutAccountInput | LedgerEntryCreateOrConnectWithoutAccountInput[]
     createMany?: LedgerEntryCreateManyAccountInputEnvelope
     connect?: LedgerEntryWhereUniqueInput | LedgerEntryWhereUniqueInput[]
+  }
+
+  export type PaymentUncheckedCreateNestedManyWithoutBankAccountInput = {
+    create?: XOR<PaymentCreateWithoutBankAccountInput, PaymentUncheckedCreateWithoutBankAccountInput> | PaymentCreateWithoutBankAccountInput[] | PaymentUncheckedCreateWithoutBankAccountInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutBankAccountInput | PaymentCreateOrConnectWithoutBankAccountInput[]
+    createMany?: PaymentCreateManyBankAccountInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
   export type EnumAccountGroupFieldUpdateOperationsInput = {
@@ -34735,6 +37281,20 @@ export namespace Prisma {
     deleteMany?: LedgerEntryScalarWhereInput | LedgerEntryScalarWhereInput[]
   }
 
+  export type PaymentUpdateManyWithoutBankAccountNestedInput = {
+    create?: XOR<PaymentCreateWithoutBankAccountInput, PaymentUncheckedCreateWithoutBankAccountInput> | PaymentCreateWithoutBankAccountInput[] | PaymentUncheckedCreateWithoutBankAccountInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutBankAccountInput | PaymentCreateOrConnectWithoutBankAccountInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutBankAccountInput | PaymentUpsertWithWhereUniqueWithoutBankAccountInput[]
+    createMany?: PaymentCreateManyBankAccountInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutBankAccountInput | PaymentUpdateWithWhereUniqueWithoutBankAccountInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutBankAccountInput | PaymentUpdateManyWithWhereWithoutBankAccountInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
   export type LedgerEntryUncheckedUpdateManyWithoutAccountNestedInput = {
     create?: XOR<LedgerEntryCreateWithoutAccountInput, LedgerEntryUncheckedCreateWithoutAccountInput> | LedgerEntryCreateWithoutAccountInput[] | LedgerEntryUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: LedgerEntryCreateOrConnectWithoutAccountInput | LedgerEntryCreateOrConnectWithoutAccountInput[]
@@ -34747,6 +37307,20 @@ export namespace Prisma {
     update?: LedgerEntryUpdateWithWhereUniqueWithoutAccountInput | LedgerEntryUpdateWithWhereUniqueWithoutAccountInput[]
     updateMany?: LedgerEntryUpdateManyWithWhereWithoutAccountInput | LedgerEntryUpdateManyWithWhereWithoutAccountInput[]
     deleteMany?: LedgerEntryScalarWhereInput | LedgerEntryScalarWhereInput[]
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutBankAccountNestedInput = {
+    create?: XOR<PaymentCreateWithoutBankAccountInput, PaymentUncheckedCreateWithoutBankAccountInput> | PaymentCreateWithoutBankAccountInput[] | PaymentUncheckedCreateWithoutBankAccountInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutBankAccountInput | PaymentCreateOrConnectWithoutBankAccountInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutBankAccountInput | PaymentUpsertWithWhereUniqueWithoutBankAccountInput[]
+    createMany?: PaymentCreateManyBankAccountInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutBankAccountInput | PaymentUpdateWithWhereUniqueWithoutBankAccountInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutBankAccountInput | PaymentUpdateManyWithWhereWithoutBankAccountInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
   export type AccountCreateNestedOneWithoutEntriesInput = {
@@ -35111,6 +37685,78 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutStockLedgerInput, UserUpdateWithoutStockLedgerInput>, UserUncheckedUpdateWithoutStockLedgerInput>
   }
 
+  export type TransactionCreateNestedOneWithoutPaymentsInput = {
+    create?: XOR<TransactionCreateWithoutPaymentsInput, TransactionUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: TransactionCreateOrConnectWithoutPaymentsInput
+    connect?: TransactionWhereUniqueInput
+  }
+
+  export type OutletCreateNestedOneWithoutPaymentsInput = {
+    create?: XOR<OutletCreateWithoutPaymentsInput, OutletUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: OutletCreateOrConnectWithoutPaymentsInput
+    connect?: OutletWhereUniqueInput
+  }
+
+  export type PartyCreateNestedOneWithoutPaymentsInput = {
+    create?: XOR<PartyCreateWithoutPaymentsInput, PartyUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: PartyCreateOrConnectWithoutPaymentsInput
+    connect?: PartyWhereUniqueInput
+  }
+
+  export type AccountCreateNestedOneWithoutPaymentsInput = {
+    create?: XOR<AccountCreateWithoutPaymentsInput, AccountUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutPaymentsInput
+    connect?: AccountWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutPaymentsInput = {
+    create?: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPaymentsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type TransactionUpdateOneRequiredWithoutPaymentsNestedInput = {
+    create?: XOR<TransactionCreateWithoutPaymentsInput, TransactionUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: TransactionCreateOrConnectWithoutPaymentsInput
+    upsert?: TransactionUpsertWithoutPaymentsInput
+    connect?: TransactionWhereUniqueInput
+    update?: XOR<XOR<TransactionUpdateToOneWithWhereWithoutPaymentsInput, TransactionUpdateWithoutPaymentsInput>, TransactionUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type OutletUpdateOneRequiredWithoutPaymentsNestedInput = {
+    create?: XOR<OutletCreateWithoutPaymentsInput, OutletUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: OutletCreateOrConnectWithoutPaymentsInput
+    upsert?: OutletUpsertWithoutPaymentsInput
+    connect?: OutletWhereUniqueInput
+    update?: XOR<XOR<OutletUpdateToOneWithWhereWithoutPaymentsInput, OutletUpdateWithoutPaymentsInput>, OutletUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type PartyUpdateOneRequiredWithoutPaymentsNestedInput = {
+    create?: XOR<PartyCreateWithoutPaymentsInput, PartyUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: PartyCreateOrConnectWithoutPaymentsInput
+    upsert?: PartyUpsertWithoutPaymentsInput
+    connect?: PartyWhereUniqueInput
+    update?: XOR<XOR<PartyUpdateToOneWithWhereWithoutPaymentsInput, PartyUpdateWithoutPaymentsInput>, PartyUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type AccountUpdateOneWithoutPaymentsNestedInput = {
+    create?: XOR<AccountCreateWithoutPaymentsInput, AccountUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutPaymentsInput
+    upsert?: AccountUpsertWithoutPaymentsInput
+    disconnect?: AccountWhereInput | boolean
+    delete?: AccountWhereInput | boolean
+    connect?: AccountWhereUniqueInput
+    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutPaymentsInput, AccountUpdateWithoutPaymentsInput>, AccountUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutPaymentsNestedInput = {
+    create?: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPaymentsInput
+    upsert?: UserUpsertWithoutPaymentsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPaymentsInput, UserUpdateWithoutPaymentsInput>, UserUncheckedUpdateWithoutPaymentsInput>
+  }
+
   export type PriceListCreateNestedOneWithoutEntriesInput = {
     create?: XOR<PriceListCreateWithoutEntriesInput, PriceListUncheckedCreateWithoutEntriesInput>
     connectOrCreate?: PriceListCreateOrConnectWithoutEntriesInput
@@ -35395,6 +38041,24 @@ export namespace Prisma {
     not?: NestedEnumTxTypeFilter<$PrismaModel> | $Enums.TxType
   }
 
+  export type NestedEnumBillTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.BillType | EnumBillTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.BillType[] | ListEnumBillTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BillType[] | ListEnumBillTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumBillTypeFilter<$PrismaModel> | $Enums.BillType
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type NestedEnumTxTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.TxType | EnumTxTypeFieldRefInput<$PrismaModel>
     in?: $Enums.TxType[] | ListEnumTxTypeFieldRefInput<$PrismaModel>
@@ -35403,6 +38067,30 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTxTypeFilter<$PrismaModel>
     _max?: NestedEnumTxTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumBillTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BillType | EnumBillTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.BillType[] | ListEnumBillTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BillType[] | ListEnumBillTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumBillTypeWithAggregatesFilter<$PrismaModel> | $Enums.BillType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBillTypeFilter<$PrismaModel>
+    _max?: NestedEnumBillTypeFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumAccountGroupFilter<$PrismaModel = never> = {
@@ -35478,10 +38166,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -35492,6 +38182,7 @@ export namespace Prisma {
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutUserInput = {
@@ -35508,16 +38199,19 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutUserInput = {
@@ -35542,6 +38236,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
@@ -35552,6 +38248,7 @@ export namespace Prisma {
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutUsersInput = {
@@ -35566,6 +38263,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
@@ -35576,6 +38275,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutUsersInput = {
@@ -35589,6 +38289,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     variant: VariantCreateNestedOneWithoutStockLedgerInput
     warehouse: WarehouseCreateNestedOneWithoutStockLedgerInput
     outlet: OutletCreateNestedOneWithoutStockLedgerInput
@@ -35605,6 +38306,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
   }
 
   export type StockLedgerCreateOrConnectWithoutUserInput = {
@@ -35614,6 +38316,46 @@ export namespace Prisma {
 
   export type StockLedgerCreateManyUserInputEnvelope = {
     data: StockLedgerCreateManyUserInput | StockLedgerCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PaymentCreateWithoutCreatorInput = {
+    id?: string
+    txnNumber: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    referenceNo?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    invoice: TransactionCreateNestedOneWithoutPaymentsInput
+    outlet: OutletCreateNestedOneWithoutPaymentsInput
+    party: PartyCreateNestedOneWithoutPaymentsInput
+    bankAccount?: AccountCreateNestedOneWithoutPaymentsInput
+  }
+
+  export type PaymentUncheckedCreateWithoutCreatorInput = {
+    id?: string
+    txnNumber: string
+    invoiceId: string
+    outletId: string
+    partyId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    bankAccountId?: string | null
+    referenceNo?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type PaymentCreateOrConnectWithoutCreatorInput = {
+    where: PaymentWhereUniqueInput
+    create: XOR<PaymentCreateWithoutCreatorInput, PaymentUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type PaymentCreateManyCreatorInputEnvelope = {
+    data: PaymentCreateManyCreatorInput | PaymentCreateManyCreatorInput[]
     skipDuplicates?: boolean
   }
 
@@ -35680,12 +38422,14 @@ export namespace Prisma {
     freightCost?: FloatNullableFilter<"Transaction"> | number | null
     grandTotal?: FloatFilter<"Transaction"> | number
     status?: StringFilter<"Transaction"> | string
+    billType?: EnumBillTypeFilter<"Transaction"> | $Enums.BillType
     isInformal?: BoolFilter<"Transaction"> | boolean
     buyerName?: StringNullableFilter<"Transaction"> | string | null
     buyerPhone?: StringNullableFilter<"Transaction"> | string | null
     parentId?: StringNullableFilter<"Transaction"> | string | null
     userId?: StringFilter<"Transaction"> | string
     remarks?: StringNullableFilter<"Transaction"> | string | null
+    paidAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
   }
 
   export type OutletUpsertWithWhereUniqueWithoutUsersInput = {
@@ -35719,6 +38463,8 @@ export namespace Prisma {
     defaultWarehouseId?: StringNullableFilter<"Outlet"> | string | null
     negativeStockPolicy?: StringFilter<"Outlet"> | string
     batchTrackingEnabled?: BoolFilter<"Outlet"> | boolean
+    inventoryValuationMethod?: StringFilter<"Outlet"> | string
+    allowRawCashBills?: BoolFilter<"Outlet"> | boolean
   }
 
   export type StockLedgerUpsertWithWhereUniqueWithoutUserInput = {
@@ -35750,7 +38496,43 @@ export namespace Prisma {
     quantity?: FloatFilter<"StockLedger"> | number
     balance?: FloatFilter<"StockLedger"> | number
     type?: StringFilter<"StockLedger"> | string
+    costPerUnit?: FloatNullableFilter<"StockLedger"> | number | null
     userId?: StringFilter<"StockLedger"> | string
+  }
+
+  export type PaymentUpsertWithWhereUniqueWithoutCreatorInput = {
+    where: PaymentWhereUniqueInput
+    update: XOR<PaymentUpdateWithoutCreatorInput, PaymentUncheckedUpdateWithoutCreatorInput>
+    create: XOR<PaymentCreateWithoutCreatorInput, PaymentUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type PaymentUpdateWithWhereUniqueWithoutCreatorInput = {
+    where: PaymentWhereUniqueInput
+    data: XOR<PaymentUpdateWithoutCreatorInput, PaymentUncheckedUpdateWithoutCreatorInput>
+  }
+
+  export type PaymentUpdateManyWithWhereWithoutCreatorInput = {
+    where: PaymentScalarWhereInput
+    data: XOR<PaymentUpdateManyMutationInput, PaymentUncheckedUpdateManyWithoutCreatorInput>
+  }
+
+  export type PaymentScalarWhereInput = {
+    AND?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+    OR?: PaymentScalarWhereInput[]
+    NOT?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+    id?: StringFilter<"Payment"> | string
+    txnNumber?: StringFilter<"Payment"> | string
+    invoiceId?: StringFilter<"Payment"> | string
+    outletId?: StringFilter<"Payment"> | string
+    partyId?: StringFilter<"Payment"> | string
+    amount?: FloatFilter<"Payment"> | number
+    paymentDate?: DateTimeFilter<"Payment"> | Date | string
+    paymentMode?: StringFilter<"Payment"> | string
+    bankAccountId?: StringNullableFilter<"Payment"> | string | null
+    referenceNo?: StringNullableFilter<"Payment"> | string | null
+    notes?: StringNullableFilter<"Payment"> | string | null
+    createdBy?: StringFilter<"Payment"> | string
+    createdAt?: DateTimeFilter<"Payment"> | Date | string
   }
 
   export type UserCreateWithoutActionsInput = {
@@ -35765,6 +38547,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     outlets?: OutletCreateNestedManyWithoutUsersInput
     stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUncheckedCreateWithoutActionsInput = {
@@ -35779,6 +38562,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
   }
 
   export type UserCreateOrConnectWithoutActionsInput = {
@@ -35809,6 +38593,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     outlets?: OutletUpdateManyWithoutUsersNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActionsInput = {
@@ -35823,6 +38608,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
   export type StockCreateWithoutWarehouseInput = {
@@ -35863,6 +38649,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
@@ -35873,6 +38661,7 @@ export namespace Prisma {
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutWarehousesInput = {
@@ -35887,6 +38676,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
@@ -35897,6 +38688,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutWarehousesInput = {
@@ -35946,6 +38738,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     variant: VariantCreateNestedOneWithoutStockLedgerInput
     outlet: OutletCreateNestedOneWithoutStockLedgerInput
     transaction: TransactionCreateNestedOneWithoutStockLedgerInput
@@ -35961,6 +38754,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     userId: string
   }
 
@@ -35984,10 +38778,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -35998,6 +38794,7 @@ export namespace Prisma {
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutFromWarehouseInput = {
@@ -36013,17 +38810,20 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutFromWarehouseInput = {
@@ -36046,10 +38846,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -36060,6 +38862,7 @@ export namespace Prisma {
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutToWarehouseInput = {
@@ -36075,17 +38878,20 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutToWarehouseInput = {
@@ -36260,6 +39066,7 @@ export namespace Prisma {
     actions?: AuditLogCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
     stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUncheckedCreateWithoutOutletsInput = {
@@ -36274,6 +39081,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
   }
 
   export type UserCreateOrConnectWithoutOutletsInput = {
@@ -36352,7 +39160,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     isArchived?: boolean
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -36367,7 +39174,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     categoryId: string
     isArchived?: boolean
@@ -36394,10 +39200,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -36408,6 +39216,7 @@ export namespace Prisma {
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutOutletInput = {
@@ -36423,17 +39232,20 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutOutletInput = {
@@ -36455,13 +39267,24 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutPartyInput
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
+    payments?: PaymentCreateNestedManyWithoutPartyInput
   }
 
   export type PartyUncheckedCreateWithoutOutletInput = {
@@ -36473,13 +39296,24 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     priceListId?: string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
   }
 
   export type PartyCreateOrConnectWithoutOutletInput = {
@@ -36499,6 +39333,7 @@ export namespace Prisma {
     group: $Enums.AccountGroup
     isSystem?: boolean
     entries?: LedgerEntryCreateNestedManyWithoutAccountInput
+    payments?: PaymentCreateNestedManyWithoutBankAccountInput
   }
 
   export type AccountUncheckedCreateWithoutOutletInput = {
@@ -36508,6 +39343,7 @@ export namespace Prisma {
     group: $Enums.AccountGroup
     isSystem?: boolean
     entries?: LedgerEntryUncheckedCreateNestedManyWithoutAccountInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutBankAccountInput
   }
 
   export type AccountCreateOrConnectWithoutOutletInput = {
@@ -36590,6 +39426,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     variant: VariantCreateNestedOneWithoutStockLedgerInput
     warehouse: WarehouseCreateNestedOneWithoutStockLedgerInput
     transaction: TransactionCreateNestedOneWithoutStockLedgerInput
@@ -36605,6 +39442,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     userId: string
   }
 
@@ -36615,6 +39453,46 @@ export namespace Prisma {
 
   export type StockLedgerCreateManyOutletInputEnvelope = {
     data: StockLedgerCreateManyOutletInput | StockLedgerCreateManyOutletInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PaymentCreateWithoutOutletInput = {
+    id?: string
+    txnNumber: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    referenceNo?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    invoice: TransactionCreateNestedOneWithoutPaymentsInput
+    party: PartyCreateNestedOneWithoutPaymentsInput
+    bankAccount?: AccountCreateNestedOneWithoutPaymentsInput
+    creator: UserCreateNestedOneWithoutPaymentsInput
+  }
+
+  export type PaymentUncheckedCreateWithoutOutletInput = {
+    id?: string
+    txnNumber: string
+    invoiceId: string
+    partyId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    bankAccountId?: string | null
+    referenceNo?: string | null
+    notes?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PaymentCreateOrConnectWithoutOutletInput = {
+    where: PaymentWhereUniqueInput
+    create: XOR<PaymentCreateWithoutOutletInput, PaymentUncheckedCreateWithoutOutletInput>
+  }
+
+  export type PaymentCreateManyOutletInputEnvelope = {
+    data: PaymentCreateManyOutletInput | PaymentCreateManyOutletInput[]
     skipDuplicates?: boolean
   }
 
@@ -36747,7 +39625,6 @@ export namespace Prisma {
     gstRate?: FloatFilter<"Product"> | number
     baseUnit?: StringFilter<"Product"> | string
     purchaseUnit?: StringNullableFilter<"Product"> | string | null
-    salesUnit?: StringNullableFilter<"Product"> | string | null
     conversionRatio?: FloatNullableFilter<"Product"> | number | null
     categoryId?: StringFilter<"Product"> | string
     isArchived?: BoolFilter<"Product"> | boolean
@@ -36798,9 +39675,19 @@ export namespace Prisma {
     address?: StringFilter<"Party"> | string
     state?: StringFilter<"Party"> | string
     contactInfo?: StringNullableFilter<"Party"> | string | null
+    phone?: StringNullableFilter<"Party"> | string | null
+    email?: StringNullableFilter<"Party"> | string | null
+    isActive?: BoolFilter<"Party"> | boolean
+    bankName?: StringNullableFilter<"Party"> | string | null
+    bankAccountName?: StringNullableFilter<"Party"> | string | null
+    bankAccountNumber?: StringNullableFilter<"Party"> | string | null
+    bankIfsc?: StringNullableFilter<"Party"> | string | null
     creditPeriod?: IntFilter<"Party"> | number
     creditLimit?: FloatNullableFilter<"Party"> | number | null
     openingBalance?: FloatFilter<"Party"> | number
+    openingBalanceLocked?: BoolFilter<"Party"> | boolean
+    outstandingBalance?: FloatFilter<"Party"> | number
+    creditBalance?: FloatFilter<"Party"> | number
     priceListId?: StringNullableFilter<"Party"> | string | null
     outletId?: StringFilter<"Party"> | string
   }
@@ -36894,6 +39781,22 @@ export namespace Prisma {
     data: XOR<StockLedgerUpdateManyMutationInput, StockLedgerUncheckedUpdateManyWithoutOutletInput>
   }
 
+  export type PaymentUpsertWithWhereUniqueWithoutOutletInput = {
+    where: PaymentWhereUniqueInput
+    update: XOR<PaymentUpdateWithoutOutletInput, PaymentUncheckedUpdateWithoutOutletInput>
+    create: XOR<PaymentCreateWithoutOutletInput, PaymentUncheckedCreateWithoutOutletInput>
+  }
+
+  export type PaymentUpdateWithWhereUniqueWithoutOutletInput = {
+    where: PaymentWhereUniqueInput
+    data: XOR<PaymentUpdateWithoutOutletInput, PaymentUncheckedUpdateWithoutOutletInput>
+  }
+
+  export type PaymentUpdateManyWithWhereWithoutOutletInput = {
+    where: PaymentScalarWhereInput
+    data: XOR<PaymentUpdateManyMutationInput, PaymentUncheckedUpdateManyWithoutOutletInput>
+  }
+
   export type CategoryCreateWithoutChildrenInput = {
     id?: string
     name: string
@@ -36957,7 +39860,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     isArchived?: boolean
     variants?: VariantCreateNestedManyWithoutProductInput
@@ -36972,7 +39874,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     isArchived?: boolean
     outletId: string
@@ -37001,6 +39902,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
@@ -37011,6 +39914,7 @@ export namespace Prisma {
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutCategoriesInput = {
@@ -37025,6 +39929,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
@@ -37035,6 +39941,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutCategoriesInput = {
@@ -37128,6 +40035,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
@@ -37138,6 +40047,7 @@ export namespace Prisma {
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutCategoriesInput = {
@@ -37152,6 +40062,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
@@ -37162,6 +40074,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type CategoryCreateWithoutProductsInput = {
@@ -37245,6 +40158,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
@@ -37255,6 +40170,7 @@ export namespace Prisma {
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutProductsInput = {
@@ -37269,6 +40185,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
@@ -37279,6 +40197,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutProductsInput = {
@@ -37371,6 +40290,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
@@ -37381,6 +40302,7 @@ export namespace Prisma {
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutProductsInput = {
@@ -37395,6 +40317,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
@@ -37405,6 +40329,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type PriceListEntryCreateWithoutVariantInput = {
@@ -37535,6 +40460,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     warehouse: WarehouseCreateNestedOneWithoutStockLedgerInput
     outlet: OutletCreateNestedOneWithoutStockLedgerInput
     transaction: TransactionCreateNestedOneWithoutStockLedgerInput
@@ -37550,6 +40476,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     userId: string
   }
 
@@ -37571,7 +40498,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     isArchived?: boolean
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -37586,7 +40512,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     categoryId: string
     isArchived?: boolean
@@ -37749,7 +40674,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -37764,7 +40688,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     categoryId?: StringFieldUpdateOperationsInput | string
     isArchived?: BoolFieldUpdateOperationsInput | boolean
@@ -37810,6 +40733,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
@@ -37820,6 +40745,7 @@ export namespace Prisma {
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutStocksInput = {
@@ -37834,6 +40760,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
@@ -37844,6 +40772,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutStocksInput = {
@@ -37946,6 +40875,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
@@ -37956,6 +40887,7 @@ export namespace Prisma {
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutStocksInput = {
@@ -37970,6 +40902,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
@@ -37980,6 +40914,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type VariantUpsertWithoutStocksInput = {
@@ -38078,6 +41013,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
@@ -38088,6 +41025,7 @@ export namespace Prisma {
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutPartiesInput = {
@@ -38102,6 +41040,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
@@ -38112,6 +41052,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutPartiesInput = {
@@ -38182,10 +41123,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -38196,6 +41139,7 @@ export namespace Prisma {
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutPartyInput = {
@@ -38211,17 +41155,20 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutPartyInput = {
@@ -38258,6 +41205,46 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type PaymentCreateWithoutPartyInput = {
+    id?: string
+    txnNumber: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    referenceNo?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    invoice: TransactionCreateNestedOneWithoutPaymentsInput
+    outlet: OutletCreateNestedOneWithoutPaymentsInput
+    bankAccount?: AccountCreateNestedOneWithoutPaymentsInput
+    creator: UserCreateNestedOneWithoutPaymentsInput
+  }
+
+  export type PaymentUncheckedCreateWithoutPartyInput = {
+    id?: string
+    txnNumber: string
+    invoiceId: string
+    outletId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    bankAccountId?: string | null
+    referenceNo?: string | null
+    notes?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PaymentCreateOrConnectWithoutPartyInput = {
+    where: PaymentWhereUniqueInput
+    create: XOR<PaymentCreateWithoutPartyInput, PaymentUncheckedCreateWithoutPartyInput>
+  }
+
+  export type PaymentCreateManyPartyInputEnvelope = {
+    data: PaymentCreateManyPartyInput | PaymentCreateManyPartyInput[]
+    skipDuplicates?: boolean
+  }
+
   export type OutletUpsertWithoutPartiesInput = {
     update: XOR<OutletUpdateWithoutPartiesInput, OutletUncheckedUpdateWithoutPartiesInput>
     create: XOR<OutletCreateWithoutPartiesInput, OutletUncheckedCreateWithoutPartiesInput>
@@ -38281,6 +41268,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
@@ -38291,6 +41280,7 @@ export namespace Prisma {
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutPartiesInput = {
@@ -38305,6 +41295,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
@@ -38315,6 +41307,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type LedgerEntryUpsertWithWhereUniqueWithoutPartyInput = {
@@ -38407,6 +41400,22 @@ export namespace Prisma {
     data: XOR<VendorProductUpdateManyMutationInput, VendorProductUncheckedUpdateManyWithoutVendorInput>
   }
 
+  export type PaymentUpsertWithWhereUniqueWithoutPartyInput = {
+    where: PaymentWhereUniqueInput
+    update: XOR<PaymentUpdateWithoutPartyInput, PaymentUncheckedUpdateWithoutPartyInput>
+    create: XOR<PaymentCreateWithoutPartyInput, PaymentUncheckedCreateWithoutPartyInput>
+  }
+
+  export type PaymentUpdateWithWhereUniqueWithoutPartyInput = {
+    where: PaymentWhereUniqueInput
+    data: XOR<PaymentUpdateWithoutPartyInput, PaymentUncheckedUpdateWithoutPartyInput>
+  }
+
+  export type PaymentUpdateManyWithWhereWithoutPartyInput = {
+    where: PaymentScalarWhereInput
+    data: XOR<PaymentUpdateManyMutationInput, PaymentUncheckedUpdateManyWithoutPartyInput>
+  }
+
   export type LedgerEntryCreateWithoutTransactionInput = {
     id?: string
     date?: Date | string
@@ -38449,10 +41458,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     party?: PartyCreateNestedOneWithoutTransactionsInput
@@ -38463,6 +41474,7 @@ export namespace Prisma {
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutChildrenInput = {
@@ -38479,16 +41491,19 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutChildrenInput = {
@@ -38506,10 +41521,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     children?: TransactionCreateNestedManyWithoutParentInput
     party?: PartyCreateNestedOneWithoutTransactionsInput
@@ -38520,6 +41537,7 @@ export namespace Prisma {
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutParentInput = {
@@ -38536,16 +41554,19 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutParentInput = {
@@ -38567,13 +41588,24 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     outlet: OutletCreateNestedOneWithoutPartiesInput
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutPartyInput
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
+    payments?: PaymentCreateNestedManyWithoutPartyInput
   }
 
   export type PartyUncheckedCreateWithoutTransactionsInput = {
@@ -38585,13 +41617,24 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     priceListId?: string | null
     outletId: string
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
   }
 
   export type PartyCreateOrConnectWithoutTransactionsInput = {
@@ -38611,6 +41654,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
@@ -38621,6 +41666,7 @@ export namespace Prisma {
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutTransactionsInput = {
@@ -38635,6 +41681,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
@@ -38645,6 +41693,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutTransactionsInput = {
@@ -38730,6 +41779,7 @@ export namespace Prisma {
     actions?: AuditLogCreateNestedManyWithoutUserInput
     outlets?: OutletCreateNestedManyWithoutUsersInput
     stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUncheckedCreateWithoutTransactionsInput = {
@@ -38744,6 +41794,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
   }
 
   export type UserCreateOrConnectWithoutTransactionsInput = {
@@ -38819,6 +41870,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     variant: VariantCreateNestedOneWithoutStockLedgerInput
     warehouse: WarehouseCreateNestedOneWithoutStockLedgerInput
     outlet: OutletCreateNestedOneWithoutStockLedgerInput
@@ -38834,6 +41886,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     userId: string
   }
 
@@ -38844,6 +41897,46 @@ export namespace Prisma {
 
   export type StockLedgerCreateManyTransactionInputEnvelope = {
     data: StockLedgerCreateManyTransactionInput | StockLedgerCreateManyTransactionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PaymentCreateWithoutInvoiceInput = {
+    id?: string
+    txnNumber: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    referenceNo?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    outlet: OutletCreateNestedOneWithoutPaymentsInput
+    party: PartyCreateNestedOneWithoutPaymentsInput
+    bankAccount?: AccountCreateNestedOneWithoutPaymentsInput
+    creator: UserCreateNestedOneWithoutPaymentsInput
+  }
+
+  export type PaymentUncheckedCreateWithoutInvoiceInput = {
+    id?: string
+    txnNumber: string
+    outletId: string
+    partyId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    bankAccountId?: string | null
+    referenceNo?: string | null
+    notes?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PaymentCreateOrConnectWithoutInvoiceInput = {
+    where: PaymentWhereUniqueInput
+    create: XOR<PaymentCreateWithoutInvoiceInput, PaymentUncheckedCreateWithoutInvoiceInput>
+  }
+
+  export type PaymentCreateManyInvoiceInputEnvelope = {
+    data: PaymentCreateManyInvoiceInput | PaymentCreateManyInvoiceInput[]
     skipDuplicates?: boolean
   }
 
@@ -38884,10 +41977,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     party?: PartyUpdateOneWithoutTransactionsNestedInput
@@ -38898,6 +41993,7 @@ export namespace Prisma {
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutChildrenInput = {
@@ -38914,16 +42010,19 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUpsertWithWhereUniqueWithoutParentInput = {
@@ -38962,13 +42061,24 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     outlet?: OutletUpdateOneRequiredWithoutPartiesNestedInput
     ledgerEntries?: LedgerEntryUpdateManyWithoutPartyNestedInput
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
+    payments?: PaymentUpdateManyWithoutPartyNestedInput
   }
 
   export type PartyUncheckedUpdateWithoutTransactionsInput = {
@@ -38980,13 +42090,24 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     priceListId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
   }
 
   export type OutletUpsertWithoutTransactionsInput = {
@@ -39012,6 +42133,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
@@ -39022,6 +42145,7 @@ export namespace Prisma {
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutTransactionsInput = {
@@ -39036,6 +42160,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
@@ -39046,6 +42172,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type WarehouseUpsertWithoutOutboundTransfersInput = {
@@ -39149,6 +42276,7 @@ export namespace Prisma {
     actions?: AuditLogUpdateManyWithoutUserNestedInput
     outlets?: OutletUpdateManyWithoutUsersNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTransactionsInput = {
@@ -39163,6 +42291,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
   export type TransactionItemUpsertWithWhereUniqueWithoutTransactionInput = {
@@ -39224,6 +42353,22 @@ export namespace Prisma {
     data: XOR<StockLedgerUpdateManyMutationInput, StockLedgerUncheckedUpdateManyWithoutTransactionInput>
   }
 
+  export type PaymentUpsertWithWhereUniqueWithoutInvoiceInput = {
+    where: PaymentWhereUniqueInput
+    update: XOR<PaymentUpdateWithoutInvoiceInput, PaymentUncheckedUpdateWithoutInvoiceInput>
+    create: XOR<PaymentCreateWithoutInvoiceInput, PaymentUncheckedCreateWithoutInvoiceInput>
+  }
+
+  export type PaymentUpdateWithWhereUniqueWithoutInvoiceInput = {
+    where: PaymentWhereUniqueInput
+    data: XOR<PaymentUpdateWithoutInvoiceInput, PaymentUncheckedUpdateWithoutInvoiceInput>
+  }
+
+  export type PaymentUpdateManyWithWhereWithoutInvoiceInput = {
+    where: PaymentScalarWhereInput
+    data: XOR<PaymentUpdateManyMutationInput, PaymentUncheckedUpdateManyWithoutInvoiceInput>
+  }
+
   export type TransactionCreateWithoutItemsInput = {
     id?: string
     type: $Enums.TxType
@@ -39234,10 +42379,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -39248,6 +42395,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTransactionsInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutItemsInput = {
@@ -39264,16 +42412,19 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutItemsInput = {
@@ -39341,10 +42492,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -39355,6 +42508,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTransactionsNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutItemsInput = {
@@ -39371,16 +42525,19 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type VariantUpsertWithoutTxnItemsInput = {
@@ -39440,6 +42597,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
@@ -39450,6 +42609,7 @@ export namespace Prisma {
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutAccountsInput = {
@@ -39464,6 +42624,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
@@ -39474,6 +42636,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutAccountsInput = {
@@ -39513,6 +42676,46 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type PaymentCreateWithoutBankAccountInput = {
+    id?: string
+    txnNumber: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    referenceNo?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    invoice: TransactionCreateNestedOneWithoutPaymentsInput
+    outlet: OutletCreateNestedOneWithoutPaymentsInput
+    party: PartyCreateNestedOneWithoutPaymentsInput
+    creator: UserCreateNestedOneWithoutPaymentsInput
+  }
+
+  export type PaymentUncheckedCreateWithoutBankAccountInput = {
+    id?: string
+    txnNumber: string
+    invoiceId: string
+    outletId: string
+    partyId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    referenceNo?: string | null
+    notes?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PaymentCreateOrConnectWithoutBankAccountInput = {
+    where: PaymentWhereUniqueInput
+    create: XOR<PaymentCreateWithoutBankAccountInput, PaymentUncheckedCreateWithoutBankAccountInput>
+  }
+
+  export type PaymentCreateManyBankAccountInputEnvelope = {
+    data: PaymentCreateManyBankAccountInput | PaymentCreateManyBankAccountInput[]
+    skipDuplicates?: boolean
+  }
+
   export type OutletUpsertWithoutAccountsInput = {
     update: XOR<OutletUpdateWithoutAccountsInput, OutletUncheckedUpdateWithoutAccountsInput>
     create: XOR<OutletCreateWithoutAccountsInput, OutletUncheckedCreateWithoutAccountsInput>
@@ -39536,6 +42739,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
@@ -39546,6 +42751,7 @@ export namespace Prisma {
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutAccountsInput = {
@@ -39560,6 +42766,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
@@ -39570,6 +42778,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type LedgerEntryUpsertWithWhereUniqueWithoutAccountInput = {
@@ -39588,6 +42797,22 @@ export namespace Prisma {
     data: XOR<LedgerEntryUpdateManyMutationInput, LedgerEntryUncheckedUpdateManyWithoutAccountInput>
   }
 
+  export type PaymentUpsertWithWhereUniqueWithoutBankAccountInput = {
+    where: PaymentWhereUniqueInput
+    update: XOR<PaymentUpdateWithoutBankAccountInput, PaymentUncheckedUpdateWithoutBankAccountInput>
+    create: XOR<PaymentCreateWithoutBankAccountInput, PaymentUncheckedCreateWithoutBankAccountInput>
+  }
+
+  export type PaymentUpdateWithWhereUniqueWithoutBankAccountInput = {
+    where: PaymentWhereUniqueInput
+    data: XOR<PaymentUpdateWithoutBankAccountInput, PaymentUncheckedUpdateWithoutBankAccountInput>
+  }
+
+  export type PaymentUpdateManyWithWhereWithoutBankAccountInput = {
+    where: PaymentScalarWhereInput
+    data: XOR<PaymentUpdateManyMutationInput, PaymentUncheckedUpdateManyWithoutBankAccountInput>
+  }
+
   export type AccountCreateWithoutEntriesInput = {
     id?: string
     code: string
@@ -39595,6 +42820,7 @@ export namespace Prisma {
     group: $Enums.AccountGroup
     isSystem?: boolean
     outlet: OutletCreateNestedOneWithoutAccountsInput
+    payments?: PaymentCreateNestedManyWithoutBankAccountInput
   }
 
   export type AccountUncheckedCreateWithoutEntriesInput = {
@@ -39604,6 +42830,7 @@ export namespace Prisma {
     group: $Enums.AccountGroup
     isSystem?: boolean
     outletId: string
+    payments?: PaymentUncheckedCreateNestedManyWithoutBankAccountInput
   }
 
   export type AccountCreateOrConnectWithoutEntriesInput = {
@@ -39620,13 +42847,24 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     outlet: OutletCreateNestedOneWithoutPartiesInput
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
+    payments?: PaymentCreateNestedManyWithoutPartyInput
   }
 
   export type PartyUncheckedCreateWithoutLedgerEntriesInput = {
@@ -39638,13 +42876,24 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     priceListId?: string | null
     outletId: string
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
   }
 
   export type PartyCreateOrConnectWithoutLedgerEntriesInput = {
@@ -39662,10 +42911,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
     party?: PartyCreateNestedOneWithoutTransactionsInput
@@ -39676,6 +42927,7 @@ export namespace Prisma {
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutLedgerEntriesInput = {
@@ -39692,16 +42944,19 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutLedgerEntriesInput = {
@@ -39727,6 +42982,7 @@ export namespace Prisma {
     group?: EnumAccountGroupFieldUpdateOperationsInput | $Enums.AccountGroup
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     outlet?: OutletUpdateOneRequiredWithoutAccountsNestedInput
+    payments?: PaymentUpdateManyWithoutBankAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutEntriesInput = {
@@ -39736,6 +42992,7 @@ export namespace Prisma {
     group?: EnumAccountGroupFieldUpdateOperationsInput | $Enums.AccountGroup
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     outletId?: StringFieldUpdateOperationsInput | string
+    payments?: PaymentUncheckedUpdateManyWithoutBankAccountNestedInput
   }
 
   export type PartyUpsertWithoutLedgerEntriesInput = {
@@ -39758,13 +43015,24 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     outlet?: OutletUpdateOneRequiredWithoutPartiesNestedInput
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
+    payments?: PaymentUpdateManyWithoutPartyNestedInput
   }
 
   export type PartyUncheckedUpdateWithoutLedgerEntriesInput = {
@@ -39776,13 +43044,24 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     priceListId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
   }
 
   export type TransactionUpsertWithoutLedgerEntriesInput = {
@@ -39806,10 +43085,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
     party?: PartyUpdateOneWithoutTransactionsNestedInput
@@ -39820,6 +43101,7 @@ export namespace Prisma {
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutLedgerEntriesInput = {
@@ -39836,16 +43118,19 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type VariantCreateWithoutSuppliersInput = {
@@ -39896,13 +43181,24 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     outlet: OutletCreateNestedOneWithoutPartiesInput
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutPartyInput
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
+    payments?: PaymentCreateNestedManyWithoutPartyInput
   }
 
   export type PartyUncheckedCreateWithoutSuppliedProductsInput = {
@@ -39914,13 +43210,24 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     priceListId?: string | null
     outletId: string
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
   }
 
   export type PartyCreateOrConnectWithoutSuppliedProductsInput = {
@@ -39993,13 +43300,24 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     outlet?: OutletUpdateOneRequiredWithoutPartiesNestedInput
     ledgerEntries?: LedgerEntryUpdateManyWithoutPartyNestedInput
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
+    payments?: PaymentUpdateManyWithoutPartyNestedInput
   }
 
   export type PartyUncheckedUpdateWithoutSuppliedProductsInput = {
@@ -40011,13 +43329,24 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     priceListId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
   }
 
   export type PartyCreateWithoutPriceListInput = {
@@ -40029,13 +43358,24 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     outlet: OutletCreateNestedOneWithoutPartiesInput
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutPartyInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
+    payments?: PaymentCreateNestedManyWithoutPartyInput
   }
 
   export type PartyUncheckedCreateWithoutPriceListInput = {
@@ -40047,13 +43387,24 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     outletId: string
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
   }
 
   export type PartyCreateOrConnectWithoutPriceListInput = {
@@ -40132,6 +43483,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
@@ -40142,6 +43495,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutSeriesInput = {
@@ -40156,6 +43510,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
@@ -40166,6 +43522,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutSeriesInput = {
@@ -40196,6 +43553,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
@@ -40206,6 +43565,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutSeriesInput = {
@@ -40220,6 +43580,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
@@ -40230,6 +43592,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type VariantCreateWithoutBatchesInput = {
@@ -40316,6 +43679,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
@@ -40326,6 +43691,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutBatchesInput = {
@@ -40340,6 +43706,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
@@ -40350,6 +43718,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutBatchesInput = {
@@ -40488,6 +43857,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
@@ -40498,6 +43869,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutBatchesInput = {
@@ -40512,6 +43884,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
@@ -40522,6 +43896,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type BatchMovementUpsertWithWhereUniqueWithoutBatchInput = {
@@ -40581,10 +43956,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -40595,6 +43972,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTransactionsInput
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutBatchMovementsInput = {
@@ -40611,16 +43989,19 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutBatchMovementsInput = {
@@ -40686,10 +44067,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -40700,6 +44083,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTransactionsNestedInput
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutBatchMovementsInput = {
@@ -40716,16 +44100,19 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type VariantCreateWithoutStockLedgerInput = {
@@ -40812,6 +44199,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
@@ -40822,6 +44211,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
   }
 
   export type OutletUncheckedCreateWithoutStockLedgerInput = {
@@ -40836,6 +44226,8 @@ export namespace Prisma {
     defaultWarehouseId?: string | null
     negativeStockPolicy?: string
     batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
@@ -40846,6 +44238,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
   }
 
   export type OutletCreateOrConnectWithoutStockLedgerInput = {
@@ -40863,10 +44256,12 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
     parent?: TransactionCreateNestedOneWithoutChildrenInput
     children?: TransactionCreateNestedManyWithoutParentInput
@@ -40877,6 +44272,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTransactionsInput
     items?: TransactionItemCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
+    payments?: PaymentCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionUncheckedCreateWithoutStockLedgerInput = {
@@ -40893,16 +44289,19 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
     children?: TransactionUncheckedCreateNestedManyWithoutParentInput
     items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
     batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
   export type TransactionCreateOrConnectWithoutStockLedgerInput = {
@@ -40922,6 +44321,7 @@ export namespace Prisma {
     actions?: AuditLogCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
     outlets?: OutletCreateNestedManyWithoutUsersInput
+    payments?: PaymentCreateNestedManyWithoutCreatorInput
   }
 
   export type UserUncheckedCreateWithoutStockLedgerInput = {
@@ -40936,6 +44336,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
   }
 
   export type UserCreateOrConnectWithoutStockLedgerInput = {
@@ -41050,6 +44451,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
@@ -41060,6 +44463,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutStockLedgerInput = {
@@ -41074,6 +44478,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
@@ -41084,6 +44490,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type TransactionUpsertWithoutStockLedgerInput = {
@@ -41107,10 +44514,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -41121,6 +44530,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTransactionsNestedInput
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutStockLedgerInput = {
@@ -41137,16 +44547,19 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type UserUpsertWithoutStockLedgerInput = {
@@ -41172,6 +44585,7 @@ export namespace Prisma {
     actions?: AuditLogUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     outlets?: OutletUpdateManyWithoutUsersNestedInput
+    payments?: PaymentUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStockLedgerInput = {
@@ -41186,6 +44600,527 @@ export namespace Prisma {
     actions?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type TransactionCreateWithoutPaymentsInput = {
+    id?: string
+    type: $Enums.TxType
+    txnNumber: string
+    date?: Date | string
+    totalTaxable?: number
+    totalTax?: number
+    freightCost?: number | null
+    grandTotal?: number
+    status?: string
+    billType?: $Enums.BillType
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
+    remarks?: string | null
+    paidAt?: Date | string | null
+    ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
+    parent?: TransactionCreateNestedOneWithoutChildrenInput
+    children?: TransactionCreateNestedManyWithoutParentInput
+    party?: PartyCreateNestedOneWithoutTransactionsInput
+    outlet: OutletCreateNestedOneWithoutTransactionsInput
+    fromWarehouse?: WarehouseCreateNestedOneWithoutOutboundTransfersInput
+    toWarehouse?: WarehouseCreateNestedOneWithoutInboundTransfersInput
+    user: UserCreateNestedOneWithoutTransactionsInput
+    items?: TransactionItemCreateNestedManyWithoutTransactionInput
+    batchMovements?: BatchMovementCreateNestedManyWithoutTransactionInput
+    stockLedger?: StockLedgerCreateNestedManyWithoutTransactionInput
+  }
+
+  export type TransactionUncheckedCreateWithoutPaymentsInput = {
+    id?: string
+    type: $Enums.TxType
+    txnNumber: string
+    date?: Date | string
+    partyId?: string | null
+    outletId: string
+    fromLocationId?: string | null
+    toLocationId?: string | null
+    totalTaxable?: number
+    totalTax?: number
+    freightCost?: number | null
+    grandTotal?: number
+    status?: string
+    billType?: $Enums.BillType
+    isInformal?: boolean
+    buyerName?: string | null
+    buyerPhone?: string | null
+    parentId?: string | null
+    userId: string
+    remarks?: string | null
+    paidAt?: Date | string | null
+    ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
+    children?: TransactionUncheckedCreateNestedManyWithoutParentInput
+    items?: TransactionItemUncheckedCreateNestedManyWithoutTransactionInput
+    batchMovements?: BatchMovementUncheckedCreateNestedManyWithoutTransactionInput
+    stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutTransactionInput
+  }
+
+  export type TransactionCreateOrConnectWithoutPaymentsInput = {
+    where: TransactionWhereUniqueInput
+    create: XOR<TransactionCreateWithoutPaymentsInput, TransactionUncheckedCreateWithoutPaymentsInput>
+  }
+
+  export type OutletCreateWithoutPaymentsInput = {
+    id?: string
+    name: string
+    address?: string | null
+    state?: string | null
+    invoicePrefix: string
+    invoiceStartingNumber?: number
+    gstin?: string | null
+    bankDetails?: string | null
+    defaultWarehouseId?: string | null
+    negativeStockPolicy?: string
+    batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
+    stocks?: StockCreateNestedManyWithoutOutletInput
+    users?: UserCreateNestedManyWithoutOutletsInput
+    warehouses?: WarehouseCreateNestedManyWithoutOutletsInput
+    categories?: CategoryCreateNestedManyWithoutOutletInput
+    products?: ProductCreateNestedManyWithoutOutletInput
+    transactions?: TransactionCreateNestedManyWithoutOutletInput
+    parties?: PartyCreateNestedManyWithoutOutletInput
+    accounts?: AccountCreateNestedManyWithoutOutletInput
+    series?: DocumentSeriesCreateNestedManyWithoutOutletInput
+    batches?: CustomBatchCreateNestedManyWithoutOutletInput
+    stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+  }
+
+  export type OutletUncheckedCreateWithoutPaymentsInput = {
+    id?: string
+    name: string
+    address?: string | null
+    state?: string | null
+    invoicePrefix: string
+    invoiceStartingNumber?: number
+    gstin?: string | null
+    bankDetails?: string | null
+    defaultWarehouseId?: string | null
+    negativeStockPolicy?: string
+    batchTrackingEnabled?: boolean
+    inventoryValuationMethod?: string
+    allowRawCashBills?: boolean
+    stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
+    users?: UserUncheckedCreateNestedManyWithoutOutletsInput
+    warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletsInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    products?: ProductUncheckedCreateNestedManyWithoutOutletInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
+    accounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
+    series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
+    batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
+    stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+  }
+
+  export type OutletCreateOrConnectWithoutPaymentsInput = {
+    where: OutletWhereUniqueInput
+    create: XOR<OutletCreateWithoutPaymentsInput, OutletUncheckedCreateWithoutPaymentsInput>
+  }
+
+  export type PartyCreateWithoutPaymentsInput = {
+    id?: string
+    type: $Enums.PartyType
+    name: string
+    gstin?: string | null
+    pan?: string | null
+    address: string
+    state: string
+    contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
+    creditPeriod?: number
+    creditLimit?: number | null
+    openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
+    outlet: OutletCreateNestedOneWithoutPartiesInput
+    ledgerEntries?: LedgerEntryCreateNestedManyWithoutPartyInput
+    priceList?: PriceListCreateNestedOneWithoutPartiesInput
+    transactions?: TransactionCreateNestedManyWithoutPartyInput
+    suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
+  }
+
+  export type PartyUncheckedCreateWithoutPaymentsInput = {
+    id?: string
+    type: $Enums.PartyType
+    name: string
+    gstin?: string | null
+    pan?: string | null
+    address: string
+    state: string
+    contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
+    creditPeriod?: number
+    creditLimit?: number | null
+    openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
+    priceListId?: string | null
+    outletId: string
+    ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
+    suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
+  }
+
+  export type PartyCreateOrConnectWithoutPaymentsInput = {
+    where: PartyWhereUniqueInput
+    create: XOR<PartyCreateWithoutPaymentsInput, PartyUncheckedCreateWithoutPaymentsInput>
+  }
+
+  export type AccountCreateWithoutPaymentsInput = {
+    id?: string
+    code: string
+    name: string
+    group: $Enums.AccountGroup
+    isSystem?: boolean
+    outlet: OutletCreateNestedOneWithoutAccountsInput
+    entries?: LedgerEntryCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountUncheckedCreateWithoutPaymentsInput = {
+    id?: string
+    code: string
+    name: string
+    group: $Enums.AccountGroup
+    isSystem?: boolean
+    outletId: string
+    entries?: LedgerEntryUncheckedCreateNestedManyWithoutAccountInput
+  }
+
+  export type AccountCreateOrConnectWithoutPaymentsInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutPaymentsInput, AccountUncheckedCreateWithoutPaymentsInput>
+  }
+
+  export type UserCreateWithoutPaymentsInput = {
+    id?: string
+    email: string
+    name: string
+    role: $Enums.Role
+    password: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    actions?: AuditLogCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    outlets?: OutletCreateNestedManyWithoutUsersInput
+    stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPaymentsInput = {
+    id?: string
+    email: string
+    name: string
+    role: $Enums.Role
+    password: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    actions?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
+    stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPaymentsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
+  }
+
+  export type TransactionUpsertWithoutPaymentsInput = {
+    update: XOR<TransactionUpdateWithoutPaymentsInput, TransactionUncheckedUpdateWithoutPaymentsInput>
+    create: XOR<TransactionCreateWithoutPaymentsInput, TransactionUncheckedCreateWithoutPaymentsInput>
+    where?: TransactionWhereInput
+  }
+
+  export type TransactionUpdateToOneWithWhereWithoutPaymentsInput = {
+    where?: TransactionWhereInput
+    data: XOR<TransactionUpdateWithoutPaymentsInput, TransactionUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type TransactionUpdateWithoutPaymentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumTxTypeFieldUpdateOperationsInput | $Enums.TxType
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    totalTaxable?: FloatFieldUpdateOperationsInput | number
+    totalTax?: FloatFieldUpdateOperationsInput | number
+    freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
+    grandTotal?: FloatFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
+    parent?: TransactionUpdateOneWithoutChildrenNestedInput
+    children?: TransactionUpdateManyWithoutParentNestedInput
+    party?: PartyUpdateOneWithoutTransactionsNestedInput
+    outlet?: OutletUpdateOneRequiredWithoutTransactionsNestedInput
+    fromWarehouse?: WarehouseUpdateOneWithoutOutboundTransfersNestedInput
+    toWarehouse?: WarehouseUpdateOneWithoutInboundTransfersNestedInput
+    user?: UserUpdateOneRequiredWithoutTransactionsNestedInput
+    items?: TransactionItemUpdateManyWithoutTransactionNestedInput
+    batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
+    stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+  }
+
+  export type TransactionUncheckedUpdateWithoutPaymentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumTxTypeFieldUpdateOperationsInput | $Enums.TxType
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    partyId?: NullableStringFieldUpdateOperationsInput | string | null
+    outletId?: StringFieldUpdateOperationsInput | string
+    fromLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    toLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalTaxable?: FloatFieldUpdateOperationsInput | number
+    totalTax?: FloatFieldUpdateOperationsInput | number
+    freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
+    grandTotal?: FloatFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
+    isInformal?: BoolFieldUpdateOperationsInput | boolean
+    buyerName?: NullableStringFieldUpdateOperationsInput | string | null
+    buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+    remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
+    children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
+    items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
+    batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
+    stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+  }
+
+  export type OutletUpsertWithoutPaymentsInput = {
+    update: XOR<OutletUpdateWithoutPaymentsInput, OutletUncheckedUpdateWithoutPaymentsInput>
+    create: XOR<OutletCreateWithoutPaymentsInput, OutletUncheckedCreateWithoutPaymentsInput>
+    where?: OutletWhereInput
+  }
+
+  export type OutletUpdateToOneWithWhereWithoutPaymentsInput = {
+    where?: OutletWhereInput
+    data: XOR<OutletUpdateWithoutPaymentsInput, OutletUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type OutletUpdateWithoutPaymentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    invoicePrefix?: StringFieldUpdateOperationsInput | string
+    invoiceStartingNumber?: IntFieldUpdateOperationsInput | number
+    gstin?: NullableStringFieldUpdateOperationsInput | string | null
+    bankDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
+    negativeStockPolicy?: StringFieldUpdateOperationsInput | string
+    batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
+    stocks?: StockUpdateManyWithoutOutletNestedInput
+    users?: UserUpdateManyWithoutOutletsNestedInput
+    warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
+    categories?: CategoryUpdateManyWithoutOutletNestedInput
+    products?: ProductUpdateManyWithoutOutletNestedInput
+    transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    parties?: PartyUpdateManyWithoutOutletNestedInput
+    accounts?: AccountUpdateManyWithoutOutletNestedInput
+    series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
+    batches?: CustomBatchUpdateManyWithoutOutletNestedInput
+    stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+  }
+
+  export type OutletUncheckedUpdateWithoutPaymentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    invoicePrefix?: StringFieldUpdateOperationsInput | string
+    invoiceStartingNumber?: IntFieldUpdateOperationsInput | number
+    gstin?: NullableStringFieldUpdateOperationsInput | string | null
+    bankDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
+    negativeStockPolicy?: StringFieldUpdateOperationsInput | string
+    batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
+    stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
+    users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
+    warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    products?: ProductUncheckedUpdateManyWithoutOutletNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
+    accounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
+    series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
+    batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
+    stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+  }
+
+  export type PartyUpsertWithoutPaymentsInput = {
+    update: XOR<PartyUpdateWithoutPaymentsInput, PartyUncheckedUpdateWithoutPaymentsInput>
+    create: XOR<PartyCreateWithoutPaymentsInput, PartyUncheckedCreateWithoutPaymentsInput>
+    where?: PartyWhereInput
+  }
+
+  export type PartyUpdateToOneWithWhereWithoutPaymentsInput = {
+    where?: PartyWhereInput
+    data: XOR<PartyUpdateWithoutPaymentsInput, PartyUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type PartyUpdateWithoutPaymentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumPartyTypeFieldUpdateOperationsInput | $Enums.PartyType
+    name?: StringFieldUpdateOperationsInput | string
+    gstin?: NullableStringFieldUpdateOperationsInput | string | null
+    pan?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+    contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
+    creditPeriod?: IntFieldUpdateOperationsInput | number
+    creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
+    openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
+    outlet?: OutletUpdateOneRequiredWithoutPartiesNestedInput
+    ledgerEntries?: LedgerEntryUpdateManyWithoutPartyNestedInput
+    priceList?: PriceListUpdateOneWithoutPartiesNestedInput
+    transactions?: TransactionUpdateManyWithoutPartyNestedInput
+    suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
+  }
+
+  export type PartyUncheckedUpdateWithoutPaymentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumPartyTypeFieldUpdateOperationsInput | $Enums.PartyType
+    name?: StringFieldUpdateOperationsInput | string
+    gstin?: NullableStringFieldUpdateOperationsInput | string | null
+    pan?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+    contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
+    creditPeriod?: IntFieldUpdateOperationsInput | number
+    creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
+    openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
+    priceListId?: NullableStringFieldUpdateOperationsInput | string | null
+    outletId?: StringFieldUpdateOperationsInput | string
+    ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
+    suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
+  }
+
+  export type AccountUpsertWithoutPaymentsInput = {
+    update: XOR<AccountUpdateWithoutPaymentsInput, AccountUncheckedUpdateWithoutPaymentsInput>
+    create: XOR<AccountCreateWithoutPaymentsInput, AccountUncheckedCreateWithoutPaymentsInput>
+    where?: AccountWhereInput
+  }
+
+  export type AccountUpdateToOneWithWhereWithoutPaymentsInput = {
+    where?: AccountWhereInput
+    data: XOR<AccountUpdateWithoutPaymentsInput, AccountUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type AccountUpdateWithoutPaymentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    group?: EnumAccountGroupFieldUpdateOperationsInput | $Enums.AccountGroup
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    outlet?: OutletUpdateOneRequiredWithoutAccountsNestedInput
+    entries?: LedgerEntryUpdateManyWithoutAccountNestedInput
+  }
+
+  export type AccountUncheckedUpdateWithoutPaymentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    group?: EnumAccountGroupFieldUpdateOperationsInput | $Enums.AccountGroup
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    outletId?: StringFieldUpdateOperationsInput | string
+    entries?: LedgerEntryUncheckedUpdateManyWithoutAccountNestedInput
+  }
+
+  export type UserUpsertWithoutPaymentsInput = {
+    update: XOR<UserUpdateWithoutPaymentsInput, UserUncheckedUpdateWithoutPaymentsInput>
+    create: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPaymentsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPaymentsInput, UserUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type UserUpdateWithoutPaymentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    password?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    actions?: AuditLogUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    outlets?: OutletUpdateManyWithoutUsersNestedInput
+    stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPaymentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    password?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    actions?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
+    stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type PriceListCreateWithoutEntriesInput = {
@@ -41344,11 +45279,13 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     remarks?: string | null
+    paidAt?: Date | string | null
   }
 
   export type StockLedgerCreateManyUserInput = {
@@ -41361,6 +45298,22 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
+  }
+
+  export type PaymentCreateManyCreatorInput = {
+    id?: string
+    txnNumber: string
+    invoiceId: string
+    outletId: string
+    partyId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    bankAccountId?: string | null
+    referenceNo?: string | null
+    notes?: string | null
+    createdAt?: Date | string
   }
 
   export type AuditLogUpdateWithoutUserInput = {
@@ -41403,10 +45356,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -41417,6 +45372,7 @@ export namespace Prisma {
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutUserInput = {
@@ -41433,16 +45389,19 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateManyWithoutUserInput = {
@@ -41459,11 +45418,13 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type OutletUpdateWithoutUsersInput = {
@@ -41478,6 +45439,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletsNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
@@ -41488,6 +45451,7 @@ export namespace Prisma {
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutUsersInput = {
@@ -41502,6 +45466,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletsNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
@@ -41512,6 +45478,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateManyWithoutUsersInput = {
@@ -41526,6 +45493,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type StockLedgerUpdateWithoutUserInput = {
@@ -41534,6 +45503,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     variant?: VariantUpdateOneRequiredWithoutStockLedgerNestedInput
     warehouse?: WarehouseUpdateOneRequiredWithoutStockLedgerNestedInput
     outlet?: OutletUpdateOneRequiredWithoutStockLedgerNestedInput
@@ -41550,6 +45520,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type StockLedgerUncheckedUpdateManyWithoutUserInput = {
@@ -41562,6 +45533,52 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
+  }
+
+  export type PaymentUpdateWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    invoice?: TransactionUpdateOneRequiredWithoutPaymentsNestedInput
+    outlet?: OutletUpdateOneRequiredWithoutPaymentsNestedInput
+    party?: PartyUpdateOneRequiredWithoutPaymentsNestedInput
+    bankAccount?: AccountUpdateOneWithoutPaymentsNestedInput
+  }
+
+  export type PaymentUncheckedUpdateWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    invoiceId?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    bankAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    invoiceId?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    bankAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StockCreateManyWarehouseInput = {
@@ -41593,6 +45610,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     userId: string
   }
 
@@ -41609,12 +45627,14 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
   }
 
   export type TransactionCreateManyToWarehouseInput = {
@@ -41630,12 +45650,14 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
   }
 
   export type StockUpdateWithoutWarehouseInput = {
@@ -41674,6 +45696,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
@@ -41684,6 +45708,7 @@ export namespace Prisma {
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateWithoutWarehousesInput = {
@@ -41698,6 +45723,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
@@ -41708,6 +45735,7 @@ export namespace Prisma {
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
   }
 
   export type OutletUncheckedUpdateManyWithoutWarehousesInput = {
@@ -41722,6 +45750,8 @@ export namespace Prisma {
     defaultWarehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     negativeStockPolicy?: StringFieldUpdateOperationsInput | string
     batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type CustomBatchUpdateWithoutWarehouseInput = {
@@ -41768,6 +45798,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     variant?: VariantUpdateOneRequiredWithoutStockLedgerNestedInput
     outlet?: OutletUpdateOneRequiredWithoutStockLedgerNestedInput
     transaction?: TransactionUpdateOneRequiredWithoutStockLedgerNestedInput
@@ -41783,6 +45814,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -41795,6 +45827,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -41808,10 +45841,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -41822,6 +45857,7 @@ export namespace Prisma {
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutFromWarehouseInput = {
@@ -41837,17 +45873,20 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateManyWithoutFromWarehouseInput = {
@@ -41863,12 +45902,14 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TransactionUpdateWithoutToWarehouseInput = {
@@ -41881,10 +45922,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -41895,6 +45938,7 @@ export namespace Prisma {
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutToWarehouseInput = {
@@ -41910,17 +45954,20 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateManyWithoutToWarehouseInput = {
@@ -41936,12 +45983,14 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type StockCreateManyOutletInput = {
@@ -41968,7 +46017,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     categoryId: string
     isArchived?: boolean
@@ -41987,12 +46035,14 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
   }
 
   export type PartyCreateManyOutletInput = {
@@ -42004,9 +46054,19 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     priceListId?: string | null
   }
 
@@ -42048,7 +46108,23 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     userId: string
+  }
+
+  export type PaymentCreateManyOutletInput = {
+    id?: string
+    txnNumber: string
+    invoiceId: string
+    partyId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    bankAccountId?: string | null
+    referenceNo?: string | null
+    notes?: string | null
+    createdBy: string
+    createdAt?: Date | string
   }
 
   export type StockUpdateWithoutOutletInput = {
@@ -42087,6 +46163,7 @@ export namespace Prisma {
     actions?: AuditLogUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOutletsInput = {
@@ -42101,6 +46178,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutOutletsInput = {
@@ -42187,7 +46265,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -42202,7 +46279,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     categoryId?: StringFieldUpdateOperationsInput | string
     isArchived?: BoolFieldUpdateOperationsInput | boolean
@@ -42217,7 +46293,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     categoryId?: StringFieldUpdateOperationsInput | string
     isArchived?: BoolFieldUpdateOperationsInput | boolean
@@ -42233,10 +46308,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -42247,6 +46324,7 @@ export namespace Prisma {
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutOutletInput = {
@@ -42262,17 +46340,20 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateManyWithoutOutletInput = {
@@ -42288,12 +46369,14 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type PartyUpdateWithoutOutletInput = {
@@ -42305,13 +46388,24 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUpdateManyWithoutPartyNestedInput
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
+    payments?: PaymentUpdateManyWithoutPartyNestedInput
   }
 
   export type PartyUncheckedUpdateWithoutOutletInput = {
@@ -42323,13 +46417,24 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     priceListId?: NullableStringFieldUpdateOperationsInput | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
   }
 
   export type PartyUncheckedUpdateManyWithoutOutletInput = {
@@ -42341,9 +46446,19 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     priceListId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -42354,6 +46469,7 @@ export namespace Prisma {
     group?: EnumAccountGroupFieldUpdateOperationsInput | $Enums.AccountGroup
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     entries?: LedgerEntryUpdateManyWithoutAccountNestedInput
+    payments?: PaymentUpdateManyWithoutBankAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutOutletInput = {
@@ -42363,6 +46479,7 @@ export namespace Prisma {
     group?: EnumAccountGroupFieldUpdateOperationsInput | $Enums.AccountGroup
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     entries?: LedgerEntryUncheckedUpdateManyWithoutAccountNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutBankAccountNestedInput
   }
 
   export type AccountUncheckedUpdateManyWithoutOutletInput = {
@@ -42444,6 +46561,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     variant?: VariantUpdateOneRequiredWithoutStockLedgerNestedInput
     warehouse?: WarehouseUpdateOneRequiredWithoutStockLedgerNestedInput
     transaction?: TransactionUpdateOneRequiredWithoutStockLedgerNestedInput
@@ -42459,6 +46577,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -42471,7 +46590,53 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PaymentUpdateWithoutOutletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    invoice?: TransactionUpdateOneRequiredWithoutPaymentsNestedInput
+    party?: PartyUpdateOneRequiredWithoutPaymentsNestedInput
+    bankAccount?: AccountUpdateOneWithoutPaymentsNestedInput
+    creator?: UserUpdateOneRequiredWithoutPaymentsNestedInput
+  }
+
+  export type PaymentUncheckedUpdateWithoutOutletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    invoiceId?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    bankAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutOutletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    invoiceId?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    bankAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CategoryCreateManyParentInput = {
@@ -42490,7 +46655,6 @@ export namespace Prisma {
     gstRate: number
     baseUnit: string
     purchaseUnit?: string | null
-    salesUnit?: string | null
     conversionRatio?: number | null
     isArchived?: boolean
     outletId: string
@@ -42532,7 +46696,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     variants?: VariantUpdateManyWithoutProductNestedInput
@@ -42547,7 +46710,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     outletId?: StringFieldUpdateOperationsInput | string
@@ -42562,7 +46724,6 @@ export namespace Prisma {
     gstRate?: FloatFieldUpdateOperationsInput | number
     baseUnit?: StringFieldUpdateOperationsInput | string
     purchaseUnit?: NullableStringFieldUpdateOperationsInput | string | null
-    salesUnit?: NullableStringFieldUpdateOperationsInput | string | null
     conversionRatio?: NullableFloatFieldUpdateOperationsInput | number | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     outletId?: StringFieldUpdateOperationsInput | string
@@ -42673,6 +46834,7 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     userId: string
   }
 
@@ -42811,6 +46973,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     warehouse?: WarehouseUpdateOneRequiredWithoutStockLedgerNestedInput
     outlet?: OutletUpdateOneRequiredWithoutStockLedgerNestedInput
     transaction?: TransactionUpdateOneRequiredWithoutStockLedgerNestedInput
@@ -42826,6 +46989,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -42838,6 +47002,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -42886,12 +47051,14 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     parentId?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
   }
 
   export type VendorProductCreateManyVendorInput = {
@@ -42899,6 +47066,21 @@ export namespace Prisma {
     variantId: string
     lastPrice?: number | null
     leadTime?: number | null
+  }
+
+  export type PaymentCreateManyPartyInput = {
+    id?: string
+    txnNumber: string
+    invoiceId: string
+    outletId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    bankAccountId?: string | null
+    referenceNo?: string | null
+    notes?: string | null
+    createdBy: string
+    createdAt?: Date | string
   }
 
   export type LedgerEntryUpdateWithoutPartyInput = {
@@ -42944,10 +47126,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     parent?: TransactionUpdateOneWithoutChildrenNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
@@ -42958,6 +47142,7 @@ export namespace Prisma {
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutPartyInput = {
@@ -42973,17 +47158,20 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateManyWithoutPartyInput = {
@@ -42999,12 +47187,14 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type VendorProductUpdateWithoutVendorInput = {
@@ -43026,6 +47216,51 @@ export namespace Prisma {
     variantId?: StringFieldUpdateOperationsInput | string
     lastPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     leadTime?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type PaymentUpdateWithoutPartyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    invoice?: TransactionUpdateOneRequiredWithoutPaymentsNestedInput
+    outlet?: OutletUpdateOneRequiredWithoutPaymentsNestedInput
+    bankAccount?: AccountUpdateOneWithoutPaymentsNestedInput
+    creator?: UserUpdateOneRequiredWithoutPaymentsNestedInput
+  }
+
+  export type PaymentUncheckedUpdateWithoutPartyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    invoiceId?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    bankAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutPartyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    invoiceId?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    bankAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LedgerEntryCreateManyTransactionInput = {
@@ -43053,11 +47288,13 @@ export namespace Prisma {
     freightCost?: number | null
     grandTotal?: number
     status?: string
+    billType?: $Enums.BillType
     isInformal?: boolean
     buyerName?: string | null
     buyerPhone?: string | null
     userId: string
     remarks?: string | null
+    paidAt?: Date | string | null
   }
 
   export type TransactionItemCreateManyTransactionInput = {
@@ -43090,7 +47327,23 @@ export namespace Prisma {
     quantity: number
     balance: number
     type: string
+    costPerUnit?: number | null
     userId: string
+  }
+
+  export type PaymentCreateManyInvoiceInput = {
+    id?: string
+    txnNumber: string
+    outletId: string
+    partyId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    bankAccountId?: string | null
+    referenceNo?: string | null
+    notes?: string | null
+    createdBy: string
+    createdAt?: Date | string
   }
 
   export type LedgerEntryUpdateWithoutTransactionInput = {
@@ -43136,10 +47389,12 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
     children?: TransactionUpdateManyWithoutParentNestedInput
     party?: PartyUpdateOneWithoutTransactionsNestedInput
@@ -43150,6 +47405,7 @@ export namespace Prisma {
     items?: TransactionItemUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutParentInput = {
@@ -43166,16 +47422,19 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
     children?: TransactionUncheckedUpdateManyWithoutParentNestedInput
     items?: TransactionItemUncheckedUpdateManyWithoutTransactionNestedInput
     batchMovements?: BatchMovementUncheckedUpdateManyWithoutTransactionNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutTransactionNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
   export type TransactionUncheckedUpdateManyWithoutParentInput = {
@@ -43192,11 +47451,13 @@ export namespace Prisma {
     freightCost?: NullableFloatFieldUpdateOperationsInput | number | null
     grandTotal?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     isInformal?: BoolFieldUpdateOperationsInput | boolean
     buyerName?: NullableStringFieldUpdateOperationsInput | string | null
     buyerPhone?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TransactionItemUpdateWithoutTransactionInput = {
@@ -43268,6 +47529,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     variant?: VariantUpdateOneRequiredWithoutStockLedgerNestedInput
     warehouse?: WarehouseUpdateOneRequiredWithoutStockLedgerNestedInput
     outlet?: OutletUpdateOneRequiredWithoutStockLedgerNestedInput
@@ -43283,6 +47545,7 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -43295,7 +47558,53 @@ export namespace Prisma {
     quantity?: FloatFieldUpdateOperationsInput | number
     balance?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    costPerUnit?: NullableFloatFieldUpdateOperationsInput | number | null
     userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PaymentUpdateWithoutInvoiceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    outlet?: OutletUpdateOneRequiredWithoutPaymentsNestedInput
+    party?: PartyUpdateOneRequiredWithoutPaymentsNestedInput
+    bankAccount?: AccountUpdateOneWithoutPaymentsNestedInput
+    creator?: UserUpdateOneRequiredWithoutPaymentsNestedInput
+  }
+
+  export type PaymentUncheckedUpdateWithoutInvoiceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    bankAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutInvoiceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    bankAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LedgerEntryCreateManyAccountInput = {
@@ -43307,6 +47616,21 @@ export namespace Prisma {
     credit?: number
     reference?: string | null
     isReconciled?: boolean
+  }
+
+  export type PaymentCreateManyBankAccountInput = {
+    id?: string
+    txnNumber: string
+    invoiceId: string
+    outletId: string
+    partyId: string
+    amount: number
+    paymentDate: Date | string
+    paymentMode: string
+    referenceNo?: string | null
+    notes?: string | null
+    createdBy: string
+    createdAt?: Date | string
   }
 
   export type LedgerEntryUpdateWithoutAccountInput = {
@@ -43342,6 +47666,51 @@ export namespace Prisma {
     isReconciled?: BoolFieldUpdateOperationsInput | boolean
   }
 
+  export type PaymentUpdateWithoutBankAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    invoice?: TransactionUpdateOneRequiredWithoutPaymentsNestedInput
+    outlet?: OutletUpdateOneRequiredWithoutPaymentsNestedInput
+    party?: PartyUpdateOneRequiredWithoutPaymentsNestedInput
+    creator?: UserUpdateOneRequiredWithoutPaymentsNestedInput
+  }
+
+  export type PaymentUncheckedUpdateWithoutBankAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    invoiceId?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutBankAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    invoiceId?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    partyId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    referenceNo?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type PartyCreateManyPriceListInput = {
     id?: string
     type: $Enums.PartyType
@@ -43351,9 +47720,19 @@ export namespace Prisma {
     address: string
     state: string
     contactInfo?: string | null
+    phone?: string | null
+    email?: string | null
+    isActive?: boolean
+    bankName?: string | null
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
     creditPeriod?: number
     creditLimit?: number | null
     openingBalance?: number
+    openingBalanceLocked?: boolean
+    outstandingBalance?: number
+    creditBalance?: number
     outletId: string
   }
 
@@ -43372,13 +47751,24 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     outlet?: OutletUpdateOneRequiredWithoutPartiesNestedInput
     ledgerEntries?: LedgerEntryUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
+    payments?: PaymentUpdateManyWithoutPartyNestedInput
   }
 
   export type PartyUncheckedUpdateWithoutPriceListInput = {
@@ -43390,13 +47780,24 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     outletId?: StringFieldUpdateOperationsInput | string
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
   }
 
   export type PartyUncheckedUpdateManyWithoutPriceListInput = {
@@ -43408,9 +47809,19 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
     creditPeriod?: IntFieldUpdateOperationsInput | number
     creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
     openingBalance?: FloatFieldUpdateOperationsInput | number
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    creditBalance?: FloatFieldUpdateOperationsInput | number
     outletId?: StringFieldUpdateOperationsInput | string
   }
 

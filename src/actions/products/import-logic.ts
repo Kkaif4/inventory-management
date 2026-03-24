@@ -1,12 +1,82 @@
 import { prisma } from "@/lib/prisma";
 import {
   ImportRow,
+  ImportRowWithMeta,
   importRowSchema,
   PRODUCT_LEVEL_FIELDS,
 } from "@/validations/import.validation";
 import { StockService } from "@/domains/inventory/stock-service";
 import { NumberingService } from "@/domains/foundation/numbering-service";
 import { AuditService } from "@/domains/audit/audit-service";
+import { parseBatchDate } from "@/lib/utils/date";
+
+// ISSUE #1: Normal Casing Headers
+export const FIELD_KEYS = [
+  "Product Group Name",
+  "Brand",
+  "HSN Code",
+  "GST Rate",
+  "Base Unit",
+  "Purchase Unit",
+  "Conversion Ratio",
+  "Category L1",
+  "Category L2",
+  "Category L3",
+  "Variant SKU",
+  "Variant Spec",
+  "Purchase Price",
+  "Selling Price",
+  "Pricing Method",
+  "Markup Percent",
+  "Min Stock Level",
+  "Warehouse Name",
+  "Current Stock",
+  "Batch Date",
+  "Batch Cost Per Unit",
+];
+
+const HEADER_TO_FIELD: Record<string, string> = {
+  "product group name": "productGroupName",
+  brand: "brand",
+  "hsn code": "hsnCode",
+  "gst rate": "gstRate",
+  "base unit": "baseUnit",
+  "purchase unit": "purchaseUnit",
+  "conversion ratio": "conversionRatio",
+  "category l1": "categoryL1",
+  "category l2": "categoryL2",
+  "category l3": "categoryL3",
+  "variant sku": "variantSku",
+  "variant spec": "variantSpec",
+  "purchase price": "purchasePrice",
+  "selling price": "sellingPrice",
+  "pricing method": "pricingMethod",
+  "markup percent": "markupPercent",
+  "min stock level": "minStockLevel",
+  "warehouse name": "warehouseName",
+  "current stock": "currentStock",
+  "batch date": "batchDate",
+  "batch cost per unit": "batchCostPerUnit",
+};
+
+export function normalizeRow(raw: Record<string, any>): Record<string, any> {
+  return Object.fromEntries(
+    Object.entries(raw).map(([key, value]) => {
+      const normalized = HEADER_TO_FIELD[key.trim().toLowerCase()];
+      return [normalized ?? key.trim().toLowerCase(), value];
+    }),
+  );
+}
+
+// ISSUE #2: Helper to format Zod errors
+function formatZodError(e: any): string {
+  if (e?.name === "ZodError" && e.issues?.length) {
+    return e.issues
+      .map((iss: any) => `${iss.path.join(".")}: ${iss.message}`)
+      .join(" | ");
+  }
+  return e.message ?? "Unknown validation error";
+}
 
 export type ImportProgress = {
   processed: number;
@@ -53,10 +123,11 @@ export async function processProductImport(
 
   // Zod Validation & Global Duplicate SKU Check
   const skuSet = new Set<string>();
-  const validRows: ImportRow[] = [];
+  const validRows: ImportRowWithMeta[] = [];
 
   for (let i = 0; i < rows.length; i++) {
-    const rawRow = rows[i];
+    const sheetRowNumber = i + 2; // row 1 = header, data starts row 2
+    const rawRow = normalizeRow(rows[i]); // ISSUE #1: Normalize headers
     let row: ImportRow;
 
     // A. Zod Parsing
@@ -74,42 +145,42 @@ export async function processProductImport(
       }
       row = importRowSchema.parse(normalized);
     } catch (e: any) {
-      let message = e.message;
-      if (e.name === "ZodError" && e.issues) {
-        message = e.issues
-          .map((iss: any) => `${iss.path.join(".")}: ${iss.message}`)
-          .join(", ");
-      }
+      let message = formatZodError(e);
       progress.errors.push({
-        row: i + 1,
+        row: sheetRowNumber, // ISSUE #2: Use actual sheet row number
         sku: rawRow.variantSku || "Unknown SKU",
         field: "validation",
-        message: `Schema error: ${message}`,
+        message: `Row ${sheetRowNumber}: Schema error: ${message}`,
       });
       if (!skipOnError)
-        throw new Error(`Row ${i + 1} validation failed: ${message}`);
+        throw new Error(`Row ${sheetRowNumber} validation failed: ${message}`);
       continue; // Skip invalid row
     }
 
     // B. Duplicate SKU Check
     if (skuSet.has(row.variantSku)) {
       progress.errors.push({
-        row: i + 1,
+        row: sheetRowNumber, // ISSUE #2: Use actual sheet row number
         sku: row.variantSku,
         field: "variantSku",
-        message: `Duplicate SKU '${row.variantSku}' found in sheet. SKUs must be uniquely defined.`,
+        message: `Row ${sheetRowNumber}: Duplicate SKU '${row.variantSku}' found in sheet. SKUs must be uniquely defined.`,
       });
       if (!skipOnError) {
         throw new Error(`Duplicate SKU '${row.variantSku}' in sheet.`);
       }
     } else {
       skuSet.add(row.variantSku);
-      validRows.push(row);
+      // ISSUE #2: Attach sheet row metadata for error reporting downstream
+      const rowWithMeta: ImportRowWithMeta = {
+        ...row,
+        _sheetRow: sheetRowNumber,
+      };
+      validRows.push(rowWithMeta);
     }
   }
 
   // Group rows by productGroupName (case-insensitive trim)
-  const productGroups = new Map<string, ImportRow[]>();
+  const productGroups = new Map<string, ImportRowWithMeta[]>();
   validRows.forEach((row) => {
     const key = row.productGroupName.trim().toLowerCase();
     const group = productGroups.get(key) || [];
@@ -126,6 +197,7 @@ export async function processProductImport(
   // Cache for categories and warehouses to minimize lookups
   const categoryCache = new Map<string, string>(); // namePath -> id
   const warehouseCache = new Map<string, string>(); // name -> id
+  const batchSeqMap = new Map<string, number>(); // ISSUE #4: Initialize sequence map for deterministic batch numbers
 
   for (const [groupKey, groupRows] of productGroups.entries()) {
     // We use the first row's original casing for the product name
@@ -145,8 +217,10 @@ export async function processProductImport(
         });
 
         if (inconsistent) {
+          // ISSUE #2: Show all row numbers for group
+          const rowNumbers = groupRows.map((r) => r._sheetRow).join(", ");
           throw new Error(
-            `Inconsistent product-level details found for product "${productName}". All variants must share identical product-level attributes (brand, hsnCode, gstRate, category, etc.).`,
+            `Rows ${rowNumbers}: Inconsistent product-level details found for product "${productName}". All variants must share identical product-level attributes (brand, hsnCode, gstRate, category, etc.).`,
           );
         }
 
@@ -209,7 +283,6 @@ export async function processProductImport(
           gstRate: firstRow.gstRate,
           baseUnit: firstRow.baseUnit,
           purchaseUnit: firstRow.purchaseUnit ?? null,
-          salesUnit: firstRow.salesUnit ?? null,
           conversionRatio: firstRow.conversionRatio ?? 1,
           categoryId: finalCategoryId!,
           outletId,
@@ -259,15 +332,11 @@ export async function processProductImport(
           }
 
           const sellingPrice =
-            row.pricingMethod === "MARKUP" &&
-            row.markupPercent !== null &&
-            row.markupPercent !== undefined
+            row.pricingMethod === "MARKUP"
               ? Math.round(
-                  row.purchasePrice *
-                    (1 + (row.markupPercent as number) / 100) *
-                    100,
+                  row.purchasePrice * (1 + row.markupPercent! / 100) * 100,
                 ) / 100
-              : (row.sellingPrice ?? 0); // Use nullish coalescing to handle undefined/null
+              : row.sellingPrice!; // guaranteed by schema validation
 
           const variantData = {
             sku: row.variantSku,
@@ -395,15 +464,25 @@ export async function processProductImport(
             let batchDate: Date | undefined = undefined;
 
             if (outlet.batchTrackingEnabled) {
-              batchDate = row.batchDate
-                ? new Date(row.batchDate.split("/").reverse().join("-"))
-                : new Date();
-              const batchNumDate = batchDate
-                .toISOString()
-                .split("T")[0]
-                .replace(/-/g, "");
-              const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-              batchNumber = `${row.variantSku}-${batchNumDate}-${randomSuffix}`;
+              // ISSUE #3: Use parseBatchDate for validation
+              // ISSUE #4: Use deterministic sequence instead of random suffix
+              if (!row.batchDate) {
+                throw new Error(
+                  `Row ${row._sheetRow}: Batch Date is required but missing. This is a validation bug — report it.`,
+                );
+              }
+              batchDate = parseBatchDate(row.batchDate, row._sheetRow);
+
+              // ISSUE #4: Deterministic batch number using local date components
+              const datePart = [
+                batchDate.getFullYear(),
+                String(batchDate.getMonth() + 1).padStart(2, "0"),
+                String(batchDate.getDate()).padStart(2, "0"),
+              ].join("");
+              const seqKey = `${row.variantSku}-${datePart}`;
+              const seq = (batchSeqMap.get(seqKey) ?? 0) + 1;
+              batchSeqMap.set(seqKey, seq);
+              batchNumber = `${row.variantSku}-${datePart}-${String(seq).padStart(3, "0")}`;
               progress.batches++;
             }
 

@@ -6,6 +6,9 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+// Force recreate prisma client to pick up generated types for Payment model
+delete globalForPrisma.prisma;
+
 function createPrismaClient() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
   const adapter = new PrismaPg(pool);

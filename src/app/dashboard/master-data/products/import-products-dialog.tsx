@@ -29,31 +29,56 @@ import { Progress } from "@/components/ui/progress";
 
 type Step = "UPLOAD" | "PREVIEW" | "PROGRESS" | "RESULT";
 
-// Fixed header keys (must match CSV/Excel column names exactly)
+// Fixed header keys using normal casing (user-visible, what they see in CSV/Excel)
+// The backend normalizeRow() function converts these to camelCase
 const FIELD_KEYS = [
-  "productGroupName",
-  "brand",
-  "hsnCode",
-  "gstRate",
-  "baseUnit",
-  "purchaseUnit",
-  "salesUnit",
-  "conversionRatio",
-  "categoryL1",
-  "categoryL2",
-  "categoryL3",
-  "variantSku",
-  "variantSpec",
-  "purchasePrice",
-  "sellingPrice",
-  "pricingMethod",
-  "markupPercent",
-  "minStockLevel",
-  "warehouseName",
-  "currentStock",
-  "batchDate",
-  "batchCostPerUnit",
+  "Product Group Name",
+  "Brand",
+  "HSN Code",
+  "GST Rate",
+  "Base Unit",
+  "Purchase Unit",
+  "Conversion Ratio",
+  "Category L1",
+  "Category L2",
+  "Category L3",
+  "Variant SKU",
+  "Variant Spec",
+  "Purchase Price",
+  "Selling Price",
+  "Pricing Method",
+  "Markup Percent",
+  "Min Stock Level",
+  "Warehouse Name",
+  "Current Stock",
+  "Batch Date",
+  "Batch Cost Per Unit",
 ];
+
+// Mapping from normal casing to camelCase for internal use
+const HEADER_TO_CAMEL_CASE: Record<string, string> = {
+  "Product Group Name": "productGroupName",
+  Brand: "brand",
+  "HSN Code": "hsnCode",
+  "GST Rate": "gstRate",
+  "Base Unit": "baseUnit",
+  "Purchase Unit": "purchaseUnit",
+  "Conversion Ratio": "conversionRatio",
+  "Category L1": "categoryL1",
+  "Category L2": "categoryL2",
+  "Category L3": "categoryL3",
+  "Variant SKU": "variantSku",
+  "Variant Spec": "variantSpec",
+  "Purchase Price": "purchasePrice",
+  "Selling Price": "sellingPrice",
+  "Pricing Method": "pricingMethod",
+  "Markup Percent": "markupPercent",
+  "Min Stock Level": "minStockLevel",
+  "Warehouse Name": "warehouseName",
+  "Current Stock": "currentStock",
+  "Batch Date": "batchDate",
+  "Batch Cost Per Unit": "batchCostPerUnit",
+};
 
 export function ImportProductsDialog({
   open,
@@ -84,6 +109,9 @@ export function ImportProductsDialog({
     const workbook = XLSX.utils.book_new();
 
     // Tab 1: Products (with dummy data demonstrating variants)
+    // Columns: Product Group Name, Brand, HSN Code, GST Rate, Base Unit, Purchase Unit, Conversion Ratio,
+    // Category L1, Category L2, Category L3, Variant SKU, Variant Spec, Purchase Price, Selling Price,
+    // Pricing Method, Markup Percent, Min Stock Level, Warehouse Name, Current Stock, Batch Date, Batch Cost Per Unit
     const exampleRows = [
       [
         "Adjustable Wrench",
@@ -92,7 +120,6 @@ export function ImportProductsDialog({
         12,
         "Piece",
         "Box",
-        "Piece",
         20,
         "Tools",
         "Hand Tools",
@@ -116,7 +143,6 @@ export function ImportProductsDialog({
         12,
         "Piece",
         "Box",
-        "Piece",
         20,
         "Tools",
         "Hand Tools",
@@ -140,7 +166,6 @@ export function ImportProductsDialog({
         18,
         "Piece",
         "Box",
-        "Piece",
         20,
         "Tools",
         "Measuring Tools",
@@ -166,56 +191,85 @@ export function ImportProductsDialog({
     const instructions = [
       ["Column", "Required", "Description"],
       [
-        "productGroupName",
+        "Product Group Name",
         "Yes",
         "The overall name of the product. Repeat this on every row for the same product to group variants together.",
       ],
       [
-        "variantSku",
+        "Variant SKU",
         "Yes",
         "Globally unique identifier for this specific variant.",
       ],
       [
-        "variantSpec",
+        "Variant Spec",
         "No",
         "What makes this variant different (e.g. '10 Inch', '500W', 'Blue').",
       ],
       [
-        "brand, hsnCode, gstRate, baseUnit, categories...",
+        "Brand, HSN Code, GST Rate, Base Unit, Categories...",
         "Yes/No",
-        "Product-level fields. These MUST be identical for all rows sharing the same productGroupName.",
+        "Product-level fields. These MUST be identical for all rows sharing the same Product Group Name.",
       ],
       [
-        "pricingMethod",
+        "Pricing Method",
         "Yes",
         "MANUAL or MARKUP. Defines how selling price is calculated.",
       ],
-      ["purchasePrice", "Yes", "Per variant purchase cost."],
+      ["Purchase Price", "Yes", "Per variant purchase cost."],
       [
-        "sellingPrice",
+        "Selling Price",
         "Depends",
-        "Required if pricingMethod is MANUAL. Leave blank if MARKUP.",
+        "Required if Pricing Method is MANUAL. Leave blank if MARKUP.",
       ],
       [
-        "markupPercent",
+        "Markup Percent",
         "Depends",
-        "Required if pricingMethod is MARKUP. Leave blank if MANUAL.",
+        "Required if Pricing Method is MARKUP. Leave blank if MANUAL.",
       ],
       [
-        "currentStock, warehouseName",
+        "Current Stock, Warehouse Name",
         "No",
-        "Provides opening stock. warehouseName required if currentStock > 0.",
+        "Provides opening stock. Warehouse Name required if Current Stock > 0.",
       ],
       [
-        "batchDate",
+        "Batch Date",
         "Depends",
-        "Only needed if batch tracking is ENABLD for this outlet and currentStock > 0.",
+        "Only needed if batch tracking is ENABLED for this outlet and Current Stock > 0. Format: DD/MM/YYYY",
       ],
     ];
     const instructionsSheet = XLSX.utils.aoa_to_sheet(instructions);
     XLSX.utils.book_append_sheet(workbook, instructionsSheet, "Instructions");
 
     XLSX.writeFile(workbook, "product_import_template_v2.xlsx");
+  };
+
+  const convertExcelDateToString = (excelDate: any): string => {
+    if (!excelDate) return "";
+    if (typeof excelDate === "string") return excelDate; // Already a string
+
+    // If it's a number, convert from Excel serial date
+    if (typeof excelDate === "number") {
+      // Excel serial date: Day 1 = Jan 1, 1900
+      // Account for Excel's leap year bug (1900 is not a leap year but Excel thinks it is)
+      // Dates after Feb 28, 1900 need to be adjusted by -1
+      let adjustedDate = excelDate;
+      if (excelDate > 60) {
+        adjustedDate = excelDate - 1; // Adjust for the leap year bug
+      }
+
+      const excelEpoch = new Date(1900, 0, 0); // Dec 31, 1899 (day 0)
+      const jsDate = new Date(
+        excelEpoch.getTime() + adjustedDate * 24 * 60 * 60 * 1000,
+      );
+
+      const day = String(jsDate.getDate()).padStart(2, "0");
+      const month = String(jsDate.getMonth() + 1).padStart(2, "0");
+      const year = jsDate.getFullYear();
+
+      return `${day}/${month}/${year}`;
+    }
+
+    return "";
   };
 
   const processFileForPreview = async () => {
@@ -234,20 +288,44 @@ export function ImportProductsDialog({
         return;
       }
 
-      // Check for legacy column
-      const hasLegacy = Object.keys(rawRows[0]).includes("productName");
+      // Check for legacy column (old productName header)
+      const firstRowKeys = Object.keys(rawRows[0]).map((k) =>
+        k.trim().toLowerCase(),
+      );
+      const hasLegacy = firstRowKeys.includes("productname");
       setHasLegacyColumn(hasLegacy);
 
-      // Map rows
+      // Map rows - convert normal casing headers to camelCase for internal use
       const rows = rawRows.map((row) => {
         const mapped: Record<string, any> = {};
+
         FIELD_KEYS.forEach((key) => {
-          // If legacy column exists, fallback to it for productGroupName if mapped is empty
-          if (key === "productGroupName" && hasLegacy && !row[key]) {
-            mapped[key] = row["productName"] || "";
-          } else {
-            mapped[key] = row[key] !== "" ? row[key] : null;
+          // Get the camelCase version of the key
+          const camelKey = HEADER_TO_CAMEL_CASE[key];
+
+          // Try to find the value in the row
+          let value: any = null;
+
+          // First, try exact key match (normal casing)
+          if (row[key] !== undefined && row[key] !== "") {
+            value = row[key];
           }
+          // If looking for Product Group Name, also try legacy productName
+          else if (
+            key === "Product Group Name" &&
+            (hasLegacy || row["Product Name"] !== undefined)
+          ) {
+            value = row["Product Name"] || row["productName"] || "";
+          }
+          // For other keys, the Excel headers should match exactly
+
+          // Special handling for Batch Date - convert Excel serial numbers to DD/MM/YYYY
+          if (key === "Batch Date" && value !== null && value !== "") {
+            value = convertExcelDateToString(value);
+          }
+
+          // Store with camelCase key for consistent access in preview and backend
+          mapped[camelKey] = value !== "" ? value : null;
         });
         return mapped;
       });
@@ -267,16 +345,40 @@ export function ImportProductsDialog({
     setExpandedGroups(next);
   };
 
+  // Convert camelCase back to normal casing for API submission
+  const convertToNormalCasing = (
+    rows: Record<string, any>[],
+  ): Record<string, any>[] => {
+    const camelToNormal: Record<string, string> = Object.fromEntries(
+      Object.entries(HEADER_TO_CAMEL_CASE).map(([normal, camel]) => [
+        camel,
+        normal,
+      ]),
+    );
+
+    return rows.map((row) => {
+      const normalized: Record<string, any> = {};
+      Object.entries(row).forEach(([key, value]) => {
+        const normalKey = camelToNormal[key] || key;
+        normalized[normalKey] = value;
+      });
+      return normalized;
+    });
+  };
+
   const executeImport = async () => {
     if (!parsedData.length) return;
     setStep("PROGRESS");
     setIsRunning(true);
 
     try {
+      // Convert back to normal casing for backend processing
+      const rowsForApi = convertToNormalCasing(parsedData);
+
       const response = await fetch("/api/products/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ outletId, rows: parsedData }),
+        body: JSON.stringify({ outletId, rows: rowsForApi }),
       });
 
       if (!response.body) throw new Error("No response body");

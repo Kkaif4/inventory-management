@@ -140,7 +140,7 @@ export async function createSalesReturn(data: {
         });
       }
 
-      revalidatePath("/dashboard/sales");
+      revalidatePath("/dashboard/sales/transactions");
       return returnTx;
     });
   });

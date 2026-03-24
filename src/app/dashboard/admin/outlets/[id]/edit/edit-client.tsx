@@ -31,6 +31,7 @@ export function OutletEditClient({
     defaultWarehouseId: string | null;
     negativeStockPolicy: string;
     batchTrackingEnabled: boolean;
+    inventoryValuationMethod: string;
     warehouses: { id: string }[];
   };
   warehouses: { id: string; name: string }[];
@@ -44,7 +45,7 @@ export function OutletEditClient({
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<z.infer<typeof outletSchema>>({
+  } = useForm<OutletFormValues>({
     resolver: zodResolver(outletSchema),
     defaultValues: {
       name: outlet.name || "",
@@ -54,10 +55,13 @@ export function OutletEditClient({
       invoiceStartingNumber: outlet.invoiceStartingNumber || 1,
       gstin: outlet.gstin || "",
       defaultWarehouseId: outlet.defaultWarehouseId || "",
-      negativeStockPolicy: outlet.negativeStockPolicy as any,
+      negativeStockPolicy: outlet.negativeStockPolicy,
       warehouseIds: (outlet.warehouses || []).map((w: { id: string }) => w.id),
       batchTrackingEnabled: outlet.batchTrackingEnabled || false,
-    },
+      inventoryValuationMethod: outlet.inventoryValuationMethod,
+      allowRawCashBills: (outlet as any).allowRawCashBills || false,
+      bankDetails: (outlet as any).bankDetails || "",
+    } as any,
   });
 
   const selectedWarehouseIds = watch("warehouseIds") || [];
@@ -218,6 +222,34 @@ export function OutletEditClient({
               </select>
             </div>
 
+            <div className="flex items-center space-x-3 pt-6">
+              <input
+                type="checkbox"
+                {...register("allowRawCashBills")}
+                className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <div className="space-y-0.5">
+                <label className="text-sm font-bold text-slate-900">
+                  Allow Raw Cash Bills (No.2)
+                </label>
+                <p className="text-[10px] text-slate-500">
+                  Enable informal billing mode for this outlet.
+                </p>
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Bank Details (Invoice Footer)
+              </label>
+              <textarea
+                {...register("bankDetails")}
+                rows={3}
+                placeholder="e.g. Bank: XYZ, A/C: 123456789, IFSC: SBIN000123"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Default Warehouse *
@@ -251,6 +283,24 @@ export function OutletEditClient({
                   Enable Batch-wise FIFO tracking
                 </span>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Inventory Valuation Method *
+              </label>
+              <select
+                {...register("inventoryValuationMethod")}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+              >
+                <option value="NONE">Standard (No Batch Tracking)</option>
+                <option value="FIFO">FIFO (Batch Tracking)</option>
+              </select>
+              {errors.inventoryValuationMethod && (
+                <p className="text-red-500 text-[10px] mt-1 italic">
+                  {errors.inventoryValuationMethod.message}
+                </p>
+              )}
             </div>
 
             <div className="md:col-span-2 pt-4">

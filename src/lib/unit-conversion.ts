@@ -25,3 +25,19 @@ export function getBaseQuantity(
   if (unit === "BASE") return quantity;
   return convertToBaseUnit(quantity, conversionRatio);
 }
+
+export function normalizeToStockQty({
+  quantity,
+  isPurchase,
+  conversionRatio,
+}: {
+  quantity: number;
+  isPurchase: boolean;
+  conversionRatio: number | null | undefined;
+}): number {
+  if (!isPurchase) return quantity; // Sales: 1:1 with base unit
+  if (!conversionRatio || conversionRatio <= 0) {
+    throw new Error("Invalid conversion ratio for purchase transaction");
+  }
+  return quantity * conversionRatio;
+}

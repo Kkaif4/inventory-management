@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { updateProduct } from "@/actions/products";
-import { VariantPayload } from "@/actions/products/types";
 import { getCategories } from "@/actions/categories";
 import { Package, Save, Loader2, Info } from "lucide-react";
 import Link from "next/link";
@@ -35,8 +34,9 @@ import { useOutletStore } from "@/store/use-outlet-store";
 import { PRODUCT_UNITS } from "@/lib/constants";
 import { getGstRateByHsn } from "@/lib/hsn-data";
 import {
+  ProductEditFormValues,
+  productEditSchema,
   ProductFormValues,
-  productSchema,
 } from "@/validations/product.validation";
 
 interface ProductWithVariants {
@@ -94,8 +94,8 @@ export function ProductEditClient({
     return s ? `${s}%` : `${val}%` || undefined;
   };
 
-  const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
+  const form = useForm<ProductEditFormValues>({
+    resolver: zodResolver(productEditSchema) as any,
     defaultValues: {
       name: product.name,
       brand: product.brand || "",
@@ -129,7 +129,7 @@ export function ProductEditClient({
     name: "variants",
   });
 
-  const onSubmit = async (data: ProductFormValues) => {
+  const onSubmit = async (data: ProductEditFormValues) => {
     try {
       if (!session?.user?.id) {
         throw new Error("Unauthorized");
@@ -145,7 +145,7 @@ export function ProductEditClient({
         conversionRatio: data.conversionRatio || 1,
         categoryId: data.categoryId,
         userId: session.user.id,
-        variants: data.variants.map((v) => ({
+        variants: data.variants.map((v: any) => ({
           id: v.id,
           sku: v.sku,
           minStockLevel: v.minStockLevel,

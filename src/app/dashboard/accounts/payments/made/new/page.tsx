@@ -1,28 +1,37 @@
 "use client";
 
+import { Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { createPayment, getAccounts } from "@/actions/accounting";
 import { getParties } from "@/actions/parties";
-import { Save, ArrowDownCircle } from "lucide-react";
+import { Save } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useOutletStore } from "@/store/use-outlet-store";
 import {
-  paymentSchema,
-  PaymentFormValues,
+  generalPaymentSchema,
+  GeneralPaymentFormValues,
 } from "@/validations/payment.validation";
 
-export default function NewPaymentMadePage() {
+function NewPaymentMadeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [vendors, setVendors] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const { currentOutletId } = useOutletStore();
-  if (!currentOutletId) return null;
+
+  const partyIdFromUrl = searchParams.get("partyId");
+  const source = searchParams.get("source");
+  const sourceId = searchParams.get("sourceId");
+  const sourceName = searchParams.get("sourceName");
+
   useEffect(() => {
+    if (!currentOutletId) return;
     getParties(currentOutletId).then((res) => {
       if (res.success) {
         setVendors(res.data!.filter((p) => p.type === "VENDOR"));
@@ -37,31 +46,43 @@ export default function NewPaymentMadePage() {
         toast.error("Failed to load accounts: " + res.error?.message);
       }
     }); // Only banks/cash
-  }, []);
+  }, [currentOutletId]);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
-  } = useForm<PaymentFormValues>({
-    resolver: zodResolver(paymentSchema) as any,
+  } = useForm<GeneralPaymentFormValues>({
+    resolver: zodResolver(generalPaymentSchema) as any,
     defaultValues: {
-      date: new Date().toISOString().split("T")[0],
+      partyId: partyIdFromUrl || "",
+      paymentDate: new Date().toISOString().split("T")[0],
+      amount: undefined,
+      paymentMode: "Cash",
+      bankAccountId: "",
     },
   });
 
-  const onSubmit = async (data: PaymentFormValues) => {
+  const onSubmit = async (data: GeneralPaymentFormValues) => {
     try {
       setIsSubmitting(true);
       const res = await createPayment({
-        ...data,
-        outletId: currentOutletId,
-        date: new Date(data.date),
+        partyId: data.partyId,
+        outletId: currentOutletId!,
+        accountId: data.bankAccountId || "",
+        amount: data.amount,
+        date: new Date(data.paymentDate),
         type: "PAYMENT_MADE",
+        reference: data.referenceNo,
       });
       if (res.success) {
         toast.success("Payment recorded successfully");
-        router.push("/dashboard/master-data/parties");
+        if (source === "vendor" && sourceId) {
+          router.push(`/dashboard/purchase/vendors/${sourceId}`);
+        } else {
+          router.push("/dashboard/purchases");
+        }
         router.refresh();
       } else {
         toast.error("Failed to record payment: " + res.error?.message);
@@ -74,19 +95,34 @@ export default function NewPaymentMadePage() {
     }
   };
 
+  if (!currentOutletId) {
+    return null;
+  }
+
+  const cancelHref = source === "vendor" && sourceId
+    ? `/dashboard/purchase/vendors/${sourceId}`
+    : "/dashboard/purchases";
+
+  const breadcrumbs = source === "vendor" && sourceId
+    ? [
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "Vendors", href: "/dashboard/purchase/vendors" },
+        { label: sourceName || "Vendor", href: `/dashboard/purchase/vendors/${sourceId}` },
+        { label: "Make Payment" },
+      ]
+    : [
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "Accounts", href: "/dashboard/accounts" },
+        { label: "Make Payment" },
+      ];
+
   return (
     <div className="max-w-xl mx-auto space-y-6 pt-10">
-      <div className="flex items-center space-x-3 mb-4">
-        <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
-          <ArrowDownCircle className="w-7 h-7" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900">Payment Made</h2>
-          <p className="text-sm text-slate-500">
-            Record money paid to a vendor.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Payment Made"
+        subtitle="Record money paid to a vendor."
+        breadcrumbs={breadcrumbs}
+      />
 
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
         <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-5">
@@ -117,7 +153,7 @@ export default function NewPaymentMadePage() {
               Paid From (Bank/Cash) *
             </label>
             <select
-              {...register("accountId")}
+              {...register("bankAccountId")}
               className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-slate-50 transition-all font-medium"
             >
               <option value="">Select Account...</option>
@@ -127,9 +163,9 @@ export default function NewPaymentMadePage() {
                 </option>
               ))}
             </select>
-            {errors.accountId && (
+            {errors.bankAccountId && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.accountId.message}
+                {errors.bankAccountId.message}
               </p>
             )}
           </div>
@@ -146,7 +182,7 @@ export default function NewPaymentMadePage() {
                 <input
                   type="number"
                   step="0.01"
-                  {...register("amount")}
+                  {...register("amount", { valueAsNumber: true })}
                   className="w-full pl-8 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none font-bold text-lg text-slate-900"
                 />
               </div>
@@ -162,7 +198,7 @@ export default function NewPaymentMadePage() {
               </label>
               <input
                 type="date"
-                {...register("date")}
+                {...register("paymentDate")}
                 className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none font-medium"
               />
             </div>
@@ -173,10 +209,22 @@ export default function NewPaymentMadePage() {
               Reference / Notes
             </label>
             <textarea
-              {...register("reference")}
-              placeholder="Cheque #, UTR, or Payment Notes..."
+              {...register("notes")}
+              placeholder="Payment Notes..."
               rows={2}
               className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Reference No
+            </label>
+            <input
+              type="text"
+              {...register("referenceNo")}
+              placeholder="Cheque #, UTR, etc."
+              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
             />
           </div>
 
@@ -195,12 +243,20 @@ export default function NewPaymentMadePage() {
 
       <div className="flex justify-center">
         <Link
-          href="/dashboard/master-data/parties"
+          href={cancelHref}
           className="text-sm text-slate-400 hover:text-slate-600"
         >
           Cancel and return
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function NewPaymentMadePage() {
+  return (
+    <Suspense fallback={null}>
+      <NewPaymentMadeContent />
+    </Suspense>
   );
 }

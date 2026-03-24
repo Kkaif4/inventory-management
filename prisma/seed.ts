@@ -45,6 +45,7 @@ async function main() {
         gstin: "27ABCDE1234F1Z5",
         bankDetails: "HDFC Bank, AC: 987654321, IFSC: HDFC0001",
         negativeStockPolicy: "WARN",
+        allowRawCashBills: true,
         warehouses: {
           connect: [{ id: warehouse.id }],
         },
@@ -130,13 +131,21 @@ async function main() {
         type: "VENDOR",
         name: vendorName,
         gstin: "27AABBCCDD1234E",
+        pan: "AABBCC1234E",
         address: "Industrial Estate, Kurla",
         state: "Maharashtra",
         contactInfo: "niharika@suppliers.com",
+        phone: "9820012345",
+        email: "sales@niharika.com",
+        bankName: "State Bank of India",
+        bankAccountName: "Niharika Suppliers Current A/C",
+        bankAccountNumber: "123456789012",
+        bankIfsc: "SBIN0001234",
+        openingBalance: 0,
         outletId: outlet.id,
       },
     });
-    console.log("Seed: Vendor created");
+    console.log("Seed: Vendor created with detailed info");
   }
 
   // 6. Create a Customer
@@ -153,12 +162,14 @@ async function main() {
         address: "Linking Road, Santacruz",
         state: "Maharashtra",
         contactInfo: "contact@retailhardware.com",
+        phone: "9821198765",
+        email: "retail@hardware.com",
+        openingBalance: 0,
         outletId: outlet.id,
       },
     });
-    console.log("Seed: Customer created");
+    console.log("Seed: Customer created with detailed info");
   }
-
   console.log("Seed: Completed successfully");
 }
 

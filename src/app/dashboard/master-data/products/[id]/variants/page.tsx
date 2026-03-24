@@ -4,12 +4,13 @@ import { getProductWithVariants } from "@/actions/products";
 import { VariantsClient } from "./variants-client";
 import { notFound } from "next/navigation";
 
-export default async function VariantsPage({
+export default async function ProductVariantsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const product = await getProductWithVariants(params.id);
+  const { id } = await params;
+  const product = await getProductWithVariants(id);
 
   if (!product) {
     notFound();

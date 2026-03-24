@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useForm, useFieldArray, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Resolver } from "react-hook-form";
 import { toast } from "sonner";
 import {
   User,
@@ -34,6 +33,7 @@ import { roundToTwo } from "@/lib/utils";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import {
   InvoiceFormValues,
   invoiceSchema,
@@ -43,19 +43,20 @@ function InvoiceForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const quoteId = searchParams.get("quoteId");
+  const partyIdFromUrl = searchParams.get("partyId");
   const { currentOutletId } = useOutletStore();
   const { data: session } = useSession();
 
   const [parties, setParties] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
-  const [outlets, setOutlets] = useState<
-    {
-      id: string;
-      name: string;
-      negativeStockPolicy: string;
-      warehouses: { id: string }[];
-    }[]
-  >([]);
+  const [currentOutlet, setCurrentOutlet] = useState<{
+    id: string;
+    name: string;
+    state: string | null;
+    allowRawCashBills: boolean;
+    negativeStockPolicy: string;
+  } | null>(null);
+  const [otherOutlets, setOtherOutlets] = useState<any[]>([]);
   const [stockLevels, setStockLevels] = useState<
     {
       variantId: string;
@@ -73,11 +74,12 @@ function InvoiceForm() {
     watch,
     setValue,
     getValues,
+    reset,
     formState: { errors },
   } = useForm<InvoiceFormValues>({
-    resolver: zodResolver(invoiceSchema) as Resolver<InvoiceFormValues>,
+    resolver: zodResolver(invoiceSchema) as any,
     defaultValues: {
-      isInformal: false,
+      billType: "NO1",
       date: new Date(),
       freightCost: 0,
       items: [
@@ -86,13 +88,16 @@ function InvoiceForm() {
           quantity: 1,
           unit: "BASE",
           rate: 0,
+          discountPercent: 0,
           gstRate: 18,
           taxableValue: 0,
           cgst: 0,
           sgst: 0,
           igst: 0,
+          hsnCode: "",
         },
       ],
+      partyId: partyIdFromUrl || "",
     },
   });
 
@@ -101,9 +106,10 @@ function InvoiceForm() {
   const watchItems = watch("items");
   const watchFreight = watch("freightCost") || 0;
   const watchOutletId = watch("fromOutletId");
-  const watchIsInformal = watch("isInformal");
-  const selectedOutlet = outlets.find((o) => o.id === watchOutletId);
-  const primaryWarehouseId = selectedOutlet?.warehouses[0]?.id;
+  const watchBillType = watch("billType");
+  const watchPartyId = watch("partyId" as any);
+
+  const primaryWarehouseId = null; // We'll simplify for now or fetch if needed
 
   useEffect(() => {
     if (currentOutletId) {
@@ -126,22 +132,24 @@ function InvoiceForm() {
       const quote = res.data;
       if (!quote) return;
 
-      setValue("partyId", quote.partyId || "");
-      setValue("isInformal", false);
+      setValue("partyId" as any, quote.partyId || "");
+      setValue("billType", "NO1");
 
       const items = quote.items.map((item: any) => ({
         variantId: item.variantId,
         quantity: item.quantity,
         unit: item.unit || "BASE",
         rate: item.rate,
+        discountPercent: 0,
         gstRate: item.variant.product.gstRate,
         taxableValue: item.taxableValue,
         cgst: item.cgst,
         sgst: item.sgst,
         igst: item.igst,
+        hsnCode: item.variant.product.sku, // Defaulting SKU as HSN if missing
       }));
 
-      setValue("items", items);
+      setValue("items", items as any);
       toast.success("Quotation details imported");
     } catch (error) {
       console.error(error);
@@ -165,7 +173,8 @@ function InvoiceForm() {
 
       setParties(partyRes.data!.filter((p: any) => p.type === "CUSTOMER"));
       setProducts(productRes.data!);
-      setOutlets(locationRes.data!.outlets);
+      setCurrentOutlet(locationRes.data!.currentOutlet);
+      setOtherOutlets(locationRes.data!.outlets);
       setStockLevels(stockRes.data!);
     } catch (error: any) {
       toast.error("Initialization failed: " + error.message);
@@ -173,23 +182,30 @@ function InvoiceForm() {
   };
 
   const calculateRow = (index: number) => {
-    const item = getValues(`items.${index}`);
+    const item = getValues(`items.${index}` as any);
     if (!item || !item.variantId) return;
 
-    const variant = products
-      .flatMap((p) => p.variants)
-      .find((v) => v.id === item.variantId);
-    const product = products.find((p) =>
-      p.variants.some((v: any) => v.id === item.variantId),
+    if (watchBillType === "NO2") {
+      const taxable = roundToTwo(item.quantity * item.rate);
+      setValue(`items.${index}.taxableValue` as any, taxable);
+      setValue(`items.${index}.cgst` as any, 0);
+      setValue(`items.${index}.sgst` as any, 0);
+      setValue(`items.${index}.igst` as any, 0);
+      return;
+    }
+
+    // NO1 Logic
+    const discountAmount = roundToTwo(
+      (item.quantity * item.rate * (item.discountPercent || 0)) / 100,
     );
+    const taxable = roundToTwo(item.quantity * item.rate - discountAmount);
+    const gstTotal = roundToTwo((taxable * (item.gstRate || 0)) / 100);
 
-    if (!variant || !product) return;
-
-    const taxable = roundToTwo(item.quantity * item.rate);
-    const gstTotal = roundToTwo((taxable * item.gstRate) / 100);
-
-    const customer = parties.find((p) => p.id === getValues("partyId"));
-    const isInterState = customer && customer.state !== "Maharashtra";
+    const customer = parties.find((p) => p.id === watchPartyId);
+    const isInterState =
+      customer &&
+      currentOutlet?.state &&
+      customer.state !== currentOutlet.state;
 
     let cgst = 0,
       sgst = 0,
@@ -202,19 +218,15 @@ function InvoiceForm() {
       sgst = roundToTwo(gstTotal / 2);
     }
 
-    setValue(`items.${index}.taxableValue`, taxable);
-    setValue(`items.${index}.cgst`, cgst);
-    setValue(`items.${index}.sgst`, sgst);
-    setValue(`items.${index}.igst`, igst);
+    setValue(`items.${index}.taxableValue` as any, taxable);
+    setValue(`items.${index}.cgst` as any, cgst);
+    setValue(`items.${index}.sgst` as any, sgst);
+    setValue(`items.${index}.igst` as any, igst);
   };
 
   const getAvailableStock = (variantId: string) => {
     const stock = stockLevels.find(
-      (s) =>
-        s.variantId === variantId &&
-        (primaryWarehouseId
-          ? s.warehouseId === primaryWarehouseId
-          : s.outletId === watchOutletId),
+      (s) => s.variantId === variantId && s.outletId === watchOutletId,
     );
     return stock?.quantity || 0;
   };
@@ -243,7 +255,7 @@ function InvoiceForm() {
   };
 
   const totals = watchItems.reduce(
-    (acc, item) => {
+    (acc, item: any) => {
       acc.taxable = roundToTwo(acc.taxable + (item.taxableValue || 0));
       acc.gst = roundToTwo(
         acc.gst + (item.cgst || 0) + (item.sgst || 0) + (item.igst || 0),
@@ -266,17 +278,14 @@ function InvoiceForm() {
         throw new Error(res.error?.message || "Failed to create Invoice");
       }
 
-      // If converting from quotation, update its status
       if (quoteId) {
         await convertQuotationToInvoice(quoteId, session.user.id);
       }
 
       toast.success(
-        quoteId
-          ? "Quotation finalized as Invoice"
-          : "Invoice created successfully",
+        data.billType === "NO1" ? "Invoice created" : "Cash Bill posted",
       );
-      router.push("/dashboard/sales");
+      router.push("/dashboard/sales/transactions");
     } catch (error) {
       console.error(error);
       toast.error(
@@ -313,7 +322,7 @@ function InvoiceForm() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Link
-            href="/dashboard/sales"
+            href="/dashboard/sales/transactions"
             className="p-2 hover:bg-slate-100 rounded-full transition-colors"
           >
             <ArrowLeft className="w-6 h-6 text-slate-600" />
@@ -327,37 +336,45 @@ function InvoiceForm() {
         </div>
       </div>
 
-      <div className="bg-white p-2 rounded-2xl border border-slate-200 w-fit">
-        <Tabs
-          value={watchIsInformal ? "informal" : "legal"}
-          onValueChange={(v) => setValue("isInformal", v === "informal")}
-        >
-          <TabsList className="bg-transparent h-12 gap-1">
-            <TabsTrigger
-              value="legal"
-              className="rounded-xl px-6 h-10 data-[state=active]:bg-brand data-[state=active]:text-white data-[state=active]:shadow-lg shadow-brand/20 transition-all font-black"
-            >
-              <Receipt className="w-4 h-4 mr-2" />
-              NO. 1 LEGAL BILL
-            </TabsTrigger>
-            <TabsTrigger
-              value="informal"
-              className="rounded-xl px-6 h-10 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg shadow-amber-500/20 transition-all font-black"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              NO. 2 RAW/CASH BILL
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+      {currentOutlet?.allowRawCashBills && (
+        <div className="bg-white p-2 rounded-2xl border border-slate-200 w-fit">
+          <Tabs
+            value={watchBillType}
+            onValueChange={(v) => {
+              reset({
+                ...getValues(),
+                billType: v as any,
+                partyId: v === "NO2" ? undefined : "",
+              } as any);
+            }}
+          >
+            <TabsList className="bg-transparent h-12 gap-1">
+              <TabsTrigger
+                value="NO1"
+                className="rounded-xl px-6 h-10 data-[state=active]:bg-brand data-[state=active]:text-white data-[state=active]:shadow-lg shadow-brand/20 transition-all font-black"
+              >
+                <Receipt className="w-4 h-4 mr-2" />
+                NO. 1 LEGAL BILL
+              </TabsTrigger>
+              <TabsTrigger
+                value="NO2"
+                className="rounded-xl px-6 h-10 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg shadow-amber-500/20 transition-all font-black"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                NO. 2 RAW/CASH BILL
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
 
-      {watchIsInformal && (
+      {watchBillType === "NO2" && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start space-x-4 animate-in fade-in slide-in-from-top-4 duration-500">
           <Info className="w-6 h-6 text-amber-600 shrink-0" />
           <div>
             <h4 className="font-bold text-amber-900">Informal Billing Mode</h4>
             <p className="text-amber-700 text-sm mt-1">
-              Inventory only update. No Ledger/GST impact.
+              Inventory only update. No Ledger/GST impact. Direct Post only.
             </p>
           </div>
         </div>
@@ -384,11 +401,9 @@ function InvoiceForm() {
                     {...register("fromOutletId")}
                     className="w-full bg-slate-50 border-none rounded-2xl p-4 font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/20"
                   >
-                    {outlets.map((o) => (
-                      <option key={o.id} value={o.id}>
-                        {o.name}
-                      </option>
-                    ))}
+                    <option value={currentOutlet?.id}>
+                      {currentOutlet?.name}
+                    </option>
                   </select>
                 </div>
                 <div className="space-y-2">
@@ -397,7 +412,8 @@ function InvoiceForm() {
                   </label>
                   <input
                     type="date"
-                    {...register("date")}
+                    value={(watch("date") as Date).toISOString().split("T")[0]}
+                    onChange={(e) => setValue("date", new Date(e.target.value))}
                     className="w-full bg-slate-50 border-none rounded-2xl p-4 font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
@@ -418,12 +434,14 @@ function InvoiceForm() {
                       quantity: 1,
                       unit: "BASE",
                       rate: 0,
-                      gstRate: 18,
+                      discountPercent: 0,
+                      gstRate: 0,
                       taxableValue: 0,
                       cgst: 0,
                       sgst: 0,
                       igst: 0,
-                    })
+                      hsnCode: "",
+                    } as any)
                   }
                   className="text-blue-600 hover:bg-blue-50 font-bold px-4 py-2 rounded-xl transition-all"
                 >
@@ -436,8 +454,8 @@ function InvoiceForm() {
                   const stockStatus = getStockStatus(index);
                   const isNegative = stockStatus.isNegative;
                   const item = watchItems[index];
-                  const product = products.find((p) =>
-                    p.variants.some((v: any) => v.id === item?.variantId),
+                  const itemProduct = products.find((p) =>
+                    p.variants.some((v: any) => v.id === item?.variantId)
                   );
 
                   return (
@@ -463,30 +481,27 @@ function InvoiceForm() {
                                   ),
                                 );
                                 if (variant && parent) {
-                                  const customerId = getValues("partyId");
                                   const customer = parties.find(
-                                    (p) => p.id === customerId,
+                                    (p) => p.id === watchPartyId,
                                   );
                                   const customPrice =
                                     customer?.priceList?.entries?.find(
                                       (e: any) => e.variantId === variantId,
                                     )?.price;
+
                                   const baseRate =
                                     customPrice ?? variant.sellingPrice;
-                                  const currentUnit = getValues(
-                                    `items.${index}.unit`,
-                                  );
-                                  const rate =
-                                    currentUnit === "SALES"
-                                      ? baseRate * (parent.conversionRatio || 1)
-                                      : baseRate;
                                   setValue(
-                                    `items.${index}.rate`,
-                                    roundToTwo(rate),
+                                    `items.${index}.rate` as any,
+                                    roundToTwo(baseRate),
                                   );
                                   setValue(
-                                    `items.${index}.gstRate`,
-                                    parent.gstRate,
+                                    `items.${index}.gstRate` as any,
+                                    parent.gstRate || 0,
+                                  );
+                                  setValue(
+                                    `items.${index}.hsnCode` as any,
+                                    variant.sku || "",
                                   );
                                 }
                                 calculateRow(index);
@@ -499,7 +514,7 @@ function InvoiceForm() {
                               <optgroup key={p.id} label={p.name}>
                                 {p.variants.map((v: any) => (
                                   <option key={v.id} value={v.id}>
-                                    {v.sku} (STK: {getAvailableStock(v.id)})
+                                    {v.sku} - {p.name}
                                   </option>
                                 ))}
                               </optgroup>
@@ -516,55 +531,98 @@ function InvoiceForm() {
                       </div>
 
                       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-                        <div className="space-y-1 lg:col-span-1">
+                        <div className="space-y-1">
                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                            Qty
+                            Qty {itemProduct?.baseUnit ? `(${itemProduct.baseUnit})` : ""}
                           </label>
                           <input
                             type="number"
-                            {...register(`items.${index}.quantity` as const, {
+                            step="0.01"
+                            {...register(`items.${index}.quantity` as any, {
+                              valueAsNumber: true,
                               onChange: () => calculateRow(index),
                             })}
                             className={`w-full bg-white border-none rounded-xl p-3 text-sm font-black text-center shadow-sm ${isNegative ? "text-amber-600 ring-2 ring-amber-500/20" : "text-slate-900"}`}
                           />
+                          <p
+                            className={`text-[9px] font-bold text-center mt-1 ${isNegative ? "text-amber-500" : "text-slate-400"}`}
+                          >
+                            STK: {stockStatus.available} {stockStatus.baseUnit}
+                          </p>
                         </div>
-                        <div className="space-y-1 lg:col-span-1">
+
+                        <div className="space-y-1">
                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
                             Rate (₹)
                           </label>
                           <input
                             type="number"
-                            {...register(`items.${index}.rate` as const, {
+                            {...register(`items.${index}.rate` as any, {
+                              valueAsNumber: true,
                               onChange: () => calculateRow(index),
                             })}
                             className="w-full bg-white border-none rounded-xl p-3 text-sm font-bold text-right shadow-sm"
                           />
                         </div>
-                        <div className="col-span-4 flex items-center justify-end space-x-6">
-                          <div className="text-right">
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                              Taxable Value
-                            </p>
-                            <p className="text-sm font-extrabold text-slate-800">
-                              ₹
-                              {(
-                                watchItems[index]?.taxableValue || 0
-                              ).toLocaleString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                              GST Total
-                            </p>
-                            <p className="text-sm font-extrabold text-blue-600">
-                              ₹
-                              {(
-                                (watchItems[index]?.cgst || 0) +
-                                (watchItems[index]?.sgst || 0) +
-                                (watchItems[index]?.igst || 0)
-                              ).toLocaleString()}
-                            </p>
-                          </div>
+
+                        {watchBillType === "NO1" && (
+                          <>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                                Disc %
+                              </label>
+                              <input
+                                type="number"
+                                {...register(
+                                  `items.${index}.discountPercent` as any,
+                                  {
+                                    valueAsNumber: true,
+                                    onChange: () => calculateRow(index),
+                                  },
+                                )}
+                                className="w-full bg-white border-none rounded-xl p-3 text-sm font-bold text-center shadow-sm"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                                GST %
+                              </label>
+                              <input
+                                type="number"
+                                {...register(`items.${index}.gstRate` as any, {
+                                  valueAsNumber: true,
+                                  onChange: () => calculateRow(index),
+                                })}
+                                className="w-full bg-white border-none rounded-xl p-3 text-sm font-bold text-center shadow-sm"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                                HSN
+                              </label>
+                              <input
+                                type="text"
+                                {...register(`items.${index}.hsnCode` as any)}
+                                className="w-full bg-slate-100 border-none rounded-xl p-3 text-[10px] font-bold text-slate-500 uppercase text-center shadow-inner"
+                              />
+                            </div>
+                          </>
+                        )}
+
+                        <div
+                          className={`flex flex-col justify-center items-end ${watchBillType === "NO1" ? "col-span-1" : "col-span-4"}`}
+                        >
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                            {watchBillType === "NO1"
+                              ? "Value (Excl)"
+                              : "Net Total"}
+                          </p>
+                          <p className="text-sm font-black text-slate-800">
+                            ₹
+                            {(
+                              watchItems[index]?.taxableValue || 0
+                            ).toLocaleString()}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -576,92 +634,217 @@ function InvoiceForm() {
 
           <div className="space-y-8">
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-              <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
-                {watchIsInformal ? (
-                  <User className="w-5 h-5 mr-3 text-amber-500" />
-                ) : (
-                  <Search className="w-5 h-5 mr-3 text-blue-500" />
+              <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center justify-between">
+                <span className="flex items-center">
+                  {watchBillType === "NO2" ? (
+                    <User className="w-5 h-5 mr-3 text-amber-500" />
+                  ) : (
+                    <Search className="w-5 h-5 mr-3 text-blue-500" />
+                  )}
+                  {watchBillType === "NO2"
+                    ? "Retail Buyer"
+                    : "Customer Contract"}
+                </span>
+
+                {watchBillType === "NO1" && watchPartyId && (
+                  <div
+                    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
+                      parties.find((p) => p.id === watchPartyId)?.state !==
+                      currentOutlet?.state
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-emerald-100 text-emerald-700"
+                    }`}
+                  >
+                    {parties.find((p) => p.id === watchPartyId)?.state !==
+                    currentOutlet?.state
+                      ? "Inter-state (IGST)"
+                      : "Intra-state (CGST+SGST)"}
+                  </div>
                 )}
-                {watchIsInformal ? "Buyer Info" : "Relationship"}
               </h3>
 
-              {!watchIsInformal ? (
-                <div className="space-y-4">
-                  <select
-                    {...register("partyId")}
-                    className={`w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 ${errors.partyId ? "ring-2 ring-red-500" : ""}`}
-                  >
-                    <option value="">Pick Customer...</option>
-                    {parties.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({p.state})
-                      </option>
-                    ))}
-                  </select>
-                  {errors.partyId && (
-                    <p className="text-red-500 text-xs font-bold pl-2">
-                      {errors.partyId.message}
-                    </p>
+              {watchBillType === "NO1" ? (
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <select
+                      {...register("partyId" as any, {
+                        onChange: () =>
+                          fields.forEach((_, i) => calculateRow(i)),
+                      })}
+                      className={`w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 ${(errors as any).partyId ? "ring-2 ring-red-500" : ""}`}
+                    >
+                      <option value="">Search Customer...</option>
+                      {parties.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                    {(errors as any).partyId && (
+                      <p className="text-red-500 text-xs font-bold pl-2">
+                        {(errors as any).partyId.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {watchPartyId && (
+                    <div className="p-4 bg-slate-50 rounded-2xl space-y-4">
+                      {(() => {
+                        const party = parties.find(
+                          (p) => p.id === watchPartyId,
+                        );
+                        if (!party?.creditLimit)
+                          return (
+                            <p className="text-[10px] font-bold text-slate-400 text-center">
+                              No Credit Limit Set
+                            </p>
+                          );
+
+                        const limit = party.creditLimit;
+                        const currentBalance = party.currentBalance || 0;
+                        const projectedBalance =
+                          currentBalance +
+                          (totals.taxable +
+                            totals.gst +
+                            (Number(watchFreight) || 0));
+                        const percentage = Math.min(
+                          100,
+                          (projectedBalance / limit) * 100,
+                        );
+                        const isOver = projectedBalance > limit;
+
+                        return (
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-end">
+                              <p className="text-[10px] font-black uppercase text-slate-500">
+                                Credit Limit
+                              </p>
+                              <p
+                                className={`text-xs font-black ${isOver ? "text-red-600" : "text-slate-900"}`}
+                              >
+                                ₹{projectedBalance.toLocaleString()} / ₹
+                                {limit.toLocaleString()}
+                              </p>
+                            </div>
+                            <Progress
+                              value={percentage}
+                              className={`h-2 ${isOver ? "bg-red-100 [&>div]:bg-red-500" : "bg-slate-200 [&>div]:bg-blue-500"}`}
+                            />
+                            {isOver && (
+                              <p className="text-[9px] font-bold text-red-500 flex items-center">
+                                <AlertTriangle className="w-3 h-3 mr-1" /> Limit
+                                Exceeded
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
                   )}
                 </div>
               ) : (
                 <div className="space-y-4">
                   <input
                     type="text"
-                    {...register("buyerName")}
-                    placeholder="Customer Name"
+                    {...register("buyerName" as any)}
+                    placeholder="Customer Name (Optional)"
                     className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-bold focus:ring-2 focus:ring-amber-500/20"
                   />
                   <input
                     type="text"
-                    {...register("buyerPhone")}
-                    placeholder="Contact Mobile"
+                    {...register("buyerPhone" as any)}
+                    placeholder="Contact Number (Optional)"
                     className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 font-bold focus:ring-2 focus:ring-amber-500/20"
                   />
                 </div>
               )}
             </div>
 
-            <div className="bg-slate-900 p-8 rounded-3xl text-white shadow-2xl sticky top-8">
-              <h3 className="text-xl font-black uppercase tracking-widest text-slate-500 mb-8 border-b border-slate-800 pb-4">
-                Checkout Total
-              </h3>
+            <div
+              className={`bg-slate-900 p-8 rounded-3xl text-white shadow-2xl sticky top-8 border-t-4 ${watchBillType === "NO1" ? "border-brand" : "border-amber-500"}`}
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="text-xl font-black uppercase tracking-widest text-slate-500">
+                  Total
+                </h3>
+                <div className="px-3 py-1 bg-white/10 rounded-lg text-[10px] font-black uppercase">
+                  {watchBillType}
+                </div>
+              </div>
+
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400 font-medium">Subtotal</span>
-                  <span className="font-black">
+                  <span className="text-slate-400 font-medium">
+                    Items Total
+                  </span>
+                  <span className="font-bold">
                     ₹ {totals.taxable.toLocaleString()}
                   </span>
                 </div>
+                {watchBillType === "NO1" && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400 font-medium">
+                      Total GST
+                    </span>
+                    <span className="font-bold text-blue-400">
+                      ₹ {totals.gst.toLocaleString()}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400 font-medium">Taxes</span>
-                  <span className="font-black text-blue-400">
-                    ₹ {totals.gst.toLocaleString()}
-                  </span>
+                  <span className="text-slate-400 font-medium">Freight</span>
+                  <input
+                    type="number"
+                    {...register("freightCost", { valueAsNumber: true })}
+                    className="w-24 bg-white/5 border-none rounded-lg p-2 text-right font-bold focus:ring-1 focus:ring-emerald-500"
+                  />
                 </div>
                 <div className="pt-8 border-t border-white/10">
-                  <p className="text-4xl font-black text-emerald-400 text-center tracking-tighter">
+                  <p className="text-[10px] font-black uppercase text-slate-500 mb-2 text-center">
+                    Grand Total
+                  </p>
+                  <p
+                    className={`text-4xl font-black text-center tracking-tighter ${watchBillType === "NO1" ? "text-emerald-400" : "text-amber-400"}`}
+                  >
                     ₹{" "}
-                    {(
-                      totals.taxable +
-                      totals.gst +
-                      (Number(watchFreight) || 0)
+                    {Math.round(
+                      totals.taxable + totals.gst + (Number(watchFreight) || 0),
                     ).toLocaleString()}
                   </p>
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={
-                  isSubmitting ||
-                  (watchItems.some((_, i) => getStockStatus(i).isNegative) &&
-                    selectedOutlet?.negativeStockPolicy === "BLOCK")
-                }
-                className="w-full mt-10 bg-emerald-500 hover:bg-emerald-600 text-white py-6 rounded-2xl font-black text-xl shadow-2xl shadow-emerald-500/30 transition-all active:scale-95 disabled:opacity-50"
-              >
-                {isSubmitting ? "Processing..." : "Finish Invoice"}
-              </button>
+              <div className="mt-8 space-y-3">
+                <button
+                  type="submit"
+                  disabled={
+                    isSubmitting ||
+                    (watchItems.some((_, i) => getStockStatus(i).isNegative) &&
+                      currentOutlet?.negativeStockPolicy === "BLOCK")
+                  }
+                  className={`w-full py-6 rounded-2xl font-black text-xl shadow-2xl transition-all active:scale-95 disabled:opacity-50 ${
+                    watchBillType === "NO1"
+                      ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20"
+                      : "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20"
+                  }`}
+                >
+                  {isSubmitting
+                    ? "Finalizing..."
+                    : watchBillType === "NO1"
+                      ? "Post Invoice"
+                      : "Post Cash Bill"}
+                </button>
+
+                {watchBillType === "NO1" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full bg-transparent border-white/10 text-white hover:bg-white/5 hover:text-white h-12"
+                  >
+                    Save Draft
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>

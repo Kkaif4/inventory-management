@@ -20,6 +20,7 @@ model User {
   transactions Transaction[]
   outlets      Outlet[]      @relation("OutletToUser")
   stockLedger  StockLedger[]
+  payments     Payment[]
 }
 
 model AuditLog {
@@ -50,28 +51,31 @@ model Warehouse {
 }
 
 model Outlet {
-  id                    String           @id @default(cuid())
-  name                  String
-  address               String?
-  state                 String?
-  invoicePrefix         String
-  invoiceStartingNumber Int              @default(1)
-  gstin                 String?
-  bankDetails           String?
-  defaultWarehouseId    String?
-  negativeStockPolicy   String           @default("WARN")
-  batchTrackingEnabled  Boolean          @default(false)
-  stocks                Stock[]
-  users                 User[]           @relation("OutletToUser")
-  warehouses            Warehouse[]      @relation("OutletToWarehouse")
-  categories            Category[]
-  products              Product[]
-  transactions          Transaction[]
-  parties               Party[]
-  accounts              Account[]
-  series                DocumentSeries[]
-  batches               CustomBatch[]
-  stockLedger           StockLedger[]
+  id                       String           @id @default(cuid())
+  name                     String
+  address                  String?
+  state                    String?
+  invoicePrefix            String
+  invoiceStartingNumber    Int              @default(1)
+  gstin                    String?
+  bankDetails              String?
+  defaultWarehouseId       String?
+  negativeStockPolicy      String           @default("WARN")
+  batchTrackingEnabled     Boolean          @default(false)
+  inventoryValuationMethod String           @default("NONE") // "NONE" | "FIFO"
+  allowRawCashBills        Boolean          @default(false)
+  stocks                   Stock[]
+  users                    User[]           @relation("OutletToUser")
+  warehouses               Warehouse[]      @relation("OutletToWarehouse")
+  categories               Category[]
+  products                 Product[]
+  transactions             Transaction[]
+  parties                  Party[]
+  accounts                 Account[]
+  series                   DocumentSeries[]
+  batches                  CustomBatch[]
+  stockLedger              StockLedger[]
+  payments                 Payment[]
 }
 
 model Category {
@@ -97,7 +101,6 @@ model Product {
   gstRate         Float
   baseUnit        String
   purchaseUnit    String?
-  salesUnit       String?
   conversionRatio Float?    @default(1)
   categoryId      String
   isArchived      Boolean   @default(false)
@@ -145,24 +148,35 @@ model Stock {
 }
 
 model Party {
-  id               String          @id @default(cuid())
-  type             PartyType
-  name             String
-  gstin            String?
-  pan              String?
-  address          String
-  state            String
-  contactInfo      String?
-  creditPeriod     Int             @default(0)
-  creditLimit      Float?
-  openingBalance   Float           @default(0)
-  priceListId      String?
-  outletId         String
-  outlet           Outlet          @relation(fields: [outletId], references: [id])
-  ledgerEntries    LedgerEntry[]
-  priceList        PriceList?      @relation(fields: [priceListId], references: [id])
-  transactions     Transaction[]
-  suppliedProducts VendorProduct[]
+  id                   String          @id @default(cuid())
+  type                 PartyType
+  name                 String
+  gstin                String?
+  pan                  String?
+  address              String
+  state                String
+  contactInfo          String?
+  phone                String?
+  email                String?
+  isActive             Boolean         @default(true)
+  bankName             String?
+  bankAccountName      String?
+  bankAccountNumber    String?
+  bankIfsc             String?
+  creditPeriod         Int             @default(0)
+  creditLimit          Float?
+  openingBalance       Float           @default(0)
+  openingBalanceLocked Boolean         @default(false)
+  outstandingBalance   Float           @default(0) // Denormalized cache — display only, not used for payment validation
+  creditBalance        Float           @default(0) // Customer advance/overpayment credit
+  priceListId          String?
+  outletId             String
+  outlet               Outlet          @relation(fields: [outletId], references: [id])
+  ledgerEntries        LedgerEntry[]
+  priceList            PriceList?      @relation(fields: [priceListId], references: [id])
+  transactions         Transaction[]
+  suppliedProducts     VendorProduct[]
+  payments             Payment[]
 }
 
 model Transaction {
@@ -179,12 +193,14 @@ model Transaction {
   freightCost    Float?            @default(0)
   grandTotal     Float             @default(0)
   status         String            @default("DRAFT")
+  billType       BillType          @default(NO1)
   isInformal     Boolean           @default(false)
   buyerName      String?
   buyerPhone     String?
   parentId       String?
   userId         String
   remarks        String?
+  paidAt         DateTime? // Set when invoice reaches PAID status
   ledgerEntries  LedgerEntry[]
   parent         Transaction?      @relation("TxFlow", fields: [parentId], references: [id])
   children       Transaction[]     @relation("TxFlow")
@@ -196,6 +212,7 @@ model Transaction {
   items          TransactionItem[]
   batchMovements BatchMovement[]
   stockLedger    StockLedger[]
+  payments       Payment[]
 }
 
 model TransactionItem {
@@ -224,6 +241,7 @@ model Account {
   outletId String
   outlet   Outlet        @relation(fields: [outletId], references: [id])
   entries  LedgerEntry[]
+  payments Payment[]
 
   @@unique([code, outletId])
 }
@@ -316,6 +334,7 @@ model StockLedger {
   quantity      Float // Net movement
   balance       Float // Running balance after this entry
   type          String // PURCHASE, SALE, TRANSFER, ADJUSTMENT
+  costPerUnit   Float? // Cost per unit (populated during FIFO consumption)
   userId        String
   variant       Variant     @relation(fields: [variantId], references: [id])
   warehouse     Warehouse   @relation(fields: [warehouseId], references: [id])
@@ -324,6 +343,31 @@ model StockLedger {
   user          User        @relation(fields: [userId], references: [id])
 
   @@index([variantId, warehouseId, date])
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  txnNumber     String   @unique // RCP-[FY]-[####]
+  invoiceId     String
+  outletId      String
+  partyId       String
+  amount        Float
+  paymentDate   DateTime
+  paymentMode   String // Cash | BankTransfer | UPI | Cheque | DD
+  bankAccountId String? // Required for BankTransfer, Cheque, DD
+  referenceNo   String? // UTR, cheque number, UPI txn ID (max 60)
+  notes         String? // Internal note (max 200)
+  createdBy     String
+  createdAt     DateTime @default(now())
+
+  invoice     Transaction @relation(fields: [invoiceId], references: [id])
+  outlet      Outlet      @relation(fields: [outletId], references: [id])
+  party       Party       @relation(fields: [partyId], references: [id])
+  bankAccount Account?    @relation(fields: [bankAccountId], references: [id])
+  creator     User        @relation(fields: [createdBy], references: [id])
+
+  @@index([invoiceId])
+  @@index([partyId, outletId])
 }
 
 model PriceListEntry {
@@ -371,4 +415,9 @@ enum AccountGroup {
   EQUITY
   INCOME
   EXPENSE
+}
+
+enum BillType {
+  NO1
+  NO2
 }

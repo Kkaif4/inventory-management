@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
 import {
   Building2,
   LayoutDashboard,
@@ -20,7 +19,6 @@ import {
   Quote,
   CreditCard,
   Truck,
-  Monitor,
   Landmark,
   BookOpen,
   BarChartBig,
@@ -72,10 +70,20 @@ const navigation = [
         href: "/dashboard/purchases",
         icon: ShoppingCart,
       },
+    ],
+  },
+  {
+    group: "PARTIES",
+    items: [
       {
-        name: "Vendor Metrics",
-        href: "/dashboard/purchases/vendor-metrics",
-        icon: TrendingUp,
+        name: "Customers",
+        href: "/dashboard/sales/customers",
+        icon: Users,
+      },
+      {
+        name: "Vendors",
+        href: "/dashboard/purchase/vendors",
+        icon: Truck,
       },
     ],
   },
@@ -83,39 +91,14 @@ const navigation = [
     group: "SALES",
     items: [
       {
-        name: "Quotations",
-        href: "/dashboard/sales/quotations",
+        name: "Quotations & Delivery",
+        href: "/dashboard/sales/quotations-and-delivery",
         icon: Quote,
       },
       {
-        name: "Proforma Invoices",
-        href: "/dashboard/sales/proforma-invoices",
-        icon: Receipt,
-      },
-      {
-        name: "Delivery Challans",
-        href: "/dashboard/sales/challans",
-        icon: Truck,
-      },
-      {
-        name: "Direct POS Sale",
-        href: "/dashboard/sales/pos",
-        icon: Monitor,
-      },
-      {
-        name: "Sales Invoices",
-        href: "/dashboard/sales/invoices",
+        name: "Sales Transactions",
+        href: "/dashboard/sales/transactions",
         icon: ReceiptIndianRupee,
-      },
-      {
-        name: "Sales Returns",
-        href: "/dashboard/sales/returns",
-        icon: CreditCard,
-      },
-      {
-        name: "Customers",
-        href: "/dashboard/sales/customers",
-        icon: Users,
       },
     ],
   },

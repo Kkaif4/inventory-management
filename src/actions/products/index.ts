@@ -57,12 +57,11 @@ export async function getProducts(
 
 export async function createProduct(data: {
   name: string;
-  brand?: string;
-  hsnCode: string;
+  brand?: string | null;
+  hsnCode?: string | null;
   gstRate: number;
   baseUnit: string;
-  purchaseUnit?: string;
-  salesUnit?: string;
+  purchaseUnit?: string | null;
   conversionRatio?: number;
   categoryId: string;
   outletId: string;
@@ -181,10 +180,10 @@ export async function updateProduct(
     gstRate: number;
     baseUnit: string;
     purchaseUnit?: string | null;
-    salesUnit?: string | null;
     conversionRatio?: number;
     categoryId: string;
     userId: string;
+    isArchived?: boolean;
     variants?: {
       id: string;
       sku: string;

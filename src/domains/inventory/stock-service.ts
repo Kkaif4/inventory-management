@@ -43,7 +43,7 @@ export const StockService = {
     // 1. Get outlet settings for batch tracking and policies
     const outlet = await tx.outlet.findUnique({
       where: { id: outletId },
-      select: { batchTrackingEnabled: true, negativeStockPolicy: true },
+      select: { batchTrackingEnabled: true, negativeStockPolicy: true, inventoryValuationMethod: true },
     });
 
     if (!outlet) throw new Error("Outlet not found");
@@ -78,7 +78,7 @@ export const StockService = {
     }
 
     // 3. Create StockLedger entry (Source of Truth)
-    await tx.stockLedger.create({
+    const ledgerEntry = await tx.stockLedger.create({
       data: {
         variantId,
         warehouseId: warehouseId as string,
@@ -92,7 +92,8 @@ export const StockService = {
     });
 
     // 4. FIFO Batch Logic
-    if (outlet.batchTrackingEnabled) {
+    const fifoEnabled = outlet.inventoryValuationMethod === "FIFO" || outlet.batchTrackingEnabled;
+    if (fifoEnabled) {
       if (quantity > 0) {
         // INCOMING: Create new batch
         await tx.customBatch.create({
@@ -110,15 +111,16 @@ export const StockService = {
       } else if (quantity < 0) {
         // OUTGOING: Consume batches using FIFO
         let toConsume = Math.abs(quantity);
+        const breakdown: Array<{ batchId: string; quantity: number; costPerUnit: number; totalCost: number }> = [];
 
-        // Find active batches (Received Date ASC)
+        // Find active batches (Received Date ASC, then createdAt ASC as fallback)
         const batches = await tx.customBatch.findMany({
           where: {
             variantId,
             warehouseId: warehouseId as string,
             outletId,
           },
-          orderBy: { receivedDate: "asc" },
+          orderBy: [{ receivedDate: "asc" }, { createdAt: "asc" }],
         });
 
         // Manual filter for remaining qty since we can't do column comparison easily in standard findMany where
@@ -147,6 +149,14 @@ export const StockService = {
               },
             });
 
+            const totalCost = consumeFromThis * batch.costPerUnit;
+            breakdown.push({
+              batchId: batch.id,
+              quantity: consumeFromThis,
+              costPerUnit: batch.costPerUnit,
+              totalCost,
+            });
+
             toConsume -= consumeFromThis;
           }
 
@@ -157,6 +167,16 @@ export const StockService = {
           throw new Error(
             `Insufficient batch stock for FIFO consumption. Missing: ${toConsume}`,
           );
+        }
+
+        // Update ledger entry with weighted average cost for FIFO consumption
+        if (breakdown.length > 0) {
+          const totalCost = breakdown.reduce((sum, b) => sum + b.totalCost, 0);
+          const weightedCostPerUnit = totalCost / Math.abs(quantity);
+          await tx.stockLedger.update({
+            where: { id: ledgerEntry.id },
+            data: { costPerUnit: weightedCostPerUnit },
+          });
         }
       }
     }

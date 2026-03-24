@@ -15,6 +15,7 @@
     "@auth/prisma-adapter": "^2.11.1",
     "@base-ui/react": "^1.2.0",
     "@hookform/resolvers": "^5.2.2",
+    "@jest/globals": "^30.3.0",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "@radix-ui/react-alert-dialog": "^1.1.15",
