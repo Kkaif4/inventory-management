@@ -40,14 +40,14 @@ const navigation = [
     group: "SALES",
     items: [
       {
-        name: "Quotations & Delivery",
-        href: "/dashboard/sales/quotations-and-delivery",
-        icon: Quote,
-      },
-      {
         name: "Sales Transactions",
         href: "/dashboard/sales/transactions",
         icon: ReceiptIndianRupee,
+      },
+      {
+        name: "Quotations & Delivery",
+        href: "/dashboard/sales/quotations-and-delivery",
+        icon: Quote,
       },
     ],
   },

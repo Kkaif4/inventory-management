@@ -17,19 +17,19 @@ export function FormSection({
   return (
     <div
       className={cn(
-        "space-y-6 py-6 border-b border-border-default last:border-0",
+        "space-y-6 border-b border-slate-100 pb-8 last:border-0",
         className,
       )}
     >
       <div className="space-y-1">
-        <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+        <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">
           {title}
         </h3>
         {description && (
-          <p className="text-xs text-text-muted">{description}</p>
+          <p className="text-sm text-slate-600">{description}</p>
         )}
       </div>
-      <div className="space-y-4">{children}</div>
+      <div>{children}</div>
     </div>
   );
 }

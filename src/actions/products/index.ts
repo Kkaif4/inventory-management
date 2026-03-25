@@ -13,7 +13,7 @@ export async function getProducts(
   filters: ProductFilter = {},
 ) {
   return withErrorHandler(async () => {
-    const { search, categoryId, brand } = filters;
+    const { search, categoryId, brand, limit } = filters;
 
     const andClauses: any[] = [{ outletId }, { isArchived: false }];
 
@@ -51,6 +51,7 @@ export async function getProducts(
         },
       },
       orderBy: { name: "asc" },
+      ...(limit ? { take: limit } : {}),
     });
   });
 }

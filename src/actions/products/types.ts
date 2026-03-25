@@ -2,6 +2,7 @@ export type ProductFilter = {
   search?: string;
   categoryId?: string;
   brand?: string;
+  limit?: number;
 };
 
 export type VariantPayload = {

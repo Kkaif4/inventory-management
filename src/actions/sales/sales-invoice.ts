@@ -299,6 +299,214 @@ export async function getSalesInvoice(invoiceId: string) {
   });
 }
 
+export async function saveSalesInvoiceDraft(data: {
+  billType: "NO1" | "NO2";
+  partyId?: string;
+  fromOutletId: string;
+  items: {
+    variantId: string;
+    quantity: number;
+    rate: number;
+    discountPercent?: number;
+    taxableValue: number;
+    cgst?: number;
+    sgst?: number;
+    igst?: number;
+    hsnCode?: string;
+    gstRate?: number;
+  }[];
+  date: Date;
+  userId: string;
+  freightCost?: number;
+  remarks?: string;
+  buyerName?: string;
+  buyerPhone?: string;
+}) {
+  return withErrorHandler(async () => {
+    const isNo2 = data.billType === "NO2";
+
+    const outlet = await prisma.outlet.findUnique({
+      where: { id: data.fromOutletId },
+      include: { warehouses: true },
+    });
+
+    if (!outlet) throw new NotFoundError("Outlet not found");
+
+    const totalTaxable = roundToTwo(
+      data.items.reduce((a, b) => a + b.taxableValue, 0),
+    );
+    const totalCgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.cgst || 0), 0),
+    );
+    const totalSgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.sgst || 0), 0),
+    );
+    const totalIgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.igst || 0), 0),
+    );
+    const totalTax = roundToTwo(totalCgst + totalSgst + totalIgst);
+    const freightCost = data.freightCost || 0;
+    const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
+
+    const warehouseId = outlet.warehouses[0]?.id;
+    const variants = await prisma.variant.findMany({
+      where: { id: { in: data.items.map((i) => i.variantId) } },
+      include: { product: true },
+    });
+
+    return await prisma.$transaction(async (tx) => {
+      const draft = await tx.transaction.create({
+        data: {
+          type: "SALES_INVOICE",
+          billType: data.billType,
+          txnNumber: `DRAFT-${Date.now()}`, // Temporary draft number
+          date: data.date,
+          partyId: isNo2 ? null : data.partyId,
+          isInformal: isNo2,
+          buyerName: data.buyerName,
+          buyerPhone: data.buyerPhone,
+          outletId: data.fromOutletId,
+          fromLocationId: warehouseId || data.fromOutletId,
+          totalTaxable,
+          totalTax,
+          freightCost,
+          grandTotal,
+          status: "DRAFT",
+          userId: data.userId,
+          remarks: data.remarks,
+          items: {
+            create: data.items.map((item) => ({
+              variantId: item.variantId,
+              quantity: item.quantity,
+              rate: item.rate,
+              conversionRatio:
+                variants.find((v) => v.id === item.variantId)?.product
+                  .conversionRatio || 1,
+              taxableValue: item.taxableValue,
+              cgst: item.cgst || 0,
+              sgst: item.sgst || 0,
+              igst: item.igst || 0,
+            })),
+          },
+        },
+      });
+
+      revalidatePath("/dashboard/sales/invoices");
+      return draft;
+    });
+  });
+}
+
+export async function editSalesInvoice(
+  invoiceId: string,
+  data: {
+    billType: "NO1" | "NO2";
+    partyId?: string;
+    fromOutletId: string;
+    items: {
+      variantId: string;
+      quantity: number;
+      rate: number;
+      discountPercent?: number;
+      taxableValue: number;
+      cgst?: number;
+      sgst?: number;
+      igst?: number;
+      hsnCode?: string;
+      gstRate?: number;
+    }[];
+    date: Date;
+    userId: string;
+    freightCost?: number;
+    remarks?: string;
+    buyerName?: string;
+    buyerPhone?: string;
+  },
+) {
+  return withErrorHandler(async () => {
+    const invoice = await prisma.transaction.findUnique({
+      where: { id: invoiceId },
+    });
+
+    if (!invoice) throw new NotFoundError("Invoice not found");
+    if (invoice.status === "POSTED") {
+      throw new ValidationError("Cannot edit posted invoices");
+    }
+
+    const isNo2 = data.billType === "NO2";
+    const outlet = await prisma.outlet.findUnique({
+      where: { id: data.fromOutletId },
+      include: { warehouses: true },
+    });
+
+    if (!outlet) throw new NotFoundError("Outlet not found");
+
+    const totalTaxable = roundToTwo(
+      data.items.reduce((a, b) => a + b.taxableValue, 0),
+    );
+    const totalCgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.cgst || 0), 0),
+    );
+    const totalSgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.sgst || 0), 0),
+    );
+    const totalIgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.igst || 0), 0),
+    );
+    const totalTax = roundToTwo(totalCgst + totalSgst + totalIgst);
+    const freightCost = data.freightCost || 0;
+    const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
+
+    const warehouseId = outlet.warehouses[0]?.id;
+    const variants = await prisma.variant.findMany({
+      where: { id: { in: data.items.map((i) => i.variantId) } },
+      include: { product: true },
+    });
+
+    return await prisma.$transaction(async (tx) => {
+      // Delete old items
+      await tx.transactionItem.deleteMany({
+        where: { transactionId: invoiceId },
+      });
+
+      // Update invoice
+      const updated = await tx.transaction.update({
+        where: { id: invoiceId },
+        data: {
+          billType: data.billType,
+          date: data.date,
+          partyId: isNo2 ? null : data.partyId,
+          isInformal: isNo2,
+          buyerName: data.buyerName,
+          buyerPhone: data.buyerPhone,
+          totalTaxable,
+          totalTax,
+          freightCost,
+          grandTotal,
+          remarks: data.remarks,
+          items: {
+            create: data.items.map((item) => ({
+              variantId: item.variantId,
+              quantity: item.quantity,
+              rate: item.rate,
+              conversionRatio:
+                variants.find((v) => v.id === item.variantId)?.product
+                  .conversionRatio || 1,
+              taxableValue: item.taxableValue,
+              cgst: item.cgst || 0,
+              sgst: item.sgst || 0,
+              igst: item.igst || 0,
+            })),
+          },
+        },
+      });
+
+      revalidatePath("/dashboard/sales/invoices");
+      return updated;
+    });
+  });
+}
+
 export async function getSalesReturns(outletId: string, limit = 50) {
   return await prisma.transaction.findMany({
     where: {

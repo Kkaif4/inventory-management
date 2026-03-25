@@ -204,7 +204,7 @@ export function PurchaseOrdersClient({
         open={!!selectedPoForBill}
         onOpenChange={(open) => !open && setSelectedPoForBill(null)}
       >
-        <DialogContent className="sm:max-w-[425px] rounded-3xl">
+        <DialogContent className="sm:max-w-106.25 rounded-3xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Receipt className="w-5 h-5 text-green-600" />
@@ -221,7 +221,7 @@ export function PurchaseOrdersClient({
               </Label>
               <Input
                 id="billNumber"
-                placeholder="e.g. INV/2023/001"
+                placeholder="e.g. INV/2026/001"
                 value={billNumber}
                 onChange={(e) => setBillNumber(e.target.value)}
                 className="rounded-xl h-11"

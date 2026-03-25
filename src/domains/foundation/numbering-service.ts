@@ -64,7 +64,12 @@ export const NumberingService = {
 
     // If we just created it, the next number for the *current* call is 1
     const currentNumber = series.nextNumber === 2 ? 1 : series.nextNumber - 1;
-
+    console.log("Generated number:", {
+      type,
+      financialYear,
+      prefix,
+      currentNumber,
+    });
     return `${series.prefix}/${series.financialYear}/${currentNumber.toString().padStart(4, "0")}`;
   },
 
