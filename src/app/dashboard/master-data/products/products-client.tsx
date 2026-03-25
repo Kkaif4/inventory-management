@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSession } from "next-auth/react";
 import { ProductFilter } from "@/actions/products/types";
+import { useTranslations } from "next-intl";
 
 export function ProductsClient({
   products: initialProducts,
@@ -34,6 +35,9 @@ export function ProductsClient({
   products: any[];
   outletId: string;
 }) {
+  const t = useTranslations("products");
+  const common = useTranslations("common");
+  const dashboardTable = useTranslations("dashboard.table");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { data: session } = useSession();
@@ -52,7 +56,7 @@ export function ProductsClient({
       if (res.success) {
         setData(res.data!);
       } else {
-        toast.error("Failed to fetch products: " + res.error?.message);
+        toast.error(`${t("toasts.deleteFailed")}: ${res.error?.message}`);
       }
     });
   };
@@ -75,14 +79,14 @@ export function ProductsClient({
       setIsDeleting(true);
       const res = await deleteProduct(deleteId, session.user.id);
       if (res.success) {
-        toast.success("Product deleted successfully");
+        toast.success(t("toasts.deleted"));
         await fetchProducts();
       } else {
-        toast.error("Failed to delete product: " + res.error?.message);
+        toast.error(`${t("toasts.deleteFailed")}: ${res.error?.message}`);
       }
     } catch (error) {
       console.error(error);
-      toast.error("An unexpected error occurred during deletion");
+      toast.error(t("toasts.deleteError"));
     } finally {
       setIsDeleting(false);
       setDeleteId(null);
@@ -92,7 +96,7 @@ export function ProductsClient({
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "name",
-      header: "Product Name",
+      header: t("productName"),
       cell: ({ getValue, row }) => (
         <div className="flex flex-col">
           <span className="font-bold text-text-primary uppercase tracking-tight">
@@ -111,16 +115,16 @@ export function ProductsClient({
     },
     {
       accessorKey: "brand",
-      header: "Brand",
+      header: t("brand"),
       size: 140,
       cell: ({ getValue }) =>
         (getValue() as string) || (
-          <span className="text-text-disabled">No Brand</span>
+          <span className="text-text-disabled">{t("noBrand")}</span>
         ),
     },
     {
       accessorKey: "category",
-      header: "Category",
+      header: dashboardTable("category"),
       size: 180,
       cell: ({ getValue }) => (
         <span className="text-xs font-medium text-text-secondary">
@@ -130,7 +134,7 @@ export function ProductsClient({
     },
     {
       accessorKey: "gstRate",
-      header: () => <div className="text-center">GST %</div>,
+      header: () => <div className="text-center">{t("gstPercentage")}</div>,
       size: 80,
       cell: ({ getValue }) => (
         <div className="flex justify-center">
@@ -142,7 +146,7 @@ export function ProductsClient({
     },
     {
       accessorKey: "_count",
-      header: () => <div className="text-center">Variants</div>,
+      header: () => <div className="text-center">{t("variants")}</div>,
       size: 100,
       cell: ({ getValue, row }) => (
         <div className="flex justify-center">
@@ -157,7 +161,9 @@ export function ProductsClient({
     },
     {
       accessorKey: "isArchived",
-      header: () => <div className="text-right">Status</div>,
+      header: () => (
+        <div className="text-right">{dashboardTable("status")}</div>
+      ),
       size: 100,
       cell: ({ getValue }) => {
         const isArchived = getValue() as boolean;
@@ -165,7 +171,7 @@ export function ProductsClient({
           <div className="flex justify-end">
             <StatusBadge
               status={isArchived ? "cancelled" : "completed"}
-              label={isArchived ? "Archived" : "Active"}
+              label={isArchived ? common("archived") : common("active")}
             />
           </div>
         );
@@ -173,21 +179,21 @@ export function ProductsClient({
     },
     {
       id: "actions",
-      header: () => <div className="text-right px-4">Actions</div>,
+      header: () => <div className="text-right px-4">{common("actions")}</div>,
       size: 150,
       cell: ({ row }) => (
         <div className="flex justify-end gap-2 pr-2">
           <Link
             href={`/dashboard/master-data/products/${row.original.id}/edit`}
             className="flex items-center justify-center h-8 w-8 rounded-lg bg-surface-elevated hover:bg-surface-hover text-text-secondary hover:text-brand transition-all border border-border/50 hover:border-brand/30 shadow-sm"
-            title="Edit Product"
+            title={t("editProduct")}
           >
             <Edit className="w-4 h-4" />
           </Link>
           <button
             onClick={() => setDeleteId(row.original.id)}
             className="flex items-center justify-center h-8 w-8 rounded-lg bg-surface-elevated hover:bg-red-50 text-text-secondary hover:text-red-600 transition-all border border-border/50 hover:border-red-200 shadow-sm"
-            title="Delete Product"
+            title={t("deleteProduct")}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -197,19 +203,22 @@ export function ProductsClient({
   ];
 
   const breadcrumbs = [
-    { label: "Master Data" },
-    { label: "Products", href: "/dashboard/master-data/products" },
+    { label: common("groups.masterData") },
+    {
+      label: t("addProduct").replace("Add ", ""),
+      href: "/dashboard/master-data/products",
+    },
   ];
 
   const actions = [
     {
-      label: "Import Products",
+      label: t("importProducts"),
       icon: FileSpreadsheet,
       variant: "outline" as const,
       onClick: () => setImportDialogOpen(true),
     },
     {
-      label: "Add Product",
+      label: t("addProduct"),
       icon: Plus,
       onClick: () => router.push("/dashboard/master-data/products/new"),
     },
@@ -218,13 +227,13 @@ export function ProductsClient({
   return (
     <div className="space-y-4 translate-y-[-8px]">
       <PageHeader
-        title="Product Master"
-        subtitle="Manage industrial items, brands, and variants across outlets."
+        title={t("title")}
+        subtitle={t("subtitle")}
         breadcrumbs={breadcrumbs}
       />
 
       <TableToolbar
-        searchPlaceholder="Filter by name, brand or SKU..."
+        searchPlaceholder={t("searchPlaceholder")}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         actions={actions}
@@ -247,28 +256,27 @@ export function ProductsClient({
             </div>
             <AlertDialogHeader>
               <AlertDialogTitle className="text-xl font-black text-red-900 uppercase tracking-tight">
-                Delete Product?
+                {t("deleteDialog.title")}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-red-800/70 font-medium text-sm">
-                This action cannot be undone. This product will be permanently
-                removed from the master catalog.
+                {t("deleteDialog.description")}
                 <br />
                 <br />
                 <span className="font-bold text-red-600">
-                  Note: Deletion will fail if any stock is still available.
+                  {t("deleteDialog.note")}
                 </span>
               </AlertDialogDescription>
             </AlertDialogHeader>
           </div>
           <AlertDialogFooter className="p-6 pt-0 bg-white flex items-center justify-center gap-3 sm:justify-center">
             <AlertDialogCancel className="rounded-2xl border border-slate-100 bg-slate-50 text-slate-500 font-bold text-xs uppercase px-8 hover:bg-slate-100 transition-all hover:text-slate-900">
-              Cancel
+              {common("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="rounded-2xl bg-red-600 text-white font-bold text-xs uppercase px-8 hover:bg-red-700 transition-all shadow-xl shadow-red-100"
             >
-              Confirm Delete
+              {t("deleteDialog.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

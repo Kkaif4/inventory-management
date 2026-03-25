@@ -3,10 +3,11 @@
     "groups": {
       "overview": "OVERVIEW",
       "sales": "SALES",
-      "products": "PRODUCTS & STOCK",
+      "productsAndStock": "PRODUCTS & STOCK",
       "procurement": "PROCUREMENT",
       "parties": "PARTIES",
       "finance": "FINANCE",
+      "financials": "FINANCIALS",
       "admin": "ADMIN"
     },
     "items": {
@@ -146,11 +147,315 @@
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Here is what's happening in your business today.",
+    "welcome": "Welcome, {name}",
+    "recentSalesInvoices": "Recent Sales Invoices",
+    "viewAll": "View All",
+    "pendingActions": "Pending Actions",
+    "verifyGrns": "Verify {count} GRNs",
+    "awaitingBillEntry": "Awaiting purchase bill entry",
+    "stockAlert": "Stock Alert",
+    "lowStockItems": "Low Stock Items",
+    "requiresAttention": "Requires attention",
+    "itemsBelowMinimum": "{count} items below minimum level",
+    "openPurchaseOrders": "Open Purchase Orders",
+    "valuedAt": "Valued at {value}",
     "kpi": {
       "todaySales": "Today's Sales",
       "invoicesGenerated": "Invoices generated",
       "outstanding": "Outstanding Receivables",
       "outstandingSubtitle": "Pending from customers"
+    },
+    "table": {
+      "invoiceNumber": "Invoice #",
+      "customer": "Customer",
+      "amount": "Amount",
+      "status": "Status"
     }
+  },
+  "outletSwitcher": {
+    "title": "Select Workplace",
+    "allOutlets": "All Outlets",
+    "consolidatedView": "Consolidated View",
+    "switchingWorkspace": "Switching Workspace",
+    "warning": "Any unsaved changes in your current forms will be lost. The page will refresh to load the new context.",
+    "continueSwitch": "Continue Switch"
+  },
+  "sales": {
+    "title": "Sales Transactions",
+    "invoices": "Invoices",
+    "returns": "Returns",
+    "newInvoice": "New Invoice",
+    "newReturn": "New Return",
+    "viewDetails": "View Details",
+    "printInvoice": "Print Invoice",
+    "recordPayment": "Record Payment",
+    "informal": "Informal",
+    "cashCustomer": "Cash Customer",
+    "unknown": "Unknown",
+    "date": "Date",
+    "returnNumber": "Return #",
+    "invoicesSubtitle": "Generate tax-compliant invoices and track account receivables.",
+    "returnsSubtitle": "Track goods returned by customers (Credit Notes).",
+    "manageTransactions": "Manage invoices and returns"
+  },
+  "inventory": {
+    "title": "Current Stock",
+    "subtitle": "Real-time multi-location inventory levels and valuation.",
+    "transfer": "Transfer",
+    "adjustment": "Adjustment",
+    "physicalQty": "Physical Qty",
+    "inTransit": "In-Transit",
+    "noStockRecords": "No stock records found",
+    "initialStockNotice": "Initial stock can be added via Adjustments or GRNs.",
+    "searchPlaceholder": "Filter items, SKU or locations...",
+    "location": "Location",
+    "category": "Category",
+    "productSku": "Product / SKU",
+    "unit": "Unit",
+    "warehouse": "Warehouse",
+    "outlet": "Outlet"
+  },
+  "quotationsAndDelivery": {
+    "tabs": {
+      "quotations": "Quotations",
+      "proforma": "Proforma",
+      "challans": "Challans"
+    },
+    "quotations": {
+      "title": "Quotations / Estimates",
+      "subtitle": "Manage customer proposals and sales estimates.",
+      "quoteNumber": "Quote #",
+      "newQuotation": "New Quotation",
+      "searchPlaceholder": "Search quotation number or customer...",
+      "convert": "Convert",
+      "itemsCount": "{count} item(s)"
+    },
+    "proforma": {
+      "title": "Proforma Invoices",
+      "subtitle": "Temporary invoices before final billing.",
+      "invoiceNumber": "Invoice #",
+      "newProforma": "New Proforma",
+      "searchPlaceholder": "Search invoice number..."
+    },
+    "challans": {
+      "title": "Delivery Challans",
+      "subtitle": "Manage dispatch documents and material movements.",
+      "challanNumber": "Challan #",
+      "searchPlaceholder": "Search challan #..."
+    },
+    "table": {
+      "amountWithCurrency": "Amount (₹)",
+      "totalAmountWithCurrency": "Total Amount (₹)",
+      "valueWithCurrency": "Value (₹)"
+    }
+  },
+  "categories": {
+    "title": "Product Categories",
+    "subtitle": "Manage the multi-level product taxonomy.",
+    "addCategory": "Add Category",
+    "noCategories": "No categories found. Click \"Add Category\" to get started.",
+    "hierarchyName": "Hierarchy / Name",
+    "subsCount": "Subs",
+    "itemsCount": "Items",
+    "categoryNamePlaceholder": "Category Name",
+    "parentPlaceholder": "-- Parent (Optional) --",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "deleteTitle": "Are you absolutely sure?",
+    "deleteDescription": "This will permanently delete this category. This action cannot be undone.",
+    "deleteConfirm": "Delete Category",
+    "descPlaceholder": "Brief description...",
+    "toasts": {
+      "created": "Category created successfully",
+      "updated": "Category updated",
+      "deactivated": "Category deactivated",
+      "activated": "Category activated",
+      "deleted": "Category deleted",
+      "createFailed": "Failed to create category",
+      "updateFailed": "Failed to update category"
+    }
+  },
+  "products": {
+    "title": "Product Master",
+    "subtitle": "Manage industrial items, brands, and variants across outlets.",
+    "addProduct": "Add Product",
+    "importProducts": "Import Products",
+    "searchPlaceholder": "Filter by name, brand or SKU...",
+    "productName": "Product Name",
+    "brand": "Brand",
+    "noBrand": "No Brand",
+    "gstPercentage": "GST %",
+    "variants": "Variants",
+    "editProduct": "Edit Product",
+    "deleteProduct": "Delete Product",
+    "deleteDialog": {
+      "title": "Delete Product?",
+      "description": "This action cannot be undone. This product will be permanently removed from the master catalog.",
+      "note": "Note: Deletion will fail if any stock is still available.",
+      "confirm": "Confirm Delete"
+    },
+    "form": {
+      "basicInfo": "Basic Information",
+      "productVariants": "Product Variants",
+      "productNameLabel": "Product Name *",
+      "productNamePlaceholder": "e.g. 10mm Drill Bit",
+      "brandLabel": "Brand",
+      "brandPlaceholder": "e.g. Bosch",
+      "categoryLabel": "Specific Category *",
+      "categoryPlaceholder": "Select Category...",
+      "hsnLabel": "HSN Code",
+      "hsnPlaceholder": "e.g. 8467",
+      "gstRateLabel": "GST Rate (%) *",
+      "gstRatePlaceholder": "Select GST Rate",
+      "baseUnitLabel": "Base Unit (Smallest e.g. PCS) *",
+      "baseUnitPlaceholder": "Select Base Unit",
+      "purchaseUnitLabel": "Purchase Unit (Bulk e.g. BOX)",
+      "purchaseUnitPlaceholder": "Select Purchase Unit",
+      "conversionRatioLabel": "Conversion Ratio (Units in 1 {unit})",
+      "conversionRatioPlaceholder": "How many base units in one purchase unit?",
+      "conversionHelp": "How many {base} are in 1 {purchase}?",
+      "conversionNote": "Conversion: 1 {purchase} = {ratio} {base} during inventory updates.",
+      "addVariant": "Add Variant",
+      "skuLabel": "SKU / Barcode *",
+      "skuPlaceholder": "Unique ID",
+      "costPriceLabel": "Cost Price *",
+      "pricingLogicLabel": "Pricing Logic",
+      "manualEntry": "Manual Entry",
+      "markup": "% Markup",
+      "marginLabel": "Margin % *",
+      "sellingPriceLabel": "Selling Price *",
+      "autoSellingPrice": "Auto Selling Price",
+      "minAlertLabel": "Min. Alert",
+      "saveButton": "Save Product & Variants",
+      "savingButton": "Creating Master Record...",
+      "outletRequiredTitle": "Outlet Required",
+      "outletRequiredDescription": "Please select an active outlet from the switcher in the top navigation bar before adding products to the master catalog.",
+      "goBack": "Go Back"
+    },
+    "toasts": {
+      "deleted": "Product deleted successfully",
+      "deleteFailed": "Failed to delete product",
+      "deleteError": "An unexpected error occurred during deletion",
+      "loadCategoriesFailed": "Failed to load categories",
+      "created": "Product created successfully",
+      "createFailed": "Failed to create product",
+      "createError": "An unexpected error occurred"
+    }
+  },
+  "priceLists": {
+    "title": "Price Lists",
+    "subtitle": "Manage custom pricing tiers for customers",
+    "table": {
+      "name": "Price List Name",
+      "entriesCount": "Products Covered",
+      "partiesCount": "Assigned Customers"
+    },
+    "addPriceList": "Create Price List",
+    "searchPlaceholder": "Filter price lists...",
+    "toasts": {
+      "created": "Price list created successfully",
+      "updated": "Price list updated",
+      "deleted": "Price list deleted"
+    }
+  },
+  "locations": {
+    "title": "Locations Management",
+    "subtitle": "Manage the logical and physical storage infrastructure of your enterprise.",
+    "kpis": {
+      "warehouses": "Warehouses",
+      "outlets": "Active Outlets",
+      "stocks": "Stock Points",
+      "status": "Network Status",
+      "operational": "Operational"
+    },
+    "warehouses": {
+      "title": "Warehouses",
+      "add": "Add Warehouse",
+      "empty": "No warehouses established yet.",
+      "skuPoints": "{count} SKU Points",
+      "linkedOutlets": "{count} Linked Outlets",
+      "mainHub": "Main Distribution Hub"
+    },
+    "outlets": {
+      "title": "Sales Outlets",
+      "add": "Add Outlet",
+      "empty": "No points of sale configured.",
+      "sourcedVia": "Sourced via: {warehouses}",
+      "directSupply": "Direct Supply",
+      "usersAssigned": "{count} Users assigned",
+      "policies": {
+        "block": "Strict Block",
+        "warn": "Warn Only",
+        "allow": "Allow Negative"
+      }
+    },
+    "delete": {
+      "warehouse": {
+        "title": "Delete Warehouse",
+        "description": "Are you sure you want to delete warehouse \"{name}\"? This action cannot be undone and might fail if there are linked transactions."
+      },
+      "outlet": {
+        "title": "Delete Outlet",
+        "description": "Are you sure you want to delete outlet \"{name}\"? This action cannot be undone and might fail if there are linked transactions."
+      },
+      "confirm": "Delete Now"
+    }
+  },
+  "inventory": {
+    "title": "Current Stock",
+    "subtitle": "Real-time multi-location inventory levels and valuation.",
+    "stats": {
+      "total": "Total Items",
+      "low": "Low Stock",
+      "out": "Out of Stock"
+    },
+    "tabs": {
+      "inventory": "Stock Inventory",
+      "movement": "Stock Movement"
+    },
+    "actions": {
+      "transfer": "Stock Transfer",
+      "adjustment": "Adjustment",
+      "receive": "Confirm Receipt"
+    },
+    "table": {
+      "sku": "SKU",
+      "productSpec": "Product / Spec",
+      "brand": "Brand",
+      "category": "Category",
+      "qtyOnHand": "Qty On Hand",
+      "inTransit": "In Transit",
+      "status": "Status",
+      "txnNumber": "Txn Number",
+      "date": "Date",
+      "route": "Route",
+      "items": "{count} items"
+    },
+    "filters": {
+      "searchPlaceholder": "Search SKU or Product name...",
+      "selectWarehouse": "Select Warehouse",
+      "allCategories": "All Categories",
+      "status": {
+        "all": "All Items",
+        "inStock": "In Stock",
+        "lowStock": "Low Stock",
+        "outOfStock": "Out of Stock"
+      }
+    },
+    "toasts": {
+      "fetchFailed": "Failed to fetch inventory",
+      "transferFetchFailed": "Failed to fetch transfers",
+      "receiveSuccess": "Stock received successfully!",
+      "receiveFailed": "Failed to receive stock"
+    },
+    "empty": {
+      "inventory": "No inventory data found.",
+      "transfers": "No pending stock movements."
+    },
+    "ledger": "Inventory Ledger",
+    "ledgerSubtitle": "Transaction history for {product}",
+    "physicalQty": "Physical Qty",
+    "noStockRecords": "No stock records found",
+    "initialStockNotice": "Initial stock can be added via Adjustments or GRNs."
   }
 }

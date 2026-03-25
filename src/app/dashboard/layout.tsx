@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { Building2, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OutletSwitcher } from "@/components/ui/outlet-switcher";
-import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layout/sidebar";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import {
@@ -18,6 +17,7 @@ import {
 import { useOutletStore } from "@/store/use-outlet-store";
 import { getUserOutlets } from "@/actions/users";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 export default function DashboardLayout({
   children,
@@ -27,6 +27,7 @@ export default function DashboardLayout({
   const { data: session } = useSession();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { setAvailableOutlets } = useOutletStore();
+  const t = useTranslations("nav");
 
   // Load collapse state and fetch outlets
   useEffect(() => {
@@ -107,7 +108,7 @@ export default function DashboardLayout({
                   className="text-red-600 cursor-pointer"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  <span>Sign Out</span>
+                  <span>{t("signOut")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

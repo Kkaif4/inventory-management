@@ -17,6 +17,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
 
 export function DashboardClient({
   stats,
@@ -25,10 +26,12 @@ export function DashboardClient({
   stats: any;
   userName: string;
 }) {
+  const t = useTranslations("dashboard");
+
   const invoiceColumns: ColumnDef<any>[] = [
     {
       accessorKey: "txnNumber",
-      header: "Invoice #",
+      header: t("table.invoiceNumber"),
       cell: ({ getValue }) => (
         <span className="font-bold text-text-primary">
           {getValue() as string}
@@ -37,12 +40,12 @@ export function DashboardClient({
     },
     {
       accessorKey: "party",
-      header: "Customer",
+      header: t("table.customer"),
       cell: ({ getValue }) => (getValue() as any)?.name,
     },
     {
       accessorKey: "grandTotal",
-      header: () => <div className="text-right">Amount</div>,
+      header: () => <div className="text-right">{t("table.amount")}</div>,
       cell: ({ getValue }) => (
         <div className="text-right font-mono">
           {formatCurrency(getValue() as number)}
@@ -51,7 +54,7 @@ export function DashboardClient({
     },
     {
       accessorKey: "status",
-      header: () => <div className="text-right">Status</div>,
+      header: () => <div className="text-right">{t("table.status")}</div>,
       cell: ({ getValue }) => (
         <div className="flex justify-end">
           <StatusBadge status={(getValue() as string).toLowerCase()} />
@@ -63,38 +66,40 @@ export function DashboardClient({
   return (
     <div className="space-y-6 translate-y-[-8px]">
       <PageHeader
-        title={`Welcome, ${userName}`}
-        subtitle="Here is what's happening in your business today."
+        title={t("welcome", { name: userName })}
+        subtitle={t("subtitle")}
         breadcrumbs={[]}
       />
 
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
-          label="Today's Sales"
+          label={t("kpi.todaySales")}
           value={formatCurrency(stats.kpis.todaySales.value)}
-          subtitle={`${stats.kpis.todaySales.count} Invoices generated`}
+          subtitle={t("kpi.invoicesGenerated")}
           icon={ReceiptIndianRupee}
           variant="success"
         />
         <KPICard
-          label="Open Purchase Orders"
+          label={t("openPurchaseOrders")}
           value={stats.kpis.openPOs.count}
-          subtitle={`Valued at ${formatCurrency(stats.kpis.openPOs.value)}`}
+          subtitle={t("valuedAt", {
+            value: formatCurrency(stats.kpis.openPOs.value),
+          })}
           icon={ShoppingCart}
           variant="default"
         />
         <KPICard
-          label="Low Stock Items"
+          label={t("lowStockItems")}
           value={stats.kpis.lowStock.count}
-          subtitle="Requires attention"
+          subtitle={t("requiresAttention")}
           icon={AlertCircle}
           variant={stats.kpis.lowStock.count > 0 ? "error" : "success"}
         />
         <KPICard
-          label="Outstanding Receivables"
+          label={t("kpi.outstanding")}
           value={formatCurrency(stats.kpis.receivables.value)}
-          subtitle="Pending from customers"
+          subtitle={t("kpi.outstandingSubtitle")}
           icon={Wallet}
           variant="warning"
         />
@@ -105,12 +110,14 @@ export function DashboardClient({
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between py-4">
-              <CardTitle className="text-sm">Recent Sales Invoices</CardTitle>
+              <CardTitle className="text-sm">
+                {t("recentSalesInvoices")}
+              </CardTitle>
               <Link
                 href="/dashboard/sales/invoices"
                 className="text-xs font-bold text-brand hover:underline flex items-center gap-1"
               >
-                View All <ArrowRight className="w-3 h-3" />
+                {t("viewAll")} <ArrowRight className="w-3 h-3" />
               </Link>
             </CardHeader>
             <CardContent className="p-0">
@@ -123,7 +130,7 @@ export function DashboardClient({
         <div className="space-y-6">
           <Card>
             <CardHeader className="py-4">
-              <CardTitle className="text-sm">Pending Actions</CardTitle>
+              <CardTitle className="text-sm">{t("pendingActions")}</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-border-default/50">
@@ -133,10 +140,10 @@ export function DashboardClient({
                   </div>
                   <div>
                     <p className="text-sm font-bold text-text-primary">
-                      Verify 3 GRNs
+                      {t("verifyGrns", { count: 3 })}
                     </p>
                     <p className="text-xs text-text-muted mt-0.5">
-                      Awaiting purchase bill entry
+                      {t("awaitingBillEntry")}
                     </p>
                   </div>
                 </div>
@@ -146,10 +153,12 @@ export function DashboardClient({
                   </div>
                   <div>
                     <p className="text-sm font-bold text-text-primary">
-                      Stock Alert
+                      {t("stockAlert")}
                     </p>
                     <p className="text-xs text-text-muted mt-0.5">
-                      {stats.kpis.lowStock.count} items below minimum level
+                      {t("itemsBelowMinimum", {
+                        count: stats.kpis.lowStock.count,
+                      })}
                     </p>
                   </div>
                 </div>

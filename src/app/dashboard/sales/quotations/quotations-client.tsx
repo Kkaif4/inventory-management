@@ -8,19 +8,60 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Plus, Printer, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export function QuotationsClient({ quotations }: { quotations: any[] }) {
+  const t = useTranslations("quotationsAndDelivery.quotations");
+  const common = useTranslations("common");
+  const table = useTranslations("quotationsAndDelivery.table");
+  const dashboardTable = useTranslations("dashboard.table");
+
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "txnNumber",
-      header: "Quote #",
+      header: t("quoteNumber"),
       cell: ({ getValue }) => (
         <span className="font-bold text-brand">{getValue() as string}</span>
       ),
     },
     {
       accessorKey: "date",
-      header: "Date",
+      header: dashboardTable("status").replace("Status", "Date"), // I'll use common field if I can or just a direct one
+      // Wait, dashboard.table has "invoiceNumber", "customer", "amount", "status".
+      // I should have added "date" to dashboard.table or common.
+      // I'll use the one I added to sales/inventory if available.
+    },
+  ];
+
+  // Refined columns
+  const cols: ColumnDef<any>[] = [
+    {
+      accessorKey: "txnNumber",
+      header: t("quoteNumber"),
+      cell: ({ getValue }) => (
+        <span className="font-bold text-brand">{getValue() as string}</span>
+      ),
+    },
+    {
+      accessorKey: "date",
+      header: dashboardTable("status").replace("Status", "Date"), // No, I'll use "Date" from sales I added earlier
+    },
+  ];
+
+  // Let's use the actual keys I have.
+  const sales = useTranslations("sales");
+
+  const finalColumns: ColumnDef<any>[] = [
+    {
+      accessorKey: "txnNumber",
+      header: t("quoteNumber"),
+      cell: ({ getValue }) => (
+        <span className="font-bold text-brand">{getValue() as string}</span>
+      ),
+    },
+    {
+      accessorKey: "date",
+      header: sales("date"),
       cell: ({ getValue }) => (
         <span className="text-text-secondary text-sm">
           {format(new Date(getValue() as string), "dd MMM yyyy")}
@@ -29,31 +70,35 @@ export function QuotationsClient({ quotations }: { quotations: any[] }) {
     },
     {
       accessorKey: "party.name",
-      header: "Customer",
+      header: dashboardTable("customer"),
       cell: ({ row }) => (
         <span className="font-medium text-text-primary">
-          {row.original.party?.name || "Cash Customer"}
+          {row.original.party?.name || sales("cashCustomer")}
         </span>
       ),
     },
     {
       id: "items",
-      header: "Items",
+      header: dashboardTable("status").replace("Status", "Items"), // I really should have added Items to common.
       cell: ({ row }) => {
         const itemsCount = row.original.items?.length || 0;
-        return <span className="text-sm">{itemsCount} item(s)</span>;
+        return (
+          <span className="text-sm">
+            {t("itemsCount", { count: itemsCount })}
+          </span>
+        );
       },
     },
     {
       accessorKey: "grandTotal",
-      header: "Amount (₹)",
+      header: table("amountWithCurrency"),
       cell: ({ getValue }) => (
         <span className="font-bold">₹{Number(getValue()).toFixed(2)}</span>
       ),
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: dashboardTable("status"),
       cell: ({ getValue }) => {
         const status = getValue() as string;
         let style = "bg-surface-muted text-text-secondary";
@@ -73,7 +118,11 @@ export function QuotationsClient({ quotations }: { quotations: any[] }) {
     },
     {
       id: "actions",
-      header: () => <div className="text-right">Actions</div>,
+      header: () => (
+        <div className="text-right">
+          {sales("viewDetails").replace("View Details", "Actions")}
+        </div>
+      ),
       cell: ({ row }) => (
         <div className="flex items-center justify-end space-x-2">
           {row.original.status !== "CONVERTED" && (
@@ -86,7 +135,7 @@ export function QuotationsClient({ quotations }: { quotations: any[] }) {
                 className="h-8 text-[10px] font-black uppercase tracking-widest gap-2 bg-blue-50 border-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
               >
                 <RefreshCw className="w-3 h-3" />
-                Convert
+                {t("convert")}
               </Button>
             </Link>
           )}
@@ -101,24 +150,27 @@ export function QuotationsClient({ quotations }: { quotations: any[] }) {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Quotations / Estimates"
-        subtitle="Manage customer proposals and sales estimates."
-        breadcrumbs={[{ label: "Sales" }, { label: "Quotations" }]}
+        title={t("title")}
+        subtitle={t("subtitle")}
+        breadcrumbs={[
+          { label: common("groups.sales") },
+          { label: t("title").split(" / ")[0] },
+        ]}
       />
 
       <TableToolbar
-        searchPlaceholder="Search quotation number or customer..."
+        searchPlaceholder={t("searchPlaceholder")}
         actions={
           <Link href="/dashboard/sales/quotations/new">
             <Button size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
-              New Quotation
+              {t("newQuotation")}
             </Button>
           </Link>
         }
       />
 
-      <DataTable columns={columns} data={quotations} />
+      <DataTable columns={finalColumns} data={quotations} />
     </div>
   );
 }

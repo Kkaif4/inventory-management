@@ -20,12 +20,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslations } from "next-intl";
 
 export function OutletSwitcher() {
   const { data: session } = useSession();
   const { currentOutlet, availableOutlets, setOutlet } = useOutletStore();
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingOutletId, setPendingOutletId] = useState<string | null>(null);
+  const t = useTranslations("outletSwitcher");
+  const common = useTranslations("common");
 
   if (!availableOutlets || availableOutlets.length === 0) {
     return null;
@@ -67,7 +70,7 @@ export function OutletSwitcher() {
               />
             )}
             <span className="font-bold text-xs uppercase tracking-tight">
-              {selected.name}
+              {selected.id === "ALL" ? t("allOutlets") : selected.name}
             </span>
             <ChevronDown className="w-3 h-3 text-slate-400 opacity-50" />
           </DropdownMenuTrigger>
@@ -77,7 +80,7 @@ export function OutletSwitcher() {
           >
             <div className="px-2 py-1.5 mb-1">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Select Workplace
+                {t("title")}
               </span>
             </div>
 
@@ -95,10 +98,10 @@ export function OutletSwitcher() {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-black uppercase text-slate-900 leading-none">
-                        All Outlets
+                        {t("allOutlets")}
                       </span>
                       <span className="text-[9px] text-slate-400 font-bold mt-1">
-                        Consolidated View
+                        {t("consolidatedView")}
                       </span>
                     </div>
                   </div>
@@ -162,23 +165,22 @@ export function OutletSwitcher() {
             </div>
             <AlertDialogHeader>
               <AlertDialogTitle className="text-xl font-black text-amber-900 uppercase tracking-tight">
-                Switching Workspace
+                {t("switchingWorkspace")}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-amber-800/70 font-medium text-sm">
-                Any unsaved changes in your current forms will be lost. The page
-                will refresh to load the new context.
+                {t("warning")}
               </AlertDialogDescription>
             </AlertDialogHeader>
           </div>
           <AlertDialogFooter className="p-6 pt-0 bg-white flex items-center justify-center gap-3 sm:justify-center">
             <AlertDialogCancel className="rounded-2xl border border-slate-100 bg-slate-50 text-slate-500 font-bold text-xs uppercase px-8 hover:bg-slate-100 transition-all hover:text-slate-900">
-              Cancel
+              {common("actions.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmSwitch}
               className="rounded-2xl bg-amber-600 text-white font-bold text-xs uppercase px-8 hover:bg-amber-700 transition-all shadow-xl shadow-amber-100"
             >
-              Continue Switch
+              {t("continueSwitch")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

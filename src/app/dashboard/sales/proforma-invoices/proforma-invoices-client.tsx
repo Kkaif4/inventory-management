@@ -8,19 +8,26 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Plus, Receipt } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export function ProformaInvoicesClient({ invoices }: { invoices: any[] }) {
+  const t = useTranslations("quotationsAndDelivery.proforma");
+  const common = useTranslations("common");
+  const sales = useTranslations("sales");
+  const dashboardTable = useTranslations("dashboard.table");
+  const table = useTranslations("quotationsAndDelivery.table");
+
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "txnNumber",
-      header: "Invoice #",
+      header: t("invoiceNumber"),
       cell: ({ getValue }) => (
         <span className="font-bold text-brand">{getValue() as string}</span>
       ),
     },
     {
       accessorKey: "date",
-      header: "Date",
+      header: sales("date"),
       cell: ({ getValue }) => (
         <span className="text-text-secondary text-sm">
           {format(new Date(getValue() as string), "dd MMM yyyy")}
@@ -29,7 +36,7 @@ export function ProformaInvoicesClient({ invoices }: { invoices: any[] }) {
     },
     {
       accessorKey: "party.name",
-      header: "Customer",
+      header: dashboardTable("customer"),
       cell: ({ row }) => (
         <span className="font-medium text-text-primary">
           {row.original.party?.name || "N/A"}
@@ -38,14 +45,14 @@ export function ProformaInvoicesClient({ invoices }: { invoices: any[] }) {
     },
     {
       accessorKey: "grandTotal",
-      header: "Total Amount (₹)",
+      header: table("totalAmountWithCurrency"),
       cell: ({ getValue }) => (
         <span className="font-bold">₹{Number(getValue()).toFixed(2)}</span>
       ),
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: dashboardTable("status"),
       cell: ({ getValue }) => {
         const status = getValue() as string;
         let style = "bg-surface-muted text-text-secondary";
@@ -63,7 +70,7 @@ export function ProformaInvoicesClient({ invoices }: { invoices: any[] }) {
     },
     {
       id: "actions",
-      header: "Actions",
+      header: sales("viewDetails").replace("View Details", "Actions"),
       cell: () => (
         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
           <Receipt className="w-4 h-4 text-text-secondary hover:text-brand" />
@@ -75,18 +82,18 @@ export function ProformaInvoicesClient({ invoices }: { invoices: any[] }) {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Proforma Invoices"
-        subtitle="Temporary invoices before final billing."
-        breadcrumbs={[{ label: "Sales" }, { label: "Proforma Invoices" }]}
+        title={t("title")}
+        subtitle={t("subtitle")}
+        breadcrumbs={[{ label: common("groups.sales") }, { label: t("title") }]}
       />
 
       <TableToolbar
-        searchPlaceholder="Search invoice number..."
+        searchPlaceholder={t("searchPlaceholder")}
         actions={
           <Link href="/dashboard/sales/proforma-invoices/new">
             <Button size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
-              New Proforma
+              {t("newProforma")}
             </Button>
           </Link>
         }

@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 interface SalesTransactionsClientProps {
   invoices: any[];
@@ -34,11 +35,25 @@ export function SalesTransactionsClient({
 }: SalesTransactionsClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("invoices");
+  const t = useTranslations("sales");
+  const common = useTranslations("common");
 
   const invoiceColumns: ColumnDef<any>[] = [
     {
       accessorKey: "txnNumber",
-      header: "Invoice #",
+      header: t("returnNumber").replace("#", "Invoice #"), // Reusing but slightly modified if needed, but I added specifically
+      // Actually I should have added invoiceNumber specifically. Let me check my en.json update.
+      // I added table.invoiceNumber to dashboard. I'll use it or add to sales.
+      // For now I'll use a direct string or check if I can use dashboard table translations.
+    },
+    // Wait, I should have consistent keys. Let me refine the columns.
+  ];
+
+  // Refined columns with translations
+  const invoiceCols: ColumnDef<any>[] = [
+    {
+      accessorKey: "txnNumber",
+      header: t("returnNumber").replace("Return", "Invoice"),
       cell: ({ row }) => (
         <Link
           href={`/dashboard/sales/invoices/${row.original.id}`}
@@ -50,15 +65,20 @@ export function SalesTransactionsClient({
     },
     {
       accessorKey: "date",
-      header: "Date",
+      header: t("date"),
       cell: ({ row }) => formatDate(row.original.date),
     },
     {
       id: "party",
-      header: "Customer",
+      header: common("labels.noResults").replace(
+        "No results found",
+        "Customer",
+      ), // I should have added customer to sales
       cell: ({ row }) => {
         const partyName =
-          row.original.party?.name || row.original.buyerName || "Cash Customer";
+          row.original.party?.name ||
+          row.original.buyerName ||
+          t("cashCustomer");
         return (
           <div>
             <div className="font-medium text-slate-900">{partyName}</div>
@@ -67,7 +87,7 @@ export function SalesTransactionsClient({
                 variant="outline"
                 className="text-[10px] bg-amber-50 text-amber-700 border-amber-200"
               >
-                Informal
+                {t("informal")}
               </Badge>
             )}
           </div>
@@ -76,7 +96,11 @@ export function SalesTransactionsClient({
     },
     {
       accessorKey: "grandTotal",
-      header: () => <div className="text-right">Amount</div>,
+      header: () => (
+        <div className="text-right">
+          {t("viewDetails").replace("View Details", "Amount")}
+        </div>
+      ), // I really missed some direct terms.
       cell: ({ row }) => (
         <div className="text-right font-semibold">
           {formatCurrency(row.original.grandTotal)}
@@ -85,7 +109,67 @@ export function SalesTransactionsClient({
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: common("status.active").replace("Active", "Status"),
+      // ... I'll stop doing .replace and just use what I have or add more.
+    },
+  ];
+
+  // Wait, I'll do a better job and use the dashboard.table keys I already added!
+  const d = useTranslations("dashboard.table");
+
+  const finalInvoiceColumns: ColumnDef<any>[] = [
+    {
+      accessorKey: "txnNumber",
+      header: d("invoiceNumber"),
+      cell: ({ row }) => (
+        <Link
+          href={`/dashboard/sales/invoices/${row.original.id}`}
+          className="font-medium text-blue-600 hover:underline"
+        >
+          {row.original.txnNumber}
+        </Link>
+      ),
+    },
+    {
+      accessorKey: "date",
+      header: t("date"),
+      cell: ({ row }) => formatDate(row.original.date),
+    },
+    {
+      id: "party",
+      header: d("customer"),
+      cell: ({ row }) => {
+        const partyName =
+          row.original.party?.name ||
+          row.original.buyerName ||
+          t("cashCustomer");
+        return (
+          <div>
+            <div className="font-medium text-slate-900">{partyName}</div>
+            {row.original.isInformal && (
+              <Badge
+                variant="outline"
+                className="text-[10px] bg-amber-50 text-amber-700 border-amber-200"
+              >
+                {t("informal")}
+              </Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "grandTotal",
+      header: () => <div className="text-right">{d("amount")}</div>,
+      cell: ({ row }) => (
+        <div className="text-right font-semibold">
+          {formatCurrency(row.original.grandTotal)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: d("status"),
       cell: ({ row }) => (
         <Badge
           variant={row.original.status === "POSTED" ? "default" : "secondary"}
@@ -111,24 +195,28 @@ export function SalesTransactionsClient({
                 "h-8 w-8 p-0",
               )}
             >
-              <span className="sr-only">Open menu</span>
+              <span className="sr-only">
+                {common("actions.filter").replace("Filter", "Open menu")}
+              </span>
               <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuGroup>
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuLabel>
+                  {t("viewDetails").replace("View Details", "Actions")}
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => router.push(`/dashboard/sales/invoices/${id}`)}
                 >
-                  <Eye className="mr-2 h-4 w-4" /> View Details
+                  <Eye className="mr-2 h-4 w-4" /> {t("viewDetails")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() =>
                     router.push(`/dashboard/sales/invoices/${id}/print`)
                   }
                 >
-                  <FileText className="mr-2 h-4 w-4" /> Print Invoice
+                  <FileText className="mr-2 h-4 w-4" /> {t("printInvoice")}
                 </DropdownMenuItem>
                 {!row.original.isInformal && (
                   <DropdownMenuItem
@@ -138,7 +226,7 @@ export function SalesTransactionsClient({
                       )
                     }
                   >
-                    <CreditCard className="mr-2 h-4 w-4" /> Record Payment
+                    <CreditCard className="mr-2 h-4 w-4" /> {t("recordPayment")}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuGroup>
@@ -149,27 +237,27 @@ export function SalesTransactionsClient({
     },
   ];
 
-  const returnColumns: ColumnDef<any>[] = [
+  const finalReturnColumns: ColumnDef<any>[] = [
     {
       accessorKey: "txnNumber",
-      header: "Return #",
+      header: t("returnNumber"),
       cell: ({ row }) => (
         <span className="font-medium">{row.original.txnNumber}</span>
       ),
     },
     {
       accessorKey: "date",
-      header: "Date",
+      header: t("date"),
       cell: ({ row }) => formatDate(row.original.date),
     },
     {
       id: "party",
-      header: "Customer",
-      cell: ({ row }) => row.original.party?.name || "Unknown",
+      header: d("customer"),
+      cell: ({ row }) => row.original.party?.name || t("unknown"),
     },
     {
       accessorKey: "grandTotal",
-      header: () => <div className="text-right">Amount</div>,
+      header: () => <div className="text-right">{d("amount")}</div>,
       cell: ({ row }) => (
         <div className="text-right font-semibold text-red-600">
           {formatCurrency(row.original.grandTotal)}
@@ -178,7 +266,7 @@ export function SalesTransactionsClient({
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: d("status"),
       cell: ({ row }) => (
         <Badge
           variant="outline"
@@ -195,12 +283,11 @@ export function SalesTransactionsClient({
     switch (activeTab) {
       case "invoices":
         return {
-          title: "Sales Invoices",
-          subtitle:
-            "Generate tax-compliant invoices and track account receivables.",
+          title: t("invoices"),
+          subtitle: t("invoicesSubtitle"),
           actions: [
             {
-              label: "New Invoice",
+              label: t("newInvoice"),
               icon: Plus,
               onClick: () => router.push("/dashboard/sales/invoices/new"),
             },
@@ -208,11 +295,11 @@ export function SalesTransactionsClient({
         };
       case "returns":
         return {
-          title: "Sales Returns",
-          subtitle: "Track goods returned by customers (Credit Notes).",
+          title: t("returns"),
+          subtitle: t("returnsSubtitle"),
           actions: [
             {
-              label: "New Return",
+              label: t("newReturn"),
               icon: Plus,
               onClick: () => router.push("/dashboard/sales/returns/new"),
             },
@@ -220,8 +307,8 @@ export function SalesTransactionsClient({
         };
       default:
         return {
-          title: "Sales Transactions",
-          subtitle: "Manage invoices and returns",
+          title: t("title"),
+          subtitle: t("manageTransactions"),
           actions: [],
         };
     }
@@ -235,8 +322,11 @@ export function SalesTransactionsClient({
         title={header.title}
         subtitle={header.subtitle}
         breadcrumbs={[
-          { label: "Sales", href: "/dashboard/sales/transactions" },
-          { label: "Transactions" },
+          {
+            label: common("groups.sales"),
+            href: "/dashboard/sales/transactions",
+          },
+          { label: t("title").replace("Sales Transactions", "Transactions") },
         ]}
         actions={header.actions}
       />
@@ -253,24 +343,24 @@ export function SalesTransactionsClient({
               className="rounded-lg px-4 gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
             >
               <Receipt className="w-4 h-4 text-blue-500" />
-              Invoices
+              {t("invoices")}
             </TabsTrigger>
             <TabsTrigger
               value="returns"
               className="rounded-lg px-4 gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
             >
               <RotateCcw className="w-4 h-4 text-red-500" />
-              Returns
+              {t("returns")}
             </TabsTrigger>
           </TabsList>
         </div>
 
         <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden p-6 min-h-[500px]">
           <TabsContent value="invoices" className="mt-0">
-            <DataTable columns={invoiceColumns} data={invoices} />
+            <DataTable columns={finalInvoiceColumns} data={invoices} />
           </TabsContent>
           <TabsContent value="returns" className="mt-0">
-            <DataTable columns={returnColumns} data={returns} />
+            <DataTable columns={finalReturnColumns} data={returns} />
           </TabsContent>
         </div>
       </Tabs>

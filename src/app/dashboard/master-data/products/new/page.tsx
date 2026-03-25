@@ -36,8 +36,11 @@ import {
   productCreateSchema,
   ProductFormValues,
 } from "@/validations/product.validation";
+import { useTranslations } from "next-intl";
 
 export default function NewProductPage() {
+  const t = useTranslations("products");
+  const common = useTranslations("common");
   const router = useRouter();
   const { currentOutletId } = useOutletStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,15 +55,17 @@ export default function NewProductPage() {
       if (res.success) {
         setCategories(res.data!);
       } else {
-        toast.error("Failed to load categories: " + res.error?.message);
+        toast.error(
+          t("toasts.loadCategoriesFailed") + ": " + res.error?.message,
+        );
       }
     });
   }, []);
 
   const getCategoryName = (id?: string | null) =>
     id ? categories.find((c) => c.id === id)?.name : undefined;
-  const getUnitLabel = (val?: string | null) =>
-    val ? PRODUCT_UNITS.find((u) => u.value === val)?.label : undefined;
+  const getUnitLabel = (val?: string | null): string =>
+    val ? PRODUCT_UNITS.find((u) => u.value === val)?.label || val : "";
   const getGstLabel = (val: any) => {
     const s = String(val);
     if (s === "0") return "0% (Exempt)";
@@ -120,14 +125,14 @@ export default function NewProductPage() {
       });
 
       if (res.success) {
-        toast.success("Product created successfully");
+        toast.success(t("toasts.created"));
         router.push("/dashboard/master-data/products");
       } else {
-        toast.error("Failed to create product: " + res.error?.message);
+        toast.error(t("toasts.createFailed") + ": " + res.error?.message);
       }
     } catch (error) {
       console.error("Failed to create product:", error);
-      toast.error("An unexpected error occurred");
+      toast.error(t("toasts.createError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -142,16 +147,14 @@ export default function NewProductPage() {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-text-primary tracking-tight">
-              Add Product
+              {t("addProduct")}
             </h2>
-            <p className="text-sm text-text-muted">
-              Create a new item with variants in the master catalog.
-            </p>
+            <p className="text-sm text-text-muted">{t("subtitle")}</p>
           </div>
         </div>
         <Link href="/dashboard/master-data/products">
           <Button variant="secondary" className="hover:bg-surface-hover">
-            Cancel
+            {common("cancel")}
           </Button>
         </Link>
       </div>
@@ -161,7 +164,7 @@ export default function NewProductPage() {
           <Card className="bg-surface border-border/50 shadow-none">
             <CardHeader className="border-b border-border/50 pb-4 bg-surface-elevated/20">
               <CardTitle className="text-sm font-semibold text-text-primary uppercase tracking-wider">
-                Basic Information
+                {t("form.basicInfo")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -171,9 +174,12 @@ export default function NewProductPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Product Name *</FormLabel>
+                      <FormLabel>{t("form.productNameLabel")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. 10mm Drill Bit" {...field} />
+                        <Input
+                          placeholder={t("form.productNamePlaceholder")}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -185,10 +191,10 @@ export default function NewProductPage() {
                   name="brand"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Brand</FormLabel>
+                      <FormLabel>{t("form.brandLabel")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g. Bosch"
+                          placeholder={t("form.brandPlaceholder")}
                           {...field}
                           value={field.value ?? ""}
                         />
@@ -203,7 +209,7 @@ export default function NewProductPage() {
                   name="categoryId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Specific Category *</FormLabel>
+                      <FormLabel>{t("form.categoryLabel")}</FormLabel>
                       <Select
                         onValueChange={(val) => field.onChange(val)}
                         defaultValue={field.value}
@@ -211,7 +217,9 @@ export default function NewProductPage() {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select Category...">
+                            <SelectValue
+                              placeholder={t("form.categoryPlaceholder")}
+                            >
                               {getCategoryName(field.value)}
                             </SelectValue>
                           </SelectTrigger>
@@ -234,10 +242,10 @@ export default function NewProductPage() {
                   name="hsnCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>HSN Code</FormLabel>
+                      <FormLabel>{t("form.hsnLabel")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g. 8467"
+                          placeholder={t("form.hsnPlaceholder")}
                           {...field}
                           value={field.value ?? ""}
                           onChange={(e) => {
@@ -277,14 +285,16 @@ export default function NewProductPage() {
                   name="gstRate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>GST Rate (%) *</FormLabel>
+                      <FormLabel>{t("form.gstRateLabel")}</FormLabel>
                       <Select
                         onValueChange={(val) => field.onChange(Number(val))}
                         value={String(field.value)}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select GST Rate">
+                            <SelectValue
+                              placeholder={t("form.gstRatePlaceholder")}
+                            >
                               {getGstLabel(field.value)}
                             </SelectValue>
                           </SelectTrigger>
@@ -307,7 +317,7 @@ export default function NewProductPage() {
                   name="baseUnit"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Base Unit (Smallest e.g. PCS) *</FormLabel>
+                      <FormLabel>{t("form.baseUnitLabel")}</FormLabel>
                       <Select
                         onValueChange={(val) => field.onChange(val)}
                         defaultValue={field.value}
@@ -315,7 +325,9 @@ export default function NewProductPage() {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select Base Unit">
+                            <SelectValue
+                              placeholder={t("form.baseUnitPlaceholder")}
+                            >
                               {getUnitLabel(field.value)}
                             </SelectValue>
                           </SelectTrigger>
@@ -338,7 +350,7 @@ export default function NewProductPage() {
                   name="purchaseUnit"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Purchase Unit (Bulk e.g. BOX)</FormLabel>
+                      <FormLabel>{t("form.purchaseUnitLabel")}</FormLabel>
                       <Select
                         onValueChange={(val) => field.onChange(val)}
                         defaultValue={field.value}
@@ -346,7 +358,9 @@ export default function NewProductPage() {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select Purchase Unit">
+                            <SelectValue
+                              placeholder={t("form.purchaseUnitPlaceholder")}
+                            >
                               {getUnitLabel(field.value)}
                             </SelectValue>
                           </SelectTrigger>
@@ -371,15 +385,16 @@ export default function NewProductPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Conversion Ratio (Units in 1{" "}
-                          {getUnitLabel(watch("purchaseUnit"))})
+                          {t("form.conversionRatioLabel", {
+                            unit: getUnitLabel(watch("purchaseUnit") || "BASE"),
+                          })}
                         </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             step="0.01"
                             min="0.01"
-                            placeholder="How many base units in one purchase unit?"
+                            placeholder={t("form.conversionRatioPlaceholder")}
                             {...field}
                             onChange={(e) =>
                               field.onChange(Number(e.target.value))
@@ -388,8 +403,10 @@ export default function NewProductPage() {
                           />
                         </FormControl>
                         <p className="text-[10px] text-text-muted italic">
-                          How many {getUnitLabel(watch("baseUnit"))} are in 1{" "}
-                          {getUnitLabel(watch("purchaseUnit"))}?
+                          {t("form.conversionHelp", {
+                            base: getUnitLabel(watch("baseUnit")),
+                            purchase: getUnitLabel(watch("purchaseUnit")),
+                          })}
                         </p>
                         <FormMessage />
                       </FormItem>
@@ -401,9 +418,11 @@ export default function NewProductPage() {
                   <div className="md:col-span-1 lg:col-span-1 flex items-center p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
                     <Info className="w-5 h-5 text-indigo-400 mr-3" />
                     <p className="text-xs font-medium text-indigo-300">
-                      <span className="font-bold">Conversion:</span> 1{" "}
-                      {watch("purchaseUnit")} = {watch("conversionRatio") || 1}{" "}
-                      {watch("baseUnit")} during inventory updates.
+                      {t("form.conversionNote", {
+                        purchase: watch("purchaseUnit") ?? "",
+                        ratio: watch("conversionRatio") || 1,
+                        base: watch("baseUnit") ?? "",
+                      })}
                     </p>
                   </div>
                 )}
@@ -414,7 +433,7 @@ export default function NewProductPage() {
           <Card className="bg-surface border-border/50 shadow-none">
             <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4 bg-surface-elevated/20">
               <CardTitle className="text-sm font-semibold text-text-primary uppercase tracking-wider">
-                Product Variants
+                {t("form.productVariants")}
               </CardTitle>
               <Button
                 type="button"
@@ -433,7 +452,7 @@ export default function NewProductPage() {
                   })
                 }
               >
-                <Plus className="w-4 h-4 mr-1" /> Add Variant
+                <Plus className="w-4 h-4 mr-1" /> {t("form.addVariant")}
               </Button>
             </CardHeader>
             <CardContent className="p-6">
@@ -467,10 +486,13 @@ export default function NewProductPage() {
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
                             <FormLabel className="text-xs">
-                              SKU / Barcode *
+                              {t("form.skuLabel")}
                             </FormLabel>
                             <FormControl>
-                              <Input placeholder="Unique ID" {...field} />
+                              <Input
+                                placeholder={t("form.skuPlaceholder")}
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -483,7 +505,7 @@ export default function NewProductPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs">
-                              Cost Price *
+                              {t("form.costPriceLabel")}
                             </FormLabel>
                             <FormControl>
                               <Input
@@ -524,7 +546,7 @@ export default function NewProductPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs">
-                              Pricing Logic
+                              {t("form.pricingLogicLabel")}
                             </FormLabel>
                             <Select
                               onValueChange={(
@@ -557,18 +579,20 @@ export default function NewProductPage() {
                                 <SelectTrigger>
                                   <SelectValue>
                                     {field.value === "MARKUP"
-                                      ? "% Markup"
+                                      ? t("form.markup")
                                       : field.value === "MANUAL"
-                                        ? "Manual Entry"
+                                        ? t("form.manualEntry")
                                         : undefined}
                                   </SelectValue>
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="MANUAL">
-                                  Manual Entry
+                                  {t("form.manualEntry")}
                                 </SelectItem>
-                                <SelectItem value="MARKUP">% Markup</SelectItem>
+                                <SelectItem value="MARKUP">
+                                  {t("form.markup")}
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -582,14 +606,14 @@ export default function NewProductPage() {
                           name={`variants.${index}.markupPercent`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-xs text-indigo-400">
-                                Margin % *
+                              <FormLabel className="text-xs text-brand">
+                                {t("form.marginLabel")}
                               </FormLabel>
                               <FormControl>
                                 <Input
                                   type="number"
                                   step="0.1"
-                                  className="border-indigo-500/30 bg-indigo-500/5 focus-visible:ring-indigo-500/40"
+                                  className="border-brand/30 bg-brand/5 focus-visible:ring-brand/40"
                                   value={field.value ?? ""}
                                   onBlur={field.onBlur}
                                   onChange={(e) => {
@@ -624,7 +648,7 @@ export default function NewProductPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs">
-                                Selling Price *
+                                {t("form.sellingPriceLabel")}
                               </FormLabel>
                               <FormControl>
                                 <Input type="number" step="0.01" {...field} />
@@ -638,7 +662,7 @@ export default function NewProductPage() {
                       {method === "MARKUP" && (
                         <div className="flex flex-col justify-center">
                           <label className="text-[10px] font-bold text-slate-500 uppercase">
-                            Auto Selling Price
+                            {t("form.autoSellingPrice")}
                           </label>
                           <p className="text-sm font-black text-emerald-400">
                             ₹{" "}
@@ -655,7 +679,7 @@ export default function NewProductPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs">
-                              Min. Alert
+                              {t("form.minAlertLabel")}
                             </FormLabel>
                             <FormControl>
                               <Input type="number" {...field} />
@@ -679,9 +703,7 @@ export default function NewProductPage() {
               size="lg"
             >
               <Save className="w-5 h-5" />
-              {isSubmitting
-                ? "Creating Master Record..."
-                : "Save Product & Variants"}
+              {isSubmitting ? t("form.savingButton") : t("form.saveButton")}
             </Button>
           </div>
         </form>
@@ -694,11 +716,10 @@ export default function NewProductPage() {
             </div>
             <div className="space-y-2">
               <h3 className="text-2xl font-bold text-slate-900">
-                Outlet Required
+                {t("form.outletRequiredTitle")}
               </h3>
               <p className="text-slate-500">
-                Please select an active outlet from the switcher in the top
-                navigation bar before adding products to the master catalog.
+                {t("form.outletRequiredDescription")}
               </p>
             </div>
             <Button
@@ -706,7 +727,7 @@ export default function NewProductPage() {
               variant="outline"
               className="w-full py-6 rounded-2xl font-bold"
             >
-              Go Back
+              {t("form.goBack")}
             </Button>
           </div>
         </div>

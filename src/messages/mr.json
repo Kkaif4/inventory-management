@@ -3,10 +3,11 @@
     "groups": {
       "overview": "आढावा",
       "sales": "विक्री",
-      "products": "उत्पादने आणि स्टॉक",
+      "productsAndStock": "उत्पादने आणि स्टॉक",
       "procurement": "खरेदी",
-      "parties": "पक्षकार",
+      "parties": "पक्ष",
       "finance": "वित्त",
+      "financials": "वित्तीय",
       "admin": "प्रशासन"
     },
     "items": {
@@ -146,11 +147,247 @@
   "dashboard": {
     "title": "डॅशबोर्ड",
     "subtitle": "आपल्या व्यवसायात काय घडत आहे हे जाणून घ्या।",
+    "welcome": "स्वागत आहे, {name}",
+    "recentSalesInvoices": "अलीकडील विक्री इनव्हॉयस",
+    "viewAll": "सर्व पहा",
+    "pendingActions": "प्रलंबित कृती",
+    "verifyGrns": "{count} GRNs सत्यापित करा",
+    "awaitingBillEntry": "खरेदी बिल नोंदणीची प्रतीक्षा आहे",
+    "stockAlert": "स्टॉक अलर्ट",
+    "lowStockItems": "कमी स्टॉक असलेल्या वस्तू",
+    "requiresAttention": "लक्ष देण्याची गरज आहे",
+    "itemsBelowMinimum": "{count} वस्तू किमान पातळीच्या खाली आहेत",
+    "openPurchaseOrders": "खुले खरेदी आदेश",
+    "valuedAt": "मूल्य {value}",
     "kpi": {
       "todaySales": "आजचे विक्री",
       "invoicesGenerated": "इनव्हॉयस तयार केले",
       "outstanding": "बकाया प्राप्य",
       "outstandingSubtitle": "ग्राहकांकडून प्रलंबित"
+    },
+    "table": {
+      "invoiceNumber": "इनव्हॉयस #",
+      "customer": "ग्राहक",
+      "amount": "एकूण रक्कम",
+      "status": "स्थिती"
+    }
+  },
+  "outletSwitcher": {
+    "title": "कार्यक्षेत्र निवडा",
+    "allOutlets": "सर्व आउटलेट्स",
+    "consolidatedView": "एकत्रित दृश्य",
+    "switchingWorkspace": "कार्यक्षेत्र बदलत आहे",
+    "warning": "तुमच्या वर्तमान फॉर्ममधील कोणतेही बदल जतन केले नसले तर ते गमावले जातील. नवीन संदर्भ लोड करण्यासाठी पृष्ठ रिफ्रेश होईल.",
+    "continueSwitch": "बदलाव सुरू ठेवा"
+  },
+  "sales": {
+    "title": "विक्री व्यवहार",
+    "invoices": "इनव्हॉयस",
+    "returns": "रिटर्न",
+    "newInvoice": "नवीन इनव्हॉयस",
+    "newReturn": "नवीन रिटर्न",
+    "viewDetails": "तपशील पहा",
+    "printInvoice": "इनव्हॉयस प्रिंट करा",
+    "recordPayment": "पेमेंट रेकॉर्ड करा",
+    "informal": "अनौपचारिक",
+    "cashCustomer": "रोख ग्राहक",
+    "unknown": "अज्ञात",
+    "date": "तारीख",
+    "returnNumber": "रिटर्न #",
+    "invoicesSubtitle": "कर-सुसंगत इनव्हॉयस तयार करा आणि खाते येणे ट्रॅक करा.",
+    "returnsSubtitle": "ग्राहकांनी परत केलेल्या मालाचा मागोवा घ्या (क्रेडिट नोट्स).",
+    "manageTransactions": "इनव्हॉयस आणि रिटर्न व्यवस्थापित करा"
+  },
+  "inventory": {
+    "title": "सध्याचा स्टॉक",
+    "subtitle": "रिअल-टाइम मल्टी-location इन्व्हेंटरी स्तर आणि मूल्यांकन.",
+    "transfer": "बदली",
+    "adjustment": "समायोजन",
+    "physicalQty": "प्रत्यक्ष प्रमाण",
+    "inTransit": "ट्रान्झिटमध्ये",
+    "noStockRecords": "कोणतेही स्टॉक रेकॉर्ड आढळले नाहीत",
+    "initialStockNotice": "प्रारंभिक स्टॉक समायोजन किंवा GRNs द्वारे जोडला जाऊ शकतो.",
+    "searchPlaceholder": "वस्तू, SKU किंवा ठिकाणे फिल्टर करा...",
+    "location": "स्थान",
+    "category": "श्रेणी",
+    "productSku": "उत्पादन / SKU",
+    "unit": "युनिट",
+    "warehouse": "गोदाम",
+    "outlet": "आउटलेट"
+  },
+  "quotationsAndDelivery": {
+    "tabs": {
+      "quotations": "कोटेशन",
+      "proforma": "प्रोफार्मा",
+      "challans": "चलन (Challans)"
+    },
+    "quotations": {
+      "title": "कोटेशन / अंदाज",
+      "subtitle": "ग्राहक प्रस्ताव आणि विक्री अंदाज व्यवस्थापित करा.",
+      "quoteNumber": "कोटेशन #",
+      "newQuotation": "नवीन कोटेशन",
+      "searchPlaceholder": "कोटेशन नंबर किंवा ग्राहक शोधा...",
+      "convert": "रूपांतरित करा",
+      "itemsCount": "{count} वस्तू"
+    },
+    "proforma": {
+      "title": "प्रोफार्मा इनव्हॉयस",
+      "subtitle": "अंतिम बिलिंगपूर्वी तात्पुरते इनव्हॉयस.",
+      "invoiceNumber": "इनव्हॉयस #",
+      "newProforma": "नवीन प्रोफार्मा",
+      "searchPlaceholder": "इनव्हॉयस नंबर शोधा..."
+    },
+    "challans": {
+      "title": "डिलिव्हरी चलन",
+      "subtitle": "डिस्पॅच दस्तऐवज आणि साहित्य हालचाली व्यवस्थापित करा.",
+      "challanNumber": "चलन #",
+      "searchPlaceholder": "चलन # शोधा..."
+    },
+    "table": {
+      "amountWithCurrency": "रक्कम (₹)",
+      "totalAmountWithCurrency": "एकूण रक्कम (₹)",
+      "valueWithCurrency": "मूल्य (₹)"
+    }
+  },
+  "categories": {
+    "title": "उत्पादन श्रेणी",
+    "subtitle": "बहु-स्तरीय उत्पादन वर्गीकरण व्यवस्थापित करा.",
+    "addCategory": "श्रेणी जोडा",
+    "noCategories": "कोणतीही श्रेणी आढळली नाही. सुरू करण्यासाठी \"श्रेणी जोडा\" वर क्लिक करा.",
+    "hierarchyName": "पदानुक्रम / नाव",
+    "subsCount": "उप-श्रेण्या",
+    "itemsCount": "वस्तू",
+    "categoryNamePlaceholder": "श्रेणीचे नाव",
+    "parentPlaceholder": "-- मुख्य श्रेणी (पर्यायी) --",
+    "deactivate": "निष्क्रिय करा",
+    "activate": "सक्रिय करा",
+    "deleteTitle": "तुम्हाला खात्री आहे का?",
+    "deleteDescription": "हे कायमचे ही श्रेणी हटवेल. ही क्रिया पूर्ववत केली जाऊ शकत नाही.",
+    "deleteConfirm": "श्रेणी हटवा",
+    "descPlaceholder": "संक्षिप्त वर्णन...",
+    "toasts": {
+      "created": "श्रेणी यशस्वीरित्या तयार केली",
+      "updated": "श्रेणी अपडेट केली",
+      "deactivated": "श्रेणी निष्क्रिय केली",
+      "activated": "श्रेणी सक्रिय केली",
+      "deleted": "श्रेणी हटवली",
+      "createFailed": "श्रेणी तयार करण्यात अयशस्वी",
+      "updateFailed": "श्रेणी अपडेट करण्यात अयशस्वी"
+    }
+  },
+  "products": {
+    "title": "उत्पादन मास्टर",
+    "subtitle": "आउटलेटमध्ये औद्योगिक वस्तू, ब्रँड आणि व्हेरियंट व्यवस्थापित करा.",
+    "addProduct": "उत्पादन जोडा",
+    "importProducts": "उत्पादने आयात करा",
+    "searchPlaceholder": "नाव, ब्रँड किंवा SKU द्वारे फिल्टर करा...",
+    "productName": "उत्पादनाचे नाव",
+    "brand": "ब्रँड",
+    "noBrand": "कोणताही ब्रँड नाही",
+    "gstPercentage": "GST %",
+    "variants": "व्हेरियंट",
+    "editProduct": "उत्पादन संपादित करा",
+    "deleteProduct": "उत्पादन हटवा",
+    "deleteDialog": {
+      "title": "उत्पादन हटवायचे?",
+      "description": "ही क्रिया पूर्ववत केली जाऊ शकत नाही. हे उत्पादन कायमस्वरूपी मास्टर कॅटलॉग मधून काढले जाईल.",
+      "note": "टीप: कोणताही स्टॉक अद्याप उपलब्ध असल्यास हटवणे अयशस्वी होईल.",
+      "confirm": "हटवण्याची पुष्टी करा"
+    },
+    "form": {
+      "basicInfo": "मूळ माहिती",
+      "productVariants": "उत्पादन व्हेरियंट",
+      "productNameLabel": "उत्पादनाचे नाव *",
+      "productNamePlaceholder": "उदा. 10mm ड्रिल बिट",
+      "brandLabel": "ब्रँड",
+      "brandPlaceholder": "उदा. Bosch",
+      "categoryLabel": "विशिष्ट श्रेणी *",
+      "categoryPlaceholder": "श्रेणी निवडा...",
+      "hsnLabel": "HSN कोड",
+      "hsnPlaceholder": "उदा. 8467",
+      "gstRateLabel": "GST दर (%) *",
+      "gstRatePlaceholder": "GST दर निवडा",
+      "baseUnitLabel": "मूळ युनिट (सर्वात लहान उदा. PCS) *",
+      "baseUnitPlaceholder": "मूळ युनिट निवडा",
+      "purchaseUnitLabel": "खरेदी युनिट (मोठ्या उदा. BOX)",
+      "purchaseUnitPlaceholder": "खरेदी युनिट निवडा",
+      "conversionRatioLabel": "रूपांतरण प्रमाण (1 {unit} मध्ये युनिट्स)",
+      "conversionRatioPlaceholder": "एका खरेदी युनिटमध्ये किती मूळ युनिट्स आहेत?",
+      "conversionHelp": "1 {purchase} मध्ये किती {base} आहेत?",
+      "conversionNote": "रूपांतरण: इन्व्हेंटरी अपडेट दरम्यान 1 {purchase} = {ratio} {base}.",
+      "addVariant": "व्हेरियंट जोडा",
+      "skuLabel": "SKU / बारकोड *",
+      "skuPlaceholder": "विशिष्ट आयडी",
+      "costPriceLabel": "खरेदी किंमत *",
+      "pricingLogicLabel": "किंमत निश्चिती तर्क",
+      "manualEntry": "मॅन्युअल नोंदणी",
+      "markup": "% मार्कअप",
+      "marginLabel": "मार्जिन % *",
+      "sellingPriceLabel": "विक्री किंमत *",
+      "auto विक्री किंमत": "ऑटो विक्री किंमत",
+      "minAlertLabel": "किमान अलर्ट",
+      "saveButton": "उत्पादन आणि व्हेरियंट जतन करा",
+      "savingButton": "मास्टर रेकॉर्ड तयार केला जात आहे...",
+      "outletRequiredTitle": "आउटलेट आवश्यक",
+      "outletRequiredDescription": "मास्टर कॅटलॉगमध्ये उत्पादने जोडण्यापूर्वी कृपया नेव्हिगेशन बारमधील स्विचरवरून सक्रिय आउटलेट निवडा.",
+      "goBack": "परत जा"
+    },
+    "toasts": {
+      "deleted": "उत्पादन यशस्वीरित्या हटवले",
+      "deleteFailed": "उत्पादन हटवण्यात अयशस्वी",
+      "deleteError": "हटवताना एक अनपेक्षित त्रुटी आली",
+      "loadCategoriesFailed": "श्रेणी लोड करण्यात अयशस्वी",
+      "created": "उत्पादन यशस्वीरित्या तयार केले",
+      "createFailed": "उत्पादन तयार करण्यात अयशस्वी",
+      "createError": "एक अनपेक्षित त्रुटी आली"
+    }
+  },
+  "priceLists": {
+    "title": "किंमत सूची",
+    "subtitle": "ग्राहकांसाठी सानुकूल किंमत स्तर व्यवस्थापित करा",
+    "table": {
+      "name": "किंमत सूचीचे नाव",
+      "entriesCount": "कव्हर केलेली उत्पादने",
+      "partiesCount": "नियुक्त ग्राहक"
+    },
+    "addPriceList": "किंमत सूची तयार करा",
+    "searchPlaceholder": "किंमत सूची फिल्टर करा...",
+    "toasts": {
+      "created": "किंमत सूची यशस्वीरित्या तयार केली",
+      "updated": "किंमत सूची अपडेट केली",
+      "deleted": "किंमत सूची हटवली"
+    }
+  },
+  "locations": {
+    "title": "स्थान व्यवस्थापन",
+    "subtitle": "तुमच्या एंटरप्राइझच्या तार्किक आणि भौतिक स्टोरेज पायाभूत सुविधांचे व्यवस्थापन करा.",
+    "kpis": {
+      "warehouses": "गोदामे",
+      "outlets": "सक्रिय आउटलेट्स",
+      "stocks": "स्टॉक पॉइंट्स",
+      "status": "नेटवर्क स्थिती",
+      "operational": "कार्यात्मक"
+    },
+    "warehouses": {
+      "title": "गोदामे",
+      "add": "गोदाम जोडा",
+      "empty": "अद्याप कोणतेही गोदाम स्थापित केलेले नाही.",
+      "skuPoints": "{count} SKU पॉइंट्स",
+      "linkedOutlets": "{count} लिंक केलेली आउटलेट्स",
+      "mainHub": "मुख्य वितरण केंद्र"
+    },
+    "outlets": {
+      "title": "विक्री आउटलेट्स",
+      "add": "आउटलेट जोडा",
+      "empty": "कोणताही विक्री बिंदू कॉन्फिगर केलेला नाही.",
+      "sourcedVia": "द्वारे प्राप्त: {warehouses}",
+      "directSupply": "थेट पुरवठा",
+      "usersAssigned": "{count} वापरकर्ते नियुक्त केले",
+      "policies": {
+        "block": "कठोर ब्लॉक",
+        "warn": "केवळ चेतावणी",
+        "allow": "नकारात्मक परवानगी द्या"
+      }
     }
   }
 }

@@ -157,7 +157,7 @@ export function InvoiceForm({
         billType: data.billType,
         itemsCount: data.items?.length,
         outletId: data.fromOutletId,
-        hasParty: !!data.partyId,
+        hasParty: data.billType === "NO1" ? !!(data as any).partyId : false,
       });
 
       const res = await onSubmitProp(data as any);

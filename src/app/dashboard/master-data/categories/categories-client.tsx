@@ -26,6 +26,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 type CategoryWithCounts = any;
 
@@ -34,6 +35,9 @@ export function CategoriesClient({
 }: {
   initialCategories: CategoryWithCounts[];
 }) {
+  const t = useTranslations("categories");
+  const common = useTranslations("common");
+  const dashboardTable = useTranslations("dashboard.table");
   const { data: session } = useSession();
   const { currentOutletId } = useOutletStore();
   const [categories, setCategories] = useState(initialCategories);
@@ -58,15 +62,15 @@ export function CategoriesClient({
       });
 
       if (res.success) {
-        toast.success("Category created successfully");
+        toast.success(t("toasts.created"));
         setIsAdding(false);
         setNewForm({ name: "", parentId: "" });
         refreshData();
       } else {
-        toast.error("Failed to create category: " + res.error?.message);
+        toast.error(`${t("toasts.createFailed")}: ${res.error?.message}`);
       }
     } catch (err) {
-      toast.error("Failed to create category");
+      toast.error(t("toasts.createFailed"));
     }
   };
 
@@ -81,14 +85,14 @@ export function CategoriesClient({
       });
 
       if (res.success) {
-        toast.success("Category updated");
+        toast.success(t("toasts.updated"));
         setEditingId(null);
         refreshData();
       } else {
-        toast.error("Failed to update category: " + res.error?.message);
+        toast.error(`${t("toasts.updateFailed")}: ${res.error?.message}`);
       }
     } catch (err) {
-      toast.error("Failed to update category");
+      toast.error(t("toasts.updateFailed"));
     }
   };
 
@@ -97,13 +101,13 @@ export function CategoriesClient({
     try {
       const res = await deactivateCategory(id, session.user.id);
       if (res.success) {
-        toast.success("Category deactivated");
+        toast.success(t("toasts.deactivated"));
         refreshData();
       } else {
-        toast.error("Failed to deactivate category: " + res.error?.message);
+        toast.error(`${t("toasts.updateFailed")}: ${res.error?.message}`);
       }
     } catch (err: any) {
-      toast.error("Failed to deactivate category");
+      toast.error(t("toasts.updateFailed"));
     }
   };
 
@@ -112,13 +116,13 @@ export function CategoriesClient({
     try {
       const res = await activateCategory(id, session.user.id);
       if (res.success) {
-        toast.success("Category activated");
+        toast.success(t("toasts.activated"));
         refreshData();
       } else {
-        toast.error("Failed to activate category: " + res.error?.message);
+        toast.error(`${t("toasts.updateFailed")}: ${res.error?.message}`);
       }
     } catch (err: any) {
-      toast.error("Failed to activate category");
+      toast.error(t("toasts.updateFailed"));
     }
   };
 
@@ -127,14 +131,14 @@ export function CategoriesClient({
     try {
       const res = await deleteCategory(deleteConfirmId, session.user.id);
       if (res.success) {
-        toast.success("Category deleted");
+        toast.success(t("toasts.deleted"));
         setDeleteConfirmId(null);
         refreshData();
       } else {
-        toast.error("Failed to delete category: " + res.error?.message);
+        toast.error(`${t("toasts.deleted")}: ${res.error?.message}`);
       }
     } catch (err: any) {
-      toast.error("Failed to delete category");
+      toast.error(t("toasts.deleted"));
     }
   };
 
@@ -146,7 +150,7 @@ export function CategoriesClient({
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "name",
-      header: "Hierarchy / Name",
+      header: t("hierarchyName"),
       cell: ({ row }) => {
         const cat = row.original;
         const isEditing = editingId === cat.id;
@@ -184,7 +188,7 @@ export function CategoriesClient({
     },
     {
       accessorKey: "description",
-      header: "Description",
+      header: common("description"),
       cell: ({ row }) => {
         const isEditing = editingId === row.original.id;
         if (isEditing) {
@@ -194,7 +198,7 @@ export function CategoriesClient({
               onChange={(e) =>
                 setEditForm({ ...editForm, description: e.target.value })
               }
-              placeholder="Brief description..."
+              placeholder={t("descPlaceholder")}
               className="h-8 text-sm"
             />
           );
@@ -208,7 +212,7 @@ export function CategoriesClient({
     },
     {
       accessorKey: "_count.children",
-      header: () => <div className="text-center w-24">Subs</div>,
+      header: () => <div className="text-center w-24">{t("subsCount")}</div>,
       cell: ({ row }) => (
         <div className="text-center font-medium text-slate-600">
           {row.original._count.children}
@@ -217,7 +221,7 @@ export function CategoriesClient({
     },
     {
       accessorKey: "_count.products",
-      header: () => <div className="text-center w-24">Items</div>,
+      header: () => <div className="text-center w-24">{t("itemsCount")}</div>,
       cell: ({ row }) => (
         <div className="text-center">
           <Badge
@@ -231,16 +235,18 @@ export function CategoriesClient({
     },
     {
       accessorKey: "isActive",
-      header: () => <div className="text-center w-24">Status</div>,
+      header: () => (
+        <div className="text-center w-24">{dashboardTable("status")}</div>
+      ),
       cell: ({ row }) => (
         <div className="text-center">
           {row.original.isActive ? (
             <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-              Active
+              {common("active")}
             </span>
           ) : (
             <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-              Inactive
+              {common("inactive")}
             </span>
           )}
         </div>
@@ -248,7 +254,7 @@ export function CategoriesClient({
     },
     {
       id: "actions",
-      header: () => <div className="text-right w-32">Actions</div>,
+      header: () => <div className="text-right w-32">{common("actions")}</div>,
       cell: ({ row }) => {
         const cat = row.original;
         const isEditing = editingId === cat.id;
@@ -290,7 +296,7 @@ export function CategoriesClient({
                     variant="ghost"
                     onClick={() => handleDeactivate(cat.id)}
                     className="h-8 w-8 text-slate-400 hover:text-amber-600"
-                    title="Deactivate"
+                    title={t("deactivate")}
                   >
                     <ShieldAlert className="w-4 h-4" />
                   </Button>
@@ -300,7 +306,7 @@ export function CategoriesClient({
                     variant="ghost"
                     onClick={() => handleActivate(cat.id)}
                     className="h-8 w-8 text-slate-400 hover:text-emerald-600"
-                    title="Activate"
+                    title={t("activate")}
                   >
                     <Check className="w-4 h-4" />
                   </Button>
@@ -337,18 +343,14 @@ export function CategoriesClient({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">
-            Product Categories
-          </h2>
-          <p className="text-slate-500 mt-1">
-            Manage the multi-level product taxonomy.
-          </p>
+          <h2 className="text-2xl font-bold text-slate-900">{t("title")}</h2>
+          <p className="text-slate-500 mt-1">{t("subtitle")}</p>
         </div>
         <Button
           onClick={() => setIsAdding(true)}
           className="bg-indigo-600 hover:bg-indigo-700"
         >
-          <Plus className="w-4 h-4 mr-2" /> Add Category
+          <Plus className="w-4 h-4 mr-2" /> {t("addCategory")}
         </Button>
       </div>
 
@@ -357,7 +359,7 @@ export function CategoriesClient({
         data={categories}
         emptyState={
           <div className="px-6 py-12 text-center text-slate-400 italic bg-white rounded-xl border border-slate-200">
-            No categories found. Click "Add Category" to get started.
+            {t("noCategories")}
           </div>
         }
         footerRow={
@@ -365,7 +367,7 @@ export function CategoriesClient({
             <tr className="bg-indigo-50/50 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-slate-100">
               <td className="px-6 py-4">
                 <Input
-                  placeholder="Category Name"
+                  placeholder={t("categoryNamePlaceholder")}
                   value={newForm.name}
                   onChange={(e) =>
                     setNewForm({ ...newForm, name: e.target.value })
@@ -382,7 +384,7 @@ export function CategoriesClient({
                     setNewForm({ ...newForm, parentId: e.target.value })
                   }
                 >
-                  <option value="">-- Parent (Optional) --</option>
+                  <option value="">{t("parentPlaceholder")}</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -398,7 +400,7 @@ export function CategoriesClient({
                     onClick={handleCreate}
                     className="bg-emerald-600 hover:bg-emerald-700 h-8"
                   >
-                    Save
+                    {common("save")}
                   </Button>
                   <Button
                     size="sm"
@@ -406,7 +408,7 @@ export function CategoriesClient({
                     onClick={() => setIsAdding(false)}
                     className="h-8"
                   >
-                    Cancel
+                    {common("cancel")}
                   </Button>
                 </div>
               </td>
@@ -419,9 +421,9 @@ export function CategoriesClient({
         isOpen={!!deleteConfirmId}
         onClose={() => setDeleteConfirmId(null)}
         onConfirm={handleDelete}
-        title="Are you absolutely sure?"
-        description="This will permanently delete this category. This action cannot be undone."
-        confirmText="Delete Category"
+        title={t("deleteTitle")}
+        description={t("deleteDescription")}
+        confirmText={t("deleteConfirm")}
       />
     </div>
   );

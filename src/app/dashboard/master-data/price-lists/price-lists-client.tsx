@@ -7,12 +7,16 @@ import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 export function PriceListsClient({ priceLists }: { priceLists: any[] }) {
+  const t = useTranslations("priceLists");
+  const tc = useTranslations("common");
+
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "name",
-      header: "Price List Name",
+      header: t("table.name"),
       cell: ({ getValue }) => (
         <span className="font-semibold text-text-primary">
           {getValue() as string}
@@ -21,7 +25,7 @@ export function PriceListsClient({ priceLists }: { priceLists: any[] }) {
     },
     {
       accessorKey: "description",
-      header: "Description",
+      header: tc("fields.description"),
       cell: ({ getValue }) => (
         <span className="text-text-secondary">
           {(getValue() as string) || "-"}
@@ -30,7 +34,7 @@ export function PriceListsClient({ priceLists }: { priceLists: any[] }) {
     },
     {
       id: "entriesCount",
-      header: "Products Covered",
+      header: t("table.entriesCount"),
       cell: ({ row }) => (
         <span className="text-sm font-medium">
           {row.original._count.entries}
@@ -39,7 +43,7 @@ export function PriceListsClient({ priceLists }: { priceLists: any[] }) {
     },
     {
       id: "partiesCount",
-      header: "Assigned Customers",
+      header: t("table.partiesCount"),
       cell: ({ row }) => (
         <span className="text-sm font-medium">
           {row.original._count.parties}
@@ -48,7 +52,7 @@ export function PriceListsClient({ priceLists }: { priceLists: any[] }) {
     },
     {
       accessorKey: "isActive",
-      header: "Status",
+      header: tc("fields.status"),
       cell: ({ getValue }) => {
         const isActive = getValue() as boolean;
         return (
@@ -59,30 +63,33 @@ export function PriceListsClient({ priceLists }: { priceLists: any[] }) {
                 : "bg-red-100 text-red-700"
             }`}
           >
-            {isActive ? "ACTIVE" : "INACTIVE"}
+            {isActive ? tc("status.active") : tc("status.inactive")}
           </span>
         );
       },
     },
   ];
 
-  const breadcrumbs = [{ label: "Master Data" }, { label: "Price Lists" }];
+  const breadcrumbs = [
+    { label: tc("breadcrumbs.masterData") },
+    { label: t("title") },
+  ];
 
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Price Lists"
-        subtitle="Manage custom pricing tiers for customers"
+        title={t("title")}
+        subtitle={t("subtitle")}
         breadcrumbs={breadcrumbs}
       />
 
       <TableToolbar
-        searchPlaceholder="Filter price lists..."
+        searchPlaceholder={t("searchPlaceholder")}
         actions={
           <Link href="/dashboard/master-data/price-lists/new">
             <Button size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
-              <span>Create Price List</span>
+              <span>{t("addPriceList")}</span>
             </Button>
           </Link>
         }

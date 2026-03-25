@@ -3,6 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, ClipboardList, Truck } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 // Sub-clients
 import { QuotationsClient } from "../quotations/quotations-client";
@@ -21,6 +22,7 @@ export function QuotationsAndDeliveryClient({
   challans,
 }: QuotationsAndDeliveryClientProps) {
   const [activeTab, setActiveTab] = useState("quotations");
+  const t = useTranslations("quotationsAndDelivery.tabs");
 
   return (
     <div className="space-y-6">
@@ -36,21 +38,21 @@ export function QuotationsAndDeliveryClient({
               className="rounded-lg px-4 gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
             >
               <FileText className="w-4 h-4 text-blue-500" />
-              Quotations
+              {t("quotations")}
             </TabsTrigger>
             <TabsTrigger
               value="proforma"
               className="rounded-lg px-4 gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
             >
               <ClipboardList className="w-4 h-4 text-orange-500" />
-              Proforma
+              {t("proforma")}
             </TabsTrigger>
             <TabsTrigger
               value="challans"
               className="rounded-lg px-4 gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
             >
               <Truck className="w-4 h-4 text-green-500" />
-              Challans
+              {t("challans")}
             </TabsTrigger>
           </TabsList>
         </div>

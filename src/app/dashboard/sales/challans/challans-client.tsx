@@ -5,40 +5,47 @@ import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { TableToolbar } from "@/components/ui/table-toolbar";
+import { useTranslations } from "next-intl";
 
 export function DeliveryChallansClient({ challans }: { challans: any[] }) {
+  const t = useTranslations("quotationsAndDelivery.challans");
+  const common = useTranslations("common");
+  const sales = useTranslations("sales");
+  const dashboardTable = useTranslations("dashboard.table");
+  const table = useTranslations("quotationsAndDelivery.table");
+
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "txnNumber",
-      header: "Challan #",
+      header: t("challanNumber"),
       cell: ({ getValue }) => (
         <span className="font-bold text-brand">{getValue() as string}</span>
       ),
     },
     {
       accessorKey: "date",
-      header: "Date",
+      header: sales("date"),
       cell: ({ getValue }) => (
         <span>{format(new Date(getValue() as string), "dd MMM yyyy")}</span>
       ),
     },
     {
       accessorKey: "party.name",
-      header: "Customer",
+      header: dashboardTable("customer"),
       cell: ({ row }) => (
-        <span>{row.original.party?.name || "Cash Customer"}</span>
+        <span>{row.original.party?.name || sales("cashCustomer")}</span>
       ),
     },
     {
       accessorKey: "grandTotal",
-      header: "Value (₹)",
+      header: table("valueWithCurrency"),
       cell: ({ getValue }) => (
         <span className="font-bold">₹{Number(getValue()).toFixed(2)}</span>
       ),
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: dashboardTable("status"),
       cell: ({ getValue }) => {
         const status = getValue() as string;
         let style = "bg-primary-100 text-primary-700";
@@ -56,11 +63,14 @@ export function DeliveryChallansClient({ challans }: { challans: any[] }) {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Delivery Challans"
-        subtitle="Manage dispatch documents and material movements."
-        breadcrumbs={[{ label: "Sales" }, { label: "Challans" }]}
+        title={t("title")}
+        subtitle={t("subtitle")}
+        breadcrumbs={[
+          { label: common("groups.sales") },
+          { label: t("title").replace("Delivery ", "") },
+        ]}
       />
-      <TableToolbar searchPlaceholder="Search challan #..." />
+      <TableToolbar searchPlaceholder={t("searchPlaceholder")} />
       <DataTable columns={columns} data={challans} />
     </div>
   );
