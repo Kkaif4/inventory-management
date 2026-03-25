@@ -4,6 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Devanagari font for Hindi and Marathi */
+:lang(hi),
+:lang(mr) {
+  font-family: var(--font-devanagari), var(--font-geist-sans), sans-serif;
+}
+
 @theme {
   /* Brand Colors */
   --color-brand: #1a56db;

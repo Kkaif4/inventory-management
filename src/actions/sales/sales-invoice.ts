@@ -27,6 +27,7 @@ export async function createSalesInvoice(data: {
   }[];
   date: Date;
   userId: string;
+  headerDiscount?: number;
   freightCost?: number;
   remarks?: string;
   buyerName?: string;
@@ -317,6 +318,7 @@ export async function saveSalesInvoiceDraft(data: {
   }[];
   date: Date;
   userId: string;
+  headerDiscount?: number;
   freightCost?: number;
   remarks?: string;
   buyerName?: string;
@@ -417,6 +419,7 @@ export async function editSalesInvoice(
     }[];
     date: Date;
     userId: string;
+    headerDiscount?: number;
     freightCost?: number;
     remarks?: string;
     buyerName?: string;

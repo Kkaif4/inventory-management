@@ -56,7 +56,8 @@ export function InvoiceSummaryPanel({
   creditLimitExceeded = false,
   submitButtonText = billType === "NO1" ? "Post Invoice" : "Post Cash Bill",
 }: InvoiceSummaryPanelProps) {
-  const borderColor = billType === "NO1" ? "border-slate-900" : "border-amber-500";
+  const borderColor =
+    billType === "NO1" ? "border-slate-900" : "border-amber-500";
   const buttonColor =
     billType === "NO1"
       ? "bg-slate-900 hover:bg-slate-800"
@@ -66,11 +67,11 @@ export function InvoiceSummaryPanel({
     <div
       className={cn(
         "sticky top-8 rounded-lg border-t-4 bg-white border border-slate-200 shadow-lg overflow-hidden",
-        billType === "NO1" ? "border-t-slate-900" : "border-t-amber-500"
+        billType === "NO1" ? "border-t-slate-900" : "border-t-amber-500",
       )}
     >
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
+      <div className="bg-linear-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
         <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">
           {billType === "NO1" ? "Invoice Summary" : "Cash Bill Summary"}
         </h3>
@@ -123,14 +124,9 @@ export function InvoiceSummaryPanel({
               GST Breakup
             </p>
             {gstBreakup.map((breakup) => (
-              <div
-                key={`gst-${breakup.rate}`}
-                className="text-xs space-y-1"
-              >
+              <div key={`gst-${breakup.rate}`} className="text-xs space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-slate-600">
-                    GST @ {breakup.rate}%
-                  </span>
+                  <span className="text-slate-600">GST @ {breakup.rate}%</span>
                   <span className="font-mono text-slate-900">
                     Taxable: ₹{breakup.taxable.toFixed(2)}
                   </span>
@@ -194,7 +190,7 @@ export function InvoiceSummaryPanel({
             <span
               className={cn(
                 "font-mono",
-                roundOff > 0 ? "text-emerald-700" : "text-red-700"
+                roundOff > 0 ? "text-emerald-700" : "text-red-700",
               )}
             >
               {roundOff > 0 ? "+" : ""}₹{roundOff.toFixed(2)}
@@ -233,9 +229,7 @@ export function InvoiceSummaryPanel({
             disabled={!canSubmit || isSubmitting || creditLimitExceeded}
             className={cn("w-full h-12 font-bold", buttonColor)}
           >
-            {isSubmitting && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {submitButtonText}
           </Button>
 

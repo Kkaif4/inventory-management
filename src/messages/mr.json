@@ -1,0 +1,156 @@
+{
+  "nav": {
+    "groups": {
+      "overview": "आढावा",
+      "sales": "विक्री",
+      "products": "उत्पादने आणि स्टॉक",
+      "procurement": "खरेदी",
+      "parties": "पक्षकार",
+      "finance": "वित्त",
+      "admin": "प्रशासन"
+    },
+    "items": {
+      "dashboard": "डॅशबोर्ड",
+      "salesTransactions": "विक्री व्यवहार",
+      "quotations": "कोटेशन आणि डिलिव्हरी",
+      "categories": "श्रेणी",
+      "products": "उत्पादने",
+      "priceLists": "किंमत यादी",
+      "inventory": "यादी",
+      "locations": "गोदाम आणि आउटलेट",
+      "purchases": "खरेदी",
+      "customers": "ग्राहक",
+      "vendors": "विक्रेते",
+      "accounts": "खाती",
+      "ledger": "सामान्य खातेवाही",
+      "pnl": "लाभ आणि तोटा",
+      "balanceSheet": "शिल्लक पत्रक",
+      "gstReports": "GST अहवाल",
+      "settings": "सेटिंग्ज",
+      "auditLogs": "लेखापरीक्षा लॉग",
+      "roles": "भूमिका मेट्रिक्स"
+    },
+    "signOut": "साइन आउट"
+  },
+  "common": {
+    "actions": {
+      "save": "बदल जतन करा",
+      "cancel": "रद्द करा",
+      "delete": "हटवा",
+      "create": "तयार करा",
+      "edit": "संपादित करा",
+      "back": "मागे",
+      "add": "जोडा",
+      "remove": "काढून टाका",
+      "confirm": "पुष्टी करा",
+      "search": "शोधा",
+      "filter": "फिल्टर करा",
+      "export": "निर्यात करा",
+      "import": "आयात करा"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "posted": "पोस्ट केलेले",
+      "draft": "मसुदा",
+      "pending": "प्रलंबित"
+    },
+    "labels": {
+      "loading": "लोड होत आहे...",
+      "noResults": "कोणतेही निकाल नाहीत",
+      "required": "आवश्यक",
+      "optional": "पर्यायी"
+    }
+  },
+  "forms": {
+    "customer": {
+      "title": "नवीन ग्राहक",
+      "editTitle": "ग्राहक संपादित करा",
+      "sections": {
+        "identity": "ओळख",
+        "address": "पत्ता",
+        "financial": "आर्थिक अटी"
+      },
+      "fields": {
+        "name": "ग्राहकाचे नाव",
+        "type": "ग्राहक प्रकार",
+        "b2b": "B2B (नोंदणीकृत व्यवसाय)",
+        "b2c": "B2C (व्यक्तिगत / नोंदणी न केलेले)",
+        "gstin": "GSTIN",
+        "pan": "PAN",
+        "phone": "फोन",
+        "email": "ईमेल",
+        "contactPerson": "संपर्क व्यक्ती",
+        "address": "पत्ता",
+        "state": "राज्य",
+        "creditPeriod": "क्रेडिट कालावधी (दिवस)",
+        "creditLimit": "क्रेडिट मर्यादा (₹)",
+        "openingBalance": "प्रारंभिक शिल्लक (₹)"
+      }
+    },
+    "invoice": {
+      "title": "विक्री इनव्हॉयस तयार करा",
+      "editTitle": "विक्री इनव्हॉयस संपादित करा",
+      "billTypes": {
+        "no1": "क्र. 1 कायदेशीर बिल",
+        "no2": "क्र. 2 रोकड़ बिल"
+      },
+      "sections": {
+        "dispatch": "पाठवणी स्थान",
+        "customer": "ग्राहक",
+        "buyer": "किरकोळ खरेदीदार",
+        "items": "वस्तू",
+        "additional": "अतिरिक्त"
+      },
+      "fields": {
+        "outlet": "आउटलेट पासून",
+        "date": "इनव्हॉयस तारीख",
+        "customer": "ग्राहक",
+        "buyerName": "खरेदीदाराचे नाव",
+        "buyerPhone": "संपर्क",
+        "product": "उत्पादन",
+        "qty": "प्रमाण",
+        "rate": "दर (₹)",
+        "discount": "सवलत%",
+        "hsn": "HSN",
+        "total": "एकूण",
+        "freight": "मालवाहतूक खर्च (₹)",
+        "billDiscount": "बिल सवलत (%)",
+        "remarks": "टिप्पण्या"
+      },
+      "actions": {
+        "addLine": "ओळ जोडा",
+        "postInvoice": "इनव्हॉयस पोस्ट करा",
+        "postCashBill": "रोकड़ बिल पोस्ट करा",
+        "update": "अपडेट करा"
+      }
+    }
+  },
+  "toasts": {
+    "customer": {
+      "created": "ग्राहक यशस्वीरित्या तयार केला",
+      "updated": "ग्राहक अपडेट केला",
+      "deleted": "ग्राहक हटवला"
+    },
+    "invoice": {
+      "posted": "इनव्हॉयस यशस्वीरित्या पोस्ट केला",
+      "updated": "इनव्हॉयस अपडेट केला",
+      "failed": "इनव्हॉयस जतन करण्यात अयशस्वी"
+    },
+    "product": {
+      "created": "उत्पादन यशस्वीरित्या तयार केले",
+      "updated": "उत्पादन अपडेट केले",
+      "deleted": "उत्पादन हटवले"
+    }
+  },
+  "dashboard": {
+    "title": "डॅशबोर्ड",
+    "subtitle": "आपल्या व्यवसायात काय घडत आहे हे जाणून घ्या।",
+    "kpi": {
+      "todaySales": "आजचे विक्री",
+      "invoicesGenerated": "इनव्हॉयस तयार केले",
+      "outstanding": "बकाया प्राप्य",
+      "outstandingSubtitle": "ग्राहकांकडून प्रलंबित"
+    }
+  }
+}

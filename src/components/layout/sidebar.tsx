@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Building2,
   LayoutDashboard,
@@ -152,6 +153,7 @@ interface SidebarProps {
 
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
 
   return (
     <aside
@@ -161,44 +163,79 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
       )}
     >
       <div className="flex-1 overflow-y-auto py-6 px-3 space-y-8 text-current">
-        {navigation.map((group) => (
-          <div key={group.group} className="space-y-1">
-            {!isCollapsed && (
-              <p className="px-3 text-[10px] font-bold text-text-disabled tracking-[0.15em] mb-3">
-                {group.group}
-              </p>
-            )}
-            {group.items.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/dashboard" && pathname.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "group flex items-center px-3 py-2 rounded-default text-sm transition-all relative",
-                    isActive
-                      ? "bg-brand-light text-brand font-semibold shadow-[inset_-2px_0_0_#1a56db]"
-                      : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary",
-                  )}
-                  title={isCollapsed ? item.name : ""}
-                >
-                  <item.icon
+        {navigation.map((group) => {
+          const groupKey = group.group
+            .toLowerCase()
+            .replace(/ & /g, "And")
+            .replace(/ /g, "");
+          const groupNameKey = `groups.${groupKey}`;
+          return (
+            <div key={group.group} className="space-y-1">
+              {!isCollapsed && (
+                <p className="px-3 text-[10px] font-bold text-text-disabled tracking-[0.15em] mb-3">
+                  {t(groupNameKey as any)}
+                </p>
+              )}
+              {group.items.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/dashboard" &&
+                    pathname.startsWith(item.href));
+                // Map item names to keys
+                const itemNameMap: Record<string, string> = {
+                  Dashboard: "dashboard",
+                  "Sales Transactions": "salesTransactions",
+                  "Quotations & Delivery": "quotations",
+                  Categories: "categories",
+                  Products: "products",
+                  "Price Lists": "priceLists",
+                  Inventory: "inventory",
+                  "Warehouses & Outlets": "locations",
+                  Purchases: "purchases",
+                  Customers: "customers",
+                  Vendors: "vendors",
+                  Accounts: "accounts",
+                  "General Ledger": "ledger",
+                  "P&L Statement": "pnl",
+                  "Balance Sheet": "balanceSheet",
+                  "GST Reports": "gstReports",
+                  Settings: "settings",
+                  "Audit Logs": "auditLogs",
+                  "Roles Matrix": "roles",
+                };
+                const itemKey =
+                  itemNameMap[item.name] ||
+                  item.name.toLowerCase().replace(/ /g, "");
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
                     className={cn(
-                      "w-5 h-5 shrink-0",
-                      isCollapsed ? "mx-auto" : "mr-3",
+                      "group flex items-center px-3 py-2 rounded-default text-sm transition-all relative",
                       isActive
-                        ? "text-brand"
-                        : "text-text-muted group-hover:text-text-secondary",
+                        ? "bg-brand-light text-brand font-semibold shadow-[inset_-2px_0_0_#1a56db]"
+                        : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary",
                     )}
-                  />
-                  {!isCollapsed && <span>{item.name}</span>}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+                    title={isCollapsed ? t(`items.${itemKey}` as any) : ""}
+                  >
+                    <item.icon
+                      className={cn(
+                        "w-5 h-5 shrink-0",
+                        isCollapsed ? "mx-auto" : "mr-3",
+                        isActive
+                          ? "text-brand"
+                          : "text-text-muted group-hover:text-text-secondary",
+                      )}
+                    />
+                    {!isCollapsed && (
+                      <span>{t(`items.${itemKey}` as any)}</span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
 
       <div className="p-3 border-t border-border-default flex flex-col gap-2">
@@ -212,7 +249,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
             className="w-full justify-start text-text-secondary hover:bg-red-50 hover:text-red-600 gap-3"
           >
             <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
+            <span>{t("signOut")}</span>
           </Button>
         )}
 

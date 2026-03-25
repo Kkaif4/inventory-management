@@ -3,11 +3,12 @@
 import { useSession } from "next-auth/react";
 import { logoutAndClearData } from "@/lib/logout";
 import { useState, useEffect } from "react";
-import { Building2, Bell, LogOut } from "lucide-react";
+import { Building2, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OutletSwitcher } from "@/components/ui/outlet-switcher";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layout/sidebar";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,13 +80,7 @@ export default function DashboardLayout({
         <div className="flex items-center gap-2">
           <OutletSwitcher />
           <div className="h-6 w-px bg-border-default mx-2" />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-text-secondary h-9 w-9"
-          >
-            <Bell className="w-5 h-5" />
-          </Button>
+          <LanguageSwitcher />
           <div className="flex items-center gap-3 px-2 ml-2 border-l border-border-default">
             <DropdownMenu>
               <DropdownMenuTrigger>

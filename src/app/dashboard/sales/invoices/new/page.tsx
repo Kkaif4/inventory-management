@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Warehouse, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { getInventoryLocations } from "@/actions/inventory";
+import { handleCreateSalesInvoice } from "@/actions/sales/invoice-form-handler";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { Button } from "@/components/ui/button";
 import { InvoiceForm } from "@/components/sales/invoice-form";
@@ -100,7 +101,22 @@ function InvoicePageContent() {
     );
   }
 
-  return <InvoiceForm mode="create" outlets={outlets} />;
+  const handleSubmit = async (formData: any) => {
+    const selectedOutlet = outlets.find((o) => o.id === formData.fromOutletId);
+    return await handleCreateSalesInvoice(
+      formData,
+      selectedOutlet?.state,
+      selectedOutlet?.state,
+    );
+  };
+
+  return (
+    <InvoiceForm
+      mode="create"
+      outlets={outlets}
+      onSubmit={handleSubmit}
+    />
+  );
 }
 
 export default function NewSalesInvoicePage() {

@@ -1,0 +1,156 @@
+{
+  "nav": {
+    "groups": {
+      "overview": "OVERVIEW",
+      "sales": "SALES",
+      "products": "PRODUCTS & STOCK",
+      "procurement": "PROCUREMENT",
+      "parties": "PARTIES",
+      "finance": "FINANCE",
+      "admin": "ADMIN"
+    },
+    "items": {
+      "dashboard": "Dashboard",
+      "salesTransactions": "Sales Transactions",
+      "quotations": "Quotations & Delivery",
+      "categories": "Categories",
+      "products": "Products",
+      "priceLists": "Price Lists",
+      "inventory": "Inventory",
+      "locations": "Warehouses & Outlets",
+      "purchases": "Purchases",
+      "customers": "Customers",
+      "vendors": "Vendors",
+      "accounts": "Accounts",
+      "ledger": "General Ledger",
+      "pnl": "P&L Statement",
+      "balanceSheet": "Balance Sheet",
+      "gstReports": "GST Reports",
+      "settings": "Settings",
+      "auditLogs": "Audit Logs",
+      "roles": "Roles Matrix"
+    },
+    "signOut": "Sign Out"
+  },
+  "common": {
+    "actions": {
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "create": "Create",
+      "edit": "Edit",
+      "back": "Back",
+      "add": "Add",
+      "remove": "Remove",
+      "confirm": "Confirm",
+      "search": "Search",
+      "filter": "Filter",
+      "export": "Export",
+      "import": "Import"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "posted": "Posted",
+      "draft": "Draft",
+      "pending": "Pending"
+    },
+    "labels": {
+      "loading": "Loading...",
+      "noResults": "No results found",
+      "required": "Required",
+      "optional": "Optional"
+    }
+  },
+  "forms": {
+    "customer": {
+      "title": "New Customer",
+      "editTitle": "Edit Customer",
+      "sections": {
+        "identity": "Identity",
+        "address": "Address",
+        "financial": "Financial Terms"
+      },
+      "fields": {
+        "name": "Customer Name",
+        "type": "Customer Type",
+        "b2b": "B2B (Registered Business)",
+        "b2c": "B2C (Individual / Unregistered)",
+        "gstin": "GSTIN",
+        "pan": "PAN",
+        "phone": "Phone",
+        "email": "Email",
+        "contactPerson": "Contact Person",
+        "address": "Address",
+        "state": "State",
+        "creditPeriod": "Credit Period (Days)",
+        "creditLimit": "Credit Limit (₹)",
+        "openingBalance": "Opening Balance (₹)"
+      }
+    },
+    "invoice": {
+      "title": "Generate Sales Invoice",
+      "editTitle": "Edit Sales Invoice",
+      "billTypes": {
+        "no1": "No.1 Legal Bill",
+        "no2": "No.2 Cash Bill"
+      },
+      "sections": {
+        "dispatch": "Dispatch Location",
+        "customer": "Customer",
+        "buyer": "Retail Buyer",
+        "items": "Items",
+        "additional": "Additional"
+      },
+      "fields": {
+        "outlet": "From Outlet",
+        "date": "Invoice Date",
+        "customer": "Customer",
+        "buyerName": "Buyer Name",
+        "buyerPhone": "Contact",
+        "product": "Product",
+        "qty": "Qty",
+        "rate": "Rate (₹)",
+        "discount": "Discount%",
+        "hsn": "HSN",
+        "total": "Total",
+        "freight": "Freight Cost (₹)",
+        "billDiscount": "Bill Discount (%)",
+        "remarks": "Remarks"
+      },
+      "actions": {
+        "addLine": "Add Line",
+        "postInvoice": "Post Invoice",
+        "postCashBill": "Post Cash Bill",
+        "update": "Update"
+      }
+    }
+  },
+  "toasts": {
+    "customer": {
+      "created": "Customer created successfully",
+      "updated": "Customer updated",
+      "deleted": "Customer deleted"
+    },
+    "invoice": {
+      "posted": "Invoice posted successfully",
+      "updated": "Invoice updated",
+      "failed": "Failed to save invoice"
+    },
+    "product": {
+      "created": "Product created successfully",
+      "updated": "Product updated",
+      "deleted": "Product deleted"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Here is what's happening in your business today.",
+    "kpi": {
+      "todaySales": "Today's Sales",
+      "invoicesGenerated": "Invoices generated",
+      "outstanding": "Outstanding Receivables",
+      "outstandingSubtitle": "Pending from customers"
+    }
+  }
+}

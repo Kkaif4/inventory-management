@@ -104,15 +104,19 @@ export function InvoiceForm({
   const lineDiscounts = items.reduce(
     (sum, item) =>
       sum +
-      ((item?.quantity || 0) * (item?.rate || 0) * (item?.discountPercent || 0)) /
+      ((item?.quantity || 0) *
+        (item?.rate || 0) *
+        (item?.discountPercent || 0)) /
         100,
     0,
   );
   const subtotalBeforeHeaderDiscount = itemsTotal - lineDiscounts;
-  const headerDiscountAmount = (subtotalBeforeHeaderDiscount * (headerDiscount || 0)) / 100;
+  const headerDiscountAmount =
+    (subtotalBeforeHeaderDiscount * (headerDiscount || 0)) / 100;
   const subtotal = subtotalBeforeHeaderDiscount - headerDiscountAmount;
   const totalTax = items.reduce((sum, item) => {
-    const tax = ((item?.quantity || 0) * (item?.rate || 0) * (item?.gstRate || 0)) / 100;
+    const tax =
+      ((item?.quantity || 0) * (item?.rate || 0) * (item?.gstRate || 0)) / 100;
     return sum + tax;
   }, 0);
   const grandTotal = subtotal + totalTax + freightCost;
@@ -127,6 +131,20 @@ export function InvoiceForm({
     }
   };
 
+  const handleValidationClick = async () => {
+    const isValid = await form.trigger();
+    if (!isValid) {
+      const errors = form.formState.errors;
+      const errorMessages = Object.entries(errors)
+        .map(([field, error]) => `${field}: ${error?.message}`)
+        .join(", ");
+      console.error("❌ Validation errors:", errorMessages);
+      toast.error("Please fix validation errors before submitting");
+    } else {
+      form.handleSubmit(handleFormSubmit)();
+    }
+  };
+
   const handleFormSubmit = async (data: FormValues) => {
     try {
       setIsSubmitting(true);
@@ -134,19 +152,26 @@ export function InvoiceForm({
         toast.error("Form handler not configured");
         return;
       }
+
+      console.log("📝 Invoice Form Submission:", {
+        billType: data.billType,
+        itemsCount: data.items?.length,
+        outletId: data.fromOutletId,
+        hasParty: !!data.partyId,
+      });
+
       const res = await onSubmitProp(data as any);
       if (res.success) {
         toast.success(
-          mode === "create"
-            ? "Invoice posted successfully"
-            : "Invoice updated",
+          mode === "create" ? "Invoice posted successfully" : "Invoice updated",
         );
         router.push("/dashboard/sales/invoices");
       } else {
+        console.error("❌ Invoice submission failed:", res.error);
         toast.error("Failed: " + res.error?.message);
       }
     } catch (error) {
-      console.error("Form submission error:", error);
+      console.error("❌ Form submission error:", error);
       toast.error("An error occurred while saving");
     } finally {
       setIsSubmitting(false);
@@ -225,8 +250,7 @@ export function InvoiceForm({
 
           {billType === "NO2" && (
             <div className="px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
-              ℹ This creates an informal cash memo. No GST, no customer
-              ledger.
+              ℹ This creates an informal cash memo. No GST, no customer ledger.
             </div>
           )}
         </div>
@@ -236,7 +260,10 @@ export function InvoiceForm({
           {/* LEFT COLUMN: Form */}
           <div className="lg:col-span-2 space-y-8">
             {/* Section 1: Dispatch Location */}
-            <FormSection title="Dispatch Location" description="Outlet and date">
+            <FormSection
+              title="Dispatch Location"
+              description="Outlet and date"
+            >
               <FormGrid cols={2}>
                 <FormField
                   control={form.control}
@@ -295,10 +322,7 @@ export function InvoiceForm({
 
             {/* Section 2: Customer/Buyer */}
             {billType === "NO1" ? (
-              <FormSection
-                title="Customer"
-                description="B2B account details"
-              >
+              <FormSection title="Customer" description="account details">
                 <FormGrid cols={1}>
                   <FormField
                     control={form.control}
@@ -383,7 +407,9 @@ export function InvoiceForm({
                     className="p-3 bg-slate-50 rounded-lg border border-slate-200"
                   >
                     {/* Single Row: Product | Qty | Rate | Discount% | HSN (NO1) | Total | Delete */}
-                    <div className={`grid gap-3 ${billType === "NO1" ? "grid-cols-[1.5fr_0.7fr_0.8fr_0.7fr_0.7fr_0.8fr_0.4fr]" : "grid-cols-[1.5fr_0.7fr_0.8fr_0.7fr_0.8fr_0.4fr]"}`}>
+                    <div
+                      className={`grid gap-3 ${billType === "NO1" ? "grid-cols-[1.5fr_0.7fr_0.8fr_0.7fr_0.7fr_0.8fr_0.4fr]" : "grid-cols-[1.5fr_0.7fr_0.8fr_0.7fr_0.8fr_0.4fr]"}`}
+                    >
                       <FormField
                         control={form.control}
                         name={`items.${index}.variantId`}
@@ -393,11 +419,15 @@ export function InvoiceForm({
                             <FormControl>
                               <ProductSelect
                                 value={field.value}
+                                outletId={fromOutletId}
                                 onChange={async (variantId, productData) => {
                                   field.onChange(variantId);
 
                                   // Auto-fill fields from productData
-                                  if (productData?.variant && productData?.product) {
+                                  if (
+                                    productData?.variant &&
+                                    productData?.product
+                                  ) {
                                     const { variant, product } = productData;
 
                                     // Auto-fill rate from variant.sellingPrice
@@ -417,7 +447,8 @@ export function InvoiceForm({
                                     }
 
                                     // Auto-fill hsnCode from variant.sku or product.sku
-                                    const hsnCode = variant.sku || product.sku || "";
+                                    const hsnCode =
+                                      variant.sku || product.sku || "";
                                     form.setValue(
                                       `items.${index}.hsnCode`,
                                       hsnCode,
@@ -448,13 +479,25 @@ export function InvoiceForm({
                             <FormControl>
                               <Input
                                 type="number"
+                                step="1"
+                                min="0"
+                                max="999999"
                                 value={field.value || ""}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    parseFloat(e.target.value) || 0,
-                                  )
-                                }
+                                onChange={(e) => {
+                                  let val = e.target.value;
+                                  val = val.replace(/[^\d]/g, "");
+                                  const num = parseInt(val, 10) || 0;
+                                  field.onChange(num);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (
+                                    ["-", "+", ".", "e", "E"].includes(e.key)
+                                  ) {
+                                    e.preventDefault();
+                                  }
+                                }}
                                 disabled={isPosted}
+                                placeholder="0"
                                 className="font-mono h-10"
                               />
                             </FormControl>
@@ -473,13 +516,28 @@ export function InvoiceForm({
                             <FormControl>
                               <Input
                                 type="number"
+                                step="0.01"
+                                min="0"
+                                max="9999999.99"
                                 value={field.value || ""}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    parseFloat(e.target.value) || 0,
-                                  )
-                                }
+                                onChange={(e) => {
+                                  let val = e.target.value;
+                                  val = val.replace(/[^\d.]/g, "");
+                                  val = val.replace(/\.(?=.*\.)/g, "");
+                                  if (val.includes(".")) {
+                                    const [int, dec] = val.split(".");
+                                    val = int + "." + dec.slice(0, 2);
+                                  }
+                                  const num = parseFloat(val) || 0;
+                                  field.onChange(num);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (["-", "+", "e", "E"].includes(e.key)) {
+                                    e.preventDefault();
+                                  }
+                                }}
                                 disabled={isPosted}
+                                placeholder="0.00"
                                 className="font-mono h-10"
                               />
                             </FormControl>
@@ -540,10 +598,11 @@ export function InvoiceForm({
                         <div className="h-10 flex items-center justify-end bg-slate-100 rounded px-2 font-mono text-sm font-bold">
                           ₹
                           {(
-                            ((form.watch(`items.${index}.quantity`) || 0) *
-                              (form.watch(`items.${index}.rate`) || 0)) *
+                            (form.watch(`items.${index}.quantity`) || 0) *
+                            (form.watch(`items.${index}.rate`) || 0) *
                             (1 -
-                              (form.watch(`items.${index}.discountPercent`) || 0) /
+                              (form.watch(`items.${index}.discountPercent`) ||
+                                0) /
                                 100)
                           ).toFixed(2)}
                         </div>
@@ -592,7 +651,10 @@ export function InvoiceForm({
             </FormSection>
 
             {/* Section 4: Additional */}
-            <FormSection title="Additional" description="Freight, discount and remarks">
+            <FormSection
+              title="Additional"
+              description="Freight, discount and remarks"
+            >
               <FormGrid cols={billType === "NO1" ? 3 : 2}>
                 <FormField
                   control={form.control}
@@ -684,10 +746,10 @@ export function InvoiceForm({
               canSubmit={
                 items.length > 0 &&
                 !!fromOutletId &&
-                (billType === "NO2" || !!form.watch("partyId"))
+                (billType === "NO2" || !!(form.watch("partyId") as string))
               }
               isSubmitting={isSubmitting}
-              onSubmit={() => form.handleSubmit(handleFormSubmit)()}
+              onSubmit={handleValidationClick}
               submitButtonText={
                 mode === "create"
                   ? billType === "NO1"
