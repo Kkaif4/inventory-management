@@ -366,3 +366,22 @@ export async function deleteProduct(productId: string, userId: string) {
     return { deleted: true, id: productId };
   });
 }
+
+export async function getNextSkuNumber(prefix: string, outletId: string) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+    const existing = await prisma.variant.findMany({
+      where: {
+        sku: { startsWith: prefix + "-" },
+        product: { outletId },
+      },
+      select: { sku: true },
+    });
+    if (existing.length === 0) return "001";
+    const nums = existing.map((v) => {
+      const parts = v.sku.split("-");
+      return parseInt(parts[parts.length - 1]) || 0;
+    });
+    return String(Math.max(...nums) + 1).padStart(3, "0");
+  });
+}
