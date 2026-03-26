@@ -1,0 +1,30 @@
+{
+  "title": "उत्पादन श्रेणी",
+  "subtitle": "बहु-स्तरीय उत्पादन वर्गीकरण व्यवस्थापित करा",
+  "addCategory": "श्रेणी जोडा",
+  "noCategories": "कोणतीही श्रेणी आढळली नाही. सुरू करण्यासाठी \"श्रेणी जोडा\" वर क्लिक करा.",
+  "hierarchyName": "पदानुक्रम / नाव",
+  "subsCount": "उप-श्रेण्या",
+  "itemsCount": "वस्तू",
+  "categoryNamePlaceholder": "श्रेणीचे नाव",
+  "parentPlaceholder": "-- मुख्य श्रेणी (पर्यायी) --",
+  "deactivate": "निष्क्रिय करा",
+  "activate": "सक्रिय करा",
+  "deleteTitle": "तुम्हाला खात्री आहे का?",
+  "deleteDescription": "हे कायमचे ही श्रेणी हटवेल. ही क्रिया पूर्ववत केली जाऊ शकत नाही.",
+  "deleteConfirm": "श्रेणी हटवा",
+  "descPlaceholder": "संक्षिप्त वर्णन...",
+  "toasts": {
+    "created": "श्रेणी यशस्वीरित्या तयार केली",
+    "updated": "श्रेणी अपडेट केली",
+    "deactivated": "श्रेणी निष्क्रिय केली",
+    "activated": "श्रेणी सक्रिय केली",
+    "deleted": "श्रेणी हटवली",
+    "createFailed": "श्रेणी तयार करण्यात अयशस्वी",
+    "updateFailed": "श्रेणी अपडेट करण्यात अयशस्वी"
+  },
+  "dashboard": {
+    "table": "Table"
+  },
+  "status": "Status"
+}

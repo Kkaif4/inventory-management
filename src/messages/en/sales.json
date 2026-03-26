@@ -1,0 +1,32 @@
+{
+  "title": "Sales",
+  "subtitle": "Sales transactions and management",
+  "invoices": "Invoices",
+  "returns": "Returns",
+  "newInvoice": "New Invoice",
+  "newReturn": "New Return",
+  "viewDetails": "View Details",
+  "printInvoice": "Print Invoice",
+  "recordPayment": "Record Payment",
+  "informal": "Informal",
+  "cashCustomer": "Cash Customer",
+  "unknown": "Unknown",
+  "date": "Date",
+  "returnNumber": "Return #",
+  "invoicesSubtitle": "Generate tax-compliant invoices and track account receivables.",
+  "returnsSubtitle": "Track goods returned by customers (Credit Notes).",
+  "manageTransactions": "Manage invoices and returns",
+  "dashboard": {
+    "table": "Table"
+  },
+  "challanNumber": "Challan Number",
+  "customer": "Customer",
+  "status": "Status",
+  "subtitle": "Subtitle",
+  "searchPlaceholder": "Search Placeholder",
+  "invoiceNumber": "Invoice Number",
+  "newProforma": "New Proforma",
+  "quoteNumber": "Quote Number",
+  "convert": "Convert",
+  "newQuotation": "New Quotation"
+}

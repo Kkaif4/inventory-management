@@ -1,0 +1,34 @@
+{
+  "groups": {
+    "overview": "आढावा",
+    "sales": "विक्री",
+    "productsAndstock": "उत्पादने आणि स्टॉक",
+    "procurement": "खरेदी",
+    "parties": "पक्ष",
+    "finance": "वित्त",
+    "financials": "वित्तीय",
+    "admin": "प्रशासन"
+  },
+  "items": {
+    "dashboard": "डॅशबोर्ड",
+    "salesTransactions": "विक्री व्यवहार",
+    "quotations": "कोटेशन आणि डिलिव्हरी",
+    "categories": "श्रेणी",
+    "products": "उत्पादने",
+    "priceLists": "किंमत यादी",
+    "inventory": "यादी",
+    "locations": "गोदाम आणि आउटलेट",
+    "purchases": "खरेदी",
+    "customers": "ग्राहक",
+    "vendors": "विक्रेते",
+    "accounts": "खाती",
+    "ledger": "सामान्य खातेवाही",
+    "pnl": "लाभ आणि तोटा",
+    "balanceSheet": "शिल्लक पत्रक",
+    "gstReports": "GST अहवाल",
+    "settings": "सेटिंग्ज",
+    "auditLogs": "लेखापरीक्षा लॉग",
+    "roles": "भूमिका मेट्रिक्स"
+  },
+  "signOut": "साइन आउट"
+}

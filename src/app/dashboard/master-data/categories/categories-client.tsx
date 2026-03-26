@@ -254,7 +254,7 @@ export function CategoriesClient({
     },
     {
       id: "actions",
-      header: () => <div className="text-right w-32">{common("actions")}</div>,
+      header: () => <div className="text-right w-32">{common("actionsHeader")}</div>,
       cell: ({ row }) => {
         const cat = row.original;
         const isEditing = editingId === cat.id;

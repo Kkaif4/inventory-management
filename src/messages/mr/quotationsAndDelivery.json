@@ -1,0 +1,51 @@
+{
+  "tabs": {
+    "quotations": "कोटेशन",
+    "proforma": "प्रोफार्मा",
+    "challans": "चलन (Challans)"
+  },
+  "quotations": {
+    "title": "कोटेशन / अंदाज",
+    "subtitle": "ग्राहक प्रस्ताव आणि विक्री अंदाज व्यवस्थापित करा.",
+    "quoteNumber": "कोटेशन #",
+    "newQuotation": "नवीन कोटेशन",
+    "searchPlaceholder": "कोटेशन नंबर किंवा ग्राहक शोधा...",
+    "convert": "रूपांतरित करा",
+    "itemsCount": "{count} वस्तू"
+  },
+  "proforma": {
+    "title": "प्रोफार्मा इनव्हॉयस",
+    "subtitle": "अंतिम बिलिंगपूर्वी तात्पुरते इनव्हॉयस.",
+    "invoiceNumber": "इनव्हॉयस #",
+    "newProforma": "नवीन प्रोफार्मा",
+    "searchPlaceholder": "इनव्हॉयस नंबर शोधा..."
+  },
+  "challans": {
+    "title": "डिलिव्हरी चलन",
+    "subtitle": "डिस्पॅच दस्तऐवज आणि साहित्य हालचाली व्यवस्थापित करा.",
+    "challanNumber": "चलन #",
+    "searchPlaceholder": "चलन # शोधा..."
+  },
+  "table": {
+    "amountWithCurrency": "रक्कम (₹)",
+    "totalAmountWithCurrency": "एकूण रक्कम (₹)",
+    "valueWithCurrency": "मूल्य (₹)"
+  },
+  "dashboard": {
+    "table": "table"
+  },
+  "customer": "Customer",
+  "status": "Status",
+  "challanNumber": "Challan Number",
+  "title": "विक्री व्यवहार",
+  "subtitle": "Subtitle",
+  "searchPlaceholder": "Search Placeholder",
+  "invoiceNumber": "Invoice Number",
+  "newProforma": "New Proforma",
+  "quoteNumber": "Quote Number",
+  "convert": "Convert",
+  "newQuotation": "New Quotation",
+  "quotationsAndDelivery": {
+    "tabs": "कोटेशन"
+  }
+}

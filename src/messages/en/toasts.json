@@ -1,0 +1,17 @@
+{
+  "customer": {
+    "created": "Customer created successfully",
+    "updated": "Customer updated",
+    "deleted": "Customer deleted"
+  },
+  "invoice": {
+    "posted": "Invoice posted successfully",
+    "updated": "Invoice updated",
+    "failed": "Failed to save invoice"
+  },
+  "product": {
+    "created": "Product created successfully",
+    "updated": "Product updated",
+    "deleted": "Product deleted"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "title": "Product Categories",
+  "subtitle": "Manage multi-level product taxonomy",
+  "addCategory": "Add Category",
+  "noCategories": "No categories found. Click \"Add Category\" to get started.",
+  "hierarchyName": "Hierarchy / Name",
+  "subsCount": "Subs",
+  "itemsCount": "Items",
+  "categoryNamePlaceholder": "Category Name",
+  "parentPlaceholder": "-- Parent (Optional) --",
+  "deactivate": "Deactivate",
+  "activate": "Activate",
+  "deleteTitle": "Are you absolutely sure?",
+  "deleteDescription": "This will permanently delete this category. This action cannot be undone.",
+  "deleteConfirm": "Delete Category",
+  "descPlaceholder": "Brief description...",
+  "toasts": {
+    "created": "Category created successfully",
+    "updated": "Category updated",
+    "deactivated": "Category deactivated",
+    "activated": "Category activated",
+    "deleted": "Category deleted",
+    "createFailed": "Failed to create category",
+    "updateFailed": "Failed to update category"
+  },
+  "dashboard": {
+    "table": "Table"
+  },
+  "status": "Status"
+}

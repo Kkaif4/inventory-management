@@ -1,0 +1,34 @@
+{
+  "groups": {
+    "overview": "अवलोकन",
+    "sales": "बिक्री",
+    "productsAndstock": "उत्पाद और स्टॉक",
+    "procurement": "खरीद",
+    "parties": "पक्षकार",
+    "finance": "वित्त",
+    "financials": "वित्तीय",
+    "admin": "प्रशासन"
+  },
+  "items": {
+    "dashboard": "डैशबोर्ड",
+    "salesTransactions": "बिक्री लेनदेन",
+    "quotations": "उद्धरण और डिलीवरी",
+    "categories": "श्रेणियां",
+    "products": "उत्पाद",
+    "priceLists": "मूल्य सूचियां",
+    "inventory": "इन्वेंटरी",
+    "locations": "गोदाम और आउटलेट",
+    "purchases": "खरीद",
+    "customers": "ग्राहक",
+    "vendors": "विक्रेता",
+    "accounts": "खाते",
+    "ledger": "सामान्य बहीखाता",
+    "pnl": "P&L विवरण",
+    "balanceSheet": "बैलेंस शीट",
+    "gstReports": "जीएसटी रिपोर्ट",
+    "settings": "सेटिंग्स",
+    "auditLogs": "ऑडिट लॉग",
+    "roles": "भूमिका मैट्रिक्स"
+  },
+  "signOut": "साइन आउट"
+}

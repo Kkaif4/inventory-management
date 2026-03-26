@@ -18,6 +18,7 @@ interface DiscountInputProps extends Omit<
   costPrice?: number; // for warning when rate falls below cost
   maxDiscount?: number; // max allowed discount % per user role
   isPosted?: boolean;
+  compact?: boolean;
 }
 
 export function DiscountInput({
@@ -28,6 +29,7 @@ export function DiscountInput({
   costPrice,
   maxDiscount,
   isPosted = false,
+  compact = false,
   disabled,
   ...props
 }: DiscountInputProps) {
@@ -75,6 +77,27 @@ export function DiscountInput({
 
     onChange(numVal);
   };
+
+  if (compact) {
+    return (
+      <Input
+        {...props}
+        type="number"
+        value={value || ""}
+        onChange={handleChange}
+        disabled={disabled || isPosted}
+        placeholder="0"
+        min="0"
+        max="100"
+        step="0.01"
+        className={cn(
+          "h-7 text-xs font-mono",
+          isPosted && "bg-slate-100 cursor-not-allowed",
+          error && "border-red-500 focus-visible:ring-red-500/20",
+        )}
+      />
+    );
+  }
 
   return (
     <div className="space-y-2">

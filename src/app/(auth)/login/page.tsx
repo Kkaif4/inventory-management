@@ -29,7 +29,8 @@ const loginSchema = z.object({
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("from") || "/dashboard";
+  const rawFrom = searchParams.get("from") || "/dashboard";
+  const callbackUrl = decodeURIComponent(rawFrom);
 
   const [globalError, setGlobalError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -65,24 +66,21 @@ function LoginContent() {
         password: values.password,
       });
 
-      if (res?.error) {
-        if (
-          res.error === "CredentialsSignin" ||
-          res.error === "Invalid email or password"
-        ) {
-          setGlobalError("Invalid email or password");
-        } else {
-          setGlobalError(
-            res.error || "An unexpected error occurred during sign in",
-          );
-        }
+      if (res?.ok) {
+        // Hard redirect so the browser sends the new session cookie
+        window.location.href = callbackUrl;
+        return;
       } else if (!res) {
         setGlobalError("Could not connect to the authentication server");
+      } else if (
+        res.error === "CredentialsSignin" ||
+        res.error === "Invalid email or password"
+      ) {
+        setGlobalError("Invalid email or password");
       } else {
-        // Redirect immediately after successful login
-        // Outlets will be fetched on the dashboard
-        router.push(callbackUrl);
-        router.refresh();
+        setGlobalError(
+          res.error || "An unexpected error occurred during sign in",
+        );
       }
     } catch (err) {
       console.error("Login error:", err);

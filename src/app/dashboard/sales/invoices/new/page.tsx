@@ -8,7 +8,7 @@ import { getInventoryLocations } from "@/actions/inventory";
 import { handleCreateSalesInvoice } from "@/actions/sales/invoice-form-handler";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { Button } from "@/components/ui/button";
-import { InvoiceForm } from "@/components/sales/invoice-form";
+import { POSInvoiceForm } from "@/components/sales/pos-invoice-form";
 
 function InvoicePageContent() {
   const router = useRouter();
@@ -111,7 +111,7 @@ function InvoicePageContent() {
   };
 
   return (
-    <InvoiceForm
+    <POSInvoiceForm
       mode="create"
       outlets={outlets}
       onSubmit={handleSubmit}

@@ -1,0 +1,64 @@
+{
+  "customer": {
+    "title": "New Customer",
+    "editTitle": "Edit Customer",
+    "sections": {
+      "identity": "Identity",
+      "address": "Address",
+      "financial": "Financial Terms"
+    },
+    "fields": {
+      "name": "Customer Name",
+      "type": "Customer Type",
+      "b2b": "B2B (Registered Business)",
+      "b2c": "B2C (Individual / Unregistered)",
+      "gstin": "GSTIN",
+      "pan": "PAN",
+      "phone": "Phone",
+      "email": "Email",
+      "contactPerson": "Contact Person",
+      "address": "Address",
+      "state": "State",
+      "creditPeriod": "Credit Period (Days)",
+      "creditLimit": "Credit Limit (₹)",
+      "openingBalance": "Opening Balance (₹)"
+    }
+  },
+  "invoice": {
+    "title": "Generate Sales Invoice",
+    "editTitle": "Edit Sales Invoice",
+    "billTypes": {
+      "no1": "No.1 Legal Bill",
+      "no2": "No.2 Cash Bill"
+    },
+    "sections": {
+      "dispatch": "Dispatch Location",
+      "customer": "Customer",
+      "buyer": "Retail Buyer",
+      "items": "Items",
+      "additional": "Additional"
+    },
+    "fields": {
+      "outlet": "From Outlet",
+      "date": "Invoice Date",
+      "customer": "Customer",
+      "buyerName": "Buyer Name",
+      "buyerPhone": "Contact",
+      "product": "Product",
+      "qty": "Qty",
+      "rate": "Rate (₹)",
+      "discount": "Discount%",
+      "hsn": "HSN",
+      "total": "Total",
+      "freight": "Freight Cost (₹)",
+      "billDiscount": "Bill Discount (%)",
+      "remarks": "Remarks"
+    },
+    "actions": {
+      "addLine": "Add Line",
+      "postInvoice": "Post Invoice",
+      "postCashBill": "Post Cash Bill",
+      "update": "Update"
+    }
+  }
+}

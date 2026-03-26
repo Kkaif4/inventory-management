@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "missing-translations": "node scripts/list-missing-translations.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

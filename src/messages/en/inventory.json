@@ -1,0 +1,67 @@
+{
+  "title": "Inventory Management",
+  "subtitle": "Real-time multi-location inventory levels and valuation",
+  "transfer": "Transfer",
+  "adjustment": "Adjustment",
+  "physicalQty": "Physical Qty",
+  "inTransit": "In-Transit",
+  "noStockRecords": "No stock records found",
+  "initialStockNotice": "Initial stock can be added via Adjustments or GRNs.",
+  "searchPlaceholder": "Filter items, SKU or locations...",
+  "location": "Location",
+  "category": "Category",
+  "productSku": "Product / SKU",
+  "unit": "Unit",
+  "warehouse": "Warehouse",
+  "outlet": "Outlet",
+  "stats": {
+    "total": "Total Items",
+    "low": "Low Stock",
+    "out": "Out of Stock"
+  },
+  "tabs": {
+    "inventory": "Stock Inventory",
+    "movement": "Stock Movement"
+  },
+  "actions": {
+    "transfer": "Stock Transfer",
+    "adjustment": "Adjustment",
+    "receive": "Confirm Receipt"
+  },
+  "table": {
+    "sku": "SKU",
+    "productSpec": "Product / Spec",
+    "brand": "Brand",
+    "category": "Category",
+    "qtyOnHand": "Qty On Hand",
+    "inTransit": "In Transit",
+    "status": "Status",
+    "txnNumber": "Txn Number",
+    "date": "Date",
+    "route": "Route",
+    "items": "{count} items"
+  },
+  "filters": {
+    "searchPlaceholder": "Search SKU or Product name...",
+    "selectWarehouse": "Select Warehouse",
+    "allCategories": "All Categories",
+    "status": {
+      "all": "All Items",
+      "inStock": "In Stock",
+      "lowStock": "Low Stock",
+      "outOfStock": "Out of Stock"
+    }
+  },
+  "toasts": {
+    "fetchFailed": "Failed to fetch inventory",
+    "transferFetchFailed": "Failed to fetch transfers",
+    "receiveSuccess": "Stock received successfully!",
+    "receiveFailed": "Failed to receive stock"
+  },
+  "empty": {
+    "inventory": "No inventory data found.",
+    "transfers": "No pending stock movements."
+  },
+  "ledger": "Inventory Ledger",
+  "ledgerSubtitle": "Transaction history for {product}"
+}

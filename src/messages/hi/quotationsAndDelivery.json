@@ -1,0 +1,51 @@
+{
+  "tabs": {
+    "quotations": "उद्धरण",
+    "proforma": "प्रोफार्मा",
+    "challans": "चालान (Challans)"
+  },
+  "quotations": {
+    "title": "उद्धरण / अनुमान",
+    "subtitle": "ग्राहक प्रस्तावों और बिक्री अनुमानों को प्रबंधित करें।",
+    "quoteNumber": "उद्धरण #",
+    "newQuotation": "नया उद्धरण",
+    "searchPlaceholder": "उद्धरण संख्या या ग्राहक खोजें...",
+    "convert": "परिवर्तित करें",
+    "itemsCount": "{count} आइटम"
+  },
+  "proforma": {
+    "title": "प्रोफार्मा चालान",
+    "subtitle": "अंतिम बिलिंग से पहले अस्थायी चालान।",
+    "invoiceNumber": "चालान #",
+    "newProforma": "नया प्रोफार्मा",
+    "searchPlaceholder": "चालान संख्या खोजें..."
+  },
+  "challans": {
+    "title": "डिलीवरी चालान",
+    "subtitle": "डिस्पैच दस्तावेजों और सामग्री आंदोलनों को प्रबंधित करें।",
+    "challanNumber": "चालान #",
+    "searchPlaceholder": "चालान # खोजें..."
+  },
+  "table": {
+    "amountWithCurrency": "राशि (₹)",
+    "totalAmountWithCurrency": "कुल राशि (₹)",
+    "valueWithCurrency": "मूल्य (₹)"
+  },
+  "dashboard": {
+    "table": "table"
+  },
+  "customer": "Customer",
+  "status": "Status",
+  "challanNumber": "Challan Number",
+  "title": "बिक्री लेनदेन",
+  "subtitle": "Subtitle",
+  "searchPlaceholder": "Search Placeholder",
+  "invoiceNumber": "Invoice Number",
+  "newProforma": "New Proforma",
+  "quoteNumber": "Quote Number",
+  "convert": "Convert",
+  "newQuotation": "New Quotation",
+  "quotationsAndDelivery": {
+    "tabs": "उद्धरण"
+  }
+}

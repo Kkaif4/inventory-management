@@ -1,0 +1,34 @@
+{
+  "groups": {
+    "overview": "OVERVIEW",
+    "sales": "SALES",
+    "productsAndstock": "PRODUCTS & STOCK",
+    "procurement": "PROCUREMENT",
+    "parties": "PARTIES",
+    "finance": "FINANCE",
+    "financials": "FINANCIALS",
+    "admin": "ADMIN"
+  },
+  "items": {
+    "dashboard": "Dashboard",
+    "salesTransactions": "Sales Transactions",
+    "quotations": "Quotations & Delivery",
+    "categories": "Categories",
+    "products": "Products",
+    "priceLists": "Price Lists",
+    "inventory": "Inventory",
+    "locations": "Warehouses & Outlets",
+    "purchases": "Purchases",
+    "customers": "Customers",
+    "vendors": "Vendors",
+    "accounts": "Accounts",
+    "ledger": "General Ledger",
+    "pnl": "P&L Statement",
+    "balanceSheet": "Balance Sheet",
+    "gstReports": "GST Reports",
+    "settings": "Settings",
+    "auditLogs": "Audit Logs",
+    "roles": "Roles Matrix"
+  },
+  "signOut": "Sign Out"
+}

@@ -72,6 +72,39 @@ export async function getPartiesWithBalances(
   });
 }
 
+/**
+ * Lookup a customer by phone number (exact 10-digit match)
+ */
+export async function lookupCustomerByPhone(outletId: string, phone: string) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+
+    const party = await prisma.party.findFirst({
+      where: {
+        outletId,
+        type: "CUSTOMER",
+        OR: [
+          { phone: { contains: phone } },
+          { contactInfo: { contains: phone } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        contactInfo: true,
+        gstin: true,
+        state: true,
+        creditLimit: true,
+        outstandingBalance: true,
+        creditPeriod: true,
+      },
+    });
+
+    return party; // null if not found
+  });
+}
+
 export async function getVendorsByProduct(variantId: string, outletId: string) {
   return withErrorHandler(async () => {
     // Validate user has access to this outlet

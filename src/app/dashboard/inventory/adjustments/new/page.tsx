@@ -49,8 +49,8 @@ export default function NewAdjustmentPage() {
   >([]);
   const [variants, setVariants] = useState<any[]>([]);
 
-  if (!currentOutletId) return;
   useEffect(() => {
+    if (!currentOutletId) return;
     Promise.all([
       getInventoryLocations(currentOutletId),
       getVariantsForSelection(currentOutletId),
@@ -75,7 +75,7 @@ export default function NewAdjustmentPage() {
       setLocations([...warehouseLocs, ...outletLocs] as any);
       setVariants(vars);
     });
-  }, []);
+  }, [currentOutletId]);
 
   const form = useForm<z.infer<typeof adjustmentSchema>>({
     resolver: zodResolver(adjustmentSchema),
@@ -90,6 +90,8 @@ export default function NewAdjustmentPage() {
     control: form.control,
     name: "items",
   });
+
+  if (!currentOutletId) return null;
 
   const onSubmit = async (data: AdjustmentFormValues) => {
     try {

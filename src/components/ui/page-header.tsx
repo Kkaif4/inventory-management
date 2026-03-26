@@ -33,7 +33,7 @@ export function PageHeader({
       {/* Breadcrumbs */}
       <nav className="flex items-center space-x-1 text-2xs font-medium text-text-muted uppercase tracking-wider">
         {breadcrumbs.map((item, index) => (
-          <div key={item.label} className="flex items-center">
+          <div key={index} className="flex items-center">
             {index > 0 && (
               <ChevronRight className="w-3 h-3 mx-1 text-border-strong" />
             )}
@@ -63,9 +63,9 @@ export function PageHeader({
         {/* Actions */}
         {actions && actions.length > 0 && (
           <div className="flex items-center gap-3">
-            {actions.map((action) => (
+            {actions.map((action, index) => (
               <Button
-                key={action.label}
+                key={index}
                 variant={action.variant || "default"}
                 onClick={action.onClick}
                 disabled={action.disabled}

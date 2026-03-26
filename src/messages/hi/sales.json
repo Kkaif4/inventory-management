@@ -1,0 +1,32 @@
+{
+  "title": "बिक्री",
+  "subtitle": "बिक्री लेनदेन और प्रबंधन",
+  "invoices": "चालान",
+  "returns": "रिटर्न",
+  "newInvoice": "नया चालान",
+  "newReturn": "नया रिटर्न",
+  "viewDetails": "विवरण देखें",
+  "printInvoice": "चालान प्रिंट करें",
+  "recordPayment": "भुगतान रिकॉर्ड करें",
+  "informal": "अनौपचारिक",
+  "cashCustomer": "नकद ग्राहक",
+  "unknown": "अज्ञात",
+  "date": "तारीख",
+  "returnNumber": "रिटर्न #",
+  "invoicesSubtitle": "कर-अनुपालन चालान बनाएं और खाता प्राप्य ट्रैक करें।",
+  "returnsSubtitle": "ग्राहकों द्वारा लौटाए गए माल को ट्रैक करें (क्रेडिट नोट्स)।",
+  "manageTransactions": "चालान और रिटर्न प्रबंधित करें",
+  "dashboard": {
+    "table": "Table"
+  },
+  "challanNumber": "Challan Number",
+  "customer": "Customer",
+  "status": "Status",
+  "subtitle": "Subtitle",
+  "searchPlaceholder": "Search Placeholder",
+  "invoiceNumber": "Invoice Number",
+  "newProforma": "New Proforma",
+  "quoteNumber": "Quote Number",
+  "convert": "Convert",
+  "newQuotation": "New Quotation"
+}

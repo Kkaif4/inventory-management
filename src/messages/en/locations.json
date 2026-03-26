@@ -1,0 +1,43 @@
+{
+  "title": "Locations Management",
+  "subtitle": "Manage the logical and physical storage infrastructure of your enterprise.",
+  "kpis": {
+    "warehouses": "Warehouses",
+    "outlets": "Active Outlets",
+    "stocks": "Stock Points",
+    "status": "Network Status",
+    "operational": "Operational"
+  },
+  "warehouses": {
+    "title": "Warehouses",
+    "add": "Add Warehouse",
+    "empty": "No warehouses established yet.",
+    "skuPoints": "{count} SKU Points",
+    "linkedOutlets": "{count} Linked Outlets",
+    "mainHub": "Main Distribution Hub"
+  },
+  "outlets": {
+    "title": "Sales Outlets",
+    "add": "Add Outlet",
+    "empty": "No points of sale configured.",
+    "sourcedVia": "Sourced via: {warehouses}",
+    "directSupply": "Direct Supply",
+    "usersAssigned": "{count} Users assigned",
+    "policies": {
+      "block": "Strict Block",
+      "warn": "Warn Only",
+      "allow": "Allow Negative"
+    }
+  },
+  "delete": {
+    "warehouse": {
+      "title": "Delete Warehouse",
+      "description": "Are you sure you want to delete warehouse \"{name}\"? This action cannot be undone and might fail if there are linked transactions."
+    },
+    "outlet": {
+      "title": "Delete Outlet",
+      "description": "Are you sure you want to delete outlet \"{name}\"? This action cannot be undone and might fail if there are linked transactions."
+    },
+    "confirm": "Delete Now"
+  }
+}

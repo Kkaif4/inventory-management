@@ -4,7 +4,9 @@ import { NextResponse } from "next/server";
 export async function proxy(request) {
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret:
+      process.env.NEXTAUTH_SECRET ||
+      "default_development_secret_do_not_use_in_production",
   });
 
   const isAuth = !!token;

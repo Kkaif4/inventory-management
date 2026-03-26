@@ -35,9 +35,9 @@ export function PriceListForm({ variants }: { variants: any[] }) {
   const [error, setError] = useState<string | null>(null);
   const [customers, setCustomers] = useState<any[]>([]);
   const { currentOutletId } = useOutletStore();
-  if (!currentOutletId) return;
 
   useEffect(() => {
+    if (!currentOutletId) return;
     getParties(currentOutletId).then((res) => {
       if (res.success) {
         setCustomers(res.data!.filter((p) => p.type === "CUSTOMER"));
@@ -62,6 +62,8 @@ export function PriceListForm({ variants }: { variants: any[] }) {
     name: "entries",
     control: form.control,
   });
+
+  if (!currentOutletId) return null;
 
   async function onSubmit(data: PriceListFormValues) {
     try {

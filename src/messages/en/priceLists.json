@@ -1,0 +1,16 @@
+{
+  "title": "Price Lists",
+  "subtitle": "Manage custom pricing tiers",
+  "table": {
+    "name": "Price List Name",
+    "entriesCount": "Products Covered",
+    "partiesCount": "Assigned Customers"
+  },
+  "addPriceList": "Create Price List",
+  "searchPlaceholder": "Filter price lists...",
+  "toasts": {
+    "created": "Price list created successfully",
+    "updated": "Price list updated",
+    "deleted": "Price list deleted"
+  }
+}

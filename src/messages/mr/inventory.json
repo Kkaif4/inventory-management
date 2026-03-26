@@ -1,0 +1,67 @@
+{
+  "title": "इन्व्हेंटरी व्यवस्थापन",
+  "subtitle": "रिअल-टाइम मल्टी-location इन्व्हेंटरी स्तर आणि मूल्यांकन",
+  "transfer": "बदली",
+  "adjustment": "समायोजन",
+  "physicalQty": "प्रत्यक्ष प्रमाण",
+  "inTransit": "ट्रान्झिटमध्ये",
+  "noStockRecords": "कोणतेही स्टॉक रेकॉर्ड आढळले नाहीत",
+  "initialStockNotice": "प्रारंभिक स्टॉक समायोजन किंवा GRNs द्वारे जोडला जाऊ शकतो.",
+  "searchPlaceholder": "वस्तू, SKU किंवा ठिकाणे फिल्टर करा...",
+  "location": "स्थान",
+  "category": "श्रेणी",
+  "productSku": "उत्पादन / SKU",
+  "unit": "युनिट",
+  "warehouse": "गोदाम",
+  "outlet": "आउटलेट",
+  "stats": {
+    "total": "एकूण वस्तू",
+    "low": "कमी स्टॉक",
+    "out": "स्टॉक संपला"
+  },
+  "tabs": {
+    "inventory": "स्टॉक इन्व्हेंटरी",
+    "movement": "स्टॉक हालचाल"
+  },
+  "actions": {
+    "transfer": "स्टॉक बदली",
+    "adjustment": "समायोजन",
+    "receive": "प्राप्ती पुष्टी करा"
+  },
+  "table": {
+    "sku": "SKU",
+    "productSpec": "उत्पादन / वैशिष्ट्य",
+    "brand": "ब्रँड",
+    "category": "श्रेणी",
+    "qtyOnHand": "उपलब्ध प्रमाण",
+    "inTransit": "ट्रान्झिटमध्ये",
+    "status": "स्थिती",
+    "txnNumber": "व्यवहार क्रमांक",
+    "date": "तारीख",
+    "route": "मार्ग",
+    "items": "{count} वस्तू"
+  },
+  "filters": {
+    "searchPlaceholder": "SKU किंवा उत्पादनाचे नाव शोधा...",
+    "selectWarehouse": "गोदाम निवडा",
+    "allCategories": "सर्व श्रेणी",
+    "status": {
+      "all": "सर्व वस्तू",
+      "inStock": "स्टॉकमध्ये",
+      "lowStock": "कमी स्टॉक",
+      "outOfStock": "स्टॉक संपला"
+    }
+  },
+  "toasts": {
+    "fetchFailed": "इन्व्हेंटरी आणण्यात अयशस्वी",
+    "transferFetchFailed": "बदल्या आणण्यात अयशस्वी",
+    "receiveSuccess": "स्टॉक यशस्वीरित्या प्राप्त!",
+    "receiveFailed": "स्टॉक प्राप्त करण्यात अयशस्वी"
+  },
+  "empty": {
+    "inventory": "कोणताही इन्व्हेंटरी डेटा आढळला नाही.",
+    "transfers": "कोणत्याही प्रलंबित स्टॉक हालचाली नाहीत."
+  },
+  "ledger": "इन्व्हेंटरी खातेवाही",
+  "ledgerSubtitle": "{product} साठी व्यवहार इतिहास"
+}

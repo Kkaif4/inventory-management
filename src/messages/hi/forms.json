@@ -1,0 +1,64 @@
+{
+  "customer": {
+    "title": "नया ग्राहक",
+    "editTitle": "ग्राहक संपादित करें",
+    "sections": {
+      "identity": "पहचान",
+      "address": "पता",
+      "financial": "वित्तीय शर्तें"
+    },
+    "fields": {
+      "name": "ग्राहक का नाम",
+      "type": "ग्राहक प्रकार",
+      "b2b": "B2B (पंजीकृत व्यवसाय)",
+      "b2c": "B2C (व्यक्तिगत / अपंजीकृत)",
+      "gstin": "GSTIN",
+      "pan": "PAN",
+      "phone": "फोन",
+      "email": "ईमेल",
+      "contactPerson": "संपर्क व्यक्ति",
+      "address": "पता",
+      "state": "राज्य",
+      "creditPeriod": "क्रेडिट अवधि (दिन)",
+      "creditLimit": "क्रेडिट सीमा (₹)",
+      "openingBalance": "प्रारंभिक बैलेंस (₹)"
+    }
+  },
+  "invoice": {
+    "title": "बिक्री चालान बनाएं",
+    "editTitle": "बिक्री चालान संपादित करें",
+    "billTypes": {
+      "no1": "नंबर 1 कानूनी बिल",
+      "no2": "नंबर 2 कैश बिल"
+    },
+    "sections": {
+      "dispatch": "डिस्पैच स्थान",
+      "customer": "ग्राहक",
+      "buyer": "खुदरा खरीदार",
+      "items": "आइटम",
+      "additional": "अतिरिक्त"
+    },
+    "fields": {
+      "outlet": "आउटलेट से",
+      "date": "चालान तारीख",
+      "customer": "ग्राहक",
+      "buyerName": "खरीदार का नाम",
+      "buyerPhone": "संपर्क",
+      "product": "उत्पाद",
+      "qty": "मात्रा",
+      "rate": "दर (₹)",
+      "discount": "छूट%",
+      "hsn": "HSN",
+      "total": "कुल",
+      "freight": "माल ढुलाई लागत (₹)",
+      "billDiscount": "बिल छूट (%)",
+      "remarks": "टिप्पणियां"
+    },
+    "actions": {
+      "addLine": "पंक्ति जोड़ें",
+      "postInvoice": "चालान पोस्ट करें",
+      "postCashBill": "कैश बिल पोस्ट करें",
+      "update": "अपडेट करें"
+    }
+  }
+}

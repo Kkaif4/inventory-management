@@ -1,0 +1,32 @@
+{
+  "title": "विक्री",
+  "subtitle": "विक्री व्यवहार आणि व्यवस्थापन",
+  "invoices": "इनव्हॉयस",
+  "returns": "रिटर्न",
+  "newInvoice": "नवीन इनव्हॉयस",
+  "newReturn": "नवीन रिटर्न",
+  "viewDetails": "तपशील पहा",
+  "printInvoice": "इनव्हॉयस प्रिंट करा",
+  "recordPayment": "पेमेंट रेकॉर्ड करा",
+  "informal": "अनौपचारिक",
+  "cashCustomer": "रोख ग्राहक",
+  "unknown": "अज्ञात",
+  "date": "तारीख",
+  "returnNumber": "रिटर्न #",
+  "invoicesSubtitle": "कर-सुसंगत इनव्हॉयस तयार करा आणि खाते येणे ट्रॅक करा.",
+  "returnsSubtitle": "ग्राहकांनी परत केलेल्या मालाचा मागोवा घ्या (क्रेडिट नोट्स).",
+  "manageTransactions": "इनव्हॉयस आणि रिटर्न व्यवस्थापित करा",
+  "dashboard": {
+    "table": "Table"
+  },
+  "challanNumber": "Challan Number",
+  "customer": "Customer",
+  "status": "Status",
+  "subtitle": "Subtitle",
+  "searchPlaceholder": "Search Placeholder",
+  "invoiceNumber": "Invoice Number",
+  "newProforma": "New Proforma",
+  "quoteNumber": "Quote Number",
+  "convert": "Convert",
+  "newQuotation": "New Quotation"
+}

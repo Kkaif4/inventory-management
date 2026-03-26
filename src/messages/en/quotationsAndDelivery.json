@@ -1,0 +1,51 @@
+{
+  "tabs": {
+    "quotations": "Quotations",
+    "proforma": "Proforma",
+    "challans": "Challans"
+  },
+  "quotations": {
+    "title": "Quotations / Estimates",
+    "subtitle": "Manage customer proposals and sales estimates.",
+    "quoteNumber": "Quote #",
+    "newQuotation": "New Quotation",
+    "searchPlaceholder": "Search quotation number or customer...",
+    "convert": "Convert",
+    "itemsCount": "{count} item(s)"
+  },
+  "proforma": {
+    "title": "Proforma Invoices",
+    "subtitle": "Temporary invoices before final billing.",
+    "invoiceNumber": "Invoice #",
+    "newProforma": "New Proforma",
+    "searchPlaceholder": "Search invoice number..."
+  },
+  "challans": {
+    "title": "Delivery Challans",
+    "subtitle": "Manage dispatch documents and material movements.",
+    "challanNumber": "Challan #",
+    "searchPlaceholder": "Search challan #..."
+  },
+  "table": {
+    "amountWithCurrency": "Amount (₹)",
+    "totalAmountWithCurrency": "Total Amount (₹)",
+    "valueWithCurrency": "Value (₹)"
+  },
+  "dashboard": {
+    "table": "Table"
+  },
+  "customer": "Customer",
+  "status": "Status",
+  "challanNumber": "Challan Number",
+  "title": "Title",
+  "subtitle": "Subtitle",
+  "searchPlaceholder": "Search Placeholder",
+  "invoiceNumber": "Invoice Number",
+  "newProforma": "New Proforma",
+  "quoteNumber": "Quote Number",
+  "convert": "Convert",
+  "newQuotation": "New Quotation",
+  "quotationsAndDelivery": {
+    "tabs": "Tabs"
+  }
+}

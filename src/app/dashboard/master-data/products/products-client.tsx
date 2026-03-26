@@ -179,7 +179,7 @@ export function ProductsClient({
     },
     {
       id: "actions",
-      header: () => <div className="text-right px-4">{common("actions")}</div>,
+      header: () => <div className="text-right px-4">{common("actionsHeader")}</div>,
       size: 150,
       cell: ({ row }) => (
         <div className="flex justify-end gap-2 pr-2">

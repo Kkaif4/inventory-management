@@ -59,9 +59,8 @@ export default function NewPurchaseOrderPage() {
   const [variants, setVariants] = useState<any[]>([]);
   const [outlet, setOutlet] = useState<any>(null);
 
-  if (!currentOutletId) return;
-
   useEffect(() => {
+    if (!currentOutletId) return;
     getOutletById(currentOutletId).then((res) => {
       if (res.success) setOutlet(res.data);
       else toast.error("Failed to load outlet details");
@@ -347,6 +346,8 @@ export default function NewPurchaseOrderPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (!currentOutletId) return null;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-24">
