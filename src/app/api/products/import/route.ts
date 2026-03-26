@@ -5,6 +5,7 @@ import {
   processProductImport,
   ImportOptions,
 } from "@/actions/products/import-logic";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -26,6 +27,22 @@ export async function POST(req: NextRequest) {
   if (!Array.isArray(rows)) {
     return NextResponse.json(
       { error: "Rows must be an array" },
+      { status: 400 },
+    );
+  }
+
+  // Validate outlet access
+  try {
+    await validateSessionOutletAccess(outletId);
+  } catch {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Row count limit to prevent DoS
+  const MAX_IMPORT_ROWS = 1000;
+  if (rows.length > MAX_IMPORT_ROWS) {
+    return NextResponse.json(
+      { error: `Import limited to ${MAX_IMPORT_ROWS} rows per request` },
       { status: 400 },
     );
   }

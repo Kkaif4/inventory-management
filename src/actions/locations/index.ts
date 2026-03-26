@@ -1,14 +1,14 @@
 "use server";
 
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError } from "@/lib/exceptions";
+import { requireAdminSession } from "@/lib/outlet-auth";
 
 export async function getLocations() {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     const [warehouses, outlets] = await Promise.all([
       prisma.warehouse.findMany({
         include: {
@@ -35,6 +35,7 @@ export async function getLocations() {
 
 export async function getWarehouseById(id: string) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     return await prisma.warehouse.findUnique({
       where: { id },
     });
@@ -49,6 +50,7 @@ export async function createWarehouse(data: {
   contactPhone?: string;
 }) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     const warehouse = await prisma.warehouse.create({
       data,
     });
@@ -69,6 +71,7 @@ export async function updateWarehouse(
   },
 ) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     const warehouse = await prisma.warehouse.update({
       where: { id },
       data,
@@ -81,6 +84,7 @@ export async function updateWarehouse(
 
 export async function getOutletById(id: string) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     return await prisma.outlet.findUnique({
       where: { id },
       include: {
@@ -92,6 +96,7 @@ export async function getOutletById(id: string) {
 
 export async function getOutletsByUserId(userId: string) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     if (!userId) return [];
 
     const user = await prisma.user.findUnique({
@@ -125,6 +130,7 @@ export async function createOutlet(data: {
   warehouseIds: string[];
 }) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     const { warehouseIds, ...outletData } = data;
 
     if (warehouseIds.length === 0) {
@@ -164,6 +170,7 @@ export async function updateOutlet(
   },
 ) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     const { warehouseIds, ...outletData } = data;
 
     if (warehouseIds.length === 0) {
@@ -209,6 +216,7 @@ export async function updateOutlet(
 
 export async function deleteWarehouse(id: string) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     // FRD Rule: Cannot deactivate if stock > 0
     const stockCount = await prisma.stock.aggregate({
       where: { warehouseId: id },
@@ -244,6 +252,7 @@ export async function deleteWarehouse(id: string) {
 
 export async function deleteOutlet(id: string) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     // FRD Rule: Blocked if outlet has open (unpaid) invoices
     const unpaidInvoices = await prisma.transaction.count({
       where: {

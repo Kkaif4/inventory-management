@@ -105,6 +105,17 @@ export async function validateSessionOutletAccess(
   return session.user.id;
 }
 
+export async function requireAdminSession(): Promise<string> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("401: Unauthorized");
+  }
+  if ((session.user as any).role !== "ADMIN") {
+    throw new Error("403: Forbidden");
+  }
+  return session.user.id;
+}
+
 export async function getCurrentSessionOutlet(outletId?: string) {
   const session = await getServerSession(authOptions);
 

@@ -2,12 +2,14 @@
 
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/error-handler";
+import { requireAdminSession } from "@/lib/outlet-auth";
 
 /**
  * 1. Inventory Reports
  */
 export async function getLowStockReport() {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     // Find variants where total physical stock across all locations < minStockLevel
     const variants = await prisma.variant.findMany({
       include: {
@@ -39,6 +41,7 @@ export async function getLowStockReport() {
  */
 export async function getTrialBalance() {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     const accounts = await prisma.account.findMany({
       include: {
         entries: true,
@@ -63,6 +66,7 @@ export async function getTrialBalance() {
 
 export async function getProfitAndLoss() {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     const accounts = await prisma.account.findMany({
       include: { entries: true },
       where: {
@@ -104,6 +108,7 @@ export async function getProfitAndLoss() {
  */
 export async function getGSTSummary(startDate: Date, endDate: Date) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     const inputTaxCodes = ["1005", "1006", "1007"]; // Input CGST/SGST/IGST
     const outputTaxCodes = ["2002", "2003", "2004"]; // Output CGST/SGST/IGST
 

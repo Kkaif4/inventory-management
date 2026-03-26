@@ -2,9 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/error-handler";
+import { requireAdminSession } from "@/lib/outlet-auth";
 
 export async function getAuditLogs() {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     return await prisma.auditLog.findMany({
       include: {
         user: {

@@ -7,6 +7,7 @@ import { ValidationError, NotFoundError } from "@/lib/exceptions";
 import { roundToTwo } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import type { RecordPaymentFormValues } from "@/validations/payment.validation";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
 // ─── Record a payment against a posted invoice ──────────────────────────────
 // Implements concurrency-safe validation: outstanding balance is computed
@@ -16,6 +17,7 @@ export async function recordInvoicePayment(
   data: RecordPaymentFormValues & { userId: string },
 ) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(data.outletId);
     // Pre-flight: load accounts needed for journal entries
     const [outlet] = await Promise.all([
       prisma.outlet.findUnique({ where: { id: data.outletId } }),

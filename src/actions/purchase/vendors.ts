@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError } from "@/lib/exceptions";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import {
   VendorFormValues,
   vendorSchema,
@@ -13,6 +14,7 @@ import { roundToTwo } from "@/lib/utils";
 // ─── Get all vendors for an outlet with live payable balances ───────────────
 export async function getVendors(outletId: string) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
     const parties = await prisma.party.findMany({
       where: {
         outletId,
@@ -77,6 +79,7 @@ export async function getVendorForEdit(id: string) {
       where: { id, type: "VENDOR" },
     });
     if (!party) throw new NotFoundError("Vendor not found");
+    await validateSessionOutletAccess(party.outletId);
     return party;
   });
 }
@@ -106,6 +109,7 @@ export async function getVendorDetails(id: string) {
     });
 
     if (!party) throw new NotFoundError("Vendor not found");
+    await validateSessionOutletAccess(party.outletId);
 
     const now = new Date();
     const getFyStart = () => {
@@ -205,6 +209,7 @@ export async function getVendorDetails(id: string) {
 // ─── Create new Vendor ───────────────────────────────────────────────────────
 export async function createVendor(outletId: string, data: VendorFormValues) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
     const validated = vendorSchema.parse(data);
 
     // 1. Unique name check per outlet
@@ -281,6 +286,7 @@ export async function updateVendor(id: string, data: VendorFormValues) {
       where: { id, type: "VENDOR" },
     });
     if (!currentParty) throw new NotFoundError("Vendor not found");
+    await validateSessionOutletAccess(currentParty.outletId);
 
     // 1. Uniqueness check
     const existing = await prisma.party.findFirst({
@@ -387,6 +393,9 @@ export async function getVendorLedger(
 
     if (!party) throw new NotFoundError("Vendor not found");
 
+    const partyForAuth = await prisma.party.findUnique({ where: { id: partyId }, select: { outletId: true } });
+    if (partyForAuth?.outletId) await validateSessionOutletAccess(partyForAuth.outletId);
+
     const whereClause: any = { partyId };
     if (fromDate || toDate) {
       whereClause.date = {};
@@ -456,6 +465,7 @@ export async function deleteVendor(id: string) {
       where: { id, type: "VENDOR" },
     });
     if (!party) throw new NotFoundError("Vendor not found");
+    await validateSessionOutletAccess(party.outletId);
 
     // Check for existing transactions that would prevent deletion
     const [txnCount, paymentCount, nonObLedgerCount] = await Promise.all([

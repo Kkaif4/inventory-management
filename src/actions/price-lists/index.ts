@@ -5,9 +5,14 @@ import { revalidatePath } from "next/cache";
 import { AuditService } from "@/domains/audit/audit-service";
 import { roundToTwo } from "@/lib/utils";
 import { withErrorHandler } from "@/lib/error-handler";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { UnauthorizedError } from "@/lib/exceptions";
 
 export async function getPriceLists() {
   return withErrorHandler(async () => {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) throw new UnauthorizedError();
     return await prisma.priceList.findMany({
       include: {
         _count: {
@@ -27,6 +32,8 @@ export async function createPriceList(data: {
   partyIds: string[];
 }) {
   return withErrorHandler(async () => {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) throw new UnauthorizedError();
     const { entries, partyIds, ...rest } = data;
     const priceList = await prisma.priceList.create({
       data: {

@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { NumberingService } from "@/domains/foundation/numbering-service";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError } from "@/lib/exceptions";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
 export async function createSalesInvoice(data: {
   billType: "NO1" | "NO2";
@@ -34,6 +35,7 @@ export async function createSalesInvoice(data: {
   buyerPhone?: string;
 }) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(data.fromOutletId);
     const isNo2 = data.billType === "NO2";
 
     // 1. Fetch metadata & check permissions
@@ -226,6 +228,7 @@ export async function createSalesInvoice(data: {
 }
 
 export async function getSalesInvoices(outletId: string, limit = 50) {
+  await validateSessionOutletAccess(outletId);
   // Optimization: Limit to recent invoices and select only required fields
   return await prisma.transaction.findMany({
     where: {
@@ -325,6 +328,7 @@ export async function saveSalesInvoiceDraft(data: {
   buyerPhone?: string;
 }) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(data.fromOutletId);
     const isNo2 = data.billType === "NO2";
 
     const outlet = await prisma.outlet.findUnique({
@@ -427,6 +431,7 @@ export async function editSalesInvoice(
   },
 ) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(data.fromOutletId);
     const invoice = await prisma.transaction.findUnique({
       where: { id: invoiceId },
     });
@@ -511,6 +516,7 @@ export async function editSalesInvoice(
 }
 
 export async function getSalesReturns(outletId: string, limit = 50) {
+  await validateSessionOutletAccess(outletId);
   return await prisma.transaction.findMany({
     where: {
       type: { in: ["CREDIT_NOTE", "STOCK_RETURN"] } as any,

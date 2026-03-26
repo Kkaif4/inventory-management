@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import { StockService } from "@/domains/inventory/stock-service";
 import { AccountingService } from "@/domains/accounting/ledger-service";
 import { NumberingService } from "@/domains/foundation/numbering-service";
@@ -32,6 +32,7 @@ export async function createSalesReturn(data: {
     });
 
     if (!originalBill) throw new NotFoundError("Original bill not found");
+    await validateSessionOutletAccess(originalBill.outletId);
     const isInformal = originalBill.isInformal;
 
     const totalTaxable = roundToTwo(
