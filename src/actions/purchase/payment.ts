@@ -7,6 +7,7 @@ import { ValidationError, NotFoundError } from "@/lib/exceptions";
 import { roundToTwo } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import type { RecordPaymentFormValues } from "@/validations/payment.validation";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
 // ─── Record a payment against a posted bill ────────────────────────────────────
 // For vendors (we pay TO vendors). Updates accounts: Dr Creditor, Cr Bank/Cash
@@ -14,6 +15,7 @@ export async function recordVendorBillPayment(
   data: RecordPaymentFormValues & { userId: string },
 ) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(data.outletId);
     const [outlet] = await Promise.all([
       prisma.outlet.findUnique({ where: { id: data.outletId } }),
     ]);

@@ -5,9 +5,11 @@ import { revalidatePath } from "next/cache";
 import { AuditService } from "@/domains/audit/audit-service";
 import { roundToTwo } from "@/lib/utils";
 import { withErrorHandler } from "@/lib/error-handler";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
 export async function getPurchaseRequests(outletId: string) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
     return await prisma.transaction.findMany({
       where: {
         type: "PURCHASE_REQUEST",
@@ -28,6 +30,8 @@ export async function updatePurchaseRequestStatus(
   status: "APPROVED" | "REJECTED",
 ) {
   return withErrorHandler(async () => {
+    const txn = await prisma.transaction.findUnique({ where: { id }, select: { outletId: true } });
+    if (txn?.outletId) await validateSessionOutletAccess(txn.outletId);
     const pr = await prisma.transaction.update({
       where: { id },
       data: { status },
@@ -51,6 +55,7 @@ export async function createPurchaseRequest(data: {
   items: { variantId: string; quantity: number }[];
 }) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(data.outletId);
     // 1. Fetch variant prices to calculate estimated total
     const variantIds = data.items.map((it) => it.variantId);
     const variants = await prisma.variant.findMany({

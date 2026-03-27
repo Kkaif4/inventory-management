@@ -5,9 +5,16 @@ import { revalidatePath } from "next/cache";
 import { AuditService } from "@/domains/audit/audit-service";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError } from "@/lib/exceptions";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { UnauthorizedError } from "@/lib/exceptions";
 
 export async function getCategories() {
   return withErrorHandler(async () => {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) throw new UnauthorizedError();
+
     return await prisma.category.findMany({
       include: {
         parent: {
@@ -31,6 +38,7 @@ export async function createCategory(data: {
   userId: string;
 }) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(data.outletId);
     const category = await prisma.category.create({
       data: {
         name: data.name,
@@ -63,6 +71,8 @@ export async function updateCategory(data: {
   userId: string;
 }) {
   return withErrorHandler(async () => {
+    const cat = await prisma.category.findUnique({ where: { id: data.id }, select: { outletId: true } });
+    if (cat?.outletId) await validateSessionOutletAccess(cat.outletId);
     const category = await prisma.category.update({
       where: { id: data.id },
       data: {
@@ -86,6 +96,8 @@ export async function updateCategory(data: {
 
 export async function deactivateCategory(id: string, userId: string) {
   return withErrorHandler(async () => {
+    const cat = await prisma.category.findUnique({ where: { id }, select: { outletId: true } });
+    if (cat?.outletId) await validateSessionOutletAccess(cat.outletId);
     // Check for active products
     const activeProducts = await prisma.product.findMany({
       where: {
@@ -122,6 +134,8 @@ export async function deactivateCategory(id: string, userId: string) {
 
 export async function activateCategory(id: string, userId: string) {
   return withErrorHandler(async () => {
+    const cat = await prisma.category.findUnique({ where: { id }, select: { outletId: true } });
+    if (cat?.outletId) await validateSessionOutletAccess(cat.outletId);
     const category = await prisma.category.update({
       where: { id },
       data: { isActive: true },
@@ -142,6 +156,8 @@ export async function activateCategory(id: string, userId: string) {
 
 export async function deleteCategory(id: string, userId: string) {
   return withErrorHandler(async () => {
+    const cat = await prisma.category.findUnique({ where: { id }, select: { outletId: true } });
+    if (cat?.outletId) await validateSessionOutletAccess(cat.outletId);
     // Check for sub-categories
     const subCategories = await prisma.category.count({
       where: { parentId: id },

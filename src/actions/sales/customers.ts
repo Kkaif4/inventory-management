@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError } from "@/lib/exceptions";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import {
   CustomerFormValues,
   customerSchema,
@@ -13,6 +14,7 @@ import { roundToTwo } from "@/lib/utils";
 // ─── Get all customers for an outlet with live balances ─────────────────────
 export async function getCustomers(outletId: string) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
     const parties = await prisma.party.findMany({
       where: {
         outletId,
@@ -79,6 +81,7 @@ export async function getCustomerForEdit(id: string) {
       where: { id, type: "CUSTOMER" },
     });
     if (!party) throw new NotFoundError("Customer not found");
+    await validateSessionOutletAccess(party.outletId);
     return party;
   });
 }
@@ -214,6 +217,7 @@ export async function createCustomer(
   data: CustomerFormValues,
 ) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
     const validated = customerSchema.parse(data);
 
     // 1. Unique name check
@@ -284,6 +288,7 @@ export async function updateCustomer(id: string, data: CustomerFormValues) {
 
     const currentParty = await prisma.party.findUnique({ where: { id } });
     if (!currentParty) throw new NotFoundError("Customer not found");
+    await validateSessionOutletAccess(currentParty.outletId);
 
     // 1. Uniqueness check
     const existing = await prisma.party.findFirst({
@@ -388,6 +393,9 @@ export async function getCustomerLedger(
 
     if (!party) throw new NotFoundError("Customer not found");
 
+    const partyForAuth = await prisma.party.findUnique({ where: { id: partyId }, select: { outletId: true } });
+    if (partyForAuth?.outletId) await validateSessionOutletAccess(partyForAuth.outletId);
+
     const whereClause: any = { partyId };
     if (fromDate || toDate) {
       whereClause.date = {};
@@ -449,6 +457,7 @@ export async function deleteCustomer(id: string) {
       where: { id, type: "CUSTOMER" },
     });
     if (!party) throw new NotFoundError("Customer not found");
+    await validateSessionOutletAccess(party.outletId);
 
     // Check for existing transactions that would prevent deletion
     const [txnCount, paymentCount, nonObLedgerCount] = await Promise.all([

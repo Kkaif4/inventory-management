@@ -29,7 +29,10 @@ export function handleError(error: unknown): StandardResponse {
       success: false,
       error: {
         code: "INTERNAL_SERVER_ERROR",
-        message: error.message || "An unexpected error occurred",
+        message:
+          process.env.NODE_ENV === "development"
+            ? error.message || "An unexpected error occurred"
+            : "An unexpected error occurred",
         stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
     };
@@ -57,7 +60,7 @@ function handlePrismaError(
       code = "CONFLICT";
       const targets = error.meta?.target as string[];
       message = `Unique constraint failed on: ${targets?.join(", ")}`;
-      details = error.meta;
+      details = process.env.NODE_ENV === "development" ? error.meta : undefined;
       break;
     case "P2025": // Record not found
       code = "NOT_FOUND";
@@ -69,7 +72,10 @@ function handlePrismaError(
         "Resource is being used elsewhere or invalid reference provided";
       break;
     default:
-      message = `Database Error: ${error.message}`;
+      message =
+        process.env.NODE_ENV === "development"
+          ? `Database Error: ${error.message}`
+          : "A database error occurred";
   }
 
   return {

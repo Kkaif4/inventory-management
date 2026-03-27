@@ -1,16 +1,24 @@
 "use client";
 
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createProduct } from "@/actions/products";
+import { createProduct, getNextSkuNumber } from "@/actions/products";
 import { getCategories } from "@/actions/categories";
-import { PackageX, Save, Plus, Trash2 } from "lucide-react";
+import {
+  PackageX,
+  Save,
+  Plus,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Form,
   FormItem,
@@ -32,11 +40,26 @@ import { useOutletStore } from "@/store/use-outlet-store";
 import { PRODUCT_UNITS } from "@/lib/constants";
 import { AlertTriangle, Info } from "lucide-react";
 import { getGstRateByHsn } from "@/lib/hsn-data";
+import { getTaxInfoByCategory } from "@/lib/category-tax-map";
 import {
   productCreateSchema,
   ProductFormValues,
 } from "@/validations/product.validation";
 import { useTranslations } from "next-intl";
+
+function buildSkuPrefix(categoryName: string, productName: string): string {
+  const cat = categoryName
+    .replace(/[^a-zA-Z]/g, "")
+    .toUpperCase()
+    .substring(0, 2)
+    .padEnd(2, "X");
+  const name = productName
+    .replace(/[^a-zA-Z]/g, "")
+    .toUpperCase()
+    .substring(0, 3)
+    .padEnd(3, "X");
+  return `${cat}-${name}`;
+}
 
 export default function NewProductPage() {
   const t = useTranslations("products");
@@ -44,6 +67,9 @@ export default function NewProductPage() {
   const router = useRouter();
   const { currentOutletId } = useOutletStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAdvancedSku, setShowAdvancedSku] = useState(false);
+  const [showVariants, setShowVariants] = useState(false);
+  const [isGeneratingSku, setIsGeneratingSku] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
     [],
   );
@@ -79,7 +105,7 @@ export default function NewProductPage() {
       brand: "",
       hsnCode: "",
       gstRate: 18,
-      baseUnit: "",
+      baseUnit: "PCS",
       purchaseUnit: "",
       conversionRatio: 1,
       categoryId: "",
@@ -109,14 +135,57 @@ export default function NewProductPage() {
     name: "variants",
   });
 
+  // useWatch for reactive SKU generation (avoids stale closure in useEffect)
+  const watchedCategoryId = useWatch({ control, name: "categoryId" });
+  const watchedName = useWatch({ control, name: "name" });
+
+  // Feature 1: Auto-generate SKU when category + name change
+  useEffect(() => {
+    if (
+      !watchedCategoryId ||
+      !watchedName ||
+      watchedName.length < 2 ||
+      !currentOutletId
+    )
+      return;
+    const categoryName = getCategoryName(watchedCategoryId) ?? "";
+    if (!categoryName) return;
+    const prefix = buildSkuPrefix(categoryName, watchedName);
+    const timer = setTimeout(async () => {
+      setIsGeneratingSku(true);
+      const res = await getNextSkuNumber(prefix, currentOutletId);
+      if (res.success && res.data) {
+        form.setValue("variants.0.sku", `${prefix}-${res.data}`, {
+          shouldValidate: false,
+        });
+      }
+      setIsGeneratingSku(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [watchedCategoryId, watchedName]);
+
+  // Feature 5: Toggle variants — remove extra variants when switching back to simple mode
+  const handleVariantsToggle = (checked: boolean) => {
+    setShowVariants(checked);
+    if (!checked && fields.length > 1) {
+      const indicesToRemove = Array.from(
+        { length: fields.length - 1 },
+        (_, i) => i + 1,
+      );
+      remove(indicesToRemove);
+    }
+  };
+
   const onSubmit = async (data: ProductFormValues) => {
     try {
       if (!session?.user?.id || !currentOutletId) {
         throw new Error("Unauthorized or no active outlet selected.");
       }
       setIsSubmitting(true);
+      // Exclude parentCategoryId — it's optional in schema but not used by the server action
+      const { parentCategoryId: _ignored, ...productPayload } = data;
       const res = await createProduct({
-        ...data,
+        ...productPayload,
         brand: data.brand || null,
         hsnCode: data.hsnCode || null,
         purchaseUnit: data.purchaseUnit || null,
@@ -161,6 +230,7 @@ export default function NewProductPage() {
 
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* ── Basic Information ── */}
           <Card className="bg-surface border-border/50 shadow-none">
             <CardHeader className="border-b border-border/50 pb-4 bg-surface-elevated/20">
               <CardTitle className="text-sm font-semibold text-text-primary uppercase tracking-wider">
@@ -204,6 +274,7 @@ export default function NewProductPage() {
                   )}
                 />
 
+                {/* Feature 2: Category ghost-fills HSN + GST */}
                 <FormField
                   control={control}
                   name="categoryId"
@@ -211,7 +282,20 @@ export default function NewProductPage() {
                     <FormItem>
                       <FormLabel>{t("form.categoryLabel")}</FormLabel>
                       <Select
-                        onValueChange={(val) => field.onChange(val)}
+                        onValueChange={(val) => {
+                          field.onChange(val);
+                          // Feature 2: Smart Tax & HSN Mapping
+                          const catName =
+                            categories.find((c) => c.id === val)?.name ?? "";
+                          const taxInfo = getTaxInfoByCategory(catName);
+                          form.setValue("hsnCode", taxInfo.hsnCode);
+                          form.setValue("gstRate", taxInfo.gstRate);
+                          if (taxInfo.hsnCode) {
+                            toast.info(
+                              `Tax auto-set: HSN ${taxInfo.hsnCode} @ ${taxInfo.gstRate}%`,
+                            );
+                          }
+                        }}
                         defaultValue={field.value}
                         value={field.value}
                       >
@@ -237,6 +321,7 @@ export default function NewProductPage() {
                   )}
                 />
 
+                {/* Feature 3: Label → "Tax Code (HSN)" */}
                 <FormField
                   control={control}
                   name="hsnCode"
@@ -312,6 +397,7 @@ export default function NewProductPage() {
                   )}
                 />
 
+                {/* Feature 3: Label → "How do you sell it?" */}
                 <FormField
                   control={control}
                   name="baseUnit"
@@ -345,6 +431,7 @@ export default function NewProductPage() {
                   )}
                 />
 
+                {/* Feature 3: Label → "How do you buy it?" */}
                 <FormField
                   control={control}
                   name="purchaseUnit"
@@ -430,200 +517,307 @@ export default function NewProductPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-surface border-border/50 shadow-none">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4 bg-surface-elevated/20">
-              <CardTitle className="text-sm font-semibold text-text-primary uppercase tracking-wider">
-                {t("form.productVariants")}
-              </CardTitle>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="text-indigo-400 border-indigo-500/20 hover:bg-indigo-500/10"
-                onClick={() =>
-                  append({
-                    sku: "",
-                    purchasePrice: 0,
-                    sellingPrice: 0,
-                    pricingMethod: "MANUAL",
-                    markupPercent: 0,
-                    minStockLevel: 0,
-                    specifications: {},
-                  })
-                }
-              >
-                <Plus className="w-4 h-4 mr-1" /> {t("form.addVariant")}
-              </Button>
-            </CardHeader>
-            <CardContent className="p-6">
-              {errors.variants?.message && (
-                <p className="text-red-500 text-sm mb-4">
-                  {errors.variants.message}
-                </p>
-              )}
+          {/* ── Feature 5: Progressive Disclosure Toggle ── */}
+          <div className="flex items-center gap-3 px-4 py-3 bg-surface border border-border/50 rounded-xl">
+            <Switch
+              checked={showVariants}
+              onCheckedChange={handleVariantsToggle}
+              id="variants-toggle"
+            />
+            <label
+              htmlFor="variants-toggle"
+              className="text-sm text-text-primary cursor-pointer select-none"
+            >
+              {t("form.variantsToggle")}
+            </label>
+          </div>
 
-              <div className="space-y-4">
-                {fields.map((field, index) => {
-                  const method = watch(`variants.${index}.pricingMethod`);
-                  return (
-                    <div
-                      key={field.id}
-                      className="p-5 border border-border/50 rounded-xl bg-surface-elevated/50 grid grid-cols-1 md:grid-cols-6 gap-4 relative group"
-                    >
-                      {index > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => remove(index)}
-                          className="absolute -top-3 -right-3 bg-destructive/10 text-destructive p-2 rounded-full hover:bg-destructive hover:text-white shadow-sm opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+          {/* ── Pricing Section (simple mode, showVariants=false) ── */}
+          {!showVariants && (
+            <Card className="bg-surface border-border/50 shadow-none">
+              <CardHeader className="border-b border-border/50 pb-4 bg-surface-elevated/20">
+                <CardTitle className="text-sm font-semibold text-text-primary uppercase tracking-wider">
+                  Pricing & Stock
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Feature 4: Cost Price auto-syncs Selling Price */}
+                  <FormField
+                    control={control}
+                    name="variants.0.purchasePrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">
+                          {t("form.costPriceLabel")}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            {...field}
+                            onChange={(e) => {
+                              const newVal = Number(e.target.value);
+                              const oldVal = field.value;
+                              field.onChange(e);
+                              // Feature 4: Auto-sync selling price
+                              const currentSelling = watch(
+                                "variants.0.sellingPrice",
+                              );
+                              if (
+                                currentSelling === 0 ||
+                                currentSelling === oldVal
+                              ) {
+                                form.setValue(
+                                  "variants.0.sellingPrice",
+                                  newVal,
+                                );
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
+                  <FormField
+                    control={control}
+                    name="variants.0.sellingPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">
+                          {t("form.sellingPriceLabel")}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Feature 3: Label → "Notify when stock is lower than..." */}
+                  <FormField
+                    control={control}
+                    name="variants.0.minStockLevel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">
+                          {t("form.minAlertLabel")}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Feature 1: Advanced SKU toggle */}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvancedSku((prev) => !prev)}
+                    className="flex items-center gap-1 text-xs text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+                  >
+                    {showAdvancedSku ? (
+                      <ChevronUp className="w-3 h-3" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3" />
+                    )}
+                    Advanced (SKU / Barcode)
+                  </button>
+
+                  {showAdvancedSku && (
+                    <div className="mt-3 max-w-xs">
                       <FormField
                         control={control}
-                        name={`variants.${index}.sku`}
+                        name="variants.0.sku"
                         render={({ field }) => (
-                          <FormItem className="md:col-span-2">
+                          <FormItem>
                             <FormLabel className="text-xs">
                               {t("form.skuLabel")}
                             </FormLabel>
                             <FormControl>
                               <Input
-                                placeholder={t("form.skuPlaceholder")}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={control}
-                        name={`variants.${index}.purchasePrice`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs">
-                              {t("form.costPriceLabel")}
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                {...field}
-                                onChange={(e) => {
-                                  field.onChange(e);
-                                  const val = Number(e.target.value);
-                                  const method = watch(
-                                    `variants.${index}.pricingMethod`,
-                                  );
-                                  if (method === "MARKUP") {
-                                    const margin =
-                                      watch(
-                                        `variants.${index}.markupPercent`,
-                                      ) || 0;
-                                    const sell =
-                                      Math.round(
-                                        val * (1 + margin / 100) * 100,
-                                      ) / 100;
-                                    form.setValue(
-                                      `variants.${index}.sellingPrice`,
-                                      sell,
-                                    );
-                                  }
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={control}
-                        name={`variants.${index}.pricingMethod`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs">
-                              {t("form.pricingLogicLabel")}
-                            </FormLabel>
-                            <Select
-                              onValueChange={(
-                                val: "MANUAL" | "MARKUP" | null,
-                              ) => {
-                                if (!val) return;
-                                field.onChange(val);
-                                if (val === "MARKUP") {
-                                  const cost =
-                                    watch(`variants.${index}.purchasePrice`) ||
-                                    0;
-                                  const margin =
-                                    watch(`variants.${index}.markupPercent`) ||
-                                    0;
-                                  const sell =
-                                    Math.round(
-                                      cost * (1 + margin / 100) * 100,
-                                    ) / 100;
-                                  form.setValue(
-                                    `variants.${index}.sellingPrice`,
-                                    sell,
-                                    { shouldTouch: true },
-                                  );
+                                placeholder={
+                                  isGeneratingSku
+                                    ? "Generating..."
+                                    : t("form.skuPlaceholder")
                                 }
-                              }}
-                              defaultValue={field.value}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue>
-                                    {field.value === "MARKUP"
-                                      ? t("form.markup")
-                                      : field.value === "MANUAL"
-                                        ? t("form.manualEntry")
-                                        : undefined}
-                                  </SelectValue>
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="MANUAL">
-                                  {t("form.manualEntry")}
-                                </SelectItem>
-                                <SelectItem value="MARKUP">
-                                  {t("form.markup")}
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
+                                disabled={isGeneratingSku}
+                                {...field}
+                              />
+                            </FormControl>
+                            <p className="text-[10px] text-text-muted italic">
+                              Auto-generated from category &amp; product name.
+                              You can edit it.
+                            </p>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-                      {method === "MARKUP" ? (
+          {/* ── Feature 5: Full Variants table (showVariants=true) ── */}
+          {showVariants && (
+            <Card className="bg-surface border-border/50 shadow-none">
+              <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4 bg-surface-elevated/20">
+                <CardTitle className="text-sm font-semibold text-text-primary uppercase tracking-wider">
+                  {t("form.productVariants")}
+                </CardTitle>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-indigo-400 border-indigo-500/20 hover:bg-indigo-500/10"
+                  onClick={() =>
+                    append({
+                      sku: "",
+                      purchasePrice: 0,
+                      sellingPrice: 0,
+                      pricingMethod: "MANUAL",
+                      markupPercent: 0,
+                      minStockLevel: 0,
+                      specifications: {},
+                    })
+                  }
+                >
+                  <Plus className="w-4 h-4 mr-1" /> {t("form.addVariant")}
+                </Button>
+              </CardHeader>
+              <CardContent className="p-6">
+                {errors.variants?.message && (
+                  <p className="text-red-500 text-sm mb-4">
+                    {errors.variants.message}
+                  </p>
+                )}
+
+                <div className="space-y-4">
+                  {fields.map((field, index) => {
+                    const method = watch(`variants.${index}.pricingMethod`);
+                    return (
+                      <div
+                        key={field.id}
+                        className="p-5 border border-border/50 rounded-xl bg-surface-elevated/50 grid grid-cols-1 md:grid-cols-6 gap-4 relative group"
+                      >
+                        {index > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => remove(index)}
+                            className="absolute -top-3 -right-3 bg-destructive/10 text-destructive p-2 rounded-full hover:bg-destructive hover:text-white shadow-sm opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {/* Feature 1: SKU always visible in full variant mode */}
                         <FormField
                           control={control}
-                          name={`variants.${index}.markupPercent`}
+                          name={`variants.${index}.sku`}
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel className="text-xs">
+                                {t("form.skuLabel")}
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder={
+                                    index === 0 && isGeneratingSku
+                                      ? "Generating..."
+                                      : t("form.skuPlaceholder")
+                                  }
+                                  disabled={index === 0 && isGeneratingSku}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={control}
+                          name={`variants.${index}.purchasePrice`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-xs text-brand">
-                                {t("form.marginLabel")}
+                              <FormLabel className="text-xs">
+                                {t("form.costPriceLabel")}
                               </FormLabel>
                               <FormControl>
                                 <Input
                                   type="number"
-                                  step="0.1"
-                                  className="border-brand/30 bg-brand/5 focus-visible:ring-brand/40"
-                                  value={field.value ?? ""}
-                                  onBlur={field.onBlur}
+                                  step="0.01"
+                                  {...field}
                                   onChange={(e) => {
-                                    field.onChange(
-                                      Number(e.target.value) || null,
-                                    );
-                                    const margin = Number(e.target.value);
+                                    const newVal = Number(e.target.value);
+                                    const oldVal = field.value;
+                                    field.onChange(e);
+                                    if (method === "MARKUP") {
+                                      const margin =
+                                        watch(
+                                          `variants.${index}.markupPercent`,
+                                        ) || 0;
+                                      const sell =
+                                        Math.round(
+                                          newVal * (1 + margin / 100) * 100,
+                                        ) / 100;
+                                      form.setValue(
+                                        `variants.${index}.sellingPrice`,
+                                        sell,
+                                      );
+                                    } else if (method === "MANUAL") {
+                                      // Feature 4: Auto-sync selling price
+                                      const currentSelling = watch(
+                                        `variants.${index}.sellingPrice`,
+                                      );
+                                      if (
+                                        currentSelling === 0 ||
+                                        currentSelling === oldVal
+                                      ) {
+                                        form.setValue(
+                                          `variants.${index}.sellingPrice`,
+                                          newVal,
+                                        );
+                                      }
+                                    }
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={control}
+                          name={`variants.${index}.pricingMethod`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">
+                                {t("form.pricingLogicLabel")}
+                              </FormLabel>
+                              <Select
+                                onValueChange={(
+                                  val: "MANUAL" | "MARKUP" | null,
+                                ) => {
+                                  if (!val) return;
+                                  field.onChange(val);
+                                  if (val === "MARKUP") {
                                     const cost =
                                       watch(
                                         `variants.${index}.purchasePrice`,
+                                      ) || 0;
+                                    const margin =
+                                      watch(
+                                        `variants.${index}.markupPercent`,
                                       ) || 0;
                                     const sell =
                                       Math.round(
@@ -634,67 +828,138 @@ export default function NewProductPage() {
                                       sell,
                                       { shouldTouch: true },
                                     );
-                                  }}
-                                />
-                              </FormControl>
+                                  }
+                                }}
+                                defaultValue={field.value}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue>
+                                      {field.value === "MARKUP"
+                                        ? t("form.markup")
+                                        : field.value === "MANUAL"
+                                          ? t("form.manualEntry")
+                                          : undefined}
+                                    </SelectValue>
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="MANUAL">
+                                    {t("form.manualEntry")}
+                                  </SelectItem>
+                                  <SelectItem value="MARKUP">
+                                    {t("form.markup")}
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      ) : (
+
+                        {method === "MARKUP" ? (
+                          <FormField
+                            control={control}
+                            name={`variants.${index}.markupPercent`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs text-brand">
+                                  {t("form.marginLabel")}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    step="0.1"
+                                    className="border-brand/30 bg-brand/5 focus-visible:ring-brand/40"
+                                    value={field.value ?? ""}
+                                    onBlur={field.onBlur}
+                                    onChange={(e) => {
+                                      field.onChange(
+                                        Number(e.target.value) || null,
+                                      );
+                                      const margin = Number(e.target.value);
+                                      const cost =
+                                        watch(
+                                          `variants.${index}.purchasePrice`,
+                                        ) || 0;
+                                      const sell =
+                                        Math.round(
+                                          cost * (1 + margin / 100) * 100,
+                                        ) / 100;
+                                      form.setValue(
+                                        `variants.${index}.sellingPrice`,
+                                        sell,
+                                        { shouldTouch: true },
+                                      );
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        ) : (
+                          <FormField
+                            control={control}
+                            name={`variants.${index}.sellingPrice`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs">
+                                  {t("form.sellingPriceLabel")}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+
+                        {method === "MARKUP" && (
+                          <div className="flex flex-col justify-center">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">
+                              {t("form.autoSellingPrice")}
+                            </label>
+                            <p className="text-sm font-black text-emerald-400">
+                              ₹{" "}
+                              {(
+                                watch(`variants.${index}.sellingPrice`) || 0
+                              ).toFixed(2)}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Feature 3: Label → "Notify when stock is lower than..." */}
                         <FormField
                           control={control}
-                          name={`variants.${index}.sellingPrice`}
+                          name={`variants.${index}.minStockLevel`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs">
-                                {t("form.sellingPriceLabel")}
+                                {t("form.minAlertLabel")}
                               </FormLabel>
                               <FormControl>
-                                <Input type="number" step="0.01" {...field} />
+                                <Input type="number" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-                      {method === "MARKUP" && (
-                        <div className="flex flex-col justify-center">
-                          <label className="text-[10px] font-bold text-slate-500 uppercase">
-                            {t("form.autoSellingPrice")}
-                          </label>
-                          <p className="text-sm font-black text-emerald-400">
-                            ₹{" "}
-                            {(
-                              watch(`variants.${index}.sellingPrice`) || 0
-                            ).toFixed(2)}
-                          </p>
-                        </div>
-                      )}
-
-                      <FormField
-                        control={control}
-                        name={`variants.${index}.minStockLevel`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs">
-                              {t("form.minAlertLabel")}
-                            </FormLabel>
-                            <FormControl>
-                              <Input type="number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
+          {/* Feature 5: Submit button → "Add to Inventory" */}
           <div className="flex justify-end sticky bottom-6 z-10 bg-surface/80 backdrop-blur-xl p-4 shadow-2xl shadow-indigo-900/10 rounded-xl border border-border/60">
             <Button
               type="submit"
@@ -708,6 +973,7 @@ export default function NewProductPage() {
           </div>
         </form>
       </Form>
+
       {!currentOutletId && (
         <div className="fixed inset-0 z-100 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 text-center">
           <div className="bg-white rounded-3xl p-10 max-w-md w-full shadow-2xl space-y-6 animate-in zoom-in-95 duration-300">

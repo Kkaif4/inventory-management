@@ -5,6 +5,10 @@ import { revalidatePath } from "next/cache";
 import { AuditService } from "@/domains/audit/audit-service";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError } from "@/lib/exceptions";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { UnauthorizedError } from "@/lib/exceptions";
 
 import { ProductFilter, VariantPayload } from "./types";
 
@@ -13,6 +17,7 @@ export async function getProducts(
   filters: ProductFilter = {},
 ) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
     const { search, categoryId, brand, limit } = filters;
 
     const andClauses: any[] = [{ outletId }, { isArchived: false }];
@@ -71,6 +76,7 @@ export async function createProduct(data: {
 }) {
   return withErrorHandler(async () => {
     const { variants, userId, outletId, ...productData } = data;
+    await validateSessionOutletAccess(outletId);
 
     const existingProduct = await prisma.product.findUnique({
       where: {
@@ -161,6 +167,9 @@ export async function getProductWithVariants(productId: string) {
 
 export async function getAllVariants() {
   return withErrorHandler(async () => {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) throw new UnauthorizedError();
+
     return await prisma.variant.findMany({
       include: {
         product: {
@@ -198,6 +207,8 @@ export async function updateProduct(
 ) {
   return withErrorHandler(async () => {
     const { userId, variants, ...productData } = data;
+    const existing = await prisma.product.findUnique({ where: { id }, select: { outletId: true } });
+    if (existing?.outletId) await validateSessionOutletAccess(existing.outletId);
 
     const result = await prisma.$transaction(async (tx) => {
       const product = await tx.product.update({
@@ -239,6 +250,9 @@ export async function updateProduct(
 
 export async function deleteProduct(productId: string, userId: string) {
   return withErrorHandler(async () => {
+    const productForAuth = await prisma.product.findUnique({ where: { id: productId }, select: { outletId: true } });
+    if (productForAuth?.outletId) await validateSessionOutletAccess(productForAuth.outletId);
+
     // 1. Get all variants for this product
     const variants = await prisma.variant.findMany({
       where: { productId },
@@ -350,5 +364,24 @@ export async function deleteProduct(productId: string, userId: string) {
 
     revalidatePath("/dashboard/master-data/products");
     return { deleted: true, id: productId };
+  });
+}
+
+export async function getNextSkuNumber(prefix: string, outletId: string) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+    const existing = await prisma.variant.findMany({
+      where: {
+        sku: { startsWith: prefix + "-" },
+        product: { outletId },
+      },
+      select: { sku: true },
+    });
+    if (existing.length === 0) return "001";
+    const nums = existing.map((v) => {
+      const parts = v.sku.split("-");
+      return parseInt(parts[parts.length - 1]) || 0;
+    });
+    return String(Math.max(...nums) + 1).padStart(3, "0");
   });
 }

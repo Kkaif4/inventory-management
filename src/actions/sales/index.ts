@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { withErrorHandler } from "@/lib/error-handler";
+import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 
 export async function createProformaInvoice(data: {
   partyId: string;
@@ -19,6 +20,7 @@ export async function createProformaInvoice(data: {
   userId: string;
 }) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(data.outletId);
     const totalTaxable = data.items.reduce(
       (sum, item) => sum + item.taxableValue,
       0,
@@ -61,6 +63,7 @@ export async function createProformaInvoice(data: {
 
 export async function getProformaInvoices(outletId: string) {
   return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
     return await prisma.transaction.findMany({
       where: {
         type: "PROFORMA_INVOICE",

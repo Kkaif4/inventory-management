@@ -2,9 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/error-handler";
+import { requireAdminSession } from "@/lib/outlet-auth";
 
 export async function getLedgerEntries(accountId?: string) {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     return await prisma.ledgerEntry.findMany({
       where: accountId ? { accountId } : {},
       include: {
@@ -18,6 +20,7 @@ export async function getLedgerEntries(accountId?: string) {
 
 export async function getPNL() {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     const accounts = await prisma.account.findMany({
       include: { entries: true },
     });
@@ -48,6 +51,7 @@ export async function getPNL() {
 
 export async function getBalanceSheet() {
   return withErrorHandler(async () => {
+    await requireAdminSession();
     const accounts = await prisma.account.findMany({
       include: { entries: true },
     });
