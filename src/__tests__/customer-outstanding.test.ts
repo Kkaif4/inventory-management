@@ -224,7 +224,7 @@ describe("Customer Outstanding and Payment Behavior", () => {
 
     // Pay only ₹600
     const invoice2 = await prisma.transaction.findUnique({
-      where: { id: invoice2Result.data!.id },
+      where: { id: invoice2Result.data!.invoice.id },
     });
 
     await recordInvoicePayment({

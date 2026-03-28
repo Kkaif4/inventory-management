@@ -1,23 +1,24 @@
-import { getRequestConfig } from 'next-intl/server';
-import { cookies } from 'next/headers';
+import { getRequestConfig } from "next-intl/server";
+import { cookies } from "next/headers";
 
-const SUPPORTED = ['en', 'hi', 'mr'];
+const SUPPORTED = ["en", "hi", "mr"];
 
 const MODULE_NAMES = [
-  'common',
-  'nav',
-  'dashboard',
-  'forms',
-  'toasts',
-  'sales',
-  'inventory',
-  'quotationsAndDelivery',
-  'categories',
-  'products',
-  'priceLists',
-  'locations',
-  'outletSwitcher',
-  'billing',
+  "common",
+  "nav",
+  "dashboard",
+  "forms",
+  "toasts",
+  "sales",
+  "inventory",
+  "quotationsAndDelivery",
+  "categories",
+  "products",
+  "priceLists",
+  "locations",
+  "outletSwitcher",
+  "billing",
+  "reports",
 ] as const;
 
 async function loadMessages(locale: string) {
@@ -36,8 +37,8 @@ async function loadMessages(locale: string) {
 }
 
 export default getRequestConfig(async () => {
-  const raw = (await cookies()).get('NEXT_LOCALE')?.value ?? 'en';
-  const locale = SUPPORTED.includes(raw) ? raw : 'en';
+  const raw = (await cookies()).get("NEXT_LOCALE")?.value ?? "en";
+  const locale = SUPPORTED.includes(raw) ? raw : "en";
 
   return {
     locale,

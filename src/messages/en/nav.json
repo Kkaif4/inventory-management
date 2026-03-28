@@ -5,6 +5,7 @@
     "productsAndstock": "PRODUCTS & STOCK",
     "procurement": "PROCUREMENT",
     "parties": "PARTIES",
+    "reports": "REPORTS",
     "finance": "FINANCE",
     "financials": "FINANCIALS",
     "admin": "ADMIN"
@@ -21,6 +22,7 @@
     "purchases": "Purchases",
     "customers": "Customers",
     "vendors": "Vendors",
+    "reports": "Reports",
     "accounts": "Accounts",
     "ledger": "General Ledger",
     "pnl": "P&L Statement",

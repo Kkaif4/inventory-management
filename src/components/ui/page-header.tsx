@@ -15,7 +15,7 @@ interface Action {
   disabled?: boolean;
 }
 
-interface PageHeaderProps {
+export interface PageHeaderProps {
   title: string;
   subtitle?: string;
   breadcrumbs: Breadcrumb[];

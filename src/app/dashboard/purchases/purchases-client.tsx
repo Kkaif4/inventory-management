@@ -9,34 +9,81 @@ import {
   RotateCcw,
   Plus,
 } from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useTransition, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // Sub-clients
 import { PurchaseRequestsClient } from "./requests/requests-client";
 import { PurchaseOrdersClient } from "./orders/orders-client";
-import { PurchaseBillsClient } from "./bills/bills-client";
 import { PurchaseReturnsClient } from "./returns/returns-client";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { PaginationMeta } from "@/types/pagination";
 
 interface PurchasesClientProps {
-  requests: any[];
-  orders: any[];
-  bills: any[];
-  returns: any[];
+  initialData: any[];
+  initialPagination: PaginationMeta;
+  tab: string;
 }
 
 export function PurchasesClient({
-  requests,
-  orders,
-  bills,
-  returns,
+  initialData,
+  initialPagination,
+  tab: initialTab,
 }: PurchasesClientProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("orders");
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const [data, setData] = useState(initialData);
+
+  const currentTab = initialTab || "orders";
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const currentLimit = parseInt(searchParams.get("limit") || "10", 10);
+
+  // Sync data when pagination changes
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
+
+  const handleTabChange = useCallback(
+    (newTab: string) => {
+      const params = new URLSearchParams();
+      params.set("tab", newTab);
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router],
+  );
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      const params = new URLSearchParams();
+      params.set("tab", currentTab);
+      params.set("page", String(page));
+      if (currentLimit !== 10) params.set("limit", String(currentLimit));
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router, currentTab, currentLimit],
+  );
+
+  const handleLimitChange = useCallback(
+    (limit: number) => {
+      const params = new URLSearchParams();
+      params.set("tab", currentTab);
+      params.set("page", "1");
+      if (limit !== 10) params.set("limit", String(limit));
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router, currentTab],
+  );
 
   // Dynamic header based on tab
   const getHeaderInfo = () => {
-    switch (activeTab) {
+    switch (currentTab) {
       case "requests":
         return {
           title: "Purchase Requests",
@@ -92,14 +139,14 @@ export function PurchasesClient({
         subtitle={header.subtitle}
         breadcrumbs={[
           { label: "Purchases", href: "/dashboard/purchases" },
-          { label: activeTab.charAt(0).toUpperCase() + activeTab.slice(1) },
+          { label: currentTab.charAt(0).toUpperCase() + currentTab.slice(1) },
         ]}
         actions={header.actions}
       />
 
       <Tabs
-        defaultValue="orders"
-        onValueChange={setActiveTab}
+        value={currentTab}
+        onValueChange={handleTabChange}
         className="w-full"
       >
         <div className="flex items-center justify-between mb-4">
@@ -135,19 +182,50 @@ export function PurchasesClient({
           </TabsList>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden p-6 min-h-[500px]">
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden p-6 space-y-4">
           <TabsContent value="requests" className="mt-0">
-            <PurchaseRequestsClient requests={requests} hideHeader />
+            <PurchaseRequestsClient
+              initialData={currentTab === "requests" ? data : []}
+              initialPagination={
+                currentTab === "requests" ? initialPagination : undefined
+              }
+              hideHeader
+            />
           </TabsContent>
           <TabsContent value="orders" className="mt-0">
-            <PurchaseOrdersClient orders={orders} hideHeader />
+            <PurchaseOrdersClient
+              initialData={currentTab === "orders" ? data : []}
+              hideHeader
+            />
           </TabsContent>
           <TabsContent value="bills" className="mt-0">
-            <PurchaseBillsClient bills={bills} hideHeader />
+            <div className="space-y-4">
+              <p className="text-sm text-slate-600">
+                Displaying {data.length} bills
+              </p>
+            </div>
           </TabsContent>
           <TabsContent value="returns" className="mt-0">
-            <PurchaseReturnsClient returns={returns} hideHeader />
+            <PurchaseReturnsClient
+              initialData={currentTab === "returns" ? data : []}
+              initialPagination={
+                currentTab === "returns" ? initialPagination : undefined
+              }
+              hideHeader
+            />
           </TabsContent>
+
+          {initialPagination && (
+            <PaginationControls
+              page={initialPagination.page}
+              totalPages={initialPagination.totalPages}
+              limit={initialPagination.limit}
+              total={initialPagination.total}
+              onPageChange={handlePageChange}
+              onLimitChange={handleLimitChange}
+              isPending={isPending}
+            />
+          )}
         </div>
       </Tabs>
     </div>

@@ -1,25 +1,83 @@
-import { getSalesInvoices } from "@/actions/sales/sales-invoice";
-import { getSalesReturns } from "@/actions/sales/returns";
+import { Suspense } from "react";
+import { getSalesInvoicesPaginated } from "@/actions/sales/sales-invoice";
+import { getSalesReturnsPaginated } from "@/actions/sales/returns";
 import { SalesTransactionsClient } from "./sales-transactions-client";
 import { redirect } from "next/navigation";
 import { getCurrentSessionOutlet } from "@/lib/outlet-auth";
+import { parsePaginationParams } from "@/lib/pagination";
+import type { PaginationMeta } from "@/types/pagination";
 
-export default async function SalesTransactionsPage() {
+const defaultPagination: PaginationMeta = {
+  page: 1,
+  limit: 10,
+  total: 0,
+  totalPages: 0,
+  hasNextPage: false,
+  hasPrevPage: false,
+  skip: 0,
+};
+
+export default async function SalesTransactionsPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
   const currentOutletId = await getCurrentSessionOutlet();
 
   if (!currentOutletId) {
     redirect("/dashboard");
   }
 
-  const [invoices, returns] = await Promise.all([
-    getSalesInvoices(currentOutletId),
-    getSalesReturns(),
-  ]);
+  // Parse pagination and filter params
+  const pagination = parsePaginationParams(searchParams);
+  const tab = typeof searchParams.tab === "string" ? searchParams.tab : "invoices";
+  const search = typeof searchParams.search === "string" ? searchParams.search : "";
+  const status = typeof searchParams.status === "string" ? searchParams.status : "ALL";
+
+  // Fetch only the active tab's data
+  let tabData: { data: any[]; pagination: PaginationMeta };
+
+  if (tab === "invoices") {
+    const res = await getSalesInvoicesPaginated(currentOutletId, {
+      page: pagination.page,
+      limit: pagination.limit,
+      search: search || undefined,
+      status: status || "ALL",
+    });
+    tabData = res.success && res.data ? res.data : { data: [], pagination: defaultPagination };
+  } else if (tab === "returns") {
+    const res = await getSalesReturnsPaginated(currentOutletId, {
+      page: pagination.page,
+      limit: pagination.limit,
+      search: search || undefined,
+      status: status || "ALL",
+    });
+    tabData = res.success && res.data ? res.data : { data: [], pagination: defaultPagination };
+  } else {
+    tabData = { data: [], pagination: defaultPagination };
+  }
 
   return (
-    <SalesTransactionsClient
-      invoices={invoices || []}
-      returns={returns.data || []}
-    />
+    <Suspense fallback={<SalesTransactionsSkeleton />}>
+      <SalesTransactionsClient
+        initialData={tabData.data || []}
+        initialPagination={tabData.pagination}
+        tab={tab}
+      />
+    </Suspense>
+  );
+}
+
+function SalesTransactionsSkeleton() {
+  return (
+    <div className="space-y-6 pb-20">
+      <div className="h-10 bg-slate-200 rounded w-48 animate-pulse" />
+      <div className="h-12 bg-slate-200 rounded animate-pulse" />
+      <div className="space-y-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-12 bg-slate-100 rounded animate-pulse" />
+        ))}
+      </div>
+    </div>
   );
 }

@@ -21,7 +21,8 @@
   },
   "tabs": {
     "inventory": "Stock Inventory",
-    "movement": "Stock Movement"
+    "movement": "Stock Movement",
+    "batches": "Batch Details"
   },
   "actions": {
     "transfer": "Stock Transfer",

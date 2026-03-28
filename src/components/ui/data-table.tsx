@@ -17,21 +17,8 @@ import {
   TableHead,
   TableHeader,
 } from "@/components/ui/table";
+import { TablePagination } from "./table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -41,8 +28,9 @@ interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void;
   rowClassName?: (row: TData) => string;
   footerRow?: React.ReactNode;
-  /** Default number of rows per page. Defaults to 10. */
   pageSize?: number;
+
+  manualPagination?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -54,6 +42,7 @@ export function DataTable<TData, TValue>({
   rowClassName,
   footerRow,
   pageSize = 10,
+  manualPagination = false,
 }: DataTableProps<TData, TValue>) {
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
@@ -64,20 +53,20 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onPaginationChange: setPagination,
-    state: { pagination },
+    ...(manualPagination ? {} : { getPaginationRowModel: getPaginationRowModel() }),
+    ...(manualPagination ? {} : { onPaginationChange: setPagination }),
+    ...(manualPagination ? {} : { state: { pagination } }),
   });
 
   if (loading) {
     return <SkeletonTable rows={5} columns={columns.length} />;
   }
 
-  const totalPages = table.getPageCount();
-  const currentPage = pagination.pageIndex + 1;
+  const totalPages = !manualPagination ? table.getPageCount() : undefined;
+  const currentPage = !manualPagination ? pagination.pageIndex + 1 : undefined;
 
   return (
-    <div className="space-y-3">
+    <div className={manualPagination ? "" : "space-y-3"}>
       <div className="rounded-md border bg-card text-card-foreground">
         <Table>
           <TableHeader className="bg-muted/50">
@@ -147,88 +136,8 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      {/* Pagination — only rendered when there is more than one page */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-1">
-          {/* Rows-per-page selector */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Rows per page</span>
-            <Select
-              defaultValue={String(pagination.pageSize)}
-              value={String(pagination.pageSize)}
-              onValueChange={(val) =>
-                setPagination((p) => ({
-                  ...p,
-                  pageIndex: 0,
-                  pageSize: Number(val),
-                }))
-              }
-            >
-              <SelectTrigger className="h-8 w-16 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[10, 25, 50, 100].map((s) => (
-                  <SelectItem key={s} value={String(s)}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Navigation buttons */}
-          <div className="flex items-center gap-1">
-            <span className="text-sm text-muted-foreground mr-2">
-              Showing {pagination.pageIndex * pagination.pageSize + 1} to{" "}
-              {Math.min(
-                (pagination.pageIndex + 1) * pagination.pageSize,
-                data.length,
-              )}{" "}
-              of {data.length}
-            </span>
-            <span className="text-sm text-muted-foreground mr-2 border-l border-border pl-2">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => table.setPageIndex(totalPages - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Pagination - only render if not using manual pagination */}
+      {!manualPagination && <TablePagination table={table} />}
     </div>
   );
 }

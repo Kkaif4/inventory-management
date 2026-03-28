@@ -10,14 +10,19 @@ import { CheckCircle, XCircle } from "lucide-react";
 import { updatePurchaseRequestStatus } from "@/actions/purchases/requests";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PaginationMeta } from "@/types/pagination";
 
 export function PurchaseRequestsClient({
-  requests,
+  initialData,
+  initialPagination,
   hideHeader = false,
 }: {
-  requests: any[];
+  initialData?: any[];
+  initialPagination?: PaginationMeta;
   hideHeader?: boolean;
 }) {
+  // Support both old and new props for backward compatibility
+  const requests = initialData || [];
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const router = useRouter();
 

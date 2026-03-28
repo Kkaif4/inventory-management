@@ -111,6 +111,8 @@ model Product {
   outlet          Outlet    @relation(fields: [outletId], references: [id])
 
   @@unique([name, outletId])
+  @@index([outletId, isArchived])
+  @@index([outletId, categoryId, isArchived])
 }
 
 model Variant {
@@ -178,6 +180,10 @@ model Party {
   transactions       Transaction[]
   suppliedProducts   VendorProduct[]
   payments           Payment[]
+
+  @@index([outletId, type, isActive])
+  @@index([outletId, type, name])
+  @@index([outletId, type, outstandingBalance])
 }
 
 model Transaction {
@@ -214,6 +220,10 @@ model Transaction {
   batchMovements BatchMovement[]
   stockLedger    StockLedger[]
   payments       Payment[]
+
+  @@index([outletId, type, status])
+  @@index([outletId, type, date])
+  @@index([outletId, type, partyId])
 }
 
 model TransactionItem {

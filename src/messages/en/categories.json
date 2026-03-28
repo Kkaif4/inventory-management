@@ -1,5 +1,8 @@
 {
   "title": "Product Categories",
+  "searchPlaceholder": "Search categories...",
+  "categoryName": "Category Name",
+  "description": "Description",
   "subtitle": "Manage multi-level product taxonomy",
   "addCategory": "Add Category",
   "noCategories": "No categories found. Click \"Add Category\" to get started.",

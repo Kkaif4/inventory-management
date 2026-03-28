@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   X,
   Plus,
@@ -22,24 +23,38 @@ import {
 } from "@/actions/categories";
 import { ReusableConfirmDialog } from "@/components/ui/reusable-confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
+import { PaginationMeta } from "@/types/pagination";
+import { PageHeader } from "@/components/ui/page-header";
+import { TableToolbar } from "@/components/ui/table-toolbar";
 
 type CategoryWithCounts = any;
 
+interface CategoriesClientProps {
+  categories: CategoryWithCounts[];
+  pagination?: PaginationMeta;
+  outletId: string;
+}
+
 export function CategoriesClient({
-  initialCategories,
-}: {
-  initialCategories: CategoryWithCounts[];
-}) {
+  categories: initialCategories,
+  pagination: initialPagination,
+  outletId,
+}: CategoriesClientProps) {
   const t = useTranslations("categories");
   const common = useTranslations("common");
   const dashboardTable = useTranslations("dashboard.table");
   const { data: session } = useSession();
   const { currentOutletId } = useOutletStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [isPending, startTransition] = useTransition();
   const [categories, setCategories] = useState(initialCategories);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: "", description: "" });
@@ -47,8 +62,49 @@ export function CategoriesClient({
   const [newForm, setNewForm] = useState({ name: "", parentId: "" });
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  const refreshData = async () => {
-    window.location.reload();
+  // Sync data state with props when categories or pagination changes
+  useEffect(() => {
+    setCategories(initialCategories);
+  }, [initialCategories, initialPagination]);
+
+  // Use initialPagination for current page/limit
+  const currentPage = initialPagination?.page || 1;
+  const currentLimit = initialPagination?.limit || 10;
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", String(page));
+      if (currentLimit !== 10) {
+        params.set("limit", String(currentLimit));
+      } else {
+        params.delete("limit");
+      }
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router, startTransition, currentLimit, searchParams],
+  );
+
+  const handleLimitChange = useCallback(
+    (limit: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", "1");
+      if (limit !== 10) {
+        params.set("limit", String(limit));
+      } else {
+        params.delete("limit");
+      }
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router, startTransition, searchParams],
+  );
+
+  const refreshData = () => {
+    router.refresh();
   };
 
   const handleCreate = async () => {
@@ -104,10 +160,10 @@ export function CategoriesClient({
         toast.success(t("toasts.deactivated"));
         refreshData();
       } else {
-        toast.error(`${t("toasts.updateFailed")}: ${res.error?.message}`);
+        toast.error(`${t("toasts.deactivateFailed")}: ${res.error?.message}`);
       }
-    } catch (err: any) {
-      toast.error(t("toasts.updateFailed"));
+    } catch (err) {
+      toast.error(t("toasts.deactivateFailed"));
     }
   };
 
@@ -119,10 +175,10 @@ export function CategoriesClient({
         toast.success(t("toasts.activated"));
         refreshData();
       } else {
-        toast.error(`${t("toasts.updateFailed")}: ${res.error?.message}`);
+        toast.error(`${t("toasts.activateFailed")}: ${res.error?.message}`);
       }
-    } catch (err: any) {
-      toast.error(t("toasts.updateFailed"));
+    } catch (err) {
+      toast.error(t("toasts.activateFailed"));
     }
   };
 
@@ -135,52 +191,56 @@ export function CategoriesClient({
         setDeleteConfirmId(null);
         refreshData();
       } else {
-        toast.error(`${t("toasts.deleted")}: ${res.error?.message}`);
+        toast.error(`${t("toasts.deleteFailed")}: ${res.error?.message}`);
       }
-    } catch (err: any) {
-      toast.error(t("toasts.deleted"));
+    } catch (err) {
+      toast.error(t("toasts.deleteFailed"));
     }
   };
 
   const startEdit = (cat: any) => {
     setEditingId(cat.id);
-    setEditForm({ name: cat.name, description: cat.description || "" });
+    setEditForm({
+      name: cat.name,
+      description: cat.description || "",
+    });
   };
 
-  const columns: ColumnDef<any>[] = [
+  const getParentChain = (cat: any): string => {
+    if (!cat.parent) return "—";
+    const parent = cat.parent;
+    if (parent.parent) {
+      return `${parent.parent.name} ${ChevronRight.name} ${parent.name}`;
+    }
+    return parent.name;
+  };
+
+  const columns: ColumnDef<CategoryWithCounts>[] = [
     {
-      accessorKey: "name",
-      header: t("hierarchyName"),
+      id: "name",
+      header: () => <div className="min-w-[200px]">{t("categoryName")}</div>,
       cell: ({ row }) => {
         const cat = row.original;
         const isEditing = editingId === cat.id;
-        const path = getHierarchyPath(cat);
 
         if (isEditing) {
           return (
             <Input
               value={editForm.name}
               onChange={(e) =>
-                setEditForm({ ...editForm, name: e.target.value })
+                setEditForm((prev) => ({ ...prev, name: e.target.value }))
               }
               className="h-8 text-sm"
+              autoFocus
             />
           );
         }
 
         return (
           <div className="flex flex-col">
-            <div className="flex items-center space-x-1 text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1">
-              {path.slice(0, -1).map((segment: string, idx: number) => (
-                <span key={idx} className="flex items-center">
-                  {segment} <ChevronRight className="w-2.5 h-2.5 mx-0.5" />
-                </span>
-              ))}
-            </div>
-            <span
-              className={`font-semibold ${cat.isActive ? "text-slate-900" : "text-slate-400 italic"}`}
-            >
-              {cat.name}
+            <span className="font-bold text-slate-900">{cat.name}</span>
+            <span className="text-xs text-slate-400">
+              {getParentChain(cat)}
             </span>
           </div>
         );
@@ -188,15 +248,20 @@ export function CategoriesClient({
     },
     {
       accessorKey: "description",
-      header: common("description"),
+      header: () => <div className="min-w-[200px]">{t("description")}</div>,
       cell: ({ row }) => {
-        const isEditing = editingId === row.original.id;
+        const cat = row.original;
+        const isEditing = editingId === cat.id;
+
         if (isEditing) {
           return (
             <Input
               value={editForm.description}
               onChange={(e) =>
-                setEditForm({ ...editForm, description: e.target.value })
+                setEditForm((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
               }
               placeholder={t("descPlaceholder")}
               className="h-8 text-sm"
@@ -254,7 +319,9 @@ export function CategoriesClient({
     },
     {
       id: "actions",
-      header: () => <div className="text-right w-32">{common("actionsHeader")}</div>,
+      header: () => (
+        <div className="text-right w-32">{common("actionsHeader")}</div>
+      ),
       cell: ({ row }) => {
         const cat = row.original;
         const isEditing = editingId === cat.id;
@@ -311,12 +378,13 @@ export function CategoriesClient({
                     <Check className="w-4 h-4" />
                   </Button>
                 )}
-                {cat._count.children === 0 && cat._count.products === 0 && (
+                {cat._count.products === 0 && cat._count.children === 0 && (
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={() => setDeleteConfirmId(cat.id)}
                     className="h-8 w-8 text-slate-400 hover:text-red-600"
+                    title={t("delete")}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -329,93 +397,113 @@ export function CategoriesClient({
     },
   ];
 
-  const getHierarchyPath = (category: any) => {
-    const path = [category.name];
-    let current = category.parent;
-    while (current) {
-      path.unshift(current.name);
-      current = current.parent;
-    }
-    return path;
-  };
+  const breadcrumbs = [
+    { label: common("groups.masterData") },
+    {
+      label: t("title"),
+      href: "/dashboard/master-data/categories",
+    },
+  ];
+
+  const actions = [
+    {
+      label: t("addCategory"),
+      icon: Plus,
+      onClick: () => setIsAdding(true),
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900">{t("title")}</h2>
-          <p className="text-slate-500 mt-1">{t("subtitle")}</p>
-        </div>
-        <Button
-          onClick={() => setIsAdding(true)}
-          className="bg-indigo-600 hover:bg-indigo-700"
-        >
-          <Plus className="w-4 h-4 mr-2" /> {t("addCategory")}
-        </Button>
-      </div>
+    <div className="space-y-4 translate-y-[-8px]">
+      <PageHeader
+        title={t("title")}
+        subtitle={t("subtitle")}
+        breadcrumbs={breadcrumbs}
+      />
+
+      <TableToolbar
+        searchPlaceholder={t("searchPlaceholder")}
+        searchValue={searchParams.get("search") || ""}
+        onSearchChange={(val) => {
+          const params = new URLSearchParams(searchParams.toString());
+          if (val) {
+            params.set("search", val);
+          } else {
+            params.delete("search");
+          }
+          params.set("page", "1");
+          router.push(`?${params.toString()}`);
+        }}
+        actions={actions}
+      />
 
       <DataTable
         columns={columns}
         data={categories}
-        emptyState={
-          <div className="px-6 py-12 text-center text-slate-400 italic bg-white rounded-xl border border-slate-200">
-            {t("noCategories")}
-          </div>
-        }
-        footerRow={
-          isAdding && (
-            <tr className="bg-indigo-50/50 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-slate-100">
-              <td className="px-6 py-4">
-                <Input
-                  placeholder={t("categoryNamePlaceholder")}
-                  value={newForm.name}
-                  onChange={(e) =>
-                    setNewForm({ ...newForm, name: e.target.value })
-                  }
-                  className="h-9"
-                  autoFocus
-                />
-              </td>
-              <td className="px-6 py-4">
-                <select
-                  className="w-full h-9 px-3 py-1 text-sm border rounded-md bg-white outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={newForm.parentId}
-                  onChange={(e) =>
-                    setNewForm({ ...newForm, parentId: e.target.value })
-                  }
-                >
-                  <option value="">{t("parentPlaceholder")}</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td colSpan={3}></td>
-              <td className="px-6 py-4 text-right">
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    size="sm"
-                    onClick={handleCreate}
-                    className="bg-emerald-600 hover:bg-emerald-700 h-8"
-                  >
-                    {common("save")}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setIsAdding(false)}
-                    className="h-8"
-                  >
-                    {common("cancel")}
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          )
-        }
+        loading={isPending}
+        manualPagination
       />
+
+      {initialPagination && (
+        <PaginationControls
+          page={initialPagination.page}
+          totalPages={initialPagination.totalPages}
+          limit={initialPagination.limit}
+          total={initialPagination.total}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+          isPending={isPending}
+        />
+      )}
+
+      {isAdding && (
+        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+          <h3 className="font-bold text-slate-900 mb-4">
+            {t("addNewCategory")}
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              value={newForm.name}
+              onChange={(e) =>
+                setNewForm((prev) => ({ ...prev, name: e.target.value }))
+              }
+              placeholder={t("namePlaceholder")}
+              className="h-10"
+            />
+            <select
+              value={newForm.parentId}
+              onChange={(e) =>
+                setNewForm((prev) => ({ ...prev, parentId: e.target.value }))
+              }
+              className="h-10 px-3 rounded-md border border-slate-200 bg-white text-sm"
+            >
+              <option value="">{t("noParent")}</option>
+              {categories.map((cat: any) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button
+              size="sm"
+              onClick={handleCreate}
+              className="bg-emerald-600 hover:bg-emerald-700 h-8"
+            >
+              {common("save")}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsAdding(false)}
+              className="h-8"
+            >
+              {common("cancel")}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <ReusableConfirmDialog
         isOpen={!!deleteConfirmId}

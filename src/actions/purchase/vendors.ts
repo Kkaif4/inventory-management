@@ -10,6 +10,31 @@ import {
 } from "@/validations/vendor.validation";
 import { revalidatePath } from "next/cache";
 import { roundToTwo } from "@/lib/utils";
+import {
+  parsePaginationParams,
+  calculatePagination,
+} from "@/lib/pagination";
+import { PaginatedResult, BasePaginationParams } from "@/types/pagination";
+
+// ──── Types ──────────────────────────────────────────────────────────────────
+interface VendorQueryParams extends BasePaginationParams {
+  search?: string;
+  status?: "ALL" | "ACTIVE" | "INACTIVE";
+  state?: string | null;
+  hasOverdue?: boolean;
+}
+
+interface VendorData {
+  id: string;
+  name: string;
+  gstin: string | null;
+  phone: string | null;
+  state: string;
+  creditPeriod: number;
+  outstandingBalance: number;
+  overdue: number;
+  isActive: boolean;
+}
 
 // ─── Get all vendors for an outlet with live payable balances ───────────────
 export async function getVendors(outletId: string) {
@@ -23,9 +48,7 @@ export async function getVendors(outletId: string) {
       include: {
         transactions: {
           where: {
-            type: "PURCHASE_ORDER", // Actually, Purchase Bills dictate payables
-            // But we don't have PURCHASE_BILL yet, let's assume GRN or PURCHASE_INVOICE?
-            // For now, looking at the schema, we just have 'PURCHASE_ORDER'.
+            type: { in: ["PURCHASE_BILL", "GRN", "PURCHASE_ORDER"] }, // Include all vendor transaction types
             status: { in: ["POSTED", "PARTIALLY_PAID"] },
           },
           select: {
@@ -42,6 +65,7 @@ export async function getVendors(outletId: string) {
     const now = new Date();
 
     return parties.map((party) => {
+      let totalOutstanding = 0;
       let overdue = 0;
 
       party.transactions.forEach((inv) => {
@@ -49,6 +73,7 @@ export async function getVendors(outletId: string) {
         const outstanding = inv.grandTotal - totalPaid;
 
         if (outstanding > 0.005) {
+          totalOutstanding += outstanding;
           const dueDate = new Date(inv.date);
           dueDate.setDate(dueDate.getDate() + party.creditPeriod);
           if (now > dueDate) {
@@ -64,11 +89,120 @@ export async function getVendors(outletId: string) {
         phone: party.phone || party.contactInfo,
         state: party.state,
         creditPeriod: party.creditPeriod,
-        outstandingBalance: roundToTwo(party.outstandingBalance),
+        outstandingBalance: roundToTwo(totalOutstanding),
         overdue: roundToTwo(overdue),
         isActive: party.isActive,
       };
     });
+  });
+}
+
+// ─── Get vendors with server-side pagination ──────────────────────────────────
+export async function getVendorsPaginated(outletId: string, params: VendorQueryParams) {
+  return withErrorHandler(async (): Promise<PaginatedResult<VendorData>> => {
+    await validateSessionOutletAccess(outletId);
+
+    // Parse and clamp pagination params
+    const { page, limit } = parsePaginationParams({
+      page: String(params.page),
+      limit: String(params.limit),
+    });
+
+    // Build WHERE clause
+    const where: any = {
+      outletId,
+      type: "VENDOR",
+    };
+
+    // Status filter
+    if (params.status === "ACTIVE") {
+      where.isActive = true;
+    } else if (params.status === "INACTIVE") {
+      where.isActive = false;
+    }
+
+    // State filter
+    if (params.state && params.state !== "ALL") {
+      where.state = params.state;
+    }
+
+    // Search filter (name, phone, gstin)
+    if (params.search && params.search.trim()) {
+      const search = params.search.trim().toLowerCase();
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { phone: { contains: search, mode: "insensitive" } },
+        { gstin: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // hasOverdue filter - use stored outstandingBalance as proxy
+    if (params.hasOverdue) {
+      where.outstandingBalance = { gt: 0 };
+    }
+
+    // Run count and findMany in parallel
+    const [total, parties] = await Promise.all([
+      prisma.party.count({ where }),
+      prisma.party.findMany({
+        where,
+        include: {
+          transactions: {
+            where: {
+              type: { in: ["PURCHASE_BILL", "GRN", "PURCHASE_ORDER"] },
+              status: { in: ["POSTED", "PARTIALLY_PAID"] },
+            },
+            select: {
+              id: true,
+              grandTotal: true,
+              date: true,
+              payments: { select: { amount: true } },
+            },
+          },
+        },
+        orderBy: { name: "asc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
+    const now = new Date();
+
+    // Transform data with overdue computation
+    const data: VendorData[] = parties.map((party) => {
+      let totalOutstanding = 0;
+      let overdue = 0;
+
+      party.transactions.forEach((inv) => {
+        const totalPaid = inv.payments.reduce((a, b) => a + b.amount, 0);
+        const outstanding = inv.grandTotal - totalPaid;
+
+        if (outstanding > 0.005) {
+          totalOutstanding += outstanding;
+          const dueDate = new Date(inv.date);
+          dueDate.setDate(dueDate.getDate() + party.creditPeriod);
+          if (now > dueDate) {
+            overdue += outstanding;
+          }
+        }
+      });
+
+      return {
+        id: party.id,
+        name: party.name,
+        gstin: party.gstin,
+        phone: party.phone || party.contactInfo,
+        state: party.state,
+        creditPeriod: party.creditPeriod,
+        outstandingBalance: roundToTwo(totalOutstanding),
+        overdue: roundToTwo(overdue),
+        isActive: party.isActive,
+      };
+    });
+
+    const pagination = calculatePagination(total, page, limit);
+
+    return { data, pagination };
   });
 }
 

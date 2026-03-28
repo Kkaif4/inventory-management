@@ -9,6 +9,19 @@ import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { UnauthorizedError } from "@/lib/exceptions";
+import { calculatePagination } from "@/lib/pagination";
+import { PaginationMeta } from "@/types/pagination";
+
+export interface CategoryFilters {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface PaginatedCategoriesResult {
+  data: any[];
+  pagination: PaginationMeta;
+}
 
 export async function getCategories() {
   return withErrorHandler(async () => {
@@ -28,6 +41,61 @@ export async function getCategories() {
       },
       orderBy: { name: "asc" },
     });
+  });
+}
+
+export async function getCategoriesPaginated(
+  outletId: string,
+  filters: CategoryFilters = {},
+): Promise<{
+  success: boolean;
+  data?: PaginatedCategoriesResult;
+  error?: { message: string };
+}> {
+  return withErrorHandler(async () => {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) throw new UnauthorizedError();
+
+    const page = filters.page || 1;
+    const limit = filters.limit || 10;
+
+    const where: any = {
+      outletId,
+    };
+
+    if (filters.search) {
+      where.name = {
+        contains: filters.search,
+        mode: "insensitive",
+      };
+    }
+
+    // Get total count
+    const total = await prisma.category.count({ where });
+    const pagination = calculatePagination(total, page, limit);
+
+    // Get paginated data
+    const categories = await prisma.category.findMany({
+      where,
+      include: {
+        parent: {
+          include: {
+            parent: true,
+          },
+        },
+        _count: {
+          select: { products: true, children: true },
+        },
+      },
+      orderBy: { name: "asc" },
+      skip: pagination.skip,
+      take: pagination.limit,
+    });
+
+    return {
+      data: categories,
+      pagination,
+    };
   });
 }
 
@@ -71,7 +139,10 @@ export async function updateCategory(data: {
   userId: string;
 }) {
   return withErrorHandler(async () => {
-    const cat = await prisma.category.findUnique({ where: { id: data.id }, select: { outletId: true } });
+    const cat = await prisma.category.findUnique({
+      where: { id: data.id },
+      select: { outletId: true },
+    });
     if (cat?.outletId) await validateSessionOutletAccess(cat.outletId);
     const category = await prisma.category.update({
       where: { id: data.id },
@@ -96,7 +167,10 @@ export async function updateCategory(data: {
 
 export async function deactivateCategory(id: string, userId: string) {
   return withErrorHandler(async () => {
-    const cat = await prisma.category.findUnique({ where: { id }, select: { outletId: true } });
+    const cat = await prisma.category.findUnique({
+      where: { id },
+      select: { outletId: true },
+    });
     if (cat?.outletId) await validateSessionOutletAccess(cat.outletId);
     // Check for active products
     const activeProducts = await prisma.product.findMany({
@@ -134,7 +208,10 @@ export async function deactivateCategory(id: string, userId: string) {
 
 export async function activateCategory(id: string, userId: string) {
   return withErrorHandler(async () => {
-    const cat = await prisma.category.findUnique({ where: { id }, select: { outletId: true } });
+    const cat = await prisma.category.findUnique({
+      where: { id },
+      select: { outletId: true },
+    });
     if (cat?.outletId) await validateSessionOutletAccess(cat.outletId);
     const category = await prisma.category.update({
       where: { id },
@@ -156,7 +233,10 @@ export async function activateCategory(id: string, userId: string) {
 
 export async function deleteCategory(id: string, userId: string) {
   return withErrorHandler(async () => {
-    const cat = await prisma.category.findUnique({ where: { id }, select: { outletId: true } });
+    const cat = await prisma.category.findUnique({
+      where: { id },
+      select: { outletId: true },
+    });
     if (cat?.outletId) await validateSessionOutletAccess(cat.outletId);
     // Check for sub-categories
     const subCategories = await prisma.category.count({

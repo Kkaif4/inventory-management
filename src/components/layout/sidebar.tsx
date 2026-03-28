@@ -26,6 +26,7 @@ import {
   FileSpreadsheet,
   ChevronLeft,
   ChevronRight,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -104,9 +105,19 @@ const navigation = [
     ],
   },
   {
-    group: "FINANCE",
-    items: [{ name: "Accounts", href: "/dashboard/accounts", icon: Building2 }],
+    group: "REPORTS",
+    items: [
+      {
+        name: "Reports",
+        href: "/dashboard/reports",
+        icon: BarChart3,
+      },
+    ],
   },
+  //   {
+  //     group: "FINANCE",
+  //     items: [{ name: "Accounts", href: "/dashboard/accounts", icon: Building2 }],
+  //   },
   {
     group: "FINANCIALS",
     items: [
@@ -135,7 +146,7 @@ const navigation = [
   {
     group: "ADMIN",
     items: [
-      { name: "Settings", href: "/dashboard/settings", icon: Settings },
+      //   { name: "Settings", href: "/dashboard/settings", icon: Settings },
       {
         name: "Audit Logs",
         href: "/dashboard/settings/audit-logs",
@@ -194,6 +205,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                   Purchases: "purchases",
                   Customers: "customers",
                   Vendors: "vendors",
+                  Reports: "reports",
                   Accounts: "accounts",
                   "General Ledger": "ledger",
                   "P&L Statement": "pnl",

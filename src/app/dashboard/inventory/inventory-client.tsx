@@ -39,6 +39,7 @@ import {
 } from "@/actions/inventory/transfer";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { BatchDetailsTab } from "./batch-details-tab";
 
 interface InventoryClientProps {
   outletId: string;
@@ -381,6 +382,12 @@ export function InventoryClient({
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger
+              value="batches"
+              className="data-[state=active]:bg-white px-6 flex items-center gap-2"
+            >
+              Batch Details
+            </TabsTrigger>
           </TabsList>
 
           <div className="flex gap-2">
@@ -559,6 +566,10 @@ export function InventoryClient({
               </div>
             }
           />
+        </TabsContent>
+
+        <TabsContent value="batches" className="mt-0">
+          <BatchDetailsTab outletId={outletId} filters={filters} />
         </TabsContent>
       </Tabs>
 

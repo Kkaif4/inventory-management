@@ -153,13 +153,6 @@ export function InvoiceForm({
         return;
       }
 
-      console.log("📝 Invoice Form Submission:", {
-        billType: data.billType,
-        itemsCount: data.items?.length,
-        outletId: data.fromOutletId,
-        hasParty: data.billType === "NO1" ? !!(data as any).partyId : false,
-      });
-
       const res = await onSubmitProp(data as any);
       if (res.success) {
         toast.success(

@@ -1,7 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { StockService } from "@/domains/inventory/stock-service";
+import {
+  StockService,
+  FIFOAllocationResult,
+} from "@/domains/inventory/stock-service";
 import { AccountingService } from "@/domains/accounting/ledger-service";
 import { roundToTwo } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
@@ -9,6 +12,11 @@ import { NumberingService } from "@/domains/foundation/numbering-service";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError } from "@/lib/exceptions";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
+import {
+  parsePaginationParams,
+  calculatePagination,
+} from "@/lib/pagination";
+import { PaginatedResult, BasePaginationParams } from "@/types/pagination";
 
 export async function createSalesInvoice(data: {
   billType: "NO1" | "NO2";
@@ -121,6 +129,34 @@ export async function createSalesInvoice(data: {
         isNo2 ? "CASH_MEMO" : "SALES_INVOICE",
       );
 
+      // 1.5. FIFO Pricing Pre-calculation (if enabled)
+      const fifoEnabled =
+        outlet.batchTrackingEnabled ||
+        outlet.inventoryValuationMethod === "FIFO";
+      let fifoBreakdowns: FIFOAllocationResult[] = [];
+      if (fifoEnabled && warehouseId) {
+        // Pre-calculate FIFO allocation for each item (read-only)
+        fifoBreakdowns = await Promise.all(
+          data.items.map((item) =>
+            StockService.peekFIFOAllocation(tx, {
+              variantId: item.variantId,
+              warehouseId,
+              outletId: data.fromOutletId,
+              quantity: item.quantity,
+            }),
+          ),
+        );
+
+        // Validate sufficient stock in batches before committing
+        const insufficient = fifoBreakdowns.findIndex((r) => r.shortfall > 0);
+        if (insufficient !== -1 && !allowNegative) {
+          const item = data.items[insufficient];
+          throw new ValidationError(
+            `Insufficient batch stock for variant ${item.variantId}. Shortfall: ${fifoBreakdowns[insufficient].shortfall} units`,
+          );
+        }
+      }
+
       // 2. Create Header & Items
       const invoice = await tx.transaction.create({
         data: {
@@ -142,10 +178,13 @@ export async function createSalesInvoice(data: {
           userId: data.userId,
           remarks: data.remarks,
           items: {
-            create: data.items.map((item) => ({
+            create: data.items.map((item, idx) => ({
               variantId: item.variantId,
               quantity: item.quantity,
-              rate: item.rate,
+              rate:
+                fifoEnabled && fifoBreakdowns[idx]
+                  ? fifoBreakdowns[idx].weightedAvgCost // FIFO-derived rate
+                  : item.rate, // fallback to user rate
               conversionRatio:
                 variants.find((v) => v.id === item.variantId)?.product
                   .conversionRatio || 1,
@@ -222,7 +261,18 @@ export async function createSalesInvoice(data: {
       }
 
       revalidatePath("/dashboard/sales/invoices");
-      return invoice;
+
+      // 6. Return invoice with FIFO breakdown if applicable
+      return {
+        invoice,
+        fifoBreakdown: fifoEnabled ? fifoBreakdowns.map((r, i) => ({
+          variantId: data.items[i].variantId,
+          userRate: data.items[i].rate,
+          fifoRate: r.weightedAvgCost,
+          quantity: r.totalQty,
+          batchesUsed: r.batchesUsed,
+        })) : null,
+      };
     });
   });
 }
@@ -257,6 +307,81 @@ export async function getSalesInvoices(outletId: string, limit = 50) {
       payments: { select: { amount: true } },
     },
     orderBy: { date: "desc" },
+  });
+}
+
+// ─── Get sales invoices with server-side pagination ───────────────────────
+export async function getSalesInvoicesPaginated(
+  outletId: string,
+  params: BasePaginationParams & {
+    search?: string;
+    status?: string;
+  },
+) {
+  return withErrorHandler(async (): Promise<PaginatedResult<any>> => {
+    await validateSessionOutletAccess(outletId);
+
+    const { page, limit } = parsePaginationParams({
+      page: String(params.page),
+      limit: String(params.limit),
+    });
+
+    const { search, status } = params;
+
+    const andClauses: any[] = [{ type: "SALES_INVOICE" }, { outletId }];
+
+    if (search) {
+      andClauses.push({
+        OR: [
+          { txnNumber: { contains: search, mode: "insensitive" } },
+          { party: { name: { contains: search, mode: "insensitive" } } },
+          { buyerName: { contains: search, mode: "insensitive" } },
+        ],
+      });
+    }
+
+    if (status && status !== "ALL") {
+      andClauses.push({ status });
+    }
+
+    const where = { AND: andClauses };
+
+    const [total, invoices] = await Promise.all([
+      prisma.transaction.count({ where }),
+      prisma.transaction.findMany({
+        where,
+        select: {
+          id: true,
+          txnNumber: true,
+          date: true,
+          grandTotal: true,
+          status: true,
+          isInformal: true,
+          billType: true,
+          buyerName: true,
+          buyerPhone: true,
+          party: {
+            select: {
+              id: true,
+              name: true,
+              gstin: true,
+            },
+          },
+          _count: { select: { items: true } },
+          payments: { select: { amount: true } },
+        },
+        orderBy: { date: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
+    const pagination = calculatePagination(total, page, limit);
+
+    return {
+      data: invoices,
+      pagination,
+    } as any;
   });
 }
 

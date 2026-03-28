@@ -1,4 +1,5 @@
 import { Prisma } from "@/generated/prisma";
+import { roundToTwo } from "@/lib/utils";
 
 export type StockMovementType =
   | "PURCHASE"
@@ -20,6 +21,19 @@ export type StockMoveInput = {
   costPerUnit?: number; // Optional, used for Purchases to create batches
   batchNumber?: string;
   batchDate?: Date;
+};
+
+export type FIFOAllocationResult = {
+  weightedAvgCost: number; // Weighted average cost per unit
+  totalCost: number; // Total FIFO cost for all units
+  totalQty: number; // Total quantity allocated
+  shortfall: number; // 0 if fully fulfilled; >0 means insufficient stock
+  batchesUsed: Array<{
+    batchId: string;
+    batchNumber: string;
+    quantity: number; // Units consumed from this batch
+    costPerUnit: number;
+  }>;
 };
 
 export const StockService = {
@@ -237,5 +251,61 @@ export const StockService = {
         costPerUnit: item.costPerUnit,
       });
     }
+  },
+
+  /**
+   * Pre-calculate FIFO batch allocation for a sale (read-only, no DB writes).
+   * Returns the batch breakdown and weighted average cost.
+   */
+  async peekFIFOAllocation(
+    tx: Prisma.TransactionClient,
+    input: {
+      variantId: string;
+      warehouseId: string | null;
+      outletId: string;
+      quantity: number; // base units, positive
+    },
+  ): Promise<FIFOAllocationResult> {
+    const batches = await tx.customBatch.findMany({
+      where: {
+        variantId: input.variantId,
+        warehouseId: input.warehouseId as string,
+        outletId: input.outletId,
+      },
+      orderBy: [{ receivedDate: "asc" }, { createdAt: "asc" }],
+    });
+
+    const activeBatches = batches.filter(
+      (b) => b.quantityConsumed < b.quantityReceived,
+    );
+
+    let remaining = input.quantity;
+    let totalCost = 0;
+    const batchesUsed: FIFOAllocationResult["batchesUsed"] = [];
+
+    for (const batch of activeBatches) {
+      if (remaining <= 0) break;
+      const available = batch.quantityReceived - batch.quantityConsumed;
+      const consume = Math.min(remaining, available);
+      batchesUsed.push({
+        batchId: batch.id,
+        batchNumber: batch.batchNumber,
+        quantity: consume,
+        costPerUnit: batch.costPerUnit,
+      });
+      totalCost += consume * batch.costPerUnit;
+      remaining -= consume;
+    }
+
+    const fulfilled = input.quantity - remaining;
+    const weightedAvgCost = fulfilled > 0 ? totalCost / fulfilled : 0;
+
+    return {
+      weightedAvgCost: roundToTwo(weightedAvgCost),
+      totalCost: roundToTwo(totalCost),
+      totalQty: fulfilled,
+      shortfall: roundToTwo(remaining),
+      batchesUsed,
+    };
   },
 };

@@ -106,11 +106,7 @@ export default function VendorDetailPage() {
           ]}
         />
         <div className="flex space-x-2">
-          <VendorActions
-            vendorId={party.id}
-            name={party.name}
-            onMakePayment={openBills.length > 0 ? () => openPaymentDrawer() : undefined}
-          />
+          <VendorActions vendorId={party.id} />
         </div>
       </div>
 
@@ -356,7 +352,9 @@ export default function VendorDetailPage() {
               },
             ]}
             data={openBills}
-            emptyState={<p className="text-slate-500">No open bills found. All clear!</p>}
+            emptyState={
+              <p className="text-slate-500">No open bills found. All clear!</p>
+            }
             rowClassName={(row) => (row.isOverdue ? "bg-red-50/30" : "")}
           />
         </div>
@@ -426,7 +424,9 @@ export default function VendorDetailPage() {
               ]}
               data={allBills}
               emptyState={
-                <p className="text-slate-500">No purchase history found for this vendor.</p>
+                <p className="text-slate-500">
+                  No purchase history found for this vendor.
+                </p>
               }
             />
           </div>
@@ -477,7 +477,9 @@ export default function VendorDetailPage() {
               ]}
               data={paymentHistory}
               emptyState={
-                <p className="text-slate-500">No outbound payments found for this vendor.</p>
+                <p className="text-slate-500">
+                  No outbound payments found for this vendor.
+                </p>
               }
             />
           </div>

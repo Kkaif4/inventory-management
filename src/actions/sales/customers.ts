@@ -10,6 +10,33 @@ import {
 } from "@/validations/customer.validation";
 import { revalidatePath } from "next/cache";
 import { roundToTwo } from "@/lib/utils";
+import {
+  parsePaginationParams,
+  calculatePagination,
+} from "@/lib/pagination";
+import { PaginatedResult, BasePaginationParams } from "@/types/pagination";
+
+// ──── Types ──────────────────────────────────────────────────────────────────
+interface CustomerQueryParams extends BasePaginationParams {
+  search?: string;
+  status?: "ALL" | "ACTIVE" | "INACTIVE";
+  typeFilter?: "ALL" | "B2B" | "B2C";
+  state?: string | null;
+  hasOverdue?: boolean;
+}
+
+interface CustomerData {
+  id: string;
+  name: string;
+  isB2B: boolean;
+  phone: string | null;
+  gstin: string | null;
+  state: string;
+  creditLimit: number | null;
+  outstandingBalance: number;
+  overdue: number;
+  isActive: boolean;
+}
 
 // ─── Get all customers for an outlet with live balances ─────────────────────
 export async function getCustomers(outletId: string) {
@@ -71,6 +98,124 @@ export async function getCustomers(outletId: string) {
         isActive: party.isActive,
       };
     });
+  });
+}
+
+// ─── Get customers with server-side pagination ────────────────────────────────
+export async function getCustomersPaginated(outletId: string, params: CustomerQueryParams) {
+  return withErrorHandler(async (): Promise<PaginatedResult<CustomerData>> => {
+    await validateSessionOutletAccess(outletId);
+
+    // Parse and clamp pagination params
+    const { page, limit } = parsePaginationParams({
+      page: String(params.page),
+      limit: String(params.limit),
+    });
+
+    // Build WHERE clause
+    const where: any = {
+      outletId,
+      type: "CUSTOMER",
+    };
+
+    // Status filter
+    if (params.status === "ACTIVE") {
+      where.isActive = true;
+    } else if (params.status === "INACTIVE") {
+      where.isActive = false;
+    }
+
+    // Type filter (B2B/B2C)
+    if (params.typeFilter === "B2B") {
+      where.gstin = { not: null };
+    } else if (params.typeFilter === "B2C") {
+      where.gstin = null;
+    }
+
+    // State filter
+    if (params.state && params.state !== "ALL") {
+      where.state = params.state;
+    }
+
+    // Search filter (name, phone, gstin)
+    if (params.search && params.search.trim()) {
+      const search = params.search.trim().toLowerCase();
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { phone: { contains: search, mode: "insensitive" } },
+        { gstin: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // hasOverdue filter - use stored outstandingBalance as proxy
+    if (params.hasOverdue) {
+      where.outstandingBalance = { gt: 0 };
+    }
+
+    // Run count and findMany in parallel
+    const [total, parties] = await Promise.all([
+      prisma.party.count({ where }),
+      prisma.party.findMany({
+        where,
+        include: {
+          transactions: {
+            where: {
+              type: "SALES_INVOICE",
+              status: { in: ["POSTED", "PARTIALLY_PAID"] },
+            },
+            select: {
+              id: true,
+              grandTotal: true,
+              date: true,
+              payments: { select: { amount: true } },
+            },
+          },
+        },
+        orderBy: { name: "asc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
+    const now = new Date();
+
+    // Transform data with overdue computation
+    const data: CustomerData[] = parties.map((party) => {
+      let overdue = 0;
+      let calculatedOutstanding = 0;
+
+      // Calculate overdue and outstanding from unpaid invoices
+      party.transactions.forEach((inv) => {
+        const totalPaid = inv.payments.reduce((a, b) => a + b.amount, 0);
+        const outstanding = inv.grandTotal - totalPaid;
+
+        if (outstanding > 0.005) {
+          calculatedOutstanding += outstanding;
+          const dueDate = new Date(inv.date);
+          dueDate.setDate(dueDate.getDate() + party.creditPeriod);
+          if (now > dueDate) {
+            overdue += outstanding;
+          }
+        }
+      });
+
+      return {
+        id: party.id,
+        name: party.name,
+        isB2B: !!party.gstin,
+        phone: party.phone || party.contactInfo,
+        gstin: party.gstin,
+        state: party.state,
+        creditLimit: party.creditLimit,
+        outstandingBalance: roundToTwo(calculatedOutstanding),
+        overdue: roundToTwo(overdue),
+        isActive: party.isActive,
+      };
+    });
+
+    const pagination = calculatePagination(total, page, limit);
+
+    return { data, pagination };
   });
 }
 

@@ -2,13 +2,14 @@
 
 import { z } from "zod";
 import { getServerSession } from "next-auth";
+import { prisma } from "@/lib/prisma";
 import {
   createSalesInvoice,
   saveSalesInvoiceDraft,
   editSalesInvoice,
 } from "./sales-invoice";
 import { withErrorHandler } from "@/lib/error-handler";
-import { ValidationError } from "@/lib/exceptions";
+import { ValidationError, NotFoundError } from "@/lib/exceptions";
 import { roundToTwo } from "@/lib/utils";
 import { authOptions } from "@/lib/auth";
 
@@ -117,7 +118,7 @@ export async function handleCreateSalesInvoice(
       placeOfSupply,
     );
 
-    return await createSalesInvoice({
+    const result = await createSalesInvoice({
       billType: formData.billType,
       partyId: formData.billType === "NO1" ? formData.partyId : undefined,
       fromOutletId: formData.fromOutletId,
@@ -131,6 +132,9 @@ export async function handleCreateSalesInvoice(
       buyerName: formData.buyerName,
       buyerPhone: formData.buyerPhone,
     });
+
+    // Return full result with invoice and FIFO breakdown for UI notification
+    return result;
   });
 }
 
@@ -208,5 +212,30 @@ export async function handleEditSalesInvoice(
       buyerName: formData.buyerName,
       buyerPhone: formData.buyerPhone,
     });
+  });
+}
+
+/**
+ * Fetch outlet FIFO settings to inform frontend if rates will be calculated
+ */
+export async function getOutletFIFOSettings(outletId: string) {
+  return withErrorHandler(async () => {
+    const outlet = await prisma.outlet.findUnique({
+      where: { id: outletId },
+      select: {
+        batchTrackingEnabled: true,
+        inventoryValuationMethod: true,
+      },
+    });
+
+    if (!outlet) throw new NotFoundError("Outlet not found");
+
+    const fifoEnabled =
+      outlet.batchTrackingEnabled || outlet.inventoryValuationMethod === "FIFO";
+
+    return {
+      fifoEnabled,
+      inventoryValuationMethod: outlet.inventoryValuationMethod,
+    };
   });
 }

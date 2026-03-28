@@ -3,14 +3,15 @@
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Receipt, RotateCcw, Plus } from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useTransition, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { DataTable } from "@/components/ui/data-table";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
-import { MoreHorizontal, Eye, FileText, CreditCard } from "lucide-react";
+import { MoreHorizontal, Eye, FileText } from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -21,100 +22,74 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
+import { PaginationMeta } from "@/types/pagination";
 
 interface SalesTransactionsClientProps {
-  invoices: any[];
-  returns: any[];
+  initialData: any[];
+  initialPagination: PaginationMeta;
+  tab: string;
 }
 
 export function SalesTransactionsClient({
-  invoices,
-  returns,
+  initialData,
+  initialPagination,
+  tab: initialTab,
 }: SalesTransactionsClientProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("invoices");
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const [data, setData] = useState(initialData);
   const t = useTranslations("sales");
   const common = useTranslations("common");
 
-  const invoiceColumns: ColumnDef<any>[] = [
-    {
-      accessorKey: "txnNumber",
-      header: t("returnNumber").replace("#", "Invoice #"), // Reusing but slightly modified if needed, but I added specifically
-      // Actually I should have added invoiceNumber specifically. Let me check my en.json update.
-      // I added table.invoiceNumber to dashboard. I'll use it or add to sales.
-      // For now I'll use a direct string or check if I can use dashboard table translations.
-    },
-    // Wait, I should have consistent keys. Let me refine the columns.
-  ];
+  const currentTab = initialTab || "invoices";
+  const currentLimit = parseInt(searchParams.get("limit") || "10", 10);
 
-  // Refined columns with translations
-  const invoiceCols: ColumnDef<any>[] = [
-    {
-      accessorKey: "txnNumber",
-      header: t("returnNumber").replace("Return", "Invoice"),
-      cell: ({ row }) => (
-        <Link
-          href={`/dashboard/sales/invoices/${row.original.id}`}
-          className="font-medium text-blue-600 hover:underline"
-        >
-          {row.original.txnNumber}
-        </Link>
-      ),
-    },
-    {
-      accessorKey: "date",
-      header: t("date"),
-      cell: ({ row }) => formatDate(row.original.date),
-    },
-    {
-      id: "party",
-      header: common("labels.noResults").replace(
-        "No results found",
-        "Customer",
-      ), // I should have added customer to sales
-      cell: ({ row }) => {
-        const partyName =
-          row.original.party?.name ||
-          row.original.buyerName ||
-          t("cashCustomer");
-        return (
-          <div>
-            <div className="font-medium text-slate-900">{partyName}</div>
-            {row.original.isInformal && (
-              <Badge
-                variant="outline"
-                className="text-[10px] bg-amber-50 text-amber-700 border-amber-200"
-              >
-                {t("informal")}
-              </Badge>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "grandTotal",
-      header: () => (
-        <div className="text-right">
-          {t("viewDetails").replace("View Details", "Amount")}
-        </div>
-      ), // I really missed some direct terms.
-      cell: ({ row }) => (
-        <div className="text-right font-semibold">
-          {formatCurrency(row.original.grandTotal)}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: common("status.active").replace("Active", "Status"),
-      // ... I'll stop doing .replace and just use what I have or add more.
-    },
-  ];
+  // Sync data when pagination changes
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
 
-  // Wait, I'll do a better job and use the dashboard.table keys I already added!
+  const handleTabChange = useCallback(
+    (newTab: string) => {
+      const params = new URLSearchParams();
+      params.set("tab", newTab);
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router],
+  );
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      const params = new URLSearchParams();
+      params.set("tab", currentTab);
+      params.set("page", String(page));
+      if (currentLimit !== 10) params.set("limit", String(currentLimit));
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router, currentTab, currentLimit],
+  );
+
+  const handleLimitChange = useCallback(
+    (limit: number) => {
+      const params = new URLSearchParams();
+      params.set("tab", currentTab);
+      params.set("page", "1");
+      if (limit !== 10) params.set("limit", String(limit));
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router, currentTab],
+  );
+
+  // Use dashboard.table keys for consistency
   const d = useTranslations("dashboard.table");
 
   const finalInvoiceColumns: ColumnDef<any>[] = [
@@ -217,18 +192,7 @@ export function SalesTransactionsClient({
                   }
                 >
                   <FileText className="mr-2 h-4 w-4" /> {t("printInvoice")}
-                </DropdownMenuItem>
-                {!row.original.isInformal && (
-                  <DropdownMenuItem
-                    onClick={() =>
-                      router.push(
-                        `/dashboard/accounts/payments/receipts/new?partyId=${row.original.partyId}&invoiceId=${id}`,
-                      )
-                    }
-                  >
-                    <CreditCard className="mr-2 h-4 w-4" /> {t("recordPayment")}
-                  </DropdownMenuItem>
-                )}
+                </DropdownMenuItem>{" "}
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -280,7 +244,7 @@ export function SalesTransactionsClient({
 
   // Dynamic header based on tab
   const getHeaderInfo = () => {
-    switch (activeTab) {
+    switch (currentTab) {
       case "invoices":
         return {
           title: t("invoices"),
@@ -332,8 +296,8 @@ export function SalesTransactionsClient({
       />
 
       <Tabs
-        defaultValue="invoices"
-        onValueChange={setActiveTab}
+        value={currentTab}
+        onValueChange={handleTabChange}
         className="w-full"
       >
         <div className="flex items-center justify-between mb-4">
@@ -355,13 +319,35 @@ export function SalesTransactionsClient({
           </TabsList>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden p-6 min-h-[500px]">
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden p-6 space-y-4">
           <TabsContent value="invoices" className="mt-0">
-            <DataTable columns={finalInvoiceColumns} data={invoices} />
+            <DataTable
+              columns={finalInvoiceColumns}
+              data={data}
+              loading={isPending}
+              manualPagination
+            />
           </TabsContent>
           <TabsContent value="returns" className="mt-0">
-            <DataTable columns={finalReturnColumns} data={returns} />
+            <DataTable
+              columns={finalReturnColumns}
+              data={data}
+              loading={isPending}
+              manualPagination
+            />
           </TabsContent>
+
+          {initialPagination && (
+            <PaginationControls
+              page={initialPagination.page}
+              totalPages={initialPagination.totalPages}
+              limit={initialPagination.limit}
+              total={initialPagination.total}
+              onPageChange={handlePageChange}
+              onLimitChange={handleLimitChange}
+              isPending={isPending}
+            />
+          )}
         </div>
       </Tabs>
     </div>

@@ -5,14 +5,19 @@ import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { TableToolbar } from "@/components/ui/table-toolbar";
+import { PaginationMeta } from "@/types/pagination";
 
 export function PurchaseReturnsClient({
-  returns,
+  initialData,
+  initialPagination,
   hideHeader = false,
 }: {
-  returns: any[];
+  initialData?: any[];
+  initialPagination?: PaginationMeta;
   hideHeader?: boolean;
 }) {
+  // Support both old and new props for backward compatibility
+  const returns = initialData || [];
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "txnNumber",

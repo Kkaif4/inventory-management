@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Pencil, FileText, CreditCard, BookOpen, Trash2 } from "lucide-react";
+import { Pencil, BookOpen, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -12,11 +12,9 @@ import { toast } from "sonner";
 
 interface VendorActionsProps {
   vendorId: string;
-  name: string;
-  onMakePayment?: () => void;
 }
 
-export function VendorActions({ vendorId, name, onMakePayment }: VendorActionsProps) {
+export function VendorActions({ vendorId }: VendorActionsProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -28,27 +26,6 @@ export function VendorActions({ vendorId, name, onMakePayment }: VendorActionsPr
         <Pencil className="w-4 h-4 mr-2 text-slate-500" />
         Edit
       </Button>
-
-      <Link href={`/dashboard/purchases/bills/new?vendor=${vendorId}`}>
-        <Button variant="outline" size="sm">
-          <FileText className="w-4 h-4 mr-2 text-slate-500" />
-          New Bill
-        </Button>
-      </Link>
-
-      {onMakePayment ? (
-        <Button variant="outline" size="sm" onClick={onMakePayment}>
-          <CreditCard className="w-4 h-4 mr-2 text-slate-500" />
-          Make Payment
-        </Button>
-      ) : (
-        <Link href={`/dashboard/accounts/payments/made/new?partyId=${vendorId}&source=vendor&sourceId=${vendorId}&sourceName=${encodeURIComponent(name)}`}>
-          <Button variant="outline" size="sm">
-            <CreditCard className="w-4 h-4 mr-2 text-slate-500" />
-            Make Payment
-          </Button>
-        </Link>
-      )}
 
       <Link href={`/dashboard/purchase/vendors/${vendorId}/ledger`}>
         <Button variant="outline" size="sm">

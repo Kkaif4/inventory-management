@@ -4,14 +4,15 @@ import Link from "next/link";
 import { Plus, Edit, AlertTriangle, FileSpreadsheet } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/data-table";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ColumnDef } from "@tanstack/react-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { TableToolbar } from "@/components/ui/table-toolbar";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-import { useState, useEffect, useTransition } from "react";
-import { getProducts, deleteProduct } from "@/actions/products";
-import { Trash2, Download } from "lucide-react";
+import { useState, useEffect, useTransition, useCallback } from "react";
+import { deleteProduct } from "@/actions/products";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ImportProductsDialog } from "./import-products-dialog";
 import {
@@ -25,52 +26,71 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useSession } from "next-auth/react";
-import { ProductFilter } from "@/actions/products/types";
 import { useTranslations } from "next-intl";
+import { PaginationMeta } from "@/types/pagination";
 
 export function ProductsClient({
   products: initialProducts,
+  pagination: initialPagination,
   outletId,
 }: {
   products: any[];
+  pagination?: PaginationMeta;
   outletId: string;
 }) {
   const t = useTranslations("products");
   const common = useTranslations("common");
   const dashboardTable = useTranslations("dashboard.table");
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [isPending, startTransition] = useTransition();
   const { data: session } = useSession();
   const [data, setData] = useState(initialProducts);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState<ProductFilter>({
-    search: "",
-  });
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
-  const fetchProducts = async () => {
-    startTransition(async () => {
-      const res = await getProducts(outletId, filters);
-      if (res.success) {
-        setData(res.data!);
+  // Sync data state with props when products or pagination changes
+  useEffect(() => {
+    setData(initialProducts);
+  }, [initialProducts, initialPagination]);
+
+  // Use initialPagination for current page/limit
+  const currentPage = initialPagination?.page || 1;
+  const currentLimit = initialPagination?.limit || 10;
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", String(page));
+      if (currentLimit !== 10) {
+        params.set("limit", String(currentLimit));
       } else {
-        toast.error(`${t("toasts.deleteFailed")}: ${res.error?.message}`);
+        params.delete("limit");
       }
-    });
-  };
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router, startTransition, currentLimit, searchParams],
+  );
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setFilters((f) => ({ ...f, search: searchTerm }));
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [filters, outletId, isDeleting]);
+  const handleLimitChange = useCallback(
+    (limit: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", "1");
+      if (limit !== 10) {
+        params.set("limit", String(limit));
+      } else {
+        params.delete("limit");
+      }
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router, startTransition, searchParams],
+  );
 
   const handleDelete = async () => {
     if (!deleteId || !session?.user?.id) return;
@@ -80,7 +100,7 @@ export function ProductsClient({
       const res = await deleteProduct(deleteId, session.user.id);
       if (res.success) {
         toast.success(t("toasts.deleted"));
-        await fetchProducts();
+        router.refresh();
       } else {
         toast.error(`${t("toasts.deleteFailed")}: ${res.error?.message}`);
       }
@@ -179,7 +199,9 @@ export function ProductsClient({
     },
     {
       id: "actions",
-      header: () => <div className="text-right px-4">{common("actionsHeader")}</div>,
+      header: () => (
+        <div className="text-right px-4">{common("actionsHeader")}</div>
+      ),
       size: 150,
       cell: ({ row }) => (
         <div className="flex justify-end gap-2 pr-2">
@@ -234,8 +256,8 @@ export function ProductsClient({
 
       <TableToolbar
         searchPlaceholder={t("searchPlaceholder")}
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
+        searchValue=""
+        onSearchChange={() => {}}
         actions={actions}
       />
 
@@ -243,7 +265,20 @@ export function ProductsClient({
         columns={columns}
         data={data}
         loading={isPending || isDeleting}
+        manualPagination
       />
+
+      {initialPagination && (
+        <PaginationControls
+          page={currentPage}
+          totalPages={initialPagination.totalPages}
+          limit={currentLimit}
+          total={initialPagination.total}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+          isPending={isPending}
+        />
+      )}
 
       <AlertDialog
         open={!!deleteId}

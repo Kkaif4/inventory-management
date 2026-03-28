@@ -301,3 +301,77 @@ export async function receiveTransfer(
 export async function getPendingTransfers(outletId: string) {
   return transfer.getPendingTransfers(outletId);
 }
+export async function getBatchInventory(
+  outletId: string,
+  filters: InventoryFilter,
+) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+
+    const { warehouseId, search, categoryId } = filters;
+
+    const where: any = {
+      outletId,
+      variant: {
+        product: {
+          isArchived: false,
+        },
+      },
+    };
+
+    if (warehouseId) {
+      where.warehouseId = warehouseId;
+    }
+
+    if (categoryId) {
+      where.variant.product.categoryId = categoryId;
+    }
+
+    if (search) {
+      where.OR = [
+        { batchNumber: { contains: search, mode: "insensitive" } },
+        { variant: { sku: { contains: search, mode: "insensitive" } } },
+        {
+          variant: {
+            product: { name: { contains: search, mode: "insensitive" } },
+          },
+        },
+      ];
+    }
+
+    const batches = await prisma.customBatch.findMany({
+      where,
+      include: {
+        variant: {
+          include: {
+            product: {
+              include: {
+                category: true,
+              },
+            },
+          },
+        },
+        warehouse: true,
+      },
+      orderBy: {
+        receivedDate: "desc",
+      },
+    });
+
+    return batches.map((b: any) => ({
+      id: b.id,
+      batchNumber: b.batchNumber,
+      variantId: b.variantId,
+      productName: b.variant.product.name,
+      sku: b.variant.sku,
+      warehouseName: b.warehouse.name,
+      warehouseId: b.warehouseId,
+      receivedDate: b.receivedDate,
+      quantityReceived: b.quantityReceived,
+      quantityConsumed: b.quantityConsumed,
+      availableQuantity: b.quantityReceived - b.quantityConsumed,
+      unit: b.variant.product.baseUnit,
+      minStockLevel: b.variant.minStockLevel,
+    }));
+  });
+}

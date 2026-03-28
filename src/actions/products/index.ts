@@ -9,6 +9,11 @@ import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { UnauthorizedError } from "@/lib/exceptions";
+import {
+  parsePaginationParams,
+  calculatePagination,
+} from "@/lib/pagination";
+import { BasePaginationParams } from "@/types/pagination";
 
 import { ProductFilter, VariantPayload } from "./types";
 
@@ -61,6 +66,79 @@ export async function getProducts(
   });
 }
 
+// ─── Get products with server-side pagination ─────────────────────────────────
+export async function getProductsPaginated(
+  outletId: string,
+  params: BasePaginationParams & {
+    search?: string;
+    categoryId?: string;
+    brand?: string;
+  },
+) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+
+    const { page, limit } = parsePaginationParams({
+      page: String(params.page),
+      limit: String(params.limit),
+    });
+
+    const { search, categoryId, brand } = params;
+
+    const andClauses: any[] = [{ outletId }, { isArchived: false }];
+
+    if (search) {
+      andClauses.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { brand: { contains: search, mode: "insensitive" } },
+          {
+            variants: {
+              some: {
+                sku: { contains: search, mode: "insensitive" },
+              },
+            },
+          },
+        ],
+      });
+    }
+
+    if (categoryId && categoryId !== "ALL") {
+      andClauses.push({ categoryId });
+    }
+
+    if (brand) {
+      andClauses.push({ brand: { contains: brand, mode: "insensitive" } });
+    }
+
+    const where = { AND: andClauses };
+
+    const [total, products] = await Promise.all([
+      prisma.product.count({ where }),
+      prisma.product.findMany({
+        where,
+        include: {
+          category: true,
+          variants: true,
+          _count: {
+            select: { variants: true },
+          },
+        },
+        orderBy: { name: "asc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
+    const pagination = calculatePagination(total, page, limit);
+
+    return {
+      data: products,
+      pagination,
+    } as any;
+  });
+}
+
 export async function createProduct(data: {
   name: string;
   brand?: string | null;
@@ -99,18 +177,23 @@ export async function createProduct(data: {
       );
     }
 
-    // Pre-validate SKU uniqueness
-    const skus = variants.map((v) => v.sku);
-    const existingVariants = await prisma.variant.findMany({
-      where: { sku: { in: skus } },
-      select: { sku: true },
-    });
+    // Pre-validate SKU uniqueness - only check non-empty SKUs
+    const nonEmptySkus = variants
+      .map((v) => v.sku)
+      .filter((sku) => sku && sku.trim());
 
-    if (existingVariants.length > 0) {
-      const duplicateSkus = existingVariants.map((v) => v.sku).join(", ");
-      throw new ValidationError(
-        `The following SKUs already exist in this outlet: ${duplicateSkus}`,
-      );
+    if (nonEmptySkus.length > 0) {
+      const existingVariants = await prisma.variant.findMany({
+        where: { sku: { in: nonEmptySkus } },
+        select: { sku: true },
+      });
+
+      if (existingVariants.length > 0) {
+        const duplicateSkus = existingVariants.map((v) => v.sku).join(", ");
+        throw new ValidationError(
+          `The following SKUs already exist in this outlet: ${duplicateSkus}`,
+        );
+      }
     }
 
     const product = await prisma.product.create({
@@ -119,17 +202,19 @@ export async function createProduct(data: {
         outletId,
         variants: {
           create: variants.map((v) => ({
-            sku: v.sku,
-            purchasePrice: v.purchasePrice,
+            sku:
+              v.sku ||
+              `AUTO-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+            purchasePrice: v.purchasePrice || 0,
             sellingPrice:
               v.pricingMethod === "MARKUP" && v.markupPercent
                 ? Math.round(
-                    v.purchasePrice * (1 + v.markupPercent / 100) * 100,
+                    (v.purchasePrice || 0) * (1 + v.markupPercent / 100) * 100,
                   ) / 100
-                : v.sellingPrice,
-            pricingMethod: v.pricingMethod,
+                : v.sellingPrice || 0,
+            pricingMethod: v.pricingMethod || "MANUAL",
             markupPercent: v.markupPercent,
-            minStockLevel: v.minStockLevel,
+            minStockLevel: v.minStockLevel || 0,
             specifications: v.specifications || {},
           })),
         },
@@ -287,7 +372,7 @@ export async function deleteProduct(productId: string, userId: string) {
     // 4. Perform hybrid deletion
     if (hasHistory || hasLedger) {
       const timestamp = Date.now();
-      const result = await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx) => {
         // Get current data for renaming
         const current = await tx.product.findUnique({
           where: { id: productId },
@@ -305,7 +390,7 @@ export async function deleteProduct(productId: string, userId: string) {
         }
 
         // 2. Rename Product and Archive
-        const archivedProduct = await tx.product.update({
+        await tx.product.update({
           where: { id: productId },
           data: {
             isArchived: true,
@@ -324,8 +409,6 @@ export async function deleteProduct(productId: string, userId: string) {
             sku_freed: true,
           },
         });
-
-        return archivedProduct;
       });
 
       revalidatePath("/dashboard/master-data/products");

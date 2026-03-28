@@ -52,7 +52,6 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        console.log(`Processing import: ${rows.length} rows.`);
         const options: ImportOptions = {
           outletId,
           userId: session.user.id,

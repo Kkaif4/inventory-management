@@ -5,6 +5,7 @@
     "productsAndstock": "उत्पादने आणि स्टॉक",
     "procurement": "खरेदी",
     "parties": "पक्ष",
+    "reports": "अहवाल",
     "finance": "वित्त",
     "financials": "वित्तीय",
     "admin": "प्रशासन"
@@ -21,6 +22,7 @@
     "purchases": "खरेदी",
     "customers": "ग्राहक",
     "vendors": "विक्रेते",
+    "reports": "अहवाल",
     "accounts": "खाती",
     "ledger": "सामान्य खातेवाही",
     "pnl": "लाभ आणि तोटा",

@@ -2,10 +2,10 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { Warehouse, Loader2 } from "lucide-react";
+import { Warehouse, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getInventoryLocations } from "@/actions/inventory";
-import { handleCreateSalesInvoice } from "@/actions/sales/invoice-form-handler";
+import { handleCreateSalesInvoice, getOutletFIFOSettings } from "@/actions/sales/invoice-form-handler";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { Button } from "@/components/ui/button";
 import { POSInvoiceForm } from "@/components/sales/pos-invoice-form";
@@ -16,6 +16,7 @@ function InvoicePageContent() {
   const [outlets, setOutlets] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fifoEnabled, setFifoEnabled] = useState(false);
 
   useEffect(() => {
     if (!currentOutletId) {
@@ -36,8 +37,15 @@ function InvoicePageContent() {
         ].filter(Boolean);
 
         setOutlets(allOutlets);
+
+        // Check if current outlet has FIFO enabled
+        const fifoRes = await getOutletFIFOSettings(currentOutletId);
+        if (fifoRes.success && fifoRes.data?.fifoEnabled) {
+          setFifoEnabled(true);
+        }
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to load outlets";
+        const message =
+          err instanceof Error ? err.message : "Failed to load outlets";
         setError(message);
         toast.error(message);
       } finally {
@@ -103,19 +111,50 @@ function InvoicePageContent() {
 
   const handleSubmit = async (formData: any) => {
     const selectedOutlet = outlets.find((o) => o.id === formData.fromOutletId);
-    return await handleCreateSalesInvoice(
+    const result = await handleCreateSalesInvoice(
       formData,
       selectedOutlet?.state,
       selectedOutlet?.state,
     );
+
+    // Show FIFO pricing information if available
+    if (result.success && (result.data as any)?.fifoBreakdown) {
+      const breakdown = (result.data as any).fifoBreakdown;
+      const hasRateChanges = breakdown.some(
+        (item: any) => Math.abs(item.userRate - item.fifoRate) > 0.01
+      );
+
+      if (hasRateChanges) {
+        const message = breakdown
+          .map(
+            (item: any) =>
+              `${item.quantity} units @ ₹${item.fifoRate}/unit (batch FIFO rate)`
+          )
+          .join(", ");
+        toast.info(`Invoice created with FIFO rates: ${message}`, {
+          duration: 5000,
+        });
+      }
+    }
+
+    return result;
   };
 
   return (
-    <POSInvoiceForm
-      mode="create"
-      outlets={outlets}
-      onSubmit={handleSubmit}
-    />
+    <div className="space-y-4">
+      {fifoEnabled && (
+        <div className="border border-blue-200 bg-blue-50 rounded-lg p-4 flex gap-3">
+          <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+          <div className="text-sm text-blue-800">
+            <p className="font-medium">FIFO batch tracking is enabled</p>
+            <p className="text-xs mt-1">
+              Item rates will be calculated from your batch costs, not the entered rates.
+            </p>
+          </div>
+        </div>
+      )}
+      <POSInvoiceForm mode="create" outlets={outlets} onSubmit={handleSubmit} />
+    </div>
   );
 }
 

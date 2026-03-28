@@ -27,6 +27,7 @@ export default function DashboardLayout({
   const { data: session } = useSession();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { setAvailableOutlets } = useOutletStore();
+
   const t = useTranslations("nav");
 
   // Load collapse state and fetch outlets

@@ -25,12 +25,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function PurchaseOrdersClient({
-  orders,
+  initialData,
   hideHeader = false,
 }: {
-  orders: any[];
+  initialData?: any[];
   hideHeader?: boolean;
 }) {
+  // Support both old and new props for backward compatibility
+  const orders = initialData || [];
   const router = useRouter();
   const { currentOutletId } = useOutletStore();
   const { data: session } = useSession();
@@ -87,8 +89,15 @@ export function PurchaseOrdersClient({
     {
       accessorKey: "txnNumber",
       header: "PO #",
-      cell: ({ getValue }) => (
-        <span className="font-bold text-blue-600">{getValue() as string}</span>
+      cell: ({ getValue, row }) => (
+        <button
+          onClick={() =>
+            router.push(`/dashboard/purchases/orders/${row.original.id}`)
+          }
+          className="font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+        >
+          {getValue() as string}
+        </button>
       ),
     },
     {

@@ -16,7 +16,11 @@ interface CustomerActionsProps {
   onRecordPayment?: () => void;
 }
 
-export function CustomerActions({ customerId, name, onRecordPayment }: CustomerActionsProps) {
+export function CustomerActions({
+  customerId,
+  name,
+  onRecordPayment,
+}: CustomerActionsProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -28,13 +32,6 @@ export function CustomerActions({ customerId, name, onRecordPayment }: CustomerA
         <Pencil className="w-4 h-4 mr-2 text-slate-500" />
         Edit
       </Button>
-
-      <Link href={`/dashboard/sales/invoices/new?partyId=${customerId}`}>
-        <Button variant="outline" size="sm">
-          <FileText className="w-4 h-4 mr-2 text-slate-500" />
-          New Invoice
-        </Button>
-      </Link>
 
       {onRecordPayment ? (
         <Button variant="outline" size="sm" onClick={onRecordPayment}>

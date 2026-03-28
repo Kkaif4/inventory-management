@@ -63,7 +63,7 @@ export function POSInvoiceForm({
       : {
           billType: "NO1",
           date: new Date(),
-          fromOutletId: "",
+          fromOutletId: currentOutletId || "",
           partyId: "",
           buyerName: "",
           buyerPhone: "",

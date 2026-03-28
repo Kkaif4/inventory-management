@@ -190,10 +190,6 @@ export async function processProductImport(
 
   progress.total = productGroups.size;
 
-  console.log(
-    `[Import Debug] [Outlet: ${outletId}] Starting import session. Total products to process: ${productGroups.size}`,
-  );
-
   // Cache for categories and warehouses to minimize lookups
   const categoryCache = new Map<string, string>(); // namePath -> id
   const warehouseCache = new Map<string, string>(); // name -> id
@@ -203,9 +199,6 @@ export async function processProductImport(
     // We use the first row's original casing for the product name
     const productName = groupRows[0].productGroupName.trim();
 
-    console.log(
-      `[Import Debug] [Outlet: ${outletId}] Processing product group: "${productName}" (${groupRows.length} variants)`,
-    );
     try {
       await prisma.$transaction(async (tx) => {
         // 1. Validate product-level consistency across variants in the group
@@ -262,9 +255,6 @@ export async function processProductImport(
           }
           finalCategoryId = parentId;
         }
-        console.log(
-          `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Resolved category path to ID: ${finalCategoryId}`,
-        );
 
         // 3. Brand is handled directly in productData creation since it is a String field.
 
@@ -294,17 +284,11 @@ export async function processProductImport(
             data: productData,
           });
           progress.updated++;
-          console.log(
-            `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Updated existing product`,
-          );
         } else {
           product = await tx.product.create({
             data: productData,
           });
           progress.created++;
-          console.log(
-            `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Created new product`,
-          );
         }
 
         // 5. Variant Upsert
@@ -355,17 +339,11 @@ export async function processProductImport(
               data: variantData,
             });
             progress.variantsUpdated++;
-            console.log(
-              `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Updated variant SKU: ${row.variantSku}`,
-            );
           } else {
             variant = await tx.variant.create({
               data: variantData,
             });
             progress.variantsCreated++;
-            console.log(
-              `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Created new variant SKU: ${row.variantSku}`,
-            );
           }
 
           // 6. Initial Stock Management
@@ -398,9 +376,6 @@ export async function processProductImport(
               }
               warehouseId = warehouse.id;
               warehouseCache.set(row.warehouseName.toLowerCase(), warehouseId);
-              console.log(
-                `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Resolved warehouse "${row.warehouseName}" to ID: ${warehouseId}`,
-              );
             }
 
             // Check if opening stock already exists
@@ -455,10 +430,6 @@ export async function processProductImport(
               },
             });
 
-            console.log(
-              `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Created stock adjustment ${txnNumber} for SKU: ${row.variantSku}, Qty: ${row.currentStock}`,
-            );
-
             // Specific Batch creation if enabled
             let batchNumber: string | undefined = undefined;
             let batchDate: Date | undefined = undefined;
@@ -512,9 +483,6 @@ export async function processProductImport(
           newValues: { productName, variants: groupRows.length },
         });
       });
-      console.log(
-        `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Successfully processed product and its variants.`,
-      );
     } catch (error: any) {
       console.error(
         `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Failed to process: ${error.message}`,
@@ -536,8 +504,5 @@ export async function processProductImport(
     }
   }
 
-  console.log(
-    `[Import Debug] [Outlet: ${outletId}] Import session completed. Summary: Created: ${progress.created}, Updated: ${progress.updated}, Variants: ${progress.variantsCreated + progress.variantsUpdated}, Errors: ${progress.errors.length}`,
-  );
   return progress;
 }

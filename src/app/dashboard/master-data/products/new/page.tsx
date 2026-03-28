@@ -100,6 +100,7 @@ export default function NewProductPage() {
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productCreateSchema) as any,
+    mode: "onChange",
     defaultValues: {
       name: "",
       brand: "",
@@ -109,6 +110,7 @@ export default function NewProductPage() {
       purchaseUnit: "",
       conversionRatio: 1,
       categoryId: "",
+      parentCategoryId: "",
       variants: [
         {
           sku: "",
@@ -179,10 +181,10 @@ export default function NewProductPage() {
   const onSubmit = async (data: ProductFormValues) => {
     try {
       if (!session?.user?.id || !currentOutletId) {
+        toast.error("Missing session or outlet selection");
         throw new Error("Unauthorized or no active outlet selected.");
       }
       setIsSubmitting(true);
-      // Exclude parentCategoryId — it's optional in schema but not used by the server action
       const { parentCategoryId: _ignored, ...productPayload } = data;
       const res = await createProduct({
         ...productPayload,
@@ -197,6 +199,7 @@ export default function NewProductPage() {
         toast.success(t("toasts.created"));
         router.push("/dashboard/master-data/products");
       } else {
+        console.error("Create product error:", res.error);
         toast.error(t("toasts.createFailed") + ": " + res.error?.message);
       }
     } catch (error) {
@@ -909,11 +912,7 @@ export default function NewProductPage() {
                                   {t("form.sellingPriceLabel")}
                                 </FormLabel>
                                 <FormControl>
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    {...field}
-                                  />
+                                  <Input type="number" step="0.01" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
