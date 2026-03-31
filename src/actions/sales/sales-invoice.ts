@@ -102,7 +102,10 @@ export async function createSalesInvoice(data: {
     const freightCost = data.freightCost || 0;
     const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
 
-    const warehouseId = outlet.warehouses[0]?.id;
+    // Get default warehouse, fallback to first if no default set
+    const warehouseId =
+      outlet.warehouses.find((w) => w.isDefault)?.id ||
+      outlet.warehouses[0]?.id;
 
     // 3. Credit Limit Check (Strictly NO1)
     if (!isNo2 && data.partyId) {
@@ -428,6 +431,42 @@ export async function getSalesInvoice(invoiceId: string) {
   });
 }
 
+export async function updateSalesInvoiceFreightAndRemarks(
+  invoiceId: string,
+  data: {
+    freightCost?: number;
+    remarks?: string;
+  }
+) {
+  return withErrorHandler(async () => {
+    const invoice = await prisma.transaction.findUnique({
+      where: { id: invoiceId },
+      select: { outletId: true, status: true },
+    });
+
+    if (!invoice) throw new NotFoundError("Invoice not found");
+    await validateSessionOutletAccess(invoice.outletId);
+
+    // Only allow updates for DRAFT or POSTED invoices
+    if (!["DRAFT", "POSTED"].includes(invoice.status)) {
+      throw new ValidationError("Cannot update invoice that is not in DRAFT or POSTED status");
+    }
+
+    const updated = await prisma.transaction.update({
+      where: { id: invoiceId },
+      data: {
+        freightCost: data.freightCost ?? undefined,
+        remarks: data.remarks ?? undefined,
+      },
+    });
+
+    revalidatePath("/dashboard/sales/invoices");
+    revalidatePath(`/dashboard/sales/invoices/${invoiceId}`);
+
+    return updated;
+  });
+}
+
 export async function saveSalesInvoiceDraft(data: {
   billType: "NO1" | "NO2";
   partyId?: string;
@@ -479,7 +518,10 @@ export async function saveSalesInvoiceDraft(data: {
     const freightCost = data.freightCost || 0;
     const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
 
-    const warehouseId = outlet.warehouses[0]?.id;
+    // Get default warehouse, fallback to first if no default set
+    const warehouseId =
+      outlet.warehouses.find((w) => w.isDefault)?.id ||
+      outlet.warehouses[0]?.id;
     const variants = await prisma.variant.findMany({
       where: { id: { in: data.items.map((i) => i.variantId) } },
       include: { product: true },
@@ -590,7 +632,10 @@ export async function editSalesInvoice(
     const freightCost = data.freightCost || 0;
     const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
 
-    const warehouseId = outlet.warehouses[0]?.id;
+    // Get default warehouse, fallback to first if no default set
+    const warehouseId =
+      outlet.warehouses.find((w) => w.isDefault)?.id ||
+      outlet.warehouses[0]?.id;
     const variants = await prisma.variant.findMany({
       where: { id: { in: data.items.map((i) => i.variantId) } },
       include: { product: true },
@@ -635,6 +680,224 @@ export async function editSalesInvoice(
       });
 
       revalidatePath("/dashboard/sales/invoices");
+      return updated;
+    });
+  });
+}
+
+export async function appendItemsToInvoice(
+  invoiceId: string,
+  data: {
+    items: {
+      variantId: string;
+      quantity: number;
+      rate: number;
+      taxableValue: number;
+      cgst: number;
+      sgst: number;
+      igst: number;
+      hsnCode?: string;
+      gstRate?: number;
+    }[];
+    userId: string;
+  },
+) {
+  return withErrorHandler(async () => {
+    // 1. Fetch invoice
+    const invoice = await prisma.transaction.findUnique({
+      where: { id: invoiceId },
+      include: { party: true },
+    });
+
+    if (!invoice) throw new NotFoundError("Invoice not found");
+    if (!["POSTED", "PARTIALLY_PAID"].includes(invoice.status)) {
+      throw new ValidationError(
+        `Cannot append items to ${invoice.status} invoice`,
+      );
+    }
+
+    await validateSessionOutletAccess(invoice.outletId);
+
+    // 2. Fetch outlet & variants
+    const [outlet, variants] = await Promise.all([
+      prisma.outlet.findUnique({
+        where: { id: invoice.outletId },
+        include: { warehouses: true },
+      }),
+      prisma.variant.findMany({
+        where: { id: { in: data.items.map((i) => i.variantId) } },
+        include: { product: true },
+      }),
+    ]);
+
+    if (!outlet) throw new NotFoundError("Outlet not found");
+
+    // 3. Compute delta totals
+    const deltaTaxable = roundToTwo(
+      data.items.reduce((a, b) => a + b.taxableValue, 0),
+    );
+    const deltaCgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.cgst || 0), 0),
+    );
+    const deltaSgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.sgst || 0), 0),
+    );
+    const deltaIgst = roundToTwo(
+      data.items.reduce((a, b) => a + (b.igst || 0), 0),
+    );
+    const deltaTax = roundToTwo(deltaCgst + deltaSgst + deltaIgst);
+    const deltaGrandTotal = roundToTwo(deltaTaxable + deltaTax);
+
+    // 4. For NO1: Credit limit check on delta
+    if (invoice.billType === "NO1" && invoice.partyId) {
+      const party = await prisma.party.findUnique({
+        where: { id: invoice.partyId },
+      });
+      if (party?.creditLimit && party.creditLimit > 0) {
+        const currentBalance = await AccountingService.getPartyBalance(
+          invoice.partyId,
+        );
+        const totalOutstanding = currentBalance + deltaGrandTotal;
+        if (totalOutstanding > party.creditLimit) {
+          throw new ValidationError(
+            `Credit limit exceeded. Limit: ₹${party.creditLimit}, New Balance: ₹${totalOutstanding}`,
+          );
+        }
+      }
+    }
+
+    const allowNegative =
+      outlet.negativeStockPolicy === "WARN" ||
+      outlet.negativeStockPolicy === "ALLOW";
+
+    const warehouseId =
+      outlet.warehouses.find((w) => w.isDefault)?.id ||
+      outlet.warehouses[0]?.id;
+
+    // 5. In transaction
+    return await prisma.$transaction(async (tx) => {
+      // FIFO pre-calculation if enabled
+      const fifoEnabled =
+        outlet.batchTrackingEnabled ||
+        outlet.inventoryValuationMethod === "FIFO";
+      let fifoBreakdowns: FIFOAllocationResult[] = [];
+      if (fifoEnabled && warehouseId) {
+        fifoBreakdowns = await Promise.all(
+          data.items.map((item) =>
+            StockService.peekFIFOAllocation(tx, {
+              variantId: item.variantId,
+              warehouseId,
+              outletId: invoice.outletId,
+              quantity: item.quantity,
+            }),
+          ),
+        );
+
+        const insufficient = fifoBreakdowns.findIndex((r) => r.shortfall > 0);
+        if (insufficient !== -1 && !allowNegative) {
+          const item = data.items[insufficient];
+          throw new ValidationError(
+            `Insufficient batch stock for variant ${item.variantId}. Shortfall: ${fifoBreakdowns[insufficient].shortfall} units`,
+          );
+        }
+      }
+
+      // Create new items
+      await tx.transactionItem.createMany({
+        data: data.items.map((item, idx) => ({
+          transactionId: invoiceId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+          rate:
+            fifoEnabled && fifoBreakdowns[idx]
+              ? fifoBreakdowns[idx].weightedAvgCost
+              : item.rate,
+          conversionRatio:
+            variants.find((v) => v.id === item.variantId)?.product
+              .conversionRatio || 1,
+          taxableValue: item.taxableValue,
+          cgst: item.cgst || 0,
+          sgst: item.sgst || 0,
+          igst: item.igst || 0,
+        })),
+      });
+
+      // Update invoice totals
+      const updated = await tx.transaction.update({
+        where: { id: invoiceId },
+        data: {
+          totalTaxable: { increment: deltaTaxable },
+          totalTax: { increment: deltaTax },
+          grandTotal: { increment: deltaGrandTotal },
+        },
+      });
+
+      // Stock movement for new items
+      await StockService.batchUpdateStock(tx, {
+        transactionId: invoiceId,
+        userId: data.userId,
+        outletId: invoice.outletId,
+        type: "SALE",
+        items: data.items.map((item) => ({
+          variantId: item.variantId,
+          locationId: warehouseId || invoice.outletId,
+          locationType: warehouseId ? "WAREHOUSE" : "OUTLET",
+          quantityChange: -item.quantity,
+          allowNegative,
+        })),
+      });
+
+      // Accounting entries for NO1 only
+      if (invoice.billType === "NO1" && invoice.partyId) {
+        const accountCodes = ["3001", "1003", "2002", "2003", "2004"];
+        const accounts = await tx.account.findMany({
+          where: { code: { in: accountCodes }, outletId: invoice.outletId },
+        });
+
+        if (
+          !accounts.find((a) => a.code === "3001") ||
+          !accounts.find((a) => a.code === "1003")
+        ) {
+          throw new Error(
+            "Core accounting labels (Sales/Debtors) missing for this outlet.",
+          );
+        }
+
+        const salesAcc = accounts.find((a) => a.code === "3001")!;
+        const debtorAcc = accounts.find((a) => a.code === "1003")!;
+        const outputCgstAcc = accounts.find((a) => a.code === "2002");
+        const outputSgstAcc = accounts.find((a) => a.code === "2003");
+        const outputIgstAcc = accounts.find((a) => a.code === "2004");
+
+        const entries = [
+          { accountId: salesAcc.id, credit: deltaTaxable },
+          { accountId: debtorAcc.id, debit: deltaGrandTotal },
+        ];
+
+        if (deltaCgst > 0 && outputCgstAcc)
+          entries.push({ accountId: outputCgstAcc.id, credit: deltaCgst });
+        if (deltaSgst > 0 && outputSgstAcc)
+          entries.push({ accountId: outputSgstAcc.id, credit: deltaSgst });
+        if (deltaIgst > 0 && outputIgstAcc)
+          entries.push({ accountId: outputIgstAcc.id, credit: deltaIgst });
+
+        await AccountingService.postJournalEntry(tx, {
+          transactionId: invoiceId,
+          partyId: invoice.partyId,
+          entries,
+        });
+
+        // Increment party outstanding balance
+        await tx.party.update({
+          where: { id: invoice.partyId },
+          data: {
+            outstandingBalance: { increment: deltaGrandTotal },
+          },
+        });
+      }
+
+      revalidatePath("/dashboard/sales/invoices");
+
       return updated;
     });
   });

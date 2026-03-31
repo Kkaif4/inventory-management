@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useTransition, useCallback } from "react";
+import { useMemo, useTransition, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { format } from "date-fns";
@@ -19,10 +19,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { SalesRegisterItem } from "@/types/reports/sales";
 import { PaginationMeta } from "@/types/pagination";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-
 import { PaginationControls } from "@/components/ui/pagination-controls";
-import { LIMIT_OPTIONS } from "@/constants/pagination";
 
 interface SalesRegisterClientProps {
   initialData: SalesRegisterItem[];

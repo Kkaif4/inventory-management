@@ -1,10 +1,9 @@
 export const dynamic = "force-dynamic";
-import { getWarehouseById } from "@/actions/locations";
-
+import { getWarehouseById } from "@/actions/warehouses";
 import { notFound } from "next/navigation";
-import { WarehouseEditClient } from "./edit-client";
+import { WarehouseDetailClient } from "./detail-client";
 
-export default async function WarehouseEditPage({
+export default async function WarehouseDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -16,5 +15,5 @@ export default async function WarehouseEditPage({
     notFound();
   }
 
-  return <WarehouseEditClient warehouse={res.data} />;
+  return <WarehouseDetailClient warehouse={res.data} />;
 }

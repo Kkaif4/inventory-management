@@ -50,6 +50,8 @@
   "unit": "Unit",
   "category": "Category",
   "location": "Location",
+  "locations": "Locations",
+  "warehouses": "Warehouses",
   "warehouse": "Warehouse",
   "outlet": "Outlet",
   "physicalQty": "Physical Qty",
@@ -172,5 +174,16 @@
   "consolidatedView": "Consolidated View",
   "switchingWorkspace": "Switching Workspace",
   "warning": "Warning",
-  "continueSwitch": "Continue Switch"
+  "continueSwitch": "Continue Switch",
+  "items": {
+    "item": "Item",
+    "items": "Items",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "deleteItem": "Delete Item",
+    "location": "Location",
+    "locations": "Locations",
+    "warehouses": "Warehouses",
+    "warehouse": "Warehouse"
+  }
 }

@@ -1,12 +1,27 @@
 "use client";
 
-import { createWarehouse } from "@/actions/locations";
+import { createWarehouse, getOutlets } from "@/actions/warehouses";
 import { Building2 } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { WarehouseForm } from "@/components/warehouses/warehouse-form";
 import { toast } from "sonner";
 
 export default function NewWarehousePage() {
+  const [outlets, setOutlets] = useState<{ id: string; name: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getOutlets().then((res) => {
+      if (res.success) {
+        setOutlets(res.data || []);
+      } else {
+        toast.error("Failed to load outlets");
+      }
+      setIsLoading(false);
+    });
+  }, []);
+
   const handleSubmit = async (data: any) => {
     const res = await createWarehouse(data);
     if (res.success) {
@@ -17,11 +32,20 @@ export default function NewWarehousePage() {
     return res;
   };
 
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl mx-auto space-y-8 animate-pulse">
+        <div className="h-12 bg-slate-200 rounded w-48"></div>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 h-96"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="flex items-center gap-4">
         <Link
-          href="/dashboard/master-data/locations"
+          href="/dashboard/master-data/warehouses"
           className="p-2 hover:bg-slate-100 rounded-full transition-colors"
         >
           <Building2 className="w-6 h-6 text-slate-400" />
@@ -36,8 +60,9 @@ export default function NewWarehousePage() {
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-10">
         <WarehouseForm
+          outlets={outlets}
           onSubmit={handleSubmit}
-          redirectUrl="/dashboard/master-data/locations"
+          redirectUrl="/dashboard/master-data/warehouses"
         />
       </div>
     </div>

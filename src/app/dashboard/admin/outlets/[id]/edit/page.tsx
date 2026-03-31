@@ -1,4 +1,4 @@
-import { getOutletById, getLocations } from "@/actions/locations";
+import { getOutletById } from "@/actions/locations";
 import { notFound } from "next/navigation";
 import { OutletEditClient } from "./edit-client";
 
@@ -8,21 +8,17 @@ export default async function OutletEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [outletRes, locationsRes] = await Promise.all([
-    getOutletById(id),
-    getLocations(),
-  ]);
+  const outletRes = await getOutletById(id);
 
   if (!outletRes.success || !outletRes.data) {
     notFound();
   }
 
   const outlet = outletRes.data;
-  const warehouses = locationsRes.data?.warehouses || [];
 
   if (!outlet) {
     notFound();
   }
 
-  return <OutletEditClient outlet={outlet} warehouses={warehouses} />;
+  return <OutletEditClient outlet={outlet} />;
 }

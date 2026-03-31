@@ -1,0 +1,25 @@
+{
+  "title": "Warehouses",
+  "subtitle": "Manage your warehouses and their inventory.",
+  "add": "Add Warehouse",
+  "header": {
+    "title": "Warehouses",
+    "subtitle": "Manage your warehouses and their inventory.",
+    "breadcrumbs": {
+      "masterData": "Master Data"
+    }
+  },
+  "table": {
+    "name": "Name",
+    "location": "Location",
+    "actions": "Actions"
+  },
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "emptyState": {
+    "title": "No Warehouses Found",
+    "description": "You haven't added any warehouses yet. Click the button below to add your first warehouse."
+  }
+}

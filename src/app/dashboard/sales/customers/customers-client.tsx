@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -184,9 +184,11 @@ export function CustomersClient({
   );
 
   // Update URL when debounced search changes
-  if (debouncedSearch !== searchParams.get("search")) {
-    updateFilters({ search: debouncedSearch });
-  }
+  useEffect(() => {
+    if (debouncedSearch !== searchParams.get("search")) {
+      updateFilters({ search: debouncedSearch });
+    }
+  }, [debouncedSearch, searchParams, updateFilters]);
 
   const handleViewDetails = useCallback(
     (customerId: string) => {

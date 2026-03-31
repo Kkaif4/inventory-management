@@ -1,5 +1,3 @@
-"use server";
-
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/error-handler";
 import { requireAdminSession } from "@/lib/outlet-auth";
@@ -64,6 +62,19 @@ export async function getTrialBalance() {
   });
 }
 
+// Re-export P&L functions from the dedicated module
+export {
+  getPnL,
+  getPnLDrillDown,
+  exportPnLToExcel,
+  type PnLResponse,
+  type PnLStructure,
+  type PnLLineItem,
+} from "./pnl";
+
+/**
+ * @deprecated Use getPnL from ./pnl instead
+ */
 export async function getProfitAndLoss() {
   return withErrorHandler(async () => {
     await requireAdminSession();

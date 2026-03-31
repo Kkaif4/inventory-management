@@ -6,7 +6,13 @@ import Link from "next/link";
 import { WarehouseForm } from "@/components/warehouses/warehouse-form";
 import { toast } from "sonner";
 
-export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
+export function WarehouseEditClient({
+  warehouse,
+  outlets,
+}: {
+  warehouse: any;
+  outlets: Array<{ id: string; name: string }>;
+}) {
   const handleSubmit = async (data: any) => {
     const res = await updateWarehouse(warehouse.id, data);
     if (res.success) {
@@ -37,6 +43,7 @@ export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
         <WarehouseForm
           warehouse={warehouse}
+          outlets={outlets}
           onSubmit={handleSubmit}
           redirectUrl="/dashboard/admin/warehouses"
         />

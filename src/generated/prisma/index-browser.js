@@ -148,7 +148,9 @@ exports.Prisma.WarehouseScalarFieldEnum = {
   address: 'address',
   state: 'state',
   contactName: 'contactName',
-  contactPhone: 'contactPhone'
+  contactPhone: 'contactPhone',
+  isDefault: 'isDefault',
+  outletId: 'outletId'
 };
 
 exports.Prisma.OutletScalarFieldEnum = {
@@ -160,11 +162,10 @@ exports.Prisma.OutletScalarFieldEnum = {
   invoiceStartingNumber: 'invoiceStartingNumber',
   gstin: 'gstin',
   bankDetails: 'bankDetails',
-  defaultWarehouseId: 'defaultWarehouseId',
   negativeStockPolicy: 'negativeStockPolicy',
   batchTrackingEnabled: 'batchTrackingEnabled',
-  inventoryValuationMethod: 'inventoryValuationMethod',
-  allowRawCashBills: 'allowRawCashBills'
+  allowRawCashBills: 'allowRawCashBills',
+  inventoryValuationMethod: 'inventoryValuationMethod'
 };
 
 exports.Prisma.CategoryScalarFieldEnum = {
@@ -220,21 +221,21 @@ exports.Prisma.PartyScalarFieldEnum = {
   address: 'address',
   state: 'state',
   contactInfo: 'contactInfo',
-  phone: 'phone',
-  email: 'email',
-  isActive: 'isActive',
-  bankName: 'bankName',
-  bankAccountName: 'bankAccountName',
-  bankAccountNumber: 'bankAccountNumber',
-  bankIfsc: 'bankIfsc',
   creditPeriod: 'creditPeriod',
   creditLimit: 'creditLimit',
   openingBalance: 'openingBalance',
-  openingBalanceLocked: 'openingBalanceLocked',
-  outstandingBalance: 'outstandingBalance',
-  creditBalance: 'creditBalance',
   priceListId: 'priceListId',
-  outletId: 'outletId'
+  outletId: 'outletId',
+  outstandingBalance: 'outstandingBalance',
+  bankAccountName: 'bankAccountName',
+  bankAccountNumber: 'bankAccountNumber',
+  bankIfsc: 'bankIfsc',
+  bankName: 'bankName',
+  email: 'email',
+  isActive: 'isActive',
+  openingBalanceLocked: 'openingBalanceLocked',
+  phone: 'phone',
+  creditBalance: 'creditBalance'
 };
 
 exports.Prisma.TransactionScalarFieldEnum = {
@@ -249,15 +250,16 @@ exports.Prisma.TransactionScalarFieldEnum = {
   totalTaxable: 'totalTaxable',
   totalTax: 'totalTax',
   freightCost: 'freightCost',
+  globalDiscount: 'globalDiscount',
   grandTotal: 'grandTotal',
   status: 'status',
-  billType: 'billType',
   isInformal: 'isInformal',
   buyerName: 'buyerName',
   buyerPhone: 'buyerPhone',
   parentId: 'parentId',
   userId: 'userId',
   remarks: 'remarks',
+  billType: 'billType',
   paidAt: 'paidAt'
 };
 
@@ -269,6 +271,8 @@ exports.Prisma.TransactionItemScalarFieldEnum = {
   unit: 'unit',
   conversionRatio: 'conversionRatio',
   rate: 'rate',
+  discountPercent: 'discountPercent',
+  discountAmount: 'discountAmount',
   freightFraction: 'freightFraction',
   taxableValue: 'taxableValue',
   cgst: 'cgst',
@@ -353,8 +357,8 @@ exports.Prisma.StockLedgerScalarFieldEnum = {
   quantity: 'quantity',
   balance: 'balance',
   type: 'type',
-  costPerUnit: 'costPerUnit',
-  userId: 'userId'
+  userId: 'userId',
+  costPerUnit: 'costPerUnit'
 };
 
 exports.Prisma.PaymentScalarFieldEnum = {

@@ -91,8 +91,7 @@ export default async function OutletsPage() {
                   </span>
                   <div className="flex items-center text-xs font-black text-slate-700">
                     <Building2 className="w-3 h-3 mr-1.5 text-blue-500" />
-                    {o.warehouses.find((w) => w.id === o.defaultWarehouseId)
-                      ?.name ||
+                    {o.warehouses.find((w) => w.isDefault)?.name ||
                       o.warehouses[0]?.name ||
                       "None"}
                   </div>

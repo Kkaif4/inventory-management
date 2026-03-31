@@ -1,27 +1,11 @@
 "use client";
 
-import { createOutlet, getLocations } from "@/actions/locations";
+import { createOutlet } from "@/actions/locations";
 import { Store } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { OutletForm } from "@/components/outlets/outlet-form";
-import { toast } from "sonner";
 
 export default function NewOutletPage() {
-  const [warehouses, setWarehouses] = useState<{ id: string; name: string }[]>(
-    []
-  );
-
-  useEffect(() => {
-    getLocations().then((res) => {
-      if (res.success) {
-        setWarehouses(res.data!.warehouses);
-      } else {
-        toast.error("Failed to load warehouses");
-      }
-    });
-  }, []);
-
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex items-center gap-4">
@@ -41,7 +25,6 @@ export default function NewOutletPage() {
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
         <OutletForm
-          warehouses={warehouses}
           onSubmit={createOutlet}
           redirectUrl="/dashboard/admin/outlets"
         />

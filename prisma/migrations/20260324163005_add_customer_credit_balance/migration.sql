@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Party" ADD COLUMN     "creditBalance" DOUBLE PRECISION NOT NULL DEFAULT 0;

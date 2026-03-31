@@ -1,12 +1,18 @@
 "use client";
 
-import { updateWarehouse } from "@/actions/locations";
+import { updateWarehouse } from "@/actions/warehouses";
 import { Building2 } from "lucide-react";
 import Link from "next/link";
 import { WarehouseForm } from "@/components/warehouses/warehouse-form";
 import { toast } from "sonner";
 
-export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
+export function WarehouseEditClient({
+  warehouse,
+  outlets,
+}: {
+  warehouse: any;
+  outlets: Array<{ id: string; name: string }>;
+}) {
   const handleSubmit = async (data: any) => {
     const res = await updateWarehouse(warehouse.id, data);
     if (res.success) {
@@ -21,7 +27,7 @@ export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="flex items-center gap-4">
         <Link
-          href="/dashboard/master-data/locations"
+          href="/dashboard/master-data/warehouses"
           className="p-2 hover:bg-slate-100 rounded-full transition-colors"
         >
           <Building2 className="w-6 h-6 text-slate-400" />
@@ -37,8 +43,9 @@ export function WarehouseEditClient({ warehouse }: { warehouse: any }) {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-10">
         <WarehouseForm
           warehouse={warehouse}
+          outlets={outlets}
           onSubmit={handleSubmit}
-          redirectUrl="/dashboard/master-data/locations"
+          redirectUrl="/dashboard/master-data/warehouses"
         />
       </div>
     </div>

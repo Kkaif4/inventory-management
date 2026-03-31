@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { getWarehouseById, getLocations } from "@/actions/locations";
+import { getWarehouseById, getOutlets } from "@/actions/warehouses";
 
 import { notFound } from "next/navigation";
 import { WarehouseEditClient } from "./edit-client";
@@ -10,21 +10,16 @@ export default async function WarehouseEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [warehouseRes, locationsRes] = await Promise.all([
+  const [warehouseRes, outletsRes] = await Promise.all([
     getWarehouseById(id),
-    getLocations(),
+    getOutlets(),
   ]);
 
   if (!warehouseRes.success || !warehouseRes.data) {
     notFound();
   }
 
-  const warehouse = warehouseRes.data;
-  const outlets = locationsRes.data?.outlets || [];
+  const outlets = outletsRes.data || [];
 
-  if (!warehouse) {
-    notFound();
-  }
-
-  return <WarehouseEditClient warehouse={warehouse} outlets={outlets} />;
+  return <WarehouseEditClient warehouse={warehouseRes.data} outlets={outlets} />;
 }

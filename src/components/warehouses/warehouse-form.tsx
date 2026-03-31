@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormSection, FormGrid } from "@/components/ui/form-layout";
 import { INDIAN_STATES } from "@/lib/constants";
 
@@ -28,10 +29,13 @@ interface WarehouseFormProps {
     id: string;
     name: string;
     address?: string | null;
-    state: string;
+    state?: string | null;
     contactName?: string | null;
     contactPhone?: string | null;
+    outletId?: string;
+    isDefault?: boolean;
   };
+  outlets: Array<{ id: string; name: string }>;
   onSubmit: (
     data: WarehouseFormValues
   ) => Promise<{ success: boolean; error?: any }>;
@@ -40,8 +44,9 @@ interface WarehouseFormProps {
 
 export function WarehouseForm({
   warehouse,
+  outlets,
   onSubmit,
-  redirectUrl = "/dashboard/master-data/locations",
+  redirectUrl = "/dashboard/master-data/warehouses",
 }: WarehouseFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -56,6 +61,8 @@ export function WarehouseForm({
           state: warehouse.state || "",
           contactName: warehouse.contactName || "",
           contactPhone: warehouse.contactPhone || "",
+          outletId: warehouse.outletId || "",
+          isDefault: warehouse.isDefault || false,
         }
       : {
           name: "",
@@ -63,6 +70,8 @@ export function WarehouseForm({
           state: "",
           contactName: "",
           contactPhone: "",
+          outletId: "",
+          isDefault: false,
         },
   });
 
@@ -103,7 +112,66 @@ export function WarehouseForm({
         onChange={() => setIsDirty(true)}
         className="space-y-8"
       >
-        {/* Section 1: Basic Information */}
+        {/* Section 1: Outlet Assignment */}
+        <FormSection
+          title="Outlet Assignment"
+          description="Associate this warehouse with an outlet and set as default if needed."
+        >
+          <FormGrid cols={1}>
+            <FormField
+              control={form.control}
+              name="outletId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Outlet</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="w-full h-14 px-6 rounded-lg border border-input bg-slate-50 text-base appearance-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-emerald-500/20 disabled:opacity-50 cursor-pointer"
+                    >
+                      <option value="">Select an outlet...</option>
+                      {outlets.map((outlet) => (
+                        <option key={outlet.id} value={outlet.id}>
+                          {outlet.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormDescription>
+                    Choose which outlet this warehouse belongs to
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isDefault"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="w-5 h-5 rounded border-slate-300"
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="text-base font-medium cursor-pointer">
+                      Set as Default Warehouse
+                    </FormLabel>
+                    <FormDescription>
+                      This warehouse will be used for stock operations when no specific warehouse is selected
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+          </FormGrid>
+        </FormSection>
+
+        {/* Section 2: Basic Information */}
         <FormSection
           title="Basic Information"
           description="Core details of the warehouse."
@@ -175,7 +243,7 @@ export function WarehouseForm({
           </FormGrid>
         </FormSection>
 
-        {/* Section 2: Contact Information */}
+        {/* Section 3: Contact Information */}
         <FormSection
           title="Contact Information"
           description="Primary warehouse manager and contact details."

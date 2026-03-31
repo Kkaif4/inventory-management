@@ -73,8 +73,8 @@ const navigation = [
       },
       { name: "Inventory", href: "/dashboard/inventory", icon: Boxes },
       {
-        name: "Warehouses & Outlets",
-        href: "/dashboard/master-data/locations",
+        name: "Warehouses",
+        href: "/dashboard/master-data/warehouses",
         icon: Building2,
       },
     ],
@@ -165,6 +165,7 @@ interface SidebarProps {
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
   const t = useTranslations("nav");
+  const currentOutlet = useOutletStore((state) => state.currentOutlet);
 
   return (
     <aside
@@ -201,7 +202,8 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                   Products: "products",
                   "Price Lists": "priceLists",
                   Inventory: "inventory",
-                  "Warehouses & Outlets": "locations",
+                  Locations: "locations",
+                  Warehouses: "warehouses",
                   Purchases: "purchases",
                   Customers: "customers",
                   Vendors: "vendors",
@@ -251,6 +253,26 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
       </div>
 
       <div className="p-3 border-t border-border-default flex flex-col gap-2">
+        {!isCollapsed && currentOutlet && currentOutlet.id !== "ALL" && (
+          <div className="space-y-2 mb-2">
+            <p className="px-3 text-[10px] font-bold text-text-disabled tracking-[0.15em]">
+              {t("outletSettings")}
+            </p>
+            <Link
+              href={`/dashboard/admin/outlets/${currentOutlet.id}/edit`}
+              className={cn(
+                "flex items-center px-3 py-2 rounded-default text-sm transition-all relative",
+                pathname.includes(`outlet/${currentOutlet.id}`)
+                  ? "bg-brand-light text-brand font-semibold shadow-[inset_-2px_0_0_#1a56db]"
+                  : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary",
+              )}
+            >
+              <Store className="w-5 h-5 mr-3 text-emerald-600" />
+              <span className="truncate">{currentOutlet.name}</span>
+            </Link>
+          </div>
+        )}
+
         {!isCollapsed && (
           <Button
             variant="ghost"

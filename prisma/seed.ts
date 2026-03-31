@@ -12,26 +12,7 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log("Seed: Starting...");
 
-  // 1. Create Warehouse
-  const warehouseName = "Main Distribution Center";
-  let warehouse = await prisma.warehouse.findFirst({
-    where: { name: warehouseName },
-  });
-
-  if (!warehouse) {
-    warehouse = await prisma.warehouse.create({
-      data: {
-        name: warehouseName,
-        address: "Plot 45, Industrial Area Phase II, Mumbai",
-        state: "Maharashtra",
-        contactName: "Mangesh",
-        contactPhone: "9876543210",
-      },
-    });
-    console.log("Seed: Warehouse created");
-  }
-
-  // 2. Create Outlet linked to Warehouse
+  // 1. Create Outlet first (Warehouse now depends on Outlet)
   const outletName = "City Showroom - South";
   let outlet = await prisma.outlet.findFirst({
     where: { name: outletName },
@@ -46,16 +27,34 @@ async function main() {
         bankDetails: "HDFC Bank, AC: 987654321, IFSC: HDFC0001",
         negativeStockPolicy: "WARN",
         allowRawCashBills: true,
-        warehouses: {
-          connect: [{ id: warehouse.id }],
-        },
         address: "Plot 45, Industrial Area Phase II, Mumbai",
         state: "Maharashtra",
         invoiceStartingNumber: 1,
         batchTrackingEnabled: true,
       },
     });
-    console.log("Seed: Outlet created and linked to Warehouse");
+    console.log("Seed: Outlet created");
+  }
+
+  // 2. Create Warehouse linked to Outlet
+  const warehouseName = "Main Distribution Center";
+  let warehouse = await prisma.warehouse.findFirst({
+    where: { name: warehouseName },
+  });
+
+  if (!warehouse) {
+    warehouse = await prisma.warehouse.create({
+      data: {
+        name: warehouseName,
+        address: "Plot 45, Industrial Area Phase II, Mumbai",
+        state: "Maharashtra",
+        contactName: "Mangesh",
+        contactPhone: "9876543210",
+        outletId: outlet.id,
+        isDefault: true,
+      },
+    });
+    console.log("Seed: Warehouse created and linked to Outlet");
   }
 
   // 2.5 Initialize Chart of Accounts (COA) for this outlet

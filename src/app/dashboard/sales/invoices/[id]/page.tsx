@@ -10,15 +10,28 @@ import {
   ChevronUp,
   FileText,
   Receipt,
+  Plus,
+  Edit3,
+  Check,
+  X,
+  Truck,
+  MessageSquare,
+  Percent,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { PaymentDrawer } from "@/components/sales/payment-drawer";
-import { getSalesInvoice } from "@/actions/sales/sales-invoice";
+import { AppendItemsDrawer } from "@/components/sales/append-items-drawer";
+import {
+  getSalesInvoice,
+  updateSalesInvoiceFreightAndRemarks,
+} from "@/actions/sales/sales-invoice";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { useSession } from "next-auth/react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type Invoice = Awaited<ReturnType<typeof getSalesInvoice>>;
 
@@ -31,19 +44,77 @@ export default function InvoiceDetailPage() {
   const [invoice, setInvoice] = useState<Invoice>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [payDrawerOpen, setPayDrawerOpen] = useState(false);
+  const [appendDrawerOpen, setAppendDrawerOpen] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(false);
+
+  // Editable fields for freight and remarks
+  const [isEditingFreight, setIsEditingFreight] = useState(false);
+  const [isEditingRemarks, setIsEditingRemarks] = useState(false);
+  const [freightValue, setFreightValue] = useState("");
+  const [remarksValue, setRemarksValue] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const loadInvoice = useCallback(async () => {
     if (!id) return;
     setIsLoading(true);
     const data = await getSalesInvoice(id);
     setInvoice(data);
+    if (data) {
+      setFreightValue(data.freightCost?.toString() || "0");
+      setRemarksValue(data.remarks || "");
+    }
     setIsLoading(false);
   }, [id]);
 
   useEffect(() => {
     loadInvoice();
   }, [loadInvoice]);
+
+  const handleSaveFreight = async () => {
+    if (!invoice) return;
+    setIsSaving(true);
+    try {
+      const freight = parseFloat(freightValue) || 0;
+      await updateSalesInvoiceFreightAndRemarks(invoice.id, {
+        freightCost: freight,
+        remarks: remarksValue,
+      });
+      toast.success("Freight cost updated successfully");
+      setIsEditingFreight(false);
+      loadInvoice();
+    } catch (error) {
+      toast.error("Failed to update freight cost");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveRemarks = async () => {
+    if (!invoice) return;
+    setIsSaving(true);
+    try {
+      await updateSalesInvoiceFreightAndRemarks(invoice.id, {
+        freightCost: parseFloat(freightValue) || 0,
+        remarks: remarksValue,
+      });
+      toast.success("Remarks updated successfully");
+      setIsEditingRemarks(false);
+      loadInvoice();
+    } catch (error) {
+      toast.error("Failed to update remarks");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    if (invoice) {
+      setFreightValue(invoice.freightCost?.toString() || "0");
+      setRemarksValue(invoice.remarks || "");
+    }
+    setIsEditingFreight(false);
+    setIsEditingRemarks(false);
+  };
 
   if (isLoading) {
     return (
@@ -79,12 +150,25 @@ export default function InvoiceDetailPage() {
     ["POSTED", "PARTIALLY_PAID"].includes(invoice.status) &&
     outstanding > 0.005;
 
+  // Add items button visibility
+  const canAppend = ["POSTED", "PARTIALLY_PAID"].includes(invoice.status);
+
+  // Edit button visibility for freight and remarks
+  const canEdit = ["POSTED", "DRAFT"].includes(invoice.status);
+
   const fmt = (n: number) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       minimumFractionDigits: 2,
     }).format(n);
+
+  // Calculate totals
+  const totalLineDiscount = invoice.items.reduce(
+    (sum, item) => sum + (item.discountAmount || 0),
+    0,
+  );
+  const globalDiscount = invoice.globalDiscount || 0;
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
@@ -126,6 +210,16 @@ export default function InvoiceDetailPage() {
 
         {/* Action Bar */}
         <div className="flex items-center gap-2">
+          {canAppend && (
+            <Button
+              onClick={() => setAppendDrawerOpen(true)}
+              variant="outline"
+              className="gap-2 h-9 text-sm font-bold"
+            >
+              <Plus className="w-4 h-4" />
+              Add Items
+            </Button>
+          )}
           {canPay && (
             <Button
               onClick={() => setPayDrawerOpen(true)}
@@ -172,6 +266,158 @@ export default function InvoiceDetailPage() {
             </p>
           </div>
         </div>
+
+        {/* Discounts Summary */}
+        {(totalLineDiscount > 0 || globalDiscount > 0) && (
+          <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 md:grid-cols-3 gap-4">
+            {totalLineDiscount > 0 && (
+              <div>
+                <p className="text-xs text-slate-500 mb-0.5 flex items-center gap-1">
+                  <Percent className="w-3 h-3" />
+                  Line Discount
+                </p>
+                <p className="text-sm font-bold text-orange-600">
+                  -{fmt(totalLineDiscount)}
+                </p>
+              </div>
+            )}
+            {globalDiscount > 0 && (
+              <div>
+                <p className="text-xs text-slate-500 mb-0.5 flex items-center gap-1">
+                  <Percent className="w-3 h-3" />
+                  Global Discount
+                </p>
+                <p className="text-sm font-bold text-orange-600">
+                  -{fmt(globalDiscount)}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Freight and Remarks Section */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <MessageSquare className="w-4 h-4 text-slate-400" />
+          <span className="text-sm font-bold text-slate-700 uppercase tracking-tight">
+            Additional Details
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Freight Cost */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Truck className="w-4 h-4 text-slate-400" />
+              <Label className="text-xs text-slate-500 uppercase tracking-tight font-semibold">
+                Freight Cost
+              </Label>
+              {canEdit && !isEditingFreight && (
+                <button
+                  onClick={() => setIsEditingFreight(true)}
+                  className="ml-auto p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                  title="Edit freight"
+                >
+                  <Edit3 className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+            {isEditingFreight ? (
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                    ₹
+                  </span>
+                  <Input
+                    type="number"
+                    value={freightValue}
+                    onChange={(e) => setFreightValue(e.target.value)}
+                    className="pl-7 h-9 font-mono"
+                    step="0.01"
+                    min="0"
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  onClick={handleSaveFreight}
+                  disabled={isSaving}
+                  className="h-9 px-3 bg-emerald-600 hover:bg-emerald-700"
+                >
+                  <Check className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                  className="h-9 px-3"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <p className="text-lg font-bold text-slate-700 font-mono">
+                {fmt(invoice.freightCost || 0)}
+              </p>
+            )}
+          </div>
+
+          {/* Remarks */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <MessageSquare className="w-4 h-4 text-slate-400" />
+              <Label className="text-xs text-slate-500 uppercase tracking-tight font-semibold">
+                Remarks
+              </Label>
+              {canEdit && !isEditingRemarks && (
+                <button
+                  onClick={() => setIsEditingRemarks(true)}
+                  className="ml-auto p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                  title="Edit remarks"
+                >
+                  <Edit3 className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+            {isEditingRemarks ? (
+              <div className="space-y-2">
+                <Input
+                  value={remarksValue}
+                  onChange={(e) => setRemarksValue(e.target.value)}
+                  placeholder="Add remarks..."
+                  className="h-9"
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleSaveRemarks}
+                    disabled={isSaving}
+                    className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Check className="w-3 h-3 mr-1" />
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className="h-8 px-3"
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-700">
+                {invoice.remarks || (
+                  <span className="text-slate-400 italic">No remarks</span>
+                )}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Line Items Table */}
@@ -189,6 +435,12 @@ export default function InvoiceDetailPage() {
                 <th className="text-left px-5 py-2.5">Product</th>
                 <th className="text-right px-5 py-2.5">Qty</th>
                 <th className="text-right px-5 py-2.5">Rate</th>
+                {(invoice.items.some(
+                  (item) => item.discountPercent && item.discountPercent > 0,
+                ) ||
+                  totalLineDiscount > 0) && (
+                  <th className="text-right px-5 py-2.5">Discount</th>
+                )}
                 <th className="text-right px-5 py-2.5">Taxable</th>
                 <th className="text-right px-5 py-2.5">Tax</th>
                 <th className="text-right px-5 py-2.5">Total</th>
@@ -198,6 +450,9 @@ export default function InvoiceDetailPage() {
               {invoice.items.map((item) => {
                 const tax = item.cgst + item.sgst + item.igst;
                 const lineTotal = item.taxableValue + tax;
+                const hasLineDiscount =
+                  (item.discountPercent && item.discountPercent > 0) ||
+                  (item.discountAmount && item.discountAmount > 0);
                 return (
                   <tr key={item.id} className="hover:bg-slate-50">
                     <td className="px-5 py-3">
@@ -214,6 +469,32 @@ export default function InvoiceDetailPage() {
                     <td className="px-5 py-3 text-right font-mono text-slate-700">
                       {fmt(item.rate)}
                     </td>
+                    {(invoice.items.some(
+                      (i) =>
+                        (i.discountPercent && i.discountPercent > 0) ||
+                        (i.discountAmount && i.discountAmount > 0),
+                    ) ||
+                      totalLineDiscount > 0) && (
+                      <td className="px-5 py-3 text-right">
+                        {hasLineDiscount ? (
+                          <div className="flex flex-col items-end">
+                            {item.discountPercent &&
+                              item.discountPercent > 0 && (
+                                <span className="text-xs text-orange-500 font-medium">
+                                  {item.discountPercent}%
+                                </span>
+                              )}
+                            {item.discountAmount && item.discountAmount > 0 && (
+                              <span className="text-xs text-orange-600 font-bold">
+                                -{fmt(item.discountAmount)}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
+                      </td>
+                    )}
                     <td className="px-5 py-3 text-right font-mono text-slate-700">
                       {fmt(item.taxableValue)}
                     </td>
@@ -327,6 +608,23 @@ export default function InvoiceDetailPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Add Items Drawer */}
+      {canAppend && session?.user?.id && (
+        <AppendItemsDrawer
+          open={appendDrawerOpen}
+          onClose={() => setAppendDrawerOpen(false)}
+          invoice={{
+            id: invoice.id,
+            txnNumber: invoice.txnNumber,
+            outletId: invoice.outletId,
+            billType: invoice.billType,
+            status: invoice.status,
+          }}
+          userId={session.user.id}
+          onSuccess={loadInvoice}
+        />
       )}
 
       {/* Payment Drawer */}

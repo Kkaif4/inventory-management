@@ -17,10 +17,10 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   actions      AuditLog[]
+  payments     Payment[]
+  stockLedger  StockLedger[]
   transactions Transaction[]
   outlets      Outlet[]      @relation("OutletToUser")
-  stockLedger  StockLedger[]
-  payments     Payment[]
 }
 
 model AuditLog {
@@ -36,60 +36,60 @@ model AuditLog {
 }
 
 model Warehouse {
-  id           String   @id @default(cuid())
-  name         String
-  address      String?
-  state        String?
-  contactName  String?
-  contactPhone String?
-  stocks       Stock[]
-  outlets      Outlet[] @relation("OutletToWarehouse")
-  batches      CustomBatch[]
-  stockLedger  StockLedger[]
+  id                String        @id @default(cuid())
+  name              String
+  address           String?
+  state             String?
+  contactName       String?
+  contactPhone      String?
+  isDefault         Boolean       @default(false)
+  outletId          String
+  outlet            Outlet        @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  batches           CustomBatch[]
+  stocks            Stock[]
+  stockLedger       StockLedger[]
   outboundTransfers Transaction[] @relation("FromWarehouse")
   inboundTransfers  Transaction[] @relation("ToWarehouse")
 }
 
 model Outlet {
-  id                  String      @id @default(cuid())
-  name                String
-  address             String?
-  state               String?
-  invoicePrefix       String
-  invoiceStartingNumber Int       @default(1)
-  gstin               String?
-  bankDetails         String?
-  defaultWarehouseId  String?
-  negativeStockPolicy      String  @default("WARN")
-  batchTrackingEnabled     Boolean @default(false)
-  inventoryValuationMethod String  @default("NONE")  // "NONE" | "FIFO"
-  allowRawCashBills        Boolean @default(false)
-  stocks              Stock[]
-  users               User[]      @relation("OutletToUser")
-  warehouses          Warehouse[] @relation("OutletToWarehouse")
-  categories          Category[]
-  products            Product[]
-  transactions        Transaction[]
-  parties             Party[]
-  accounts            Account[]
-  series              DocumentSeries[]
-  batches             CustomBatch[]
-  stockLedger         StockLedger[]
-  payments            Payment[]
+  id                       String           @id @default(cuid())
+  name                     String
+  address                  String?
+  state                    String?
+  invoicePrefix            String
+  invoiceStartingNumber    Int              @default(1)
+  gstin                    String?
+  bankDetails              String?
+  negativeStockPolicy      String           @default("WARN")
+  batchTrackingEnabled     Boolean          @default(false)
+  allowRawCashBills        Boolean          @default(false)
+  inventoryValuationMethod String           @default("NONE")
+  accounts                 Account[]
+  categories               Category[]
+  batches                  CustomBatch[]
+  series                   DocumentSeries[]
+  parties                  Party[]
+  payments                 Payment[]
+  products                 Product[]
+  stocks                   Stock[]
+  stockLedger              StockLedger[]
+  transactions             Transaction[]
+  users                    User[]           @relation("OutletToUser")
+  warehouses               Warehouse[]
 }
-
 
 model Category {
   id          String     @id @default(cuid())
   name        String
   parentId    String?
-  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryHierarchy")
-  products    Product[]
   description String?
   isActive    Boolean    @default(true)
   outletId    String
   outlet      Outlet     @relation(fields: [outletId], references: [id])
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
 
   @@unique([name, parentId, outletId])
 }
@@ -105,10 +105,10 @@ model Product {
   conversionRatio Float?    @default(1)
   categoryId      String
   isArchived      Boolean   @default(false)
-  category        Category  @relation(fields: [categoryId], references: [id])
-  variants        Variant[]
   outletId        String
+  category        Category  @relation(fields: [categoryId], references: [id])
   outlet          Outlet    @relation(fields: [outletId], references: [id])
+  variants        Variant[]
 
   @@unique([name, outletId])
   @@index([outletId, isArchived])
@@ -118,22 +118,20 @@ model Product {
 model Variant {
   id               String            @id @default(cuid())
   productId        String
-  sku              String
+  sku              String            @unique
   specifications   Json?
   purchasePrice    Float
   sellingPrice     Float
   pricingMethod    String            @default("MANUAL")
   markupPercent    Float?
   minStockLevel    Float             @default(0)
+  batches          CustomBatch[]
   priceListEntries PriceListEntry[]
   stocks           Stock[]
-  txnItems         TransactionItem[]
-  batches          CustomBatch[]
   stockLedger      StockLedger[]
+  txnItems         TransactionItem[]
   product          Product           @relation(fields: [productId], references: [id])
   suppliers        VendorProduct[]
-
-  @@unique([sku])
 }
 
 model Stock {
@@ -151,35 +149,35 @@ model Stock {
 }
 
 model Party {
-  id                 String          @id @default(cuid())
-  type               PartyType
-  name               String
-  gstin              String?
-  pan                String?
-  address            String
-  state              String
-  contactInfo        String?
-  phone              String?
-  email              String?
-  isActive           Boolean         @default(true)
-  bankName           String?
-  bankAccountName    String?
-  bankAccountNumber  String?
-  bankIfsc           String?
-  creditPeriod       Int             @default(0)
-  creditLimit        Float?
-  openingBalance     Float           @default(0)
-  openingBalanceLocked Boolean       @default(false)
-  outstandingBalance Float           @default(0) // Denormalized cache — display only, not used for payment validation
-  creditBalance      Float           @default(0) // Customer advance/overpayment credit
-  priceListId        String?
-  outletId           String
-  outlet             Outlet          @relation(fields: [outletId], references: [id])
-  ledgerEntries      LedgerEntry[]
-  priceList          PriceList?      @relation(fields: [priceListId], references: [id])
-  transactions       Transaction[]
-  suppliedProducts   VendorProduct[]
-  payments           Payment[]
+  id                   String          @id @default(cuid())
+  type                 PartyType
+  name                 String
+  gstin                String?
+  pan                  String?
+  address              String
+  state                String
+  contactInfo          String?
+  creditPeriod         Int             @default(0)
+  creditLimit          Float?
+  openingBalance       Float           @default(0)
+  priceListId          String?
+  outletId             String
+  outstandingBalance   Float           @default(0)
+  bankAccountName      String?
+  bankAccountNumber    String?
+  bankIfsc             String?
+  bankName             String?
+  email                String?
+  isActive             Boolean         @default(true)
+  openingBalanceLocked Boolean         @default(false)
+  phone                String?
+  creditBalance        Float           @default(0)
+  ledgerEntries        LedgerEntry[]
+  outlet               Outlet          @relation(fields: [outletId], references: [id])
+  priceList            PriceList?      @relation(fields: [priceListId], references: [id])
+  payments             Payment[]
+  transactions         Transaction[]
+  suppliedProducts     VendorProduct[]
 
   @@index([outletId, type, isActive])
   @@index([outletId, type, name])
@@ -192,34 +190,35 @@ model Transaction {
   txnNumber      String            @unique
   date           DateTime          @default(now())
   partyId        String?
-  outletId       String            // Scoping to outlet
+  outletId       String
   fromLocationId String?
   toLocationId   String?
   totalTaxable   Float             @default(0)
   totalTax       Float             @default(0)
   freightCost    Float?            @default(0)
+  globalDiscount Float?            @default(0)
   grandTotal     Float             @default(0)
   status         String            @default("DRAFT")
-  billType       BillType          @default(NO1)
   isInformal     Boolean           @default(false)
   buyerName      String?
   buyerPhone     String?
   parentId       String?
   userId         String
   remarks        String?
-  paidAt         DateTime?         // Set when invoice reaches PAID status
+  billType       BillType          @default(NO1)
+  paidAt         DateTime?
+  batchMovements BatchMovement[]
   ledgerEntries  LedgerEntry[]
+  payments       Payment[]
+  stockLedger    StockLedger[]
+  fromWarehouse  Warehouse?        @relation("FromWarehouse", fields: [fromLocationId], references: [id])
+  outlet         Outlet            @relation(fields: [outletId], references: [id])
   parent         Transaction?      @relation("TxFlow", fields: [parentId], references: [id])
   children       Transaction[]     @relation("TxFlow")
   party          Party?            @relation(fields: [partyId], references: [id])
-  outlet         Outlet            @relation(fields: [outletId], references: [id])
-  fromWarehouse  Warehouse?        @relation("FromWarehouse", fields: [fromLocationId], references: [id])
   toWarehouse    Warehouse?        @relation("ToWarehouse", fields: [toLocationId], references: [id])
   user           User              @relation(fields: [userId], references: [id])
   items          TransactionItem[]
-  batchMovements BatchMovement[]
-  stockLedger    StockLedger[]
-  payments       Payment[]
 
   @@index([outletId, type, status])
   @@index([outletId, type, date])
@@ -231,9 +230,11 @@ model TransactionItem {
   transactionId   String
   variantId       String
   quantity        Float
-  unit            String?     // Captured unit (Base or Purchase)
-  conversionRatio Float?      @default(1) // Ratio at time of transaction
+  unit            String?
+  conversionRatio Float?      @default(1)
   rate            Float
+  discountPercent Float?     @default(0)
+  discountAmount  Float?     @default(0)
   freightFraction Float?
   taxableValue    Float
   cgst            Float       @default(0)
@@ -294,33 +295,33 @@ model PriceList {
 }
 
 model DocumentSeries {
-  id              String   @id @default(cuid())
-  type            String   // INV, PO, GRN, TRF, ADJ
-  prefix          String
-  nextNumber      Int      @default(1)
-  financialYear   String
-  outletId        String
-  outlet          Outlet   @relation(fields: [outletId], references: [id])
-  updatedAt       DateTime @updatedAt
+  id            String   @id @default(cuid())
+  type          String
+  prefix        String
+  nextNumber    Int      @default(1)
+  financialYear String
+  outletId      String
+  updatedAt     DateTime @updatedAt
+  outlet        Outlet   @relation(fields: [outletId], references: [id])
 
   @@unique([type, financialYear, outletId])
 }
 
-model CustomBatch { // Renamed from Batch to avoid potential reserved words/clashes
-  id                String          @id @default(cuid())
-  batchNumber       String          @unique
-  variantId         String
-  warehouseId       String
-  outletId          String
-  receivedDate      DateTime        @default(now())
-  quantityReceived  Float
-  quantityConsumed  Float           @default(0)
-  costPerUnit       Float
-  variant           Variant         @relation(fields: [variantId], references: [id])
-  warehouse         Warehouse       @relation(fields: [warehouseId], references: [id])
-  outlet            Outlet          @relation(fields: [outletId], references: [id])
-  movements         BatchMovement[]
-  createdAt         DateTime        @default(now())
+model CustomBatch {
+  id               String          @id @default(cuid())
+  batchNumber      String          @unique
+  variantId        String
+  warehouseId      String
+  outletId         String
+  receivedDate     DateTime        @default(now())
+  quantityReceived Float
+  quantityConsumed Float           @default(0)
+  costPerUnit      Float
+  createdAt        DateTime        @default(now())
+  movements        BatchMovement[]
+  outlet           Outlet          @relation(fields: [outletId], references: [id])
+  variant          Variant         @relation(fields: [variantId], references: [id])
+  warehouse        Warehouse       @relation(fields: [warehouseId], references: [id])
 
   @@index([variantId, warehouseId, receivedDate])
 }
@@ -329,7 +330,7 @@ model BatchMovement {
   id            String      @id @default(cuid())
   batchId       String
   transactionId String
-  quantity      Float       // Positive for in, negative for out
+  quantity      Float
   date          DateTime    @default(now())
   batch         CustomBatch @relation(fields: [batchId], references: [id])
   transaction   Transaction @relation(fields: [transactionId], references: [id])
@@ -342,40 +343,39 @@ model StockLedger {
   outletId      String
   transactionId String
   date          DateTime    @default(now())
-  quantity      Float       // Net movement
-  balance       Float       // Running balance after this entry
-  type          String      // PURCHASE, SALE, TRANSFER, ADJUSTMENT
-  costPerUnit   Float?      // Cost per unit (populated during FIFO consumption)
+  quantity      Float
+  balance       Float
+  type          String
   userId        String
-  variant       Variant     @relation(fields: [variantId], references: [id])
-  warehouse     Warehouse   @relation(fields: [warehouseId], references: [id])
+  costPerUnit   Float?
   outlet        Outlet      @relation(fields: [outletId], references: [id])
   transaction   Transaction @relation(fields: [transactionId], references: [id])
   user          User        @relation(fields: [userId], references: [id])
+  variant       Variant     @relation(fields: [variantId], references: [id])
+  warehouse     Warehouse   @relation(fields: [warehouseId], references: [id])
 
   @@index([variantId, warehouseId, date])
 }
 
 model Payment {
-  id            String    @id @default(cuid())
-  txnNumber     String    @unique // RCP-[FY]-[####]
+  id            String      @id @default(cuid())
+  txnNumber     String      @unique
   invoiceId     String
   outletId      String
   partyId       String
   amount        Float
   paymentDate   DateTime
-  paymentMode   String    // Cash | BankTransfer | UPI | Cheque | DD
-  bankAccountId String?   // Required for BankTransfer, Cheque, DD
-  referenceNo   String?   // UTR, cheque number, UPI txn ID (max 60)
-  notes         String?   // Internal note (max 200)
+  paymentMode   String
+  bankAccountId String?
+  referenceNo   String?
+  notes         String?
   createdBy     String
-  createdAt     DateTime  @default(now())
-
-  invoice     Transaction @relation(fields: [invoiceId], references: [id])
-  outlet      Outlet      @relation(fields: [outletId], references: [id])
-  party       Party       @relation(fields: [partyId], references: [id])
-  bankAccount Account?    @relation(fields: [bankAccountId], references: [id])
-  creator     User        @relation(fields: [createdBy], references: [id])
+  createdAt     DateTime    @default(now())
+  bankAccount   Account?    @relation(fields: [bankAccountId], references: [id])
+  creator       User        @relation(fields: [createdBy], references: [id])
+  invoice       Transaction @relation(fields: [invoiceId], references: [id])
+  outlet        Outlet      @relation(fields: [outletId], references: [id])
+  party         Party       @relation(fields: [partyId], references: [id])
 
   @@index([invoiceId])
   @@index([partyId, outletId])

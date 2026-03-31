@@ -18,7 +18,8 @@
     "products": "Products",
     "priceLists": "Price Lists",
     "inventory": "Inventory",
-    "locations": "Warehouses & Outlets",
+    "locations": "Locations",
+    "warehouses": "Warehouses",
     "purchases": "Purchases",
     "customers": "Customers",
     "vendors": "Vendors",
@@ -32,5 +33,6 @@
     "auditLogs": "Audit Logs",
     "roles": "Roles Matrix"
   },
-  "signOut": "Sign Out"
+  "signOut": "Sign Out",
+  "outletSettings": "OUTLET SETTINGS"
 }

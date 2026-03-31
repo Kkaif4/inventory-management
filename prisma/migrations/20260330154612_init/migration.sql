@@ -10,6 +10,9 @@ CREATE TYPE "TxType" AS ENUM ('PURCHASE_ORDER', 'GRN', 'PURCHASE_BILL', 'DEBIT_N
 -- CreateEnum
 CREATE TYPE "AccountGroup" AS ENUM ('ASSET', 'LIABILITY', 'EQUITY', 'INCOME', 'EXPENSE');
 
+-- CreateEnum
+CREATE TYPE "BillType" AS ENUM ('NO1', 'NO2');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -46,6 +49,8 @@ CREATE TABLE "Warehouse" (
     "state" TEXT,
     "contactName" TEXT,
     "contactPhone" TEXT,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "outletId" TEXT NOT NULL,
 
     CONSTRAINT "Warehouse_pkey" PRIMARY KEY ("id")
 );
@@ -60,9 +65,10 @@ CREATE TABLE "Outlet" (
     "invoiceStartingNumber" INTEGER NOT NULL DEFAULT 1,
     "gstin" TEXT,
     "bankDetails" TEXT,
-    "defaultWarehouseId" TEXT,
     "negativeStockPolicy" TEXT NOT NULL DEFAULT 'WARN',
     "batchTrackingEnabled" BOOLEAN NOT NULL DEFAULT false,
+    "allowRawCashBills" BOOLEAN NOT NULL DEFAULT false,
+    "inventoryValuationMethod" TEXT NOT NULL DEFAULT 'NONE',
 
     CONSTRAINT "Outlet_pkey" PRIMARY KEY ("id")
 );
@@ -88,7 +94,6 @@ CREATE TABLE "Product" (
     "gstRate" DOUBLE PRECISION NOT NULL,
     "baseUnit" TEXT NOT NULL,
     "purchaseUnit" TEXT,
-    "salesUnit" TEXT,
     "conversionRatio" DOUBLE PRECISION DEFAULT 1,
     "categoryId" TEXT NOT NULL,
     "isArchived" BOOLEAN NOT NULL DEFAULT false,
@@ -139,6 +144,16 @@ CREATE TABLE "Party" (
     "openingBalance" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "priceListId" TEXT,
     "outletId" TEXT NOT NULL,
+    "outstandingBalance" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "bankAccountName" TEXT,
+    "bankAccountNumber" TEXT,
+    "bankIfsc" TEXT,
+    "bankName" TEXT,
+    "email" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "openingBalanceLocked" BOOLEAN NOT NULL DEFAULT false,
+    "phone" TEXT,
+    "creditBalance" DOUBLE PRECISION NOT NULL DEFAULT 0,
 
     CONSTRAINT "Party_pkey" PRIMARY KEY ("id")
 );
@@ -164,6 +179,8 @@ CREATE TABLE "Transaction" (
     "parentId" TEXT,
     "userId" TEXT NOT NULL,
     "remarks" TEXT,
+    "billType" "BillType" NOT NULL DEFAULT 'NO1',
+    "paidAt" TIMESTAMP(3),
 
     CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
 );
@@ -286,8 +303,28 @@ CREATE TABLE "StockLedger" (
     "balance" DOUBLE PRECISION NOT NULL,
     "type" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "costPerUnit" DOUBLE PRECISION,
 
     CONSTRAINT "StockLedger_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Payment" (
+    "id" TEXT NOT NULL,
+    "txnNumber" TEXT NOT NULL,
+    "invoiceId" TEXT NOT NULL,
+    "outletId" TEXT NOT NULL,
+    "partyId" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "paymentDate" TIMESTAMP(3) NOT NULL,
+    "paymentMode" TEXT NOT NULL,
+    "bankAccountId" TEXT,
+    "referenceNo" TEXT,
+    "notes" TEXT,
+    "createdBy" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -308,19 +345,17 @@ CREATE TABLE "_OutletToUser" (
     CONSTRAINT "_OutletToUser_AB_pkey" PRIMARY KEY ("A","B")
 );
 
--- CreateTable
-CREATE TABLE "_OutletToWarehouse" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
-
-    CONSTRAINT "_OutletToWarehouse_AB_pkey" PRIMARY KEY ("A","B")
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Category_name_parentId_outletId_key" ON "Category"("name", "parentId", "outletId");
+
+-- CreateIndex
+CREATE INDEX "Product_outletId_isArchived_idx" ON "Product"("outletId", "isArchived");
+
+-- CreateIndex
+CREATE INDEX "Product_outletId_categoryId_isArchived_idx" ON "Product"("outletId", "categoryId", "isArchived");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Product_name_outletId_key" ON "Product"("name", "outletId");
@@ -332,7 +367,25 @@ CREATE UNIQUE INDEX "Variant_sku_key" ON "Variant"("sku");
 CREATE UNIQUE INDEX "Stock_variantId_warehouseId_outletId_key" ON "Stock"("variantId", "warehouseId", "outletId");
 
 -- CreateIndex
+CREATE INDEX "Party_outletId_type_isActive_idx" ON "Party"("outletId", "type", "isActive");
+
+-- CreateIndex
+CREATE INDEX "Party_outletId_type_name_idx" ON "Party"("outletId", "type", "name");
+
+-- CreateIndex
+CREATE INDEX "Party_outletId_type_outstandingBalance_idx" ON "Party"("outletId", "type", "outstandingBalance");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Transaction_txnNumber_key" ON "Transaction"("txnNumber");
+
+-- CreateIndex
+CREATE INDEX "Transaction_outletId_type_status_idx" ON "Transaction"("outletId", "type", "status");
+
+-- CreateIndex
+CREATE INDEX "Transaction_outletId_type_date_idx" ON "Transaction"("outletId", "type", "date");
+
+-- CreateIndex
+CREATE INDEX "Transaction_outletId_type_partyId_idx" ON "Transaction"("outletId", "type", "partyId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Account_code_outletId_key" ON "Account"("code", "outletId");
@@ -353,22 +406,31 @@ CREATE INDEX "CustomBatch_variantId_warehouseId_receivedDate_idx" ON "CustomBatc
 CREATE INDEX "StockLedger_variantId_warehouseId_date_idx" ON "StockLedger"("variantId", "warehouseId", "date");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Payment_txnNumber_key" ON "Payment"("txnNumber");
+
+-- CreateIndex
+CREATE INDEX "Payment_invoiceId_idx" ON "Payment"("invoiceId");
+
+-- CreateIndex
+CREATE INDEX "Payment_partyId_outletId_idx" ON "Payment"("partyId", "outletId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "PriceListEntry_priceListId_variantId_key" ON "PriceListEntry"("priceListId", "variantId");
 
 -- CreateIndex
 CREATE INDEX "_OutletToUser_B_index" ON "_OutletToUser"("B");
 
--- CreateIndex
-CREATE INDEX "_OutletToWarehouse_B_index" ON "_OutletToWarehouse"("B");
-
 -- AddForeignKey
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Category" ADD CONSTRAINT "Category_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Warehouse" ADD CONSTRAINT "Warehouse_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Category" ADD CONSTRAINT "Category_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -395,16 +457,16 @@ ALTER TABLE "Party" ADD CONSTRAINT "Party_outletId_fkey" FOREIGN KEY ("outletId"
 ALTER TABLE "Party" ADD CONSTRAINT "Party_priceListId_fkey" FOREIGN KEY ("priceListId") REFERENCES "PriceList"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Transaction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_partyId_fkey" FOREIGN KEY ("partyId") REFERENCES "Party"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_fromLocationId_fkey" FOREIGN KEY ("fromLocationId") REFERENCES "Warehouse"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_fromLocationId_fkey" FOREIGN KEY ("fromLocationId") REFERENCES "Warehouse"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Transaction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_partyId_fkey" FOREIGN KEY ("partyId") REFERENCES "Party"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_toLocationId_fkey" FOREIGN KEY ("toLocationId") REFERENCES "Warehouse"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -440,25 +502,19 @@ ALTER TABLE "VendorProduct" ADD CONSTRAINT "VendorProduct_vendorId_fkey" FOREIGN
 ALTER TABLE "DocumentSeries" ADD CONSTRAINT "DocumentSeries_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "CustomBatch" ADD CONSTRAINT "CustomBatch_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "CustomBatch" ADD CONSTRAINT "CustomBatch_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "Variant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CustomBatch" ADD CONSTRAINT "CustomBatch_warehouseId_fkey" FOREIGN KEY ("warehouseId") REFERENCES "Warehouse"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "CustomBatch" ADD CONSTRAINT "CustomBatch_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "BatchMovement" ADD CONSTRAINT "BatchMovement_batchId_fkey" FOREIGN KEY ("batchId") REFERENCES "CustomBatch"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "BatchMovement" ADD CONSTRAINT "BatchMovement_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "StockLedger" ADD CONSTRAINT "StockLedger_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "Variant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "StockLedger" ADD CONSTRAINT "StockLedger_warehouseId_fkey" FOREIGN KEY ("warehouseId") REFERENCES "Warehouse"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "StockLedger" ADD CONSTRAINT "StockLedger_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -468,6 +524,27 @@ ALTER TABLE "StockLedger" ADD CONSTRAINT "StockLedger_transactionId_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "StockLedger" ADD CONSTRAINT "StockLedger_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StockLedger" ADD CONSTRAINT "StockLedger_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "Variant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StockLedger" ADD CONSTRAINT "StockLedger_warehouseId_fkey" FOREIGN KEY ("warehouseId") REFERENCES "Warehouse"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_bankAccountId_fkey" FOREIGN KEY ("bankAccountId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Transaction"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_partyId_fkey" FOREIGN KEY ("partyId") REFERENCES "Party"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PriceListEntry" ADD CONSTRAINT "PriceListEntry_priceListId_fkey" FOREIGN KEY ("priceListId") REFERENCES "PriceList"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -480,9 +557,3 @@ ALTER TABLE "_OutletToUser" ADD CONSTRAINT "_OutletToUser_A_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "_OutletToUser" ADD CONSTRAINT "_OutletToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_OutletToWarehouse" ADD CONSTRAINT "_OutletToWarehouse_A_fkey" FOREIGN KEY ("A") REFERENCES "Outlet"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_OutletToWarehouse" ADD CONSTRAINT "_OutletToWarehouse_B_fkey" FOREIGN KEY ("B") REFERENCES "Warehouse"("id") ON DELETE CASCADE ON UPDATE CASCADE;

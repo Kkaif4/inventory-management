@@ -12,8 +12,9 @@ export async function getLocations() {
     const [warehouses, outlets] = await Promise.all([
       prisma.warehouse.findMany({
         include: {
+          outlet: true,
           _count: {
-            select: { outlets: true, stocks: true },
+            select: { stocks: true },
           },
         },
         orderBy: { name: "asc" },
@@ -48,14 +49,31 @@ export async function createWarehouse(data: {
   state?: string;
   contactName?: string;
   contactPhone?: string;
+  outletId: string;
+  isDefault?: boolean;
 }) {
   return withErrorHandler(async () => {
     await requireAdminSession();
+    const { outletId, isDefault = false, ...warehouseData } = data;
+
+    // If setting as default, unset other defaults for this outlet
+    if (isDefault) {
+      await prisma.warehouse.updateMany({
+        where: { outletId, isDefault: true },
+        data: { isDefault: false },
+      });
+    }
+
     const warehouse = await prisma.warehouse.create({
-      data,
+      data: {
+        ...warehouseData,
+        outletId,
+        isDefault,
+      },
     });
     revalidatePath("/dashboard/admin/warehouses");
     revalidatePath("/dashboard/admin/outlets");
+    revalidatePath("/dashboard/master-data/locations");
     return warehouse;
   });
 }
@@ -63,15 +81,35 @@ export async function createWarehouse(data: {
 export async function updateWarehouse(
   id: string,
   data: {
-    name: string;
+    name?: string;
     address?: string;
     state?: string;
     contactName?: string;
     contactPhone?: string;
+    isDefault?: boolean;
   },
 ) {
   return withErrorHandler(async () => {
     await requireAdminSession();
+
+    // Get current warehouse to find its outlet
+    const currentWarehouse = await prisma.warehouse.findUnique({
+      where: { id },
+      select: { outletId: true },
+    });
+
+    if (!currentWarehouse) {
+      throw new NotFoundError("Warehouse not found");
+    }
+
+    // If setting as default, unset other defaults for this outlet
+    if (data.isDefault) {
+      await prisma.warehouse.updateMany({
+        where: { outletId: currentWarehouse.outletId, isDefault: true, NOT: { id } },
+        data: { isDefault: false },
+      });
+    }
+
     const warehouse = await prisma.warehouse.update({
       where: { id },
       data,
@@ -124,31 +162,18 @@ export async function createOutlet(data: {
   invoiceStartingNumber?: number;
   gstin?: string;
   bankDetails?: string;
-  defaultWarehouseId?: string;
   negativeStockPolicy: string;
   batchTrackingEnabled: boolean;
-  warehouseIds: string[];
 }) {
   return withErrorHandler(async () => {
     await requireAdminSession();
-    const { warehouseIds, ...outletData } = data;
-
-    if (warehouseIds.length === 0) {
-      throw new ValidationError(
-        "At least one warehouse must be linked to the outlet.",
-      );
-    }
 
     const outlet = await prisma.outlet.create({
-      data: {
-        ...outletData,
-        warehouses: {
-          connect: warehouseIds.map((id) => ({ id })),
-        },
-      },
+      data,
     });
 
     revalidatePath("/dashboard/admin/outlets");
+    revalidatePath("/dashboard/master-data/locations");
     return outlet;
   });
 }
@@ -163,21 +188,12 @@ export async function updateOutlet(
     invoiceStartingNumber?: number;
     gstin?: string;
     bankDetails?: string;
-    defaultWarehouseId?: string;
     negativeStockPolicy: string;
     batchTrackingEnabled: boolean;
-    warehouseIds: string[];
   },
 ) {
   return withErrorHandler(async () => {
     await requireAdminSession();
-    const { warehouseIds, ...outletData } = data;
-
-    if (warehouseIds.length === 0) {
-      throw new ValidationError(
-        "At least one warehouse must be linked to the outlet.",
-      );
-    }
 
     // FRD Rule: Cannot change prefix if invoices exist
     const existingTxns = await prisma.transaction.count({
@@ -200,12 +216,7 @@ export async function updateOutlet(
 
     const outlet = await prisma.outlet.update({
       where: { id },
-      data: {
-        ...outletData,
-        warehouses: {
-          set: warehouseIds.map((id) => ({ id })),
-        },
-      },
+      data,
     });
 
     revalidatePath("/dashboard/admin/outlets");

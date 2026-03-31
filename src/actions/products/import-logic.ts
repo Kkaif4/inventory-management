@@ -362,7 +362,7 @@ export async function processProductImport(
               let warehouse = await tx.warehouse.findFirst({
                 where: {
                   name: { equals: row.warehouseName, mode: "insensitive" },
-                  outlets: { some: { id: outletId } },
+                  outletId,
                 },
               });
 
@@ -370,7 +370,7 @@ export async function processProductImport(
                 warehouse = await tx.warehouse.create({
                   data: {
                     name: row.warehouseName,
-                    outlets: { connect: { id: outletId } },
+                    outletId,
                   },
                 });
               }

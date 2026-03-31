@@ -124,9 +124,7 @@ export async function getInventoryMasterData(outletId: string) {
 
     const warehouses = await prisma.warehouse.findMany({
       where: {
-        outlets: {
-          some: { id: outletId },
-        },
+        outletId,
       },
     });
 

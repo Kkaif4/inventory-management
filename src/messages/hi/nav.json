@@ -17,7 +17,8 @@
     "products": "उत्पाद",
     "priceLists": "मूल्य सूचियां",
     "inventory": "इन्वेंटरी",
-    "locations": "गोदाम और आउटलेट",
+    "locations": "स्थान",
+    "warehouses": "गोदाम",
     "purchases": "खरीद",
     "customers": "ग्राहक",
     "vendors": "विक्रेता",
@@ -30,5 +31,6 @@
     "auditLogs": "ऑडिट लॉग",
     "roles": "भूमिका मैट्रिक्स"
   },
-  "signOut": "साइन आउट"
+  "signOut": "साइन आउट",
+  "outletSettings": "आउटलेट सेटिंग्स"
 }

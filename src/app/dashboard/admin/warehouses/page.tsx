@@ -99,7 +99,7 @@ export default async function WarehousesPage() {
                     {w._count?.stocks || 0} SKUs
                   </div>
                   <div className="text-[10px] font-black px-2 py-1 bg-white border border-slate-100 rounded-lg text-slate-400">
-                    {w._count?.outlets || 0} LINKS
+                    {w.outlet?.name || "Unassigned"}
                   </div>
                 </div>
                 <button className="text-blue-600 text-xs font-black flex items-center hover:translate-x-1 transition-transform">

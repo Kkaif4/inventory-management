@@ -40,14 +40,11 @@ interface OutletFormProps {
     invoicePrefix: string;
     invoiceStartingNumber: number;
     bankDetails?: string | null;
-    defaultWarehouseId?: string | null;
     negativeStockPolicy: string;
     batchTrackingEnabled: boolean;
     inventoryValuationMethod: string;
     allowRawCashBills?: boolean;
-    warehouses: Array<{ id: string }>;
   };
-  warehouses: Array<{ id: string; name: string }>;
   onSubmit: (
     data: OutletFormValues
   ) => Promise<{ success: boolean; error?: any }>;
@@ -56,7 +53,6 @@ interface OutletFormProps {
 
 export function OutletForm({
   outlet,
-  warehouses,
   onSubmit,
   redirectUrl = "/dashboard/master-data/locations",
 }: OutletFormProps) {
@@ -92,12 +88,10 @@ export function OutletForm({
           invoicePrefix: outlet.invoicePrefix,
           invoiceStartingNumber: outlet.invoiceStartingNumber || 1,
           bankDetails: outlet.bankDetails || "",
-          defaultWarehouseId: outlet.defaultWarehouseId || "",
           negativeStockPolicy: (outlet.negativeStockPolicy as any) || "WARN",
           batchTrackingEnabled: outlet.batchTrackingEnabled || false,
           inventoryValuationMethod: outlet.inventoryValuationMethod || "NONE",
           allowRawCashBills: outlet.allowRawCashBills || false,
-          warehouseIds: outlet.warehouses.map((w) => w.id),
         }
       : {
           name: "",
@@ -107,16 +101,13 @@ export function OutletForm({
           invoicePrefix: "INV",
           invoiceStartingNumber: 1,
           bankDetails: "",
-          defaultWarehouseId: "",
           negativeStockPolicy: "WARN",
           batchTrackingEnabled: false,
           inventoryValuationMethod: "NONE",
           allowRawCashBills: false,
-          warehouseIds: [],
         },
   });
 
-  const selectedWarehouseIds = form.watch("warehouseIds") || [];
   const watchBatchTracking = form.watch("batchTrackingEnabled");
 
   const handleCancel = () => {
@@ -371,139 +362,104 @@ export function OutletForm({
           title="Inventory & Stock Settings"
           description="Controls how stock is managed, valued, and protected at this outlet."
         >
-          <FormGrid cols={2}>
+          <FormGrid cols={1}>
             <FormField
               control={form.control}
-              name="defaultWarehouseId"
+              name="negativeStockPolicy"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Default Warehouse</FormLabel>
+                  <FormLabel>Negative Stock Policy</FormLabel>
                   <FormControl>
-                    <select
-                      {...field}
-                      className="w-full h-14 px-6 rounded-lg border border-input bg-slate-50 text-base appearance-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-emerald-500/20 disabled:opacity-50 cursor-pointer"
-                    >
-                      <option value="">
-                        {selectedWarehouseIds.length === 0
-                          ? "No warehouses linked"
-                          : "Select warehouse..."}
-                      </option>
-                      {warehouses
-                        .filter((w) => selectedWarehouseIds.includes(w.id))
-                        .map((w) => (
-                          <option key={w.id} value={w.id}>
-                            {w.name}
-                          </option>
-                        ))}
-                    </select>
+                    <SegmentedPolicyControl
+                      value={field.value as any}
+                      onChange={field.onChange}
+                    />
                   </FormControl>
-                  <FormDescription>
-                    Warehouse used for stock availability checks
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div />
-          </FormGrid>
-
-          <FormField
-            control={form.control}
-            name="negativeStockPolicy"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Negative Stock Policy</FormLabel>
-                <FormControl>
-                  <SegmentedPolicyControl
-                    value={field.value as any}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="batchTrackingEnabled"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <ToggleWithBanner
-                    label="Enable Batch-wise Inventory"
-                    value={field.value}
-                    onChange={(val) => {
-                      field.onChange(val);
-                      setBatchTrackingEnabled(val);
-                      if (val) {
-                        // Auto-set inventory valuation to FIFO
-                        form.setValue("inventoryValuationMethod", "FIFO");
-                      }
-                    }}
-                    infoBanner={
-                      field.value
-                        ? `Batch tracking assigns a unique batch number to each purchase receipt.
+            <FormField
+              control={form.control}
+              name="batchTrackingEnabled"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <ToggleWithBanner
+                      label="Enable Batch-wise Inventory"
+                      value={field.value}
+                      onChange={(val) => {
+                        field.onChange(val);
+                        setBatchTrackingEnabled(val);
+                        if (val) {
+                          // Auto-set inventory valuation to FIFO
+                          form.setValue("inventoryValuationMethod", "FIFO");
+                        }
+                      }}
+                      infoBanner={
+                        field.value
+                          ? `Batch tracking assigns a unique batch number to each purchase receipt.
 Stock is consumed in FIFO order (oldest batch first) on every sale.
 
 If this outlet already has existing stock, you will need to complete
 an Opening Batch Entry before new transactions can proceed.`
-                        : undefined
-                    }
-                    warningBanner={
-                      !field.value &&
-                      outlet?.batchTrackingEnabled &&
-                      hasExistingBatches
-                        ? {
-                            type: "error",
-                            message: `Disabling batch tracking is irreversible for existing records.
+                          : undefined
+                      }
+                      warningBanner={
+                        !field.value &&
+                        outlet?.batchTrackingEnabled &&
+                        hasExistingBatches
+                          ? {
+                              type: "error",
+                              message: `Disabling batch tracking is irreversible for existing records.
 All existing batch history will be preserved as read-only.
 New transactions will not use batch tracking.`,
-                            requireAcknowledgement: true,
-                          }
-                        : undefined
-                    }
-                    onAcknowledge={setBatchDisableAcknowledged}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="inventoryValuationMethod"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Inventory Valuation Method</FormLabel>
-                {watchBatchTracking ? (
-                  <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                    <span className="text-sm font-medium text-emerald-900">
-                      FIFO (auto-set by batch tracking)
-                    </span>
-                  </div>
-                ) : (
-                  <FormControl>
-                    <select
-                      {...field}
-                      disabled
-                      className="w-full h-14 px-6 rounded-lg border border-input bg-slate-50 text-base appearance-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-emerald-500/20 disabled:opacity-50 cursor-not-allowed"
-                    >
-                      <option value="NONE">Not Set</option>
-                    </select>
+                              requireAcknowledgement: true,
+                            }
+                          : undefined
+                      }
+                      onAcknowledge={setBatchDisableAcknowledged}
+                    />
                   </FormControl>
-                )}
-                {!watchBatchTracking && (
-                  <FormDescription>
-                    Enable batch tracking to use FIFO valuation
-                  </FormDescription>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="inventoryValuationMethod"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Inventory Valuation Method</FormLabel>
+                  {watchBatchTracking ? (
+                    <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                      <span className="text-sm font-medium text-emerald-900">
+                        FIFO (auto-set by batch tracking)
+                      </span>
+                    </div>
+                  ) : (
+                    <FormControl>
+                      <select
+                        {...field}
+                        disabled
+                        className="w-full h-14 px-6 rounded-lg border border-input bg-slate-50 text-base appearance-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-emerald-500/20 disabled:opacity-50 cursor-not-allowed"
+                      >
+                        <option value="NONE">Not Set</option>
+                      </select>
+                    </FormControl>
+                  )}
+                  {!watchBatchTracking && (
+                    <FormDescription>
+                      Enable batch tracking to use FIFO valuation
+                    </FormDescription>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </FormGrid>
         </FormSection>
 
         {/* Section 5: Billing Settings */}
@@ -544,58 +500,6 @@ Use this for walk-in cash buyers where a legal invoice is not required.`
           </FormGrid>
         </FormSection>
 
-        {/* Warehouse Selection (if warehouses available) */}
-        {warehouses.length > 0 && (
-          <FormSection title="Fulfillment Sources">
-            <FormGrid cols={1}>
-              <FormField
-                control={form.control}
-                name="warehouseIds"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select warehouses this outlet can fulfill from</FormLabel>
-                    <div className="grid grid-cols-1 gap-3">
-                      {warehouses.map((w) => (
-                        <label
-                          key={w.id}
-                          className={cn(
-                            "flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all",
-                            selectedWarehouseIds.includes(w.id)
-                              ? "bg-emerald-50 border-emerald-200"
-                              : "bg-white border-slate-200 hover:border-slate-300"
-                          )}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedWarehouseIds.includes(w.id)}
-                            onChange={(e) => {
-                              const newValues = e.target.checked
-                                ? [...selectedWarehouseIds, w.id]
-                                : selectedWarehouseIds.filter(
-                                    (id) => id !== w.id
-                                  );
-                              field.onChange(newValues);
-                            }}
-                            className="w-5 h-5 rounded-lg border-slate-300 text-emerald-600 cursor-pointer"
-                          />
-                          <div className="flex-1">
-                            <span className="font-medium text-slate-900">
-                              {w.name}
-                            </span>
-                            <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">
-                              Warehouse Node
-                            </p>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </FormGrid>
-          </FormSection>
-        )}
 
         {/* Form Footer */}
         <div className="flex justify-between gap-4 pt-8 border-t border-slate-100">

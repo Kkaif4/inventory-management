@@ -7,7 +7,6 @@ import { OutletForm } from "@/components/outlets/outlet-form";
 
 export function OutletEditClient({
   outlet,
-  warehouses,
 }: {
   outlet: {
     id: string;
@@ -17,15 +16,12 @@ export function OutletEditClient({
     invoicePrefix: string;
     invoiceStartingNumber: number;
     gstin?: string | null;
-    defaultWarehouseId?: string | null;
     negativeStockPolicy: string;
     batchTrackingEnabled: boolean;
     inventoryValuationMethod: string;
     allowRawCashBills?: boolean;
     bankDetails?: string | null;
-    warehouses: Array<{ id: string }>;
   };
-  warehouses: { id: string; name: string }[];
 }) {
   const handleSubmit = async (data: any) => {
     return await updateOutlet(outlet.id, data);
@@ -51,7 +47,6 @@ export function OutletEditClient({
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
         <OutletForm
           outlet={outlet}
-          warehouses={warehouses}
           onSubmit={handleSubmit}
           redirectUrl="/dashboard/admin/outlets"
         />

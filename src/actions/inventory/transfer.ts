@@ -45,28 +45,32 @@ export async function createStockTransfer(
       // Determine actual warehouse IDs for stock movement
       let fromWarehouseId = data.fromLocationId;
       if (data.fromLocationType === "OUTLET") {
-        const sourceOutlet = await tx.outlet.findUnique({
-          where: { id: data.fromLocationId },
-          select: { defaultWarehouseId: true },
+        const defaultWarehouse = await tx.warehouse.findFirst({
+          where: {
+            outletId: data.fromLocationId,
+            isDefault: true,
+          },
         });
-        if (!sourceOutlet?.defaultWarehouseId) {
+        if (!defaultWarehouse) {
           throw new Error("Source outlet has no default warehouse configured.");
         }
-        fromWarehouseId = sourceOutlet.defaultWarehouseId;
+        fromWarehouseId = defaultWarehouse.id;
       }
 
       let toWarehouseId = data.toLocationId;
       if (data.toLocationType === "OUTLET") {
-        const targetOutlet = await tx.outlet.findUnique({
-          where: { id: data.toLocationId },
-          select: { defaultWarehouseId: true },
+        const defaultWarehouse = await tx.warehouse.findFirst({
+          where: {
+            outletId: data.toLocationId,
+            isDefault: true,
+          },
         });
-        if (!targetOutlet?.defaultWarehouseId) {
+        if (!defaultWarehouse) {
           throw new Error(
             "Destination outlet has no default warehouse configured.",
           );
         }
-        toWarehouseId = targetOutlet.defaultWarehouseId;
+        toWarehouseId = defaultWarehouse.id;
       }
 
       await tx.transactionItem.create({
