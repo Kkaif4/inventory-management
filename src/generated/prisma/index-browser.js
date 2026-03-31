@@ -280,7 +280,7 @@ exports.Prisma.TransactionItemScalarFieldEnum = {
   igst: 'igst'
 };
 
-exports.Prisma.AccountScalarFieldEnum = {
+exports.Prisma.GLAccountScalarFieldEnum = {
   id: 'id',
   code: 'code',
   name: 'name',
@@ -370,7 +370,8 @@ exports.Prisma.PaymentScalarFieldEnum = {
   amount: 'amount',
   paymentDate: 'paymentDate',
   paymentMode: 'paymentMode',
-  bankAccountId: 'bankAccountId',
+  glAccountId: 'glAccountId',
+  operationalAccountId: 'operationalAccountId',
   referenceNo: 'referenceNo',
   notes: 'notes',
   createdBy: 'createdBy',
@@ -382,6 +383,52 @@ exports.Prisma.PriceListEntryScalarFieldEnum = {
   priceListId: 'priceListId',
   variantId: 'variantId',
   price: 'price'
+};
+
+exports.Prisma.AccountScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  openingBalance: 'openingBalance',
+  currentBalance: 'currentBalance',
+  outletId: 'outletId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccountPaymentModeScalarFieldEnum = {
+  id: 'id',
+  accountId: 'accountId',
+  mode: 'mode'
+};
+
+exports.Prisma.AccountTransactionScalarFieldEnum = {
+  id: 'id',
+  accountId: 'accountId',
+  type: 'type',
+  amount: 'amount',
+  paymentMode: 'paymentMode',
+  chequeNumber: 'chequeNumber',
+  chequeDate: 'chequeDate',
+  upiReferenceId: 'upiReferenceId',
+  transactionId: 'transactionId',
+  linkedTxnId: 'linkedTxnId',
+  linkedTxnType: 'linkedTxnType',
+  balanceAfter: 'balanceAfter',
+  remarks: 'remarks',
+  userId: 'userId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TransferScalarFieldEnum = {
+  id: 'id',
+  fromAccountId: 'fromAccountId',
+  toAccountId: 'toAccountId',
+  amount: 'amount',
+  date: 'date',
+  remarks: 'remarks',
+  userId: 'userId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -450,6 +497,26 @@ exports.AccountGroup = exports.$Enums.AccountGroup = {
   EXPENSE: 'EXPENSE'
 };
 
+exports.AccountType = exports.$Enums.AccountType = {
+  CASH: 'CASH',
+  BANK: 'BANK'
+};
+
+exports.PaymentMode = exports.$Enums.PaymentMode = {
+  CASH: 'CASH',
+  UPI: 'UPI',
+  CHEQUE: 'CHEQUE',
+  ONLINE_TRANSFER: 'ONLINE_TRANSFER',
+  CARD: 'CARD'
+};
+
+exports.TransactionType = exports.$Enums.TransactionType = {
+  IN: 'IN',
+  OUT: 'OUT',
+  TRANSFER_IN: 'TRANSFER_IN',
+  TRANSFER_OUT: 'TRANSFER_OUT'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   AuditLog: 'AuditLog',
@@ -462,7 +529,7 @@ exports.Prisma.ModelName = {
   Party: 'Party',
   Transaction: 'Transaction',
   TransactionItem: 'TransactionItem',
-  Account: 'Account',
+  GLAccount: 'GLAccount',
   LedgerEntry: 'LedgerEntry',
   VendorProduct: 'VendorProduct',
   PriceList: 'PriceList',
@@ -471,7 +538,11 @@ exports.Prisma.ModelName = {
   BatchMovement: 'BatchMovement',
   StockLedger: 'StockLedger',
   Payment: 'Payment',
-  PriceListEntry: 'PriceListEntry'
+  PriceListEntry: 'PriceListEntry',
+  Account: 'Account',
+  AccountPaymentMode: 'AccountPaymentMode',
+  AccountTransaction: 'AccountTransaction',
+  Transfer: 'Transfer'
 };
 
 /**

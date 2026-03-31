@@ -25,6 +25,7 @@ import {
 import {
   recordInvoicePayment,
   getOutletBankAccounts,
+  getOutletOperationalAccounts,
 } from "@/actions/sales/payment";
 
 interface PaymentDrawerProps {
@@ -55,6 +56,9 @@ export function PaymentDrawer({
   const [bankAccounts, setBankAccounts] = useState<
     { id: string; name: string; code: string }[]
   >([]);
+  const [operationalAccounts, setOperationalAccounts] = useState<
+    { id: string; name: string; type: string; currentBalance: number }[]
+  >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -74,9 +78,10 @@ export function PaymentDrawer({
       amount: outstanding,
       paymentMode: "Cash",
       bankAccountId: undefined,
+      operationalAccountId: undefined,
       referenceNo: "",
       notes: "",
-    },
+    } as any,
   });
 
   // Reset when invoice changes
@@ -89,15 +94,20 @@ export function PaymentDrawer({
       amount: outstanding,
       paymentMode: "Cash",
       bankAccountId: undefined,
+      operationalAccountId: undefined,
       referenceNo: "",
       notes: "",
-    });
+    } as any);
   }, [invoice.id, outstanding, reset]);
 
-  // Load bank accounts
+  // Load bank and operational accounts
   useEffect(() => {
-    getOutletBankAccounts(invoice.outletId).then((res) => {
-      if (res.success && res.data) setBankAccounts(res.data);
+    Promise.all([
+      getOutletBankAccounts(invoice.outletId),
+      getOutletOperationalAccounts(invoice.outletId),
+    ]).then(([bankRes, opRes]) => {
+      if (bankRes.success && bankRes.data) setBankAccounts(bankRes.data);
+      if (opRes.success && opRes.data) setOperationalAccounts(opRes.data);
     });
   }, [invoice.outletId]);
 
@@ -286,7 +296,7 @@ export function PaymentDrawer({
             </select>
           </div>
 
-          {/* Bank Account — conditional */}
+          {/* Bank Account — conditional (GL account for bookkeeping) */}
           {requiresBank && (
             <div>
               <Label className="text-xs font-semibold text-slate-700 mb-1">
@@ -316,6 +326,32 @@ export function PaymentDrawer({
               )}
             </div>
           )}
+
+          {/* Operational Account — optional (for tracking funds) */}
+          <div>
+            <Label className="text-xs font-semibold text-slate-700 mb-1">
+              Receiving Account{" "}
+              <span className="text-slate-400 font-normal">(optional)</span>
+            </Label>
+            {operationalAccounts.length === 0 ? (
+              <p className="text-slate-500 text-xs border border-slate-200 rounded-lg bg-slate-50 p-3">
+                No cash/bank accounts created. Create one in Accounts section.
+              </p>
+            ) : (
+              <select
+                {...register("operationalAccountId")}
+                className="w-full h-10 px-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+              >
+                <option value="">Select account to record payment...</option>
+                {operationalAccounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({a.type}) - ₹
+                    {a.currentBalance.toFixed(2)}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
 
           {/* Reference No */}
           <div>

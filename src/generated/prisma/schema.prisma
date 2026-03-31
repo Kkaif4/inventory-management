@@ -65,7 +65,8 @@ model Outlet {
   batchTrackingEnabled     Boolean          @default(false)
   allowRawCashBills        Boolean          @default(false)
   inventoryValuationMethod String           @default("NONE")
-  accounts                 Account[]
+  glAccounts               GLAccount[]
+  operationalAccounts      Account[]
   categories               Category[]
   batches                  CustomBatch[]
   series                   DocumentSeries[]
@@ -244,7 +245,7 @@ model TransactionItem {
   variant         Variant     @relation(fields: [variantId], references: [id])
 }
 
-model Account {
+model GLAccount {
   id       String        @id @default(cuid())
   code     String
   name     String
@@ -268,7 +269,7 @@ model LedgerEntry {
   credit        Float        @default(0)
   reference     String?
   isReconciled  Boolean      @default(false)
-  account       Account      @relation(fields: [accountId], references: [id])
+  account       GLAccount    @relation(fields: [accountId], references: [id])
   party         Party?       @relation(fields: [partyId], references: [id])
   transaction   Transaction? @relation(fields: [transactionId], references: [id])
 }
@@ -358,24 +359,26 @@ model StockLedger {
 }
 
 model Payment {
-  id            String      @id @default(cuid())
-  txnNumber     String      @unique
-  invoiceId     String
-  outletId      String
-  partyId       String
-  amount        Float
-  paymentDate   DateTime
-  paymentMode   String
-  bankAccountId String?
-  referenceNo   String?
-  notes         String?
-  createdBy     String
-  createdAt     DateTime    @default(now())
-  bankAccount   Account?    @relation(fields: [bankAccountId], references: [id])
-  creator       User        @relation(fields: [createdBy], references: [id])
-  invoice       Transaction @relation(fields: [invoiceId], references: [id])
-  outlet        Outlet      @relation(fields: [outletId], references: [id])
-  party         Party       @relation(fields: [partyId], references: [id])
+  id                   String      @id @default(cuid())
+  txnNumber            String      @unique
+  invoiceId            String
+  outletId             String
+  partyId              String
+  amount               Float
+  paymentDate          DateTime
+  paymentMode          String
+  glAccountId          String? // GL Account for bookkeeping
+  operationalAccountId String? // Operational Account for fund tracking
+  referenceNo          String?
+  notes                String?
+  createdBy            String
+  createdAt            DateTime    @default(now())
+  glAccount            GLAccount?  @relation(fields: [glAccountId], references: [id])
+  operationalAccount   Account?    @relation(fields: [operationalAccountId], references: [id])
+  creator              User        @relation(fields: [createdBy], references: [id])
+  invoice              Transaction @relation(fields: [invoiceId], references: [id])
+  outlet               Outlet      @relation(fields: [outletId], references: [id])
+  party                Party       @relation(fields: [partyId], references: [id])
 
   @@index([invoiceId])
   @@index([partyId, outletId])
@@ -390,6 +393,96 @@ model PriceListEntry {
   variant     Variant   @relation(fields: [variantId], references: [id])
 
   @@unique([priceListId, variantId])
+}
+
+// ============================================
+// Operational Accounts & Payment Modes Models
+// ============================================
+
+model Account {
+  id             String      @id @default(cuid())
+  name           String
+  type           AccountType // CASH | BANK
+  openingBalance Float       @default(0)
+  currentBalance Float       @default(0)
+  outletId       String
+  outlet         Outlet      @relation(fields: [outletId], references: [id], onDelete: Cascade)
+
+  paymentModes  AccountPaymentMode[]
+  transactions  AccountTransaction[]
+  transfersFrom Transfer[]           @relation("fromAccount")
+  transfersTo   Transfer[]           @relation("toAccount")
+  payments      Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, outletId])
+  @@index([outletId])
+  @@index([type])
+}
+
+model AccountPaymentMode {
+  id        String      @id @default(cuid())
+  accountId String
+  mode      PaymentMode
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, mode])
+  @@index([accountId])
+}
+
+model AccountTransaction {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  type        TransactionType // IN | OUT | TRANSFER_IN | TRANSFER_OUT
+  amount      Float
+  paymentMode PaymentMode
+
+  // Payment mode specific fields (optional)
+  chequeNumber   String?
+  chequeDate     DateTime?
+  upiReferenceId String?
+  transactionId  String? // Online transfer ID
+
+  // Linked transaction
+  linkedTxnId   String? // FK to Transaction/Payment/Expense
+  linkedTxnType String? // "INVOICE_PAYMENT" | "VENDOR_PAYMENT" | "EXPENSE" | "TRANSFER"
+
+  // Balance snapshot
+  balanceAfter Float
+
+  remarks   String?
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([linkedTxnId])
+}
+
+model Transfer {
+  id            String @id @default(cuid())
+  fromAccountId String
+  toAccountId   String
+
+  fromAccount Account @relation("fromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
+  toAccount   Account @relation("toAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
+
+  amount  Float
+  date    DateTime
+  remarks String?
+
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@index([fromAccountId])
+  @@index([toAccountId])
+  @@index([createdAt])
 }
 
 enum Role {
@@ -431,4 +524,24 @@ enum AccountGroup {
 enum BillType {
   NO1
   NO2
+}
+
+enum AccountType {
+  CASH
+  BANK
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  CHEQUE
+  ONLINE_TRANSFER
+  CARD
+}
+
+enum TransactionType {
+  IN
+  OUT
+  TRANSFER_IN
+  TRANSFER_OUT
 }

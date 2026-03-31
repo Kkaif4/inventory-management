@@ -2,7 +2,6 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { initializeCOA } from "../src/domains/accounting/ledger-service";
 import { PrismaClient, Role } from "@/generated/prisma";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
@@ -56,11 +55,6 @@ async function main() {
     });
     console.log("Seed: Warehouse created and linked to Outlet");
   }
-
-  // 2.5 Initialize Chart of Accounts (COA) for this outlet
-  console.log("Seed: Initializing CoA for outlet...");
-  await initializeCOA(outlet.id);
-  console.log("Seed: CoA Initialized");
 
   // 3. Create Admin User
   const adminEmail = "admin@admin.com";
@@ -169,6 +163,82 @@ async function main() {
     });
     console.log("Seed: Customer created with detailed info");
   }
+
+  // 7. Create Operational Accounts for the outlet (Main Cash Account)
+  const cashAccount = await prisma.account.upsert({
+    where: { name_outletId: { name: "Main Cash", outletId: outlet.id } },
+    update: {},
+    create: {
+      name: "Main Cash",
+      type: "CASH",
+      openingBalance: 10000,
+      currentBalance: 10000,
+      outletId: outlet.id,
+    },
+  });
+  console.log("Seed: Cash account created (Main Cash, Opening: ₹10,000)");
+
+  // 8. Create Bank Account
+  const bankAccount = await prisma.account.upsert({
+    where: { name_outletId: { name: "HDFC Bank", outletId: outlet.id } },
+    update: {},
+    create: {
+      name: "HDFC Bank",
+      type: "BANK",
+      openingBalance: 50000,
+      currentBalance: 50000,
+      outletId: outlet.id,
+    },
+  });
+  console.log("Seed: Bank account created (HDFC Bank, Opening: ₹50,000)");
+
+  // 9. Add payment modes for Cash Account (only CASH)
+  await prisma.accountPaymentMode.upsert({
+    where: {
+      accountId_mode: { accountId: cashAccount.id, mode: "CASH" },
+    },
+    update: {},
+    create: { accountId: cashAccount.id, mode: "CASH" },
+  });
+  console.log("Seed: Payment mode CASH added to Main Cash account");
+
+  // 10. Add payment modes for Bank Account (UPI, CHEQUE, ONLINE_TRANSFER, CARD)
+  const bankPaymentModes = ["UPI", "CHEQUE", "ONLINE_TRANSFER", "CARD"];
+  for (const mode of bankPaymentModes) {
+    await prisma.accountPaymentMode.upsert({
+      where: {
+        accountId_mode: { accountId: bankAccount.id, mode: mode as any },
+      },
+      update: {},
+      create: { accountId: bankAccount.id, mode: mode as any },
+    });
+  }
+  console.log(
+    "Seed: Payment modes (UPI, CHEQUE, ONLINE_TRANSFER, CARD) added to HDFC Bank account",
+  );
+
+  // 11. Create sample Account Transaction (initial deposit)
+  const adminUser = await prisma.user.findUnique({
+    where: { email: "admin@admin.com" },
+  });
+
+  if (adminUser) {
+    await prisma.accountTransaction.create({
+      data: {
+        accountId: cashAccount.id,
+        type: "IN",
+        amount: 5000,
+        paymentMode: "CASH",
+        balanceAfter: 15000,
+        remarks: "Initial cash deposit at store opening",
+        userId: adminUser.id,
+      },
+    });
+    console.log(
+      "Seed: Sample account transaction created (Cash IN ₹5,000, Balance: ₹15,000)",
+    );
+  }
+
   console.log("Seed: Completed successfully");
 }
 

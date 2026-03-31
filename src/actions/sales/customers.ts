@@ -10,10 +10,7 @@ import {
 } from "@/validations/customer.validation";
 import { revalidatePath } from "next/cache";
 import { roundToTwo } from "@/lib/utils";
-import {
-  parsePaginationParams,
-  calculatePagination,
-} from "@/lib/pagination";
+import { parsePaginationParams, calculatePagination } from "@/lib/pagination";
 import { PaginatedResult, BasePaginationParams } from "@/types/pagination";
 
 // ──── Types ──────────────────────────────────────────────────────────────────
@@ -102,7 +99,10 @@ export async function getCustomers(outletId: string) {
 }
 
 // ─── Get customers with server-side pagination ────────────────────────────────
-export async function getCustomersPaginated(outletId: string, params: CustomerQueryParams) {
+export async function getCustomersPaginated(
+  outletId: string,
+  params: CustomerQueryParams,
+) {
   return withErrorHandler(async (): Promise<PaginatedResult<CustomerData>> => {
     await validateSessionOutletAccess(outletId);
 
@@ -248,7 +248,7 @@ export async function getCustomerDetails(id: string) {
           where: { invoiceId: { not: "" } }, // Valid invoice payments
           orderBy: { paymentDate: "desc" },
           include: {
-            bankAccount: { select: { name: true } },
+            glAccount: { select: { name: true } },
             invoice: { select: { txnNumber: true } },
           },
         },
@@ -403,7 +403,7 @@ export async function createCustomer(
 
       // Implement opening balance ledger entry
       if (validated.openingBalance > 0) {
-        const debtorAcc = await tx.account.findFirst({
+        const debtorAcc = await tx.gLAccount.findFirst({
           where: { code: "1003", outletId },
         });
         if (debtorAcc) {
@@ -485,7 +485,7 @@ export async function updateCustomer(id: string, data: CustomerFormValues) {
 
       if (diff !== 0) {
         // Adjust opening balance ledger entry
-        const debtorAcc = await tx.account.findFirst({
+        const debtorAcc = await tx.gLAccount.findFirst({
           where: { code: "1003", outletId: currentParty.outletId },
         });
         if (debtorAcc) {
@@ -538,8 +538,12 @@ export async function getCustomerLedger(
 
     if (!party) throw new NotFoundError("Customer not found");
 
-    const partyForAuth = await prisma.party.findUnique({ where: { id: partyId }, select: { outletId: true } });
-    if (partyForAuth?.outletId) await validateSessionOutletAccess(partyForAuth.outletId);
+    const partyForAuth = await prisma.party.findUnique({
+      where: { id: partyId },
+      select: { outletId: true },
+    });
+    if (partyForAuth?.outletId)
+      await validateSessionOutletAccess(partyForAuth.outletId);
 
     const whereClause: any = { partyId };
     if (fromDate || toDate) {

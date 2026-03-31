@@ -140,7 +140,7 @@ async function calculatePnLPeriod(
   }
 
   // Fetch all relevant accounts with their entries for the period
-  const accounts = await prisma.account.findMany({
+  const accounts = await prisma.gLAccount.findMany({
     where: {
       ...accountWhere,
       group: { in: ["INCOME", "EXPENSE"] },

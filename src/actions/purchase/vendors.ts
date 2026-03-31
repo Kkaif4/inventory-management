@@ -235,7 +235,7 @@ export async function getVendorDetails(id: string) {
           where: { invoiceId: { not: "" } },
           orderBy: { paymentDate: "desc" },
           include: {
-            bankAccount: { select: { name: true } },
+            glAccount: { select: { name: true } },
             invoice: { select: { txnNumber: true } },
           },
         },
@@ -388,7 +388,7 @@ export async function createVendor(outletId: string, data: VendorFormValues) {
       // Implement opening balance ledger entry
       if (validated.openingBalance > 0) {
         // Vendors are Creditors (Liability) - typically mapped to code 2001
-        const creditorAcc = await tx.account.findFirst({
+        const creditorAcc = await tx.gLAccount.findFirst({
           where: { code: "2001", outletId },
         });
         if (creditorAcc) {
@@ -473,7 +473,7 @@ export async function updateVendor(id: string, data: VendorFormValues) {
       });
 
       if (diff !== 0) {
-        const creditorAcc = await tx.account.findFirst({
+        const creditorAcc = await tx.gLAccount.findFirst({
           where: { code: "2001", outletId: currentParty.outletId },
         });
         if (creditorAcc) {

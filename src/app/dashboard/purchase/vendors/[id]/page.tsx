@@ -35,7 +35,8 @@ type PaymentRecord = {
   paymentDate: Date;
   amount: number;
   referenceNo: string | null;
-  bankAccount: { name: string } | null;
+  glAccount: { name: string } | null;
+  operationalAccount?: { name: string; type: string } | null;
   invoice: { txnNumber: string } | null;
   invoiceId: string;
 };
@@ -455,9 +456,9 @@ export default function VendorDetailPage() {
                   cell: ({ row }) => row.original.referenceNo || "—",
                 },
                 {
-                  accessorKey: "bankAccount",
+                  accessorKey: "glAccount",
                   header: "Paid From",
-                  cell: ({ row }) => row.original.bankAccount?.name || "—",
+                  cell: ({ row }) => row.original.glAccount?.name || "—",
                 },
                 {
                   accessorKey: "invoice",

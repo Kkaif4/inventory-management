@@ -81,7 +81,7 @@ export async function recordVendorBillPayment(
           amount: data.amount,
           paymentDate: new Date(data.paymentDate),
           paymentMode: data.paymentMode,
-          bankAccountId: data.bankAccountId || null,
+          glAccountId: data.bankAccountId || null,
           referenceNo: data.referenceNo || null,
           notes: data.notes || null,
           createdBy: data.userId,
@@ -184,12 +184,12 @@ export async function recordVendorBillPayment(
 
       // Creditor account code = 2001
       const [creditorAcc, creditAcc] = await Promise.all([
-        tx.account.findFirst({
+        tx.gLAccount.findFirst({
           where: { code: "2001", outletId: data.outletId },
         }),
         data.bankAccountId
-          ? tx.account.findUnique({ where: { id: data.bankAccountId } })
-          : tx.account.findFirst({
+          ? tx.gLAccount.findUnique({ where: { id: data.bankAccountId } })
+          : tx.gLAccount.findFirst({
               where: { code: creditAccountCode, outletId: data.outletId },
             }),
       ]);

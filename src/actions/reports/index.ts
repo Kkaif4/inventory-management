@@ -40,7 +40,7 @@ export async function getLowStockReport() {
 export async function getTrialBalance() {
   return withErrorHandler(async () => {
     await requireAdminSession();
-    const accounts = await prisma.account.findMany({
+    const accounts = await prisma.gLAccount.findMany({
       include: {
         entries: true,
       },
@@ -78,7 +78,7 @@ export {
 export async function getProfitAndLoss() {
   return withErrorHandler(async () => {
     await requireAdminSession();
-    const accounts = await prisma.account.findMany({
+    const accounts = await prisma.gLAccount.findMany({
       include: { entries: true },
       where: {
         group: { in: ["INCOME", "EXPENSE"] },

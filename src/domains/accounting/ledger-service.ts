@@ -51,7 +51,7 @@ export const AccountingService = {
    * Helper to find standard accounts by name/code
    */
   async findAccountByCode(code: string, outletId: string) {
-    return await prisma.account.findUnique({
+    return await prisma.gLAccount.findUnique({
       where: { code_outletId: { code, outletId } },
     });
   },
@@ -156,7 +156,7 @@ export async function initializeCOA(outletId: string) {
   ];
 
   for (const acc of accounts) {
-    await prisma.account.upsert({
+    await prisma.gLAccount.upsert({
       where: { code_outletId: { code: acc.code, outletId } },
       update: {},
       create: { ...acc, outletId } as any,

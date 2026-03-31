@@ -21,7 +21,7 @@ export async function getLedgerEntries(accountId?: string) {
 export async function getPNL() {
   return withErrorHandler(async () => {
     await requireAdminSession();
-    const accounts = await prisma.account.findMany({
+    const accounts = await prisma.gLAccount.findMany({
       include: { entries: true },
     });
 
@@ -52,7 +52,7 @@ export async function getPNL() {
 export async function getBalanceSheet() {
   return withErrorHandler(async () => {
     await requireAdminSession();
-    const accounts = await prisma.account.findMany({
+    const accounts = await prisma.gLAccount.findMany({
       include: { entries: true },
     });
 

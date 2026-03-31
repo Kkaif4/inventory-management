@@ -110,7 +110,7 @@ describe("Customer Outstanding and Payment Behavior", () => {
     ];
 
     for (const acc of accounts) {
-      await prisma.account.upsert({
+      await prisma.gLAccount.upsert({
         where: { code_outletId: { code: acc.code, outletId: testOutletId } },
         update: {},
         create: { ...acc, outletId: testOutletId },

@@ -23,7 +23,12 @@ export const recordPaymentSchema = z
     paymentDate: z.string().min(1, "Payment date is required"),
     amount: z.number().positive("Amount must be greater than 0"),
     paymentMode: z.string().min(1, "Payment mode is required"),
-    bankAccountId: z.string().optional(),
+    bankAccountId: z.string().optional(), // GL Account for bookkeeping
+    operationalAccountId: z.string().optional(), // Operational Account for fund tracking
+    chequeNumber: z.string().max(20).optional(),
+    chequeDate: z.string().optional(),
+    upiReferenceId: z.string().max(50).optional(),
+    transactionId: z.string().max(50).optional(),
     referenceNo: z.string().max(60, "Max 60 characters").optional(),
     notes: z.string().max(200, "Max 200 characters").optional(),
   })

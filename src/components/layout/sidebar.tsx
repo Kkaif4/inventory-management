@@ -122,6 +122,11 @@ const navigation = [
     group: "FINANCIALS",
     items: [
       {
+        name: "Accounts",
+        href: "/dashboard/financials/accounts",
+        icon: CreditCard,
+      },
+      {
         name: "General Ledger",
         href: "/dashboard/financials/ledger",
         icon: BookOpen,

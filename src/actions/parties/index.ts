@@ -166,10 +166,10 @@ export async function createParty(
       // 2. Handle Opening Balance if present
       if (data.openingBalance && data.openingBalance !== 0) {
         // Find system accounts
-        const offsetAcc = await tx.account.findUnique({
+        const offsetAcc = await tx.gLAccount.findUnique({
           where: { code_outletId: { code: "5001", outletId } },
         });
-        const partyGroupAcc = await tx.account.findUnique({
+        const partyGroupAcc = await tx.gLAccount.findUnique({
           where: {
             code_outletId: {
               code: data.type === "VENDOR" ? "2001" : "1003",

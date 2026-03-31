@@ -69,7 +69,7 @@ export async function createSalesInvoice(data: {
     let accounts: any[] = [];
     if (!isNo2) {
       const accountCodes = ["3001", "1003", "2002", "2003", "2004"];
-      accounts = await prisma.account.findMany({
+      accounts = await prisma.gLAccount.findMany({
         where: { code: { in: accountCodes }, outletId: data.fromOutletId },
       });
       if (
@@ -421,7 +421,8 @@ export async function getSalesInvoice(invoiceId: string) {
           paymentMode: true,
           referenceNo: true,
           notes: true,
-          bankAccount: { select: { name: true } },
+          glAccount: { select: { name: true } },
+          operationalAccount: { select: { name: true, type: true } },
           creator: { select: { name: true } },
         },
         orderBy: { paymentDate: "asc" },
@@ -850,7 +851,7 @@ export async function appendItemsToInvoice(
       // Accounting entries for NO1 only
       if (invoice.billType === "NO1" && invoice.partyId) {
         const accountCodes = ["3001", "1003", "2002", "2003", "2004"];
-        const accounts = await tx.account.findMany({
+        const accounts = await tx.gLAccount.findMany({
           where: { code: { in: accountCodes }, outletId: invoice.outletId },
         });
 

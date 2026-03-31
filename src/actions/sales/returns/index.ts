@@ -55,7 +55,7 @@ export async function createSalesReturn(data: {
         where: { id: { in: data.items.map((i) => i.variantId) } },
         include: { product: true },
       }),
-      prisma.account.findMany({
+      prisma.gLAccount.findMany({
         where: { code: { in: accountCodes } },
       }),
     ]);
