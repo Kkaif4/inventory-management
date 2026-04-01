@@ -18,7 +18,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useOutletStore } from "@/store/use-outlet-store";
 import {
   DropdownMenu,
@@ -237,15 +237,14 @@ export default function SalesUnifiedClient() {
         actions={
           <div className="flex gap-2">
             <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="gap-2 shadow-lg shadow-brand/20"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Create New</span>
-                </Button>
+              <DropdownMenuTrigger
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "icon" }),
+                  "h-8 w-8 p-0",
+                )}
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create New</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <Link href="/dashboard/sales/invoices/new">
