@@ -6,16 +6,13 @@ import {
   Plus,
   Receipt,
   ChevronRight,
-  Filter,
   ArrowLeftRight,
   FileText,
-  AlertCircle,
 } from "lucide-react";
 import {
   getSalesInvoices,
   getSalesReturns,
 } from "@/actions/sales/sales-invoice";
-import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -80,6 +77,8 @@ export default function SalesUnifiedClient() {
     if (filterType === "ALL") return true;
     return item.category === filterType;
   });
+
+  console.log("Filtered Data: ", filteredData);
 
   const columns: ColumnDef<any>[] = [
     {

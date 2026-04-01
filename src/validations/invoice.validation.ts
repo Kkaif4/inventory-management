@@ -20,6 +20,7 @@ const invoiceItemSchema = z.object({
 // No.1 Legal Invoice Schema
 export const createNo1InvoiceSchema = z.object({
   billType: z.literal("NO1"),
+  txnNumber: z.string().min(1, "Invoice number is required"),
   partyId: z.string().min(1, "Customer is required"),
   fromOutletId: z.string().min(1, "Outlet is required"),
   date: z.coerce.date(),
@@ -36,6 +37,7 @@ export const createNo1InvoiceSchema = z.object({
 // No.2 Raw Cash Memo Schema
 export const createNo2InvoiceSchema = z.object({
   billType: z.literal("NO2"),
+  txnNumber: z.string().min(1, "Invoice number is required"),
   fromOutletId: z.string().min(1, "Outlet is required"),
   date: z.coerce.date(),
   buyerName: z.string().default(""),

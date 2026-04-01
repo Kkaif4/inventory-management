@@ -264,6 +264,7 @@ describe("Accounts & Partial Billing", () => {
     // Create invoice
     const invoiceResult = await createSalesInvoice({
       billType: "NO1",
+      txnNumber: `TEST-INV-${Date.now()}-1`,
       partyId: customerId,
       fromOutletId: testOutletId,
       items: [
@@ -312,6 +313,7 @@ describe("Accounts & Partial Billing", () => {
     // Create initial invoice
     const invoiceResult = await createSalesInvoice({
       billType: "NO1",
+      txnNumber: `TEST-INV-${Date.now()}-2`,
       partyId: customerId,
       fromOutletId: testOutletId,
       items: [
@@ -381,6 +383,7 @@ describe("Accounts & Partial Billing", () => {
     // Create invoice
     const invoiceResult = await createSalesInvoice({
       billType: "NO1",
+      txnNumber: `TEST-INV-${Date.now()}-3`,
       partyId: customerId,
       fromOutletId: testOutletId,
       items: [

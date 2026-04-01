@@ -41,16 +41,20 @@ export function SalesTransactionsClient({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [data, setData] = useState(initialData);
+  const [pagination, setPagination] = useState(initialPagination);
   const t = useTranslations("sales");
   const common = useTranslations("common");
 
-  const currentTab = initialTab || "invoices";
+  // Read current tab from searchParams (stays in sync with URL)
+  const currentTab = searchParams.get("tab") || initialTab || "invoices";
   const currentLimit = parseInt(searchParams.get("limit") || "10", 10);
 
-  // Sync data when pagination changes
+  // Sync data AND pagination when they change
   useEffect(() => {
+    console.log(`[TransactionsClient] Tab: ${currentTab}, Data count: ${initialData.length}, Initial pagination:`, initialPagination);
     setData(initialData);
-  }, [initialData]);
+    setPagination(initialPagination);
+  }, [initialData, initialPagination, currentTab]);
 
   const handleTabChange = useCallback(
     (newTab: string) => {
@@ -337,12 +341,12 @@ export function SalesTransactionsClient({
             />
           </TabsContent>
 
-          {initialPagination && (
+          {pagination && (
             <PaginationControls
-              page={initialPagination.page}
-              totalPages={initialPagination.totalPages}
-              limit={initialPagination.limit}
-              total={initialPagination.total}
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              limit={pagination.limit}
+              total={pagination.total}
               onPageChange={handlePageChange}
               onLimitChange={handleLimitChange}
               isPending={isPending}

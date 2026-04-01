@@ -138,6 +138,21 @@ export type AccountTransaction = $Result.DefaultSelection<Prisma.$AccountTransac
  * 
  */
 export type Transfer = $Result.DefaultSelection<Prisma.$TransferPayload>
+/**
+ * Model ExpenseCategory
+ * 
+ */
+export type ExpenseCategory = $Result.DefaultSelection<Prisma.$ExpenseCategoryPayload>
+/**
+ * Model Expense
+ * 
+ */
+export type Expense = $Result.DefaultSelection<Prisma.$ExpensePayload>
+/**
+ * Model Attachment
+ * 
+ */
+export type Attachment = $Result.DefaultSelection<Prisma.$AttachmentPayload>
 
 /**
  * Enums
@@ -631,6 +646,36 @@ export class PrismaClient<
     * ```
     */
   get transfer(): Prisma.TransferDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.expenseCategory`: Exposes CRUD operations for the **ExpenseCategory** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ExpenseCategories
+    * const expenseCategories = await prisma.expenseCategory.findMany()
+    * ```
+    */
+  get expenseCategory(): Prisma.ExpenseCategoryDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.expense`: Exposes CRUD operations for the **Expense** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Expenses
+    * const expenses = await prisma.expense.findMany()
+    * ```
+    */
+  get expense(): Prisma.ExpenseDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.attachment`: Exposes CRUD operations for the **Attachment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Attachments
+    * const attachments = await prisma.attachment.findMany()
+    * ```
+    */
+  get attachment(): Prisma.AttachmentDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1089,7 +1134,10 @@ export namespace Prisma {
     Account: 'Account',
     AccountPaymentMode: 'AccountPaymentMode',
     AccountTransaction: 'AccountTransaction',
-    Transfer: 'Transfer'
+    Transfer: 'Transfer',
+    ExpenseCategory: 'ExpenseCategory',
+    Expense: 'Expense',
+    Attachment: 'Attachment'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1105,7 +1153,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "auditLog" | "warehouse" | "outlet" | "category" | "product" | "variant" | "stock" | "party" | "transaction" | "transactionItem" | "gLAccount" | "ledgerEntry" | "vendorProduct" | "priceList" | "documentSeries" | "customBatch" | "batchMovement" | "stockLedger" | "payment" | "priceListEntry" | "account" | "accountPaymentMode" | "accountTransaction" | "transfer"
+      modelProps: "user" | "auditLog" | "warehouse" | "outlet" | "category" | "product" | "variant" | "stock" | "party" | "transaction" | "transactionItem" | "gLAccount" | "ledgerEntry" | "vendorProduct" | "priceList" | "documentSeries" | "customBatch" | "batchMovement" | "stockLedger" | "payment" | "priceListEntry" | "account" | "accountPaymentMode" | "accountTransaction" | "transfer" | "expenseCategory" | "expense" | "attachment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2959,6 +3007,228 @@ export namespace Prisma {
           }
         }
       }
+      ExpenseCategory: {
+        payload: Prisma.$ExpenseCategoryPayload<ExtArgs>
+        fields: Prisma.ExpenseCategoryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ExpenseCategoryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ExpenseCategoryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload>
+          }
+          findFirst: {
+            args: Prisma.ExpenseCategoryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ExpenseCategoryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload>
+          }
+          findMany: {
+            args: Prisma.ExpenseCategoryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload>[]
+          }
+          create: {
+            args: Prisma.ExpenseCategoryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload>
+          }
+          createMany: {
+            args: Prisma.ExpenseCategoryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ExpenseCategoryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload>[]
+          }
+          delete: {
+            args: Prisma.ExpenseCategoryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload>
+          }
+          update: {
+            args: Prisma.ExpenseCategoryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload>
+          }
+          deleteMany: {
+            args: Prisma.ExpenseCategoryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ExpenseCategoryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ExpenseCategoryUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload>[]
+          }
+          upsert: {
+            args: Prisma.ExpenseCategoryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpenseCategoryPayload>
+          }
+          aggregate: {
+            args: Prisma.ExpenseCategoryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateExpenseCategory>
+          }
+          groupBy: {
+            args: Prisma.ExpenseCategoryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ExpenseCategoryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ExpenseCategoryCountArgs<ExtArgs>
+            result: $Utils.Optional<ExpenseCategoryCountAggregateOutputType> | number
+          }
+        }
+      }
+      Expense: {
+        payload: Prisma.$ExpensePayload<ExtArgs>
+        fields: Prisma.ExpenseFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ExpenseFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ExpenseFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload>
+          }
+          findFirst: {
+            args: Prisma.ExpenseFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ExpenseFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload>
+          }
+          findMany: {
+            args: Prisma.ExpenseFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload>[]
+          }
+          create: {
+            args: Prisma.ExpenseCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload>
+          }
+          createMany: {
+            args: Prisma.ExpenseCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ExpenseCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload>[]
+          }
+          delete: {
+            args: Prisma.ExpenseDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload>
+          }
+          update: {
+            args: Prisma.ExpenseUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload>
+          }
+          deleteMany: {
+            args: Prisma.ExpenseDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ExpenseUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ExpenseUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload>[]
+          }
+          upsert: {
+            args: Prisma.ExpenseUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ExpensePayload>
+          }
+          aggregate: {
+            args: Prisma.ExpenseAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateExpense>
+          }
+          groupBy: {
+            args: Prisma.ExpenseGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ExpenseGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ExpenseCountArgs<ExtArgs>
+            result: $Utils.Optional<ExpenseCountAggregateOutputType> | number
+          }
+        }
+      }
+      Attachment: {
+        payload: Prisma.$AttachmentPayload<ExtArgs>
+        fields: Prisma.AttachmentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AttachmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AttachmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload>
+          }
+          findFirst: {
+            args: Prisma.AttachmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AttachmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload>
+          }
+          findMany: {
+            args: Prisma.AttachmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload>[]
+          }
+          create: {
+            args: Prisma.AttachmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload>
+          }
+          createMany: {
+            args: Prisma.AttachmentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AttachmentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload>[]
+          }
+          delete: {
+            args: Prisma.AttachmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload>
+          }
+          update: {
+            args: Prisma.AttachmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload>
+          }
+          deleteMany: {
+            args: Prisma.AttachmentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AttachmentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AttachmentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload>[]
+          }
+          upsert: {
+            args: Prisma.AttachmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AttachmentPayload>
+          }
+          aggregate: {
+            args: Prisma.AttachmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAttachment>
+          }
+          groupBy: {
+            args: Prisma.AttachmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AttachmentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AttachmentCountArgs<ExtArgs>
+            result: $Utils.Optional<AttachmentCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3092,6 +3362,9 @@ export namespace Prisma {
     accountPaymentMode?: AccountPaymentModeOmit
     accountTransaction?: AccountTransactionOmit
     transfer?: TransferOmit
+    expenseCategory?: ExpenseCategoryOmit
+    expense?: ExpenseOmit
+    attachment?: AttachmentOmit
   }
 
   /* Types for Logging */
@@ -3176,6 +3449,7 @@ export namespace Prisma {
     payments: number
     stockLedger: number
     transactions: number
+    expenses: number
     outlets: number
   }
 
@@ -3184,6 +3458,7 @@ export namespace Prisma {
     payments?: boolean | UserCountOutputTypeCountPaymentsArgs
     stockLedger?: boolean | UserCountOutputTypeCountStockLedgerArgs
     transactions?: boolean | UserCountOutputTypeCountTransactionsArgs
+    expenses?: boolean | UserCountOutputTypeCountExpensesArgs
     outlets?: boolean | UserCountOutputTypeCountOutletsArgs
   }
 
@@ -3224,6 +3499,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TransactionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountExpensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ExpenseWhereInput
   }
 
   /**
@@ -3309,6 +3591,7 @@ export namespace Prisma {
     glAccounts: number
     operationalAccounts: number
     categories: number
+    expenseCategories: number
     batches: number
     series: number
     parties: number
@@ -3317,6 +3600,7 @@ export namespace Prisma {
     stocks: number
     stockLedger: number
     transactions: number
+    expenses: number
     users: number
     warehouses: number
   }
@@ -3325,6 +3609,7 @@ export namespace Prisma {
     glAccounts?: boolean | OutletCountOutputTypeCountGlAccountsArgs
     operationalAccounts?: boolean | OutletCountOutputTypeCountOperationalAccountsArgs
     categories?: boolean | OutletCountOutputTypeCountCategoriesArgs
+    expenseCategories?: boolean | OutletCountOutputTypeCountExpenseCategoriesArgs
     batches?: boolean | OutletCountOutputTypeCountBatchesArgs
     series?: boolean | OutletCountOutputTypeCountSeriesArgs
     parties?: boolean | OutletCountOutputTypeCountPartiesArgs
@@ -3333,6 +3618,7 @@ export namespace Prisma {
     stocks?: boolean | OutletCountOutputTypeCountStocksArgs
     stockLedger?: boolean | OutletCountOutputTypeCountStockLedgerArgs
     transactions?: boolean | OutletCountOutputTypeCountTransactionsArgs
+    expenses?: boolean | OutletCountOutputTypeCountExpensesArgs
     users?: boolean | OutletCountOutputTypeCountUsersArgs
     warehouses?: boolean | OutletCountOutputTypeCountWarehousesArgs
   }
@@ -3367,6 +3653,13 @@ export namespace Prisma {
    */
   export type OutletCountOutputTypeCountCategoriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CategoryWhereInput
+  }
+
+  /**
+   * OutletCountOutputType without action
+   */
+  export type OutletCountOutputTypeCountExpenseCategoriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ExpenseCategoryWhereInput
   }
 
   /**
@@ -3423,6 +3716,13 @@ export namespace Prisma {
    */
   export type OutletCountOutputTypeCountTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TransactionWhereInput
+  }
+
+  /**
+   * OutletCountOutputType without action
+   */
+  export type OutletCountOutputTypeCountExpensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ExpenseWhereInput
   }
 
   /**
@@ -3595,6 +3895,7 @@ export namespace Prisma {
     ledgerEntries: number
     payments: number
     transactions: number
+    expenses: number
     suppliedProducts: number
   }
 
@@ -3602,6 +3903,7 @@ export namespace Prisma {
     ledgerEntries?: boolean | PartyCountOutputTypeCountLedgerEntriesArgs
     payments?: boolean | PartyCountOutputTypeCountPaymentsArgs
     transactions?: boolean | PartyCountOutputTypeCountTransactionsArgs
+    expenses?: boolean | PartyCountOutputTypeCountExpensesArgs
     suppliedProducts?: boolean | PartyCountOutputTypeCountSuppliedProductsArgs
   }
 
@@ -3635,6 +3937,13 @@ export namespace Prisma {
    */
   export type PartyCountOutputTypeCountTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TransactionWhereInput
+  }
+
+  /**
+   * PartyCountOutputType without action
+   */
+  export type PartyCountOutputTypeCountExpensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ExpenseWhereInput
   }
 
   /**
@@ -3728,11 +4037,13 @@ export namespace Prisma {
   export type GLAccountCountOutputType = {
     entries: number
     payments: number
+    expenseCategories: number
   }
 
   export type GLAccountCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     entries?: boolean | GLAccountCountOutputTypeCountEntriesArgs
     payments?: boolean | GLAccountCountOutputTypeCountPaymentsArgs
+    expenseCategories?: boolean | GLAccountCountOutputTypeCountExpenseCategoriesArgs
   }
 
   // Custom InputTypes
@@ -3758,6 +4069,13 @@ export namespace Prisma {
    */
   export type GLAccountCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PaymentWhereInput
+  }
+
+  /**
+   * GLAccountCountOutputType without action
+   */
+  export type GLAccountCountOutputTypeCountExpenseCategoriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ExpenseCategoryWhereInput
   }
 
 
@@ -3842,6 +4160,7 @@ export namespace Prisma {
     transfersFrom: number
     transfersTo: number
     payments: number
+    expenses: number
   }
 
   export type AccountCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3850,6 +4169,7 @@ export namespace Prisma {
     transfersFrom?: boolean | AccountCountOutputTypeCountTransfersFromArgs
     transfersTo?: boolean | AccountCountOutputTypeCountTransfersToArgs
     payments?: boolean | AccountCountOutputTypeCountPaymentsArgs
+    expenses?: boolean | AccountCountOutputTypeCountExpensesArgs
   }
 
   // Custom InputTypes
@@ -3896,6 +4216,44 @@ export namespace Prisma {
    */
   export type AccountCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PaymentWhereInput
+  }
+
+  /**
+   * AccountCountOutputType without action
+   */
+  export type AccountCountOutputTypeCountExpensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ExpenseWhereInput
+  }
+
+
+  /**
+   * Count Type ExpenseCategoryCountOutputType
+   */
+
+  export type ExpenseCategoryCountOutputType = {
+    expenses: number
+  }
+
+  export type ExpenseCategoryCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    expenses?: boolean | ExpenseCategoryCountOutputTypeCountExpensesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ExpenseCategoryCountOutputType without action
+   */
+  export type ExpenseCategoryCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategoryCountOutputType
+     */
+    select?: ExpenseCategoryCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ExpenseCategoryCountOutputType without action
+   */
+  export type ExpenseCategoryCountOutputTypeCountExpensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ExpenseWhereInput
   }
 
 
@@ -4095,6 +4453,7 @@ export namespace Prisma {
     payments?: boolean | User$paymentsArgs<ExtArgs>
     stockLedger?: boolean | User$stockLedgerArgs<ExtArgs>
     transactions?: boolean | User$transactionsArgs<ExtArgs>
+    expenses?: boolean | User$expensesArgs<ExtArgs>
     outlets?: boolean | User$outletsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -4138,6 +4497,7 @@ export namespace Prisma {
     payments?: boolean | User$paymentsArgs<ExtArgs>
     stockLedger?: boolean | User$stockLedgerArgs<ExtArgs>
     transactions?: boolean | User$transactionsArgs<ExtArgs>
+    expenses?: boolean | User$expensesArgs<ExtArgs>
     outlets?: boolean | User$outletsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -4151,6 +4511,7 @@ export namespace Prisma {
       payments: Prisma.$PaymentPayload<ExtArgs>[]
       stockLedger: Prisma.$StockLedgerPayload<ExtArgs>[]
       transactions: Prisma.$TransactionPayload<ExtArgs>[]
+      expenses: Prisma.$ExpensePayload<ExtArgs>[]
       outlets: Prisma.$OutletPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -4560,6 +4921,7 @@ export namespace Prisma {
     payments<T extends User$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, User$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockLedger<T extends User$stockLedgerArgs<ExtArgs> = {}>(args?: Subset<T, User$stockLedgerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     transactions<T extends User$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, User$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    expenses<T extends User$expensesArgs<ExtArgs> = {}>(args?: Subset<T, User$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     outlets<T extends User$outletsArgs<ExtArgs> = {}>(args?: Subset<T, User$outletsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OutletPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -5079,6 +5441,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TransactionScalarFieldEnum | TransactionScalarFieldEnum[]
+  }
+
+  /**
+   * User.expenses
+   */
+  export type User$expensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    where?: ExpenseWhereInput
+    orderBy?: ExpenseOrderByWithRelationInput | ExpenseOrderByWithRelationInput[]
+    cursor?: ExpenseWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ExpenseScalarFieldEnum | ExpenseScalarFieldEnum[]
   }
 
   /**
@@ -7709,6 +8095,7 @@ export namespace Prisma {
     glAccounts?: boolean | Outlet$glAccountsArgs<ExtArgs>
     operationalAccounts?: boolean | Outlet$operationalAccountsArgs<ExtArgs>
     categories?: boolean | Outlet$categoriesArgs<ExtArgs>
+    expenseCategories?: boolean | Outlet$expenseCategoriesArgs<ExtArgs>
     batches?: boolean | Outlet$batchesArgs<ExtArgs>
     series?: boolean | Outlet$seriesArgs<ExtArgs>
     parties?: boolean | Outlet$partiesArgs<ExtArgs>
@@ -7717,6 +8104,7 @@ export namespace Prisma {
     stocks?: boolean | Outlet$stocksArgs<ExtArgs>
     stockLedger?: boolean | Outlet$stockLedgerArgs<ExtArgs>
     transactions?: boolean | Outlet$transactionsArgs<ExtArgs>
+    expenses?: boolean | Outlet$expensesArgs<ExtArgs>
     users?: boolean | Outlet$usersArgs<ExtArgs>
     warehouses?: boolean | Outlet$warehousesArgs<ExtArgs>
     _count?: boolean | OutletCountOutputTypeDefaultArgs<ExtArgs>
@@ -7772,6 +8160,7 @@ export namespace Prisma {
     glAccounts?: boolean | Outlet$glAccountsArgs<ExtArgs>
     operationalAccounts?: boolean | Outlet$operationalAccountsArgs<ExtArgs>
     categories?: boolean | Outlet$categoriesArgs<ExtArgs>
+    expenseCategories?: boolean | Outlet$expenseCategoriesArgs<ExtArgs>
     batches?: boolean | Outlet$batchesArgs<ExtArgs>
     series?: boolean | Outlet$seriesArgs<ExtArgs>
     parties?: boolean | Outlet$partiesArgs<ExtArgs>
@@ -7780,6 +8169,7 @@ export namespace Prisma {
     stocks?: boolean | Outlet$stocksArgs<ExtArgs>
     stockLedger?: boolean | Outlet$stockLedgerArgs<ExtArgs>
     transactions?: boolean | Outlet$transactionsArgs<ExtArgs>
+    expenses?: boolean | Outlet$expensesArgs<ExtArgs>
     users?: boolean | Outlet$usersArgs<ExtArgs>
     warehouses?: boolean | Outlet$warehousesArgs<ExtArgs>
     _count?: boolean | OutletCountOutputTypeDefaultArgs<ExtArgs>
@@ -7793,6 +8183,7 @@ export namespace Prisma {
       glAccounts: Prisma.$GLAccountPayload<ExtArgs>[]
       operationalAccounts: Prisma.$AccountPayload<ExtArgs>[]
       categories: Prisma.$CategoryPayload<ExtArgs>[]
+      expenseCategories: Prisma.$ExpenseCategoryPayload<ExtArgs>[]
       batches: Prisma.$CustomBatchPayload<ExtArgs>[]
       series: Prisma.$DocumentSeriesPayload<ExtArgs>[]
       parties: Prisma.$PartyPayload<ExtArgs>[]
@@ -7801,6 +8192,7 @@ export namespace Prisma {
       stocks: Prisma.$StockPayload<ExtArgs>[]
       stockLedger: Prisma.$StockLedgerPayload<ExtArgs>[]
       transactions: Prisma.$TransactionPayload<ExtArgs>[]
+      expenses: Prisma.$ExpensePayload<ExtArgs>[]
       users: Prisma.$UserPayload<ExtArgs>[]
       warehouses: Prisma.$WarehousePayload<ExtArgs>[]
     }
@@ -8214,6 +8606,7 @@ export namespace Prisma {
     glAccounts<T extends Outlet$glAccountsArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$glAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GLAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     operationalAccounts<T extends Outlet$operationalAccountsArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$operationalAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     categories<T extends Outlet$categoriesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$categoriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    expenseCategories<T extends Outlet$expenseCategoriesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$expenseCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     batches<T extends Outlet$batchesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$batchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     series<T extends Outlet$seriesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$seriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentSeriesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     parties<T extends Outlet$partiesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$partiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PartyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -8222,6 +8615,7 @@ export namespace Prisma {
     stocks<T extends Outlet$stocksArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$stocksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockLedger<T extends Outlet$stockLedgerArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$stockLedgerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     transactions<T extends Outlet$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    expenses<T extends Outlet$expensesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     users<T extends Outlet$usersArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     warehouses<T extends Outlet$warehousesArgs<ExtArgs> = {}>(args?: Subset<T, Outlet$warehousesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WarehousePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -8725,6 +9119,30 @@ export namespace Prisma {
   }
 
   /**
+   * Outlet.expenseCategories
+   */
+  export type Outlet$expenseCategoriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    where?: ExpenseCategoryWhereInput
+    orderBy?: ExpenseCategoryOrderByWithRelationInput | ExpenseCategoryOrderByWithRelationInput[]
+    cursor?: ExpenseCategoryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ExpenseCategoryScalarFieldEnum | ExpenseCategoryScalarFieldEnum[]
+  }
+
+  /**
    * Outlet.batches
    */
   export type Outlet$batchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8914,6 +9332,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TransactionScalarFieldEnum | TransactionScalarFieldEnum[]
+  }
+
+  /**
+   * Outlet.expenses
+   */
+  export type Outlet$expensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    where?: ExpenseWhereInput
+    orderBy?: ExpenseOrderByWithRelationInput | ExpenseOrderByWithRelationInput[]
+    cursor?: ExpenseWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ExpenseScalarFieldEnum | ExpenseScalarFieldEnum[]
   }
 
   /**
@@ -14199,6 +14641,7 @@ export namespace Prisma {
     priceList?: boolean | Party$priceListArgs<ExtArgs>
     payments?: boolean | Party$paymentsArgs<ExtArgs>
     transactions?: boolean | Party$transactionsArgs<ExtArgs>
+    expenses?: boolean | Party$expensesArgs<ExtArgs>
     suppliedProducts?: boolean | Party$suppliedProductsArgs<ExtArgs>
     _count?: boolean | PartyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["party"]>
@@ -14292,6 +14735,7 @@ export namespace Prisma {
     priceList?: boolean | Party$priceListArgs<ExtArgs>
     payments?: boolean | Party$paymentsArgs<ExtArgs>
     transactions?: boolean | Party$transactionsArgs<ExtArgs>
+    expenses?: boolean | Party$expensesArgs<ExtArgs>
     suppliedProducts?: boolean | Party$suppliedProductsArgs<ExtArgs>
     _count?: boolean | PartyCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -14312,6 +14756,7 @@ export namespace Prisma {
       priceList: Prisma.$PriceListPayload<ExtArgs> | null
       payments: Prisma.$PaymentPayload<ExtArgs>[]
       transactions: Prisma.$TransactionPayload<ExtArgs>[]
+      expenses: Prisma.$ExpensePayload<ExtArgs>[]
       suppliedProducts: Prisma.$VendorProductPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -14737,6 +15182,7 @@ export namespace Prisma {
     priceList<T extends Party$priceListArgs<ExtArgs> = {}>(args?: Subset<T, Party$priceListArgs<ExtArgs>>): Prisma__PriceListClient<$Result.GetResult<Prisma.$PriceListPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     payments<T extends Party$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, Party$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     transactions<T extends Party$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, Party$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    expenses<T extends Party$expensesArgs<ExtArgs> = {}>(args?: Subset<T, Party$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     suppliedProducts<T extends Party$suppliedProductsArgs<ExtArgs> = {}>(args?: Subset<T, Party$suppliedProductsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -15274,6 +15720,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TransactionScalarFieldEnum | TransactionScalarFieldEnum[]
+  }
+
+  /**
+   * Party.expenses
+   */
+  export type Party$expensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    where?: ExpenseWhereInput
+    orderBy?: ExpenseOrderByWithRelationInput | ExpenseOrderByWithRelationInput[]
+    cursor?: ExpenseWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ExpenseScalarFieldEnum | ExpenseScalarFieldEnum[]
   }
 
   /**
@@ -18362,6 +18832,7 @@ export namespace Prisma {
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
     entries?: boolean | GLAccount$entriesArgs<ExtArgs>
     payments?: boolean | GLAccount$paymentsArgs<ExtArgs>
+    expenseCategories?: boolean | GLAccount$expenseCategoriesArgs<ExtArgs>
     _count?: boolean | GLAccountCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["gLAccount"]>
 
@@ -18399,6 +18870,7 @@ export namespace Prisma {
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
     entries?: boolean | GLAccount$entriesArgs<ExtArgs>
     payments?: boolean | GLAccount$paymentsArgs<ExtArgs>
+    expenseCategories?: boolean | GLAccount$expenseCategoriesArgs<ExtArgs>
     _count?: boolean | GLAccountCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type GLAccountIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -18414,6 +18886,7 @@ export namespace Prisma {
       outlet: Prisma.$OutletPayload<ExtArgs>
       entries: Prisma.$LedgerEntryPayload<ExtArgs>[]
       payments: Prisma.$PaymentPayload<ExtArgs>[]
+      expenseCategories: Prisma.$ExpenseCategoryPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -18819,6 +19292,7 @@ export namespace Prisma {
     outlet<T extends OutletDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OutletDefaultArgs<ExtArgs>>): Prisma__OutletClient<$Result.GetResult<Prisma.$OutletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     entries<T extends GLAccount$entriesArgs<ExtArgs> = {}>(args?: Subset<T, GLAccount$entriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LedgerEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     payments<T extends GLAccount$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, GLAccount$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    expenseCategories<T extends GLAccount$expenseCategoriesArgs<ExtArgs> = {}>(args?: Subset<T, GLAccount$expenseCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -19295,6 +19769,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
+  }
+
+  /**
+   * GLAccount.expenseCategories
+   */
+  export type GLAccount$expenseCategoriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    where?: ExpenseCategoryWhereInput
+    orderBy?: ExpenseCategoryOrderByWithRelationInput | ExpenseCategoryOrderByWithRelationInput[]
+    cursor?: ExpenseCategoryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ExpenseCategoryScalarFieldEnum | ExpenseCategoryScalarFieldEnum[]
   }
 
   /**
@@ -29952,6 +30450,7 @@ export namespace Prisma {
     transfersFrom?: boolean | Account$transfersFromArgs<ExtArgs>
     transfersTo?: boolean | Account$transfersToArgs<ExtArgs>
     payments?: boolean | Account$paymentsArgs<ExtArgs>
+    expenses?: boolean | Account$expensesArgs<ExtArgs>
     _count?: boolean | AccountCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["account"]>
 
@@ -29998,6 +30497,7 @@ export namespace Prisma {
     transfersFrom?: boolean | Account$transfersFromArgs<ExtArgs>
     transfersTo?: boolean | Account$transfersToArgs<ExtArgs>
     payments?: boolean | Account$paymentsArgs<ExtArgs>
+    expenses?: boolean | Account$expensesArgs<ExtArgs>
     _count?: boolean | AccountCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type AccountIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -30016,6 +30516,7 @@ export namespace Prisma {
       transfersFrom: Prisma.$TransferPayload<ExtArgs>[]
       transfersTo: Prisma.$TransferPayload<ExtArgs>[]
       payments: Prisma.$PaymentPayload<ExtArgs>[]
+      expenses: Prisma.$ExpensePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -30426,6 +30927,7 @@ export namespace Prisma {
     transfersFrom<T extends Account$transfersFromArgs<ExtArgs> = {}>(args?: Subset<T, Account$transfersFromArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     transfersTo<T extends Account$transfersToArgs<ExtArgs> = {}>(args?: Subset<T, Account$transfersToArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     payments<T extends Account$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, Account$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    expenses<T extends Account$expensesArgs<ExtArgs> = {}>(args?: Subset<T, Account$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -30976,6 +31478,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
+  }
+
+  /**
+   * Account.expenses
+   */
+  export type Account$expensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    where?: ExpenseWhereInput
+    orderBy?: ExpenseOrderByWithRelationInput | ExpenseOrderByWithRelationInput[]
+    cursor?: ExpenseWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ExpenseScalarFieldEnum | ExpenseScalarFieldEnum[]
   }
 
   /**
@@ -34395,6 +34921,3533 @@ export namespace Prisma {
 
 
   /**
+   * Model ExpenseCategory
+   */
+
+  export type AggregateExpenseCategory = {
+    _count: ExpenseCategoryCountAggregateOutputType | null
+    _min: ExpenseCategoryMinAggregateOutputType | null
+    _max: ExpenseCategoryMaxAggregateOutputType | null
+  }
+
+  export type ExpenseCategoryMinAggregateOutputType = {
+    id: string | null
+    outletId: string | null
+    name: string | null
+    code: string | null
+    glAccountId: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ExpenseCategoryMaxAggregateOutputType = {
+    id: string | null
+    outletId: string | null
+    name: string | null
+    code: string | null
+    glAccountId: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ExpenseCategoryCountAggregateOutputType = {
+    id: number
+    outletId: number
+    name: number
+    code: number
+    glAccountId: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ExpenseCategoryMinAggregateInputType = {
+    id?: true
+    outletId?: true
+    name?: true
+    code?: true
+    glAccountId?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ExpenseCategoryMaxAggregateInputType = {
+    id?: true
+    outletId?: true
+    name?: true
+    code?: true
+    glAccountId?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ExpenseCategoryCountAggregateInputType = {
+    id?: true
+    outletId?: true
+    name?: true
+    code?: true
+    glAccountId?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ExpenseCategoryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ExpenseCategory to aggregate.
+     */
+    where?: ExpenseCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ExpenseCategories to fetch.
+     */
+    orderBy?: ExpenseCategoryOrderByWithRelationInput | ExpenseCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ExpenseCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ExpenseCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ExpenseCategories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ExpenseCategories
+    **/
+    _count?: true | ExpenseCategoryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ExpenseCategoryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ExpenseCategoryMaxAggregateInputType
+  }
+
+  export type GetExpenseCategoryAggregateType<T extends ExpenseCategoryAggregateArgs> = {
+        [P in keyof T & keyof AggregateExpenseCategory]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateExpenseCategory[P]>
+      : GetScalarType<T[P], AggregateExpenseCategory[P]>
+  }
+
+
+
+
+  export type ExpenseCategoryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ExpenseCategoryWhereInput
+    orderBy?: ExpenseCategoryOrderByWithAggregationInput | ExpenseCategoryOrderByWithAggregationInput[]
+    by: ExpenseCategoryScalarFieldEnum[] | ExpenseCategoryScalarFieldEnum
+    having?: ExpenseCategoryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ExpenseCategoryCountAggregateInputType | true
+    _min?: ExpenseCategoryMinAggregateInputType
+    _max?: ExpenseCategoryMaxAggregateInputType
+  }
+
+  export type ExpenseCategoryGroupByOutputType = {
+    id: string
+    outletId: string
+    name: string
+    code: string
+    glAccountId: string
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: ExpenseCategoryCountAggregateOutputType | null
+    _min: ExpenseCategoryMinAggregateOutputType | null
+    _max: ExpenseCategoryMaxAggregateOutputType | null
+  }
+
+  type GetExpenseCategoryGroupByPayload<T extends ExpenseCategoryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ExpenseCategoryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ExpenseCategoryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ExpenseCategoryGroupByOutputType[P]>
+            : GetScalarType<T[P], ExpenseCategoryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ExpenseCategorySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    outletId?: boolean
+    name?: boolean
+    code?: boolean
+    glAccountId?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    glAccount?: boolean | GLAccountDefaultArgs<ExtArgs>
+    expenses?: boolean | ExpenseCategory$expensesArgs<ExtArgs>
+    _count?: boolean | ExpenseCategoryCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["expenseCategory"]>
+
+  export type ExpenseCategorySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    outletId?: boolean
+    name?: boolean
+    code?: boolean
+    glAccountId?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    glAccount?: boolean | GLAccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["expenseCategory"]>
+
+  export type ExpenseCategorySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    outletId?: boolean
+    name?: boolean
+    code?: boolean
+    glAccountId?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    glAccount?: boolean | GLAccountDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["expenseCategory"]>
+
+  export type ExpenseCategorySelectScalar = {
+    id?: boolean
+    outletId?: boolean
+    name?: boolean
+    code?: boolean
+    glAccountId?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ExpenseCategoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "outletId" | "name" | "code" | "glAccountId" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["expenseCategory"]>
+  export type ExpenseCategoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    glAccount?: boolean | GLAccountDefaultArgs<ExtArgs>
+    expenses?: boolean | ExpenseCategory$expensesArgs<ExtArgs>
+    _count?: boolean | ExpenseCategoryCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type ExpenseCategoryIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    glAccount?: boolean | GLAccountDefaultArgs<ExtArgs>
+  }
+  export type ExpenseCategoryIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    glAccount?: boolean | GLAccountDefaultArgs<ExtArgs>
+  }
+
+  export type $ExpenseCategoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ExpenseCategory"
+    objects: {
+      outlet: Prisma.$OutletPayload<ExtArgs>
+      glAccount: Prisma.$GLAccountPayload<ExtArgs>
+      expenses: Prisma.$ExpensePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      outletId: string
+      name: string
+      code: string
+      glAccountId: string
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["expenseCategory"]>
+    composites: {}
+  }
+
+  type ExpenseCategoryGetPayload<S extends boolean | null | undefined | ExpenseCategoryDefaultArgs> = $Result.GetResult<Prisma.$ExpenseCategoryPayload, S>
+
+  type ExpenseCategoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ExpenseCategoryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ExpenseCategoryCountAggregateInputType | true
+    }
+
+  export interface ExpenseCategoryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ExpenseCategory'], meta: { name: 'ExpenseCategory' } }
+    /**
+     * Find zero or one ExpenseCategory that matches the filter.
+     * @param {ExpenseCategoryFindUniqueArgs} args - Arguments to find a ExpenseCategory
+     * @example
+     * // Get one ExpenseCategory
+     * const expenseCategory = await prisma.expenseCategory.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ExpenseCategoryFindUniqueArgs>(args: SelectSubset<T, ExpenseCategoryFindUniqueArgs<ExtArgs>>): Prisma__ExpenseCategoryClient<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ExpenseCategory that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ExpenseCategoryFindUniqueOrThrowArgs} args - Arguments to find a ExpenseCategory
+     * @example
+     * // Get one ExpenseCategory
+     * const expenseCategory = await prisma.expenseCategory.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ExpenseCategoryFindUniqueOrThrowArgs>(args: SelectSubset<T, ExpenseCategoryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ExpenseCategoryClient<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ExpenseCategory that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseCategoryFindFirstArgs} args - Arguments to find a ExpenseCategory
+     * @example
+     * // Get one ExpenseCategory
+     * const expenseCategory = await prisma.expenseCategory.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ExpenseCategoryFindFirstArgs>(args?: SelectSubset<T, ExpenseCategoryFindFirstArgs<ExtArgs>>): Prisma__ExpenseCategoryClient<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ExpenseCategory that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseCategoryFindFirstOrThrowArgs} args - Arguments to find a ExpenseCategory
+     * @example
+     * // Get one ExpenseCategory
+     * const expenseCategory = await prisma.expenseCategory.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ExpenseCategoryFindFirstOrThrowArgs>(args?: SelectSubset<T, ExpenseCategoryFindFirstOrThrowArgs<ExtArgs>>): Prisma__ExpenseCategoryClient<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ExpenseCategories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseCategoryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ExpenseCategories
+     * const expenseCategories = await prisma.expenseCategory.findMany()
+     * 
+     * // Get first 10 ExpenseCategories
+     * const expenseCategories = await prisma.expenseCategory.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const expenseCategoryWithIdOnly = await prisma.expenseCategory.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ExpenseCategoryFindManyArgs>(args?: SelectSubset<T, ExpenseCategoryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ExpenseCategory.
+     * @param {ExpenseCategoryCreateArgs} args - Arguments to create a ExpenseCategory.
+     * @example
+     * // Create one ExpenseCategory
+     * const ExpenseCategory = await prisma.expenseCategory.create({
+     *   data: {
+     *     // ... data to create a ExpenseCategory
+     *   }
+     * })
+     * 
+     */
+    create<T extends ExpenseCategoryCreateArgs>(args: SelectSubset<T, ExpenseCategoryCreateArgs<ExtArgs>>): Prisma__ExpenseCategoryClient<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ExpenseCategories.
+     * @param {ExpenseCategoryCreateManyArgs} args - Arguments to create many ExpenseCategories.
+     * @example
+     * // Create many ExpenseCategories
+     * const expenseCategory = await prisma.expenseCategory.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ExpenseCategoryCreateManyArgs>(args?: SelectSubset<T, ExpenseCategoryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ExpenseCategories and returns the data saved in the database.
+     * @param {ExpenseCategoryCreateManyAndReturnArgs} args - Arguments to create many ExpenseCategories.
+     * @example
+     * // Create many ExpenseCategories
+     * const expenseCategory = await prisma.expenseCategory.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ExpenseCategories and only return the `id`
+     * const expenseCategoryWithIdOnly = await prisma.expenseCategory.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ExpenseCategoryCreateManyAndReturnArgs>(args?: SelectSubset<T, ExpenseCategoryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ExpenseCategory.
+     * @param {ExpenseCategoryDeleteArgs} args - Arguments to delete one ExpenseCategory.
+     * @example
+     * // Delete one ExpenseCategory
+     * const ExpenseCategory = await prisma.expenseCategory.delete({
+     *   where: {
+     *     // ... filter to delete one ExpenseCategory
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ExpenseCategoryDeleteArgs>(args: SelectSubset<T, ExpenseCategoryDeleteArgs<ExtArgs>>): Prisma__ExpenseCategoryClient<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ExpenseCategory.
+     * @param {ExpenseCategoryUpdateArgs} args - Arguments to update one ExpenseCategory.
+     * @example
+     * // Update one ExpenseCategory
+     * const expenseCategory = await prisma.expenseCategory.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ExpenseCategoryUpdateArgs>(args: SelectSubset<T, ExpenseCategoryUpdateArgs<ExtArgs>>): Prisma__ExpenseCategoryClient<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ExpenseCategories.
+     * @param {ExpenseCategoryDeleteManyArgs} args - Arguments to filter ExpenseCategories to delete.
+     * @example
+     * // Delete a few ExpenseCategories
+     * const { count } = await prisma.expenseCategory.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ExpenseCategoryDeleteManyArgs>(args?: SelectSubset<T, ExpenseCategoryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ExpenseCategories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseCategoryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ExpenseCategories
+     * const expenseCategory = await prisma.expenseCategory.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ExpenseCategoryUpdateManyArgs>(args: SelectSubset<T, ExpenseCategoryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ExpenseCategories and returns the data updated in the database.
+     * @param {ExpenseCategoryUpdateManyAndReturnArgs} args - Arguments to update many ExpenseCategories.
+     * @example
+     * // Update many ExpenseCategories
+     * const expenseCategory = await prisma.expenseCategory.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ExpenseCategories and only return the `id`
+     * const expenseCategoryWithIdOnly = await prisma.expenseCategory.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ExpenseCategoryUpdateManyAndReturnArgs>(args: SelectSubset<T, ExpenseCategoryUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ExpenseCategory.
+     * @param {ExpenseCategoryUpsertArgs} args - Arguments to update or create a ExpenseCategory.
+     * @example
+     * // Update or create a ExpenseCategory
+     * const expenseCategory = await prisma.expenseCategory.upsert({
+     *   create: {
+     *     // ... data to create a ExpenseCategory
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ExpenseCategory we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ExpenseCategoryUpsertArgs>(args: SelectSubset<T, ExpenseCategoryUpsertArgs<ExtArgs>>): Prisma__ExpenseCategoryClient<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ExpenseCategories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseCategoryCountArgs} args - Arguments to filter ExpenseCategories to count.
+     * @example
+     * // Count the number of ExpenseCategories
+     * const count = await prisma.expenseCategory.count({
+     *   where: {
+     *     // ... the filter for the ExpenseCategories we want to count
+     *   }
+     * })
+    **/
+    count<T extends ExpenseCategoryCountArgs>(
+      args?: Subset<T, ExpenseCategoryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ExpenseCategoryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ExpenseCategory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseCategoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ExpenseCategoryAggregateArgs>(args: Subset<T, ExpenseCategoryAggregateArgs>): Prisma.PrismaPromise<GetExpenseCategoryAggregateType<T>>
+
+    /**
+     * Group by ExpenseCategory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseCategoryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ExpenseCategoryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ExpenseCategoryGroupByArgs['orderBy'] }
+        : { orderBy?: ExpenseCategoryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ExpenseCategoryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetExpenseCategoryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ExpenseCategory model
+   */
+  readonly fields: ExpenseCategoryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ExpenseCategory.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ExpenseCategoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    outlet<T extends OutletDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OutletDefaultArgs<ExtArgs>>): Prisma__OutletClient<$Result.GetResult<Prisma.$OutletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    glAccount<T extends GLAccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GLAccountDefaultArgs<ExtArgs>>): Prisma__GLAccountClient<$Result.GetResult<Prisma.$GLAccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    expenses<T extends ExpenseCategory$expensesArgs<ExtArgs> = {}>(args?: Subset<T, ExpenseCategory$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ExpenseCategory model
+   */
+  interface ExpenseCategoryFieldRefs {
+    readonly id: FieldRef<"ExpenseCategory", 'String'>
+    readonly outletId: FieldRef<"ExpenseCategory", 'String'>
+    readonly name: FieldRef<"ExpenseCategory", 'String'>
+    readonly code: FieldRef<"ExpenseCategory", 'String'>
+    readonly glAccountId: FieldRef<"ExpenseCategory", 'String'>
+    readonly isActive: FieldRef<"ExpenseCategory", 'Boolean'>
+    readonly createdAt: FieldRef<"ExpenseCategory", 'DateTime'>
+    readonly updatedAt: FieldRef<"ExpenseCategory", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ExpenseCategory findUnique
+   */
+  export type ExpenseCategoryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    /**
+     * Filter, which ExpenseCategory to fetch.
+     */
+    where: ExpenseCategoryWhereUniqueInput
+  }
+
+  /**
+   * ExpenseCategory findUniqueOrThrow
+   */
+  export type ExpenseCategoryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    /**
+     * Filter, which ExpenseCategory to fetch.
+     */
+    where: ExpenseCategoryWhereUniqueInput
+  }
+
+  /**
+   * ExpenseCategory findFirst
+   */
+  export type ExpenseCategoryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    /**
+     * Filter, which ExpenseCategory to fetch.
+     */
+    where?: ExpenseCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ExpenseCategories to fetch.
+     */
+    orderBy?: ExpenseCategoryOrderByWithRelationInput | ExpenseCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ExpenseCategories.
+     */
+    cursor?: ExpenseCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ExpenseCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ExpenseCategories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ExpenseCategories.
+     */
+    distinct?: ExpenseCategoryScalarFieldEnum | ExpenseCategoryScalarFieldEnum[]
+  }
+
+  /**
+   * ExpenseCategory findFirstOrThrow
+   */
+  export type ExpenseCategoryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    /**
+     * Filter, which ExpenseCategory to fetch.
+     */
+    where?: ExpenseCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ExpenseCategories to fetch.
+     */
+    orderBy?: ExpenseCategoryOrderByWithRelationInput | ExpenseCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ExpenseCategories.
+     */
+    cursor?: ExpenseCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ExpenseCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ExpenseCategories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ExpenseCategories.
+     */
+    distinct?: ExpenseCategoryScalarFieldEnum | ExpenseCategoryScalarFieldEnum[]
+  }
+
+  /**
+   * ExpenseCategory findMany
+   */
+  export type ExpenseCategoryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    /**
+     * Filter, which ExpenseCategories to fetch.
+     */
+    where?: ExpenseCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ExpenseCategories to fetch.
+     */
+    orderBy?: ExpenseCategoryOrderByWithRelationInput | ExpenseCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ExpenseCategories.
+     */
+    cursor?: ExpenseCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ExpenseCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ExpenseCategories.
+     */
+    skip?: number
+    distinct?: ExpenseCategoryScalarFieldEnum | ExpenseCategoryScalarFieldEnum[]
+  }
+
+  /**
+   * ExpenseCategory create
+   */
+  export type ExpenseCategoryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ExpenseCategory.
+     */
+    data: XOR<ExpenseCategoryCreateInput, ExpenseCategoryUncheckedCreateInput>
+  }
+
+  /**
+   * ExpenseCategory createMany
+   */
+  export type ExpenseCategoryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ExpenseCategories.
+     */
+    data: ExpenseCategoryCreateManyInput | ExpenseCategoryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ExpenseCategory createManyAndReturn
+   */
+  export type ExpenseCategoryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * The data used to create many ExpenseCategories.
+     */
+    data: ExpenseCategoryCreateManyInput | ExpenseCategoryCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ExpenseCategory update
+   */
+  export type ExpenseCategoryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ExpenseCategory.
+     */
+    data: XOR<ExpenseCategoryUpdateInput, ExpenseCategoryUncheckedUpdateInput>
+    /**
+     * Choose, which ExpenseCategory to update.
+     */
+    where: ExpenseCategoryWhereUniqueInput
+  }
+
+  /**
+   * ExpenseCategory updateMany
+   */
+  export type ExpenseCategoryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ExpenseCategories.
+     */
+    data: XOR<ExpenseCategoryUpdateManyMutationInput, ExpenseCategoryUncheckedUpdateManyInput>
+    /**
+     * Filter which ExpenseCategories to update
+     */
+    where?: ExpenseCategoryWhereInput
+    /**
+     * Limit how many ExpenseCategories to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ExpenseCategory updateManyAndReturn
+   */
+  export type ExpenseCategoryUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * The data used to update ExpenseCategories.
+     */
+    data: XOR<ExpenseCategoryUpdateManyMutationInput, ExpenseCategoryUncheckedUpdateManyInput>
+    /**
+     * Filter which ExpenseCategories to update
+     */
+    where?: ExpenseCategoryWhereInput
+    /**
+     * Limit how many ExpenseCategories to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ExpenseCategory upsert
+   */
+  export type ExpenseCategoryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ExpenseCategory to update in case it exists.
+     */
+    where: ExpenseCategoryWhereUniqueInput
+    /**
+     * In case the ExpenseCategory found by the `where` argument doesn't exist, create a new ExpenseCategory with this data.
+     */
+    create: XOR<ExpenseCategoryCreateInput, ExpenseCategoryUncheckedCreateInput>
+    /**
+     * In case the ExpenseCategory was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ExpenseCategoryUpdateInput, ExpenseCategoryUncheckedUpdateInput>
+  }
+
+  /**
+   * ExpenseCategory delete
+   */
+  export type ExpenseCategoryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+    /**
+     * Filter which ExpenseCategory to delete.
+     */
+    where: ExpenseCategoryWhereUniqueInput
+  }
+
+  /**
+   * ExpenseCategory deleteMany
+   */
+  export type ExpenseCategoryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ExpenseCategories to delete
+     */
+    where?: ExpenseCategoryWhereInput
+    /**
+     * Limit how many ExpenseCategories to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ExpenseCategory.expenses
+   */
+  export type ExpenseCategory$expensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    where?: ExpenseWhereInput
+    orderBy?: ExpenseOrderByWithRelationInput | ExpenseOrderByWithRelationInput[]
+    cursor?: ExpenseWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ExpenseScalarFieldEnum | ExpenseScalarFieldEnum[]
+  }
+
+  /**
+   * ExpenseCategory without action
+   */
+  export type ExpenseCategoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExpenseCategory
+     */
+    select?: ExpenseCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExpenseCategory
+     */
+    omit?: ExpenseCategoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseCategoryInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Expense
+   */
+
+  export type AggregateExpense = {
+    _count: ExpenseCountAggregateOutputType | null
+    _avg: ExpenseAvgAggregateOutputType | null
+    _sum: ExpenseSumAggregateOutputType | null
+    _min: ExpenseMinAggregateOutputType | null
+    _max: ExpenseMaxAggregateOutputType | null
+  }
+
+  export type ExpenseAvgAggregateOutputType = {
+    taxableAmount: Decimal | null
+    gstRate: number | null
+    inputGst: Decimal | null
+    totalAmount: Decimal | null
+  }
+
+  export type ExpenseSumAggregateOutputType = {
+    taxableAmount: Decimal | null
+    gstRate: number | null
+    inputGst: Decimal | null
+    totalAmount: Decimal | null
+  }
+
+  export type ExpenseMinAggregateOutputType = {
+    id: string | null
+    outletId: string | null
+    txnNumber: string | null
+    date: Date | null
+    description: string | null
+    categoryId: string | null
+    vendorId: string | null
+    taxableAmount: Decimal | null
+    gstRate: number | null
+    inputGst: Decimal | null
+    totalAmount: Decimal | null
+    paymentMode: string | null
+    accountId: string | null
+    status: string | null
+    createdBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ExpenseMaxAggregateOutputType = {
+    id: string | null
+    outletId: string | null
+    txnNumber: string | null
+    date: Date | null
+    description: string | null
+    categoryId: string | null
+    vendorId: string | null
+    taxableAmount: Decimal | null
+    gstRate: number | null
+    inputGst: Decimal | null
+    totalAmount: Decimal | null
+    paymentMode: string | null
+    accountId: string | null
+    status: string | null
+    createdBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ExpenseCountAggregateOutputType = {
+    id: number
+    outletId: number
+    txnNumber: number
+    date: number
+    description: number
+    categoryId: number
+    vendorId: number
+    taxableAmount: number
+    gstRate: number
+    inputGst: number
+    totalAmount: number
+    paymentMode: number
+    accountId: number
+    status: number
+    createdBy: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ExpenseAvgAggregateInputType = {
+    taxableAmount?: true
+    gstRate?: true
+    inputGst?: true
+    totalAmount?: true
+  }
+
+  export type ExpenseSumAggregateInputType = {
+    taxableAmount?: true
+    gstRate?: true
+    inputGst?: true
+    totalAmount?: true
+  }
+
+  export type ExpenseMinAggregateInputType = {
+    id?: true
+    outletId?: true
+    txnNumber?: true
+    date?: true
+    description?: true
+    categoryId?: true
+    vendorId?: true
+    taxableAmount?: true
+    gstRate?: true
+    inputGst?: true
+    totalAmount?: true
+    paymentMode?: true
+    accountId?: true
+    status?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ExpenseMaxAggregateInputType = {
+    id?: true
+    outletId?: true
+    txnNumber?: true
+    date?: true
+    description?: true
+    categoryId?: true
+    vendorId?: true
+    taxableAmount?: true
+    gstRate?: true
+    inputGst?: true
+    totalAmount?: true
+    paymentMode?: true
+    accountId?: true
+    status?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ExpenseCountAggregateInputType = {
+    id?: true
+    outletId?: true
+    txnNumber?: true
+    date?: true
+    description?: true
+    categoryId?: true
+    vendorId?: true
+    taxableAmount?: true
+    gstRate?: true
+    inputGst?: true
+    totalAmount?: true
+    paymentMode?: true
+    accountId?: true
+    status?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ExpenseAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Expense to aggregate.
+     */
+    where?: ExpenseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Expenses to fetch.
+     */
+    orderBy?: ExpenseOrderByWithRelationInput | ExpenseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ExpenseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Expenses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Expenses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Expenses
+    **/
+    _count?: true | ExpenseCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ExpenseAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ExpenseSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ExpenseMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ExpenseMaxAggregateInputType
+  }
+
+  export type GetExpenseAggregateType<T extends ExpenseAggregateArgs> = {
+        [P in keyof T & keyof AggregateExpense]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateExpense[P]>
+      : GetScalarType<T[P], AggregateExpense[P]>
+  }
+
+
+
+
+  export type ExpenseGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ExpenseWhereInput
+    orderBy?: ExpenseOrderByWithAggregationInput | ExpenseOrderByWithAggregationInput[]
+    by: ExpenseScalarFieldEnum[] | ExpenseScalarFieldEnum
+    having?: ExpenseScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ExpenseCountAggregateInputType | true
+    _avg?: ExpenseAvgAggregateInputType
+    _sum?: ExpenseSumAggregateInputType
+    _min?: ExpenseMinAggregateInputType
+    _max?: ExpenseMaxAggregateInputType
+  }
+
+  export type ExpenseGroupByOutputType = {
+    id: string
+    outletId: string
+    txnNumber: string
+    date: Date
+    description: string
+    categoryId: string
+    vendorId: string | null
+    taxableAmount: Decimal
+    gstRate: number | null
+    inputGst: Decimal
+    totalAmount: Decimal
+    paymentMode: string
+    accountId: string
+    status: string
+    createdBy: string
+    createdAt: Date
+    updatedAt: Date
+    _count: ExpenseCountAggregateOutputType | null
+    _avg: ExpenseAvgAggregateOutputType | null
+    _sum: ExpenseSumAggregateOutputType | null
+    _min: ExpenseMinAggregateOutputType | null
+    _max: ExpenseMaxAggregateOutputType | null
+  }
+
+  type GetExpenseGroupByPayload<T extends ExpenseGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ExpenseGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ExpenseGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ExpenseGroupByOutputType[P]>
+            : GetScalarType<T[P], ExpenseGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ExpenseSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    outletId?: boolean
+    txnNumber?: boolean
+    date?: boolean
+    description?: boolean
+    categoryId?: boolean
+    vendorId?: boolean
+    taxableAmount?: boolean
+    gstRate?: boolean
+    inputGst?: boolean
+    totalAmount?: boolean
+    paymentMode?: boolean
+    accountId?: boolean
+    status?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    category?: boolean | ExpenseCategoryDefaultArgs<ExtArgs>
+    vendor?: boolean | Expense$vendorArgs<ExtArgs>
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["expense"]>
+
+  export type ExpenseSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    outletId?: boolean
+    txnNumber?: boolean
+    date?: boolean
+    description?: boolean
+    categoryId?: boolean
+    vendorId?: boolean
+    taxableAmount?: boolean
+    gstRate?: boolean
+    inputGst?: boolean
+    totalAmount?: boolean
+    paymentMode?: boolean
+    accountId?: boolean
+    status?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    category?: boolean | ExpenseCategoryDefaultArgs<ExtArgs>
+    vendor?: boolean | Expense$vendorArgs<ExtArgs>
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["expense"]>
+
+  export type ExpenseSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    outletId?: boolean
+    txnNumber?: boolean
+    date?: boolean
+    description?: boolean
+    categoryId?: boolean
+    vendorId?: boolean
+    taxableAmount?: boolean
+    gstRate?: boolean
+    inputGst?: boolean
+    totalAmount?: boolean
+    paymentMode?: boolean
+    accountId?: boolean
+    status?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    category?: boolean | ExpenseCategoryDefaultArgs<ExtArgs>
+    vendor?: boolean | Expense$vendorArgs<ExtArgs>
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["expense"]>
+
+  export type ExpenseSelectScalar = {
+    id?: boolean
+    outletId?: boolean
+    txnNumber?: boolean
+    date?: boolean
+    description?: boolean
+    categoryId?: boolean
+    vendorId?: boolean
+    taxableAmount?: boolean
+    gstRate?: boolean
+    inputGst?: boolean
+    totalAmount?: boolean
+    paymentMode?: boolean
+    accountId?: boolean
+    status?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ExpenseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "outletId" | "txnNumber" | "date" | "description" | "categoryId" | "vendorId" | "taxableAmount" | "gstRate" | "inputGst" | "totalAmount" | "paymentMode" | "accountId" | "status" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["expense"]>
+  export type ExpenseInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    category?: boolean | ExpenseCategoryDefaultArgs<ExtArgs>
+    vendor?: boolean | Expense$vendorArgs<ExtArgs>
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ExpenseIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    category?: boolean | ExpenseCategoryDefaultArgs<ExtArgs>
+    vendor?: boolean | Expense$vendorArgs<ExtArgs>
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ExpenseIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    outlet?: boolean | OutletDefaultArgs<ExtArgs>
+    category?: boolean | ExpenseCategoryDefaultArgs<ExtArgs>
+    vendor?: boolean | Expense$vendorArgs<ExtArgs>
+    account?: boolean | AccountDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $ExpensePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Expense"
+    objects: {
+      outlet: Prisma.$OutletPayload<ExtArgs>
+      category: Prisma.$ExpenseCategoryPayload<ExtArgs>
+      vendor: Prisma.$PartyPayload<ExtArgs> | null
+      account: Prisma.$AccountPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      outletId: string
+      txnNumber: string
+      date: Date
+      description: string
+      categoryId: string
+      vendorId: string | null
+      taxableAmount: Prisma.Decimal
+      gstRate: number | null
+      inputGst: Prisma.Decimal
+      totalAmount: Prisma.Decimal
+      paymentMode: string
+      accountId: string
+      status: string
+      createdBy: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["expense"]>
+    composites: {}
+  }
+
+  type ExpenseGetPayload<S extends boolean | null | undefined | ExpenseDefaultArgs> = $Result.GetResult<Prisma.$ExpensePayload, S>
+
+  type ExpenseCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ExpenseFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ExpenseCountAggregateInputType | true
+    }
+
+  export interface ExpenseDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Expense'], meta: { name: 'Expense' } }
+    /**
+     * Find zero or one Expense that matches the filter.
+     * @param {ExpenseFindUniqueArgs} args - Arguments to find a Expense
+     * @example
+     * // Get one Expense
+     * const expense = await prisma.expense.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ExpenseFindUniqueArgs>(args: SelectSubset<T, ExpenseFindUniqueArgs<ExtArgs>>): Prisma__ExpenseClient<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Expense that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ExpenseFindUniqueOrThrowArgs} args - Arguments to find a Expense
+     * @example
+     * // Get one Expense
+     * const expense = await prisma.expense.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ExpenseFindUniqueOrThrowArgs>(args: SelectSubset<T, ExpenseFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ExpenseClient<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Expense that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseFindFirstArgs} args - Arguments to find a Expense
+     * @example
+     * // Get one Expense
+     * const expense = await prisma.expense.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ExpenseFindFirstArgs>(args?: SelectSubset<T, ExpenseFindFirstArgs<ExtArgs>>): Prisma__ExpenseClient<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Expense that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseFindFirstOrThrowArgs} args - Arguments to find a Expense
+     * @example
+     * // Get one Expense
+     * const expense = await prisma.expense.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ExpenseFindFirstOrThrowArgs>(args?: SelectSubset<T, ExpenseFindFirstOrThrowArgs<ExtArgs>>): Prisma__ExpenseClient<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Expenses that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Expenses
+     * const expenses = await prisma.expense.findMany()
+     * 
+     * // Get first 10 Expenses
+     * const expenses = await prisma.expense.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const expenseWithIdOnly = await prisma.expense.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ExpenseFindManyArgs>(args?: SelectSubset<T, ExpenseFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Expense.
+     * @param {ExpenseCreateArgs} args - Arguments to create a Expense.
+     * @example
+     * // Create one Expense
+     * const Expense = await prisma.expense.create({
+     *   data: {
+     *     // ... data to create a Expense
+     *   }
+     * })
+     * 
+     */
+    create<T extends ExpenseCreateArgs>(args: SelectSubset<T, ExpenseCreateArgs<ExtArgs>>): Prisma__ExpenseClient<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Expenses.
+     * @param {ExpenseCreateManyArgs} args - Arguments to create many Expenses.
+     * @example
+     * // Create many Expenses
+     * const expense = await prisma.expense.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ExpenseCreateManyArgs>(args?: SelectSubset<T, ExpenseCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Expenses and returns the data saved in the database.
+     * @param {ExpenseCreateManyAndReturnArgs} args - Arguments to create many Expenses.
+     * @example
+     * // Create many Expenses
+     * const expense = await prisma.expense.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Expenses and only return the `id`
+     * const expenseWithIdOnly = await prisma.expense.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ExpenseCreateManyAndReturnArgs>(args?: SelectSubset<T, ExpenseCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Expense.
+     * @param {ExpenseDeleteArgs} args - Arguments to delete one Expense.
+     * @example
+     * // Delete one Expense
+     * const Expense = await prisma.expense.delete({
+     *   where: {
+     *     // ... filter to delete one Expense
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ExpenseDeleteArgs>(args: SelectSubset<T, ExpenseDeleteArgs<ExtArgs>>): Prisma__ExpenseClient<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Expense.
+     * @param {ExpenseUpdateArgs} args - Arguments to update one Expense.
+     * @example
+     * // Update one Expense
+     * const expense = await prisma.expense.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ExpenseUpdateArgs>(args: SelectSubset<T, ExpenseUpdateArgs<ExtArgs>>): Prisma__ExpenseClient<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Expenses.
+     * @param {ExpenseDeleteManyArgs} args - Arguments to filter Expenses to delete.
+     * @example
+     * // Delete a few Expenses
+     * const { count } = await prisma.expense.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ExpenseDeleteManyArgs>(args?: SelectSubset<T, ExpenseDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Expenses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Expenses
+     * const expense = await prisma.expense.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ExpenseUpdateManyArgs>(args: SelectSubset<T, ExpenseUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Expenses and returns the data updated in the database.
+     * @param {ExpenseUpdateManyAndReturnArgs} args - Arguments to update many Expenses.
+     * @example
+     * // Update many Expenses
+     * const expense = await prisma.expense.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Expenses and only return the `id`
+     * const expenseWithIdOnly = await prisma.expense.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ExpenseUpdateManyAndReturnArgs>(args: SelectSubset<T, ExpenseUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Expense.
+     * @param {ExpenseUpsertArgs} args - Arguments to update or create a Expense.
+     * @example
+     * // Update or create a Expense
+     * const expense = await prisma.expense.upsert({
+     *   create: {
+     *     // ... data to create a Expense
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Expense we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ExpenseUpsertArgs>(args: SelectSubset<T, ExpenseUpsertArgs<ExtArgs>>): Prisma__ExpenseClient<$Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Expenses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseCountArgs} args - Arguments to filter Expenses to count.
+     * @example
+     * // Count the number of Expenses
+     * const count = await prisma.expense.count({
+     *   where: {
+     *     // ... the filter for the Expenses we want to count
+     *   }
+     * })
+    **/
+    count<T extends ExpenseCountArgs>(
+      args?: Subset<T, ExpenseCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ExpenseCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Expense.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ExpenseAggregateArgs>(args: Subset<T, ExpenseAggregateArgs>): Prisma.PrismaPromise<GetExpenseAggregateType<T>>
+
+    /**
+     * Group by Expense.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ExpenseGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ExpenseGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ExpenseGroupByArgs['orderBy'] }
+        : { orderBy?: ExpenseGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ExpenseGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetExpenseGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Expense model
+   */
+  readonly fields: ExpenseFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Expense.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ExpenseClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    outlet<T extends OutletDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OutletDefaultArgs<ExtArgs>>): Prisma__OutletClient<$Result.GetResult<Prisma.$OutletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    category<T extends ExpenseCategoryDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ExpenseCategoryDefaultArgs<ExtArgs>>): Prisma__ExpenseCategoryClient<$Result.GetResult<Prisma.$ExpenseCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    vendor<T extends Expense$vendorArgs<ExtArgs> = {}>(args?: Subset<T, Expense$vendorArgs<ExtArgs>>): Prisma__PartyClient<$Result.GetResult<Prisma.$PartyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Expense model
+   */
+  interface ExpenseFieldRefs {
+    readonly id: FieldRef<"Expense", 'String'>
+    readonly outletId: FieldRef<"Expense", 'String'>
+    readonly txnNumber: FieldRef<"Expense", 'String'>
+    readonly date: FieldRef<"Expense", 'DateTime'>
+    readonly description: FieldRef<"Expense", 'String'>
+    readonly categoryId: FieldRef<"Expense", 'String'>
+    readonly vendorId: FieldRef<"Expense", 'String'>
+    readonly taxableAmount: FieldRef<"Expense", 'Decimal'>
+    readonly gstRate: FieldRef<"Expense", 'Int'>
+    readonly inputGst: FieldRef<"Expense", 'Decimal'>
+    readonly totalAmount: FieldRef<"Expense", 'Decimal'>
+    readonly paymentMode: FieldRef<"Expense", 'String'>
+    readonly accountId: FieldRef<"Expense", 'String'>
+    readonly status: FieldRef<"Expense", 'String'>
+    readonly createdBy: FieldRef<"Expense", 'String'>
+    readonly createdAt: FieldRef<"Expense", 'DateTime'>
+    readonly updatedAt: FieldRef<"Expense", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Expense findUnique
+   */
+  export type ExpenseFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    /**
+     * Filter, which Expense to fetch.
+     */
+    where: ExpenseWhereUniqueInput
+  }
+
+  /**
+   * Expense findUniqueOrThrow
+   */
+  export type ExpenseFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    /**
+     * Filter, which Expense to fetch.
+     */
+    where: ExpenseWhereUniqueInput
+  }
+
+  /**
+   * Expense findFirst
+   */
+  export type ExpenseFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    /**
+     * Filter, which Expense to fetch.
+     */
+    where?: ExpenseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Expenses to fetch.
+     */
+    orderBy?: ExpenseOrderByWithRelationInput | ExpenseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Expenses.
+     */
+    cursor?: ExpenseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Expenses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Expenses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Expenses.
+     */
+    distinct?: ExpenseScalarFieldEnum | ExpenseScalarFieldEnum[]
+  }
+
+  /**
+   * Expense findFirstOrThrow
+   */
+  export type ExpenseFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    /**
+     * Filter, which Expense to fetch.
+     */
+    where?: ExpenseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Expenses to fetch.
+     */
+    orderBy?: ExpenseOrderByWithRelationInput | ExpenseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Expenses.
+     */
+    cursor?: ExpenseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Expenses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Expenses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Expenses.
+     */
+    distinct?: ExpenseScalarFieldEnum | ExpenseScalarFieldEnum[]
+  }
+
+  /**
+   * Expense findMany
+   */
+  export type ExpenseFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    /**
+     * Filter, which Expenses to fetch.
+     */
+    where?: ExpenseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Expenses to fetch.
+     */
+    orderBy?: ExpenseOrderByWithRelationInput | ExpenseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Expenses.
+     */
+    cursor?: ExpenseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Expenses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Expenses.
+     */
+    skip?: number
+    distinct?: ExpenseScalarFieldEnum | ExpenseScalarFieldEnum[]
+  }
+
+  /**
+   * Expense create
+   */
+  export type ExpenseCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Expense.
+     */
+    data: XOR<ExpenseCreateInput, ExpenseUncheckedCreateInput>
+  }
+
+  /**
+   * Expense createMany
+   */
+  export type ExpenseCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Expenses.
+     */
+    data: ExpenseCreateManyInput | ExpenseCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Expense createManyAndReturn
+   */
+  export type ExpenseCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * The data used to create many Expenses.
+     */
+    data: ExpenseCreateManyInput | ExpenseCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Expense update
+   */
+  export type ExpenseUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Expense.
+     */
+    data: XOR<ExpenseUpdateInput, ExpenseUncheckedUpdateInput>
+    /**
+     * Choose, which Expense to update.
+     */
+    where: ExpenseWhereUniqueInput
+  }
+
+  /**
+   * Expense updateMany
+   */
+  export type ExpenseUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Expenses.
+     */
+    data: XOR<ExpenseUpdateManyMutationInput, ExpenseUncheckedUpdateManyInput>
+    /**
+     * Filter which Expenses to update
+     */
+    where?: ExpenseWhereInput
+    /**
+     * Limit how many Expenses to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Expense updateManyAndReturn
+   */
+  export type ExpenseUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * The data used to update Expenses.
+     */
+    data: XOR<ExpenseUpdateManyMutationInput, ExpenseUncheckedUpdateManyInput>
+    /**
+     * Filter which Expenses to update
+     */
+    where?: ExpenseWhereInput
+    /**
+     * Limit how many Expenses to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Expense upsert
+   */
+  export type ExpenseUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Expense to update in case it exists.
+     */
+    where: ExpenseWhereUniqueInput
+    /**
+     * In case the Expense found by the `where` argument doesn't exist, create a new Expense with this data.
+     */
+    create: XOR<ExpenseCreateInput, ExpenseUncheckedCreateInput>
+    /**
+     * In case the Expense was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ExpenseUpdateInput, ExpenseUncheckedUpdateInput>
+  }
+
+  /**
+   * Expense delete
+   */
+  export type ExpenseDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+    /**
+     * Filter which Expense to delete.
+     */
+    where: ExpenseWhereUniqueInput
+  }
+
+  /**
+   * Expense deleteMany
+   */
+  export type ExpenseDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Expenses to delete
+     */
+    where?: ExpenseWhereInput
+    /**
+     * Limit how many Expenses to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Expense.vendor
+   */
+  export type Expense$vendorArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Party
+     */
+    select?: PartySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Party
+     */
+    omit?: PartyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PartyInclude<ExtArgs> | null
+    where?: PartyWhereInput
+  }
+
+  /**
+   * Expense without action
+   */
+  export type ExpenseDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Expense
+     */
+    select?: ExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Expense
+     */
+    omit?: ExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExpenseInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Attachment
+   */
+
+  export type AggregateAttachment = {
+    _count: AttachmentCountAggregateOutputType | null
+    _avg: AttachmentAvgAggregateOutputType | null
+    _sum: AttachmentSumAggregateOutputType | null
+    _min: AttachmentMinAggregateOutputType | null
+    _max: AttachmentMaxAggregateOutputType | null
+  }
+
+  export type AttachmentAvgAggregateOutputType = {
+    size: number | null
+  }
+
+  export type AttachmentSumAggregateOutputType = {
+    size: number | null
+  }
+
+  export type AttachmentMinAggregateOutputType = {
+    id: string | null
+    moduleType: string | null
+    referenceId: string | null
+    fileName: string | null
+    mimeType: string | null
+    size: number | null
+    data: Bytes | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AttachmentMaxAggregateOutputType = {
+    id: string | null
+    moduleType: string | null
+    referenceId: string | null
+    fileName: string | null
+    mimeType: string | null
+    size: number | null
+    data: Bytes | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AttachmentCountAggregateOutputType = {
+    id: number
+    moduleType: number
+    referenceId: number
+    fileName: number
+    mimeType: number
+    size: number
+    data: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AttachmentAvgAggregateInputType = {
+    size?: true
+  }
+
+  export type AttachmentSumAggregateInputType = {
+    size?: true
+  }
+
+  export type AttachmentMinAggregateInputType = {
+    id?: true
+    moduleType?: true
+    referenceId?: true
+    fileName?: true
+    mimeType?: true
+    size?: true
+    data?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AttachmentMaxAggregateInputType = {
+    id?: true
+    moduleType?: true
+    referenceId?: true
+    fileName?: true
+    mimeType?: true
+    size?: true
+    data?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AttachmentCountAggregateInputType = {
+    id?: true
+    moduleType?: true
+    referenceId?: true
+    fileName?: true
+    mimeType?: true
+    size?: true
+    data?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AttachmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Attachment to aggregate.
+     */
+    where?: AttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Attachments to fetch.
+     */
+    orderBy?: AttachmentOrderByWithRelationInput | AttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Attachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Attachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Attachments
+    **/
+    _count?: true | AttachmentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AttachmentAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AttachmentSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AttachmentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AttachmentMaxAggregateInputType
+  }
+
+  export type GetAttachmentAggregateType<T extends AttachmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateAttachment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAttachment[P]>
+      : GetScalarType<T[P], AggregateAttachment[P]>
+  }
+
+
+
+
+  export type AttachmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AttachmentWhereInput
+    orderBy?: AttachmentOrderByWithAggregationInput | AttachmentOrderByWithAggregationInput[]
+    by: AttachmentScalarFieldEnum[] | AttachmentScalarFieldEnum
+    having?: AttachmentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AttachmentCountAggregateInputType | true
+    _avg?: AttachmentAvgAggregateInputType
+    _sum?: AttachmentSumAggregateInputType
+    _min?: AttachmentMinAggregateInputType
+    _max?: AttachmentMaxAggregateInputType
+  }
+
+  export type AttachmentGroupByOutputType = {
+    id: string
+    moduleType: string
+    referenceId: string
+    fileName: string
+    mimeType: string
+    size: number
+    data: Bytes
+    createdAt: Date
+    updatedAt: Date
+    _count: AttachmentCountAggregateOutputType | null
+    _avg: AttachmentAvgAggregateOutputType | null
+    _sum: AttachmentSumAggregateOutputType | null
+    _min: AttachmentMinAggregateOutputType | null
+    _max: AttachmentMaxAggregateOutputType | null
+  }
+
+  type GetAttachmentGroupByPayload<T extends AttachmentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AttachmentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AttachmentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AttachmentGroupByOutputType[P]>
+            : GetScalarType<T[P], AttachmentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AttachmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    moduleType?: boolean
+    referenceId?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    size?: boolean
+    data?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["attachment"]>
+
+  export type AttachmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    moduleType?: boolean
+    referenceId?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    size?: boolean
+    data?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["attachment"]>
+
+  export type AttachmentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    moduleType?: boolean
+    referenceId?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    size?: boolean
+    data?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["attachment"]>
+
+  export type AttachmentSelectScalar = {
+    id?: boolean
+    moduleType?: boolean
+    referenceId?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    size?: boolean
+    data?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "moduleType" | "referenceId" | "fileName" | "mimeType" | "size" | "data" | "createdAt" | "updatedAt", ExtArgs["result"]["attachment"]>
+
+  export type $AttachmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Attachment"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      moduleType: string
+      referenceId: string
+      fileName: string
+      mimeType: string
+      size: number
+      data: Prisma.Bytes
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["attachment"]>
+    composites: {}
+  }
+
+  type AttachmentGetPayload<S extends boolean | null | undefined | AttachmentDefaultArgs> = $Result.GetResult<Prisma.$AttachmentPayload, S>
+
+  type AttachmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AttachmentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AttachmentCountAggregateInputType | true
+    }
+
+  export interface AttachmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Attachment'], meta: { name: 'Attachment' } }
+    /**
+     * Find zero or one Attachment that matches the filter.
+     * @param {AttachmentFindUniqueArgs} args - Arguments to find a Attachment
+     * @example
+     * // Get one Attachment
+     * const attachment = await prisma.attachment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AttachmentFindUniqueArgs>(args: SelectSubset<T, AttachmentFindUniqueArgs<ExtArgs>>): Prisma__AttachmentClient<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Attachment that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AttachmentFindUniqueOrThrowArgs} args - Arguments to find a Attachment
+     * @example
+     * // Get one Attachment
+     * const attachment = await prisma.attachment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AttachmentFindUniqueOrThrowArgs>(args: SelectSubset<T, AttachmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AttachmentClient<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Attachment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AttachmentFindFirstArgs} args - Arguments to find a Attachment
+     * @example
+     * // Get one Attachment
+     * const attachment = await prisma.attachment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AttachmentFindFirstArgs>(args?: SelectSubset<T, AttachmentFindFirstArgs<ExtArgs>>): Prisma__AttachmentClient<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Attachment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AttachmentFindFirstOrThrowArgs} args - Arguments to find a Attachment
+     * @example
+     * // Get one Attachment
+     * const attachment = await prisma.attachment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AttachmentFindFirstOrThrowArgs>(args?: SelectSubset<T, AttachmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__AttachmentClient<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Attachments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AttachmentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Attachments
+     * const attachments = await prisma.attachment.findMany()
+     * 
+     * // Get first 10 Attachments
+     * const attachments = await prisma.attachment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const attachmentWithIdOnly = await prisma.attachment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AttachmentFindManyArgs>(args?: SelectSubset<T, AttachmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Attachment.
+     * @param {AttachmentCreateArgs} args - Arguments to create a Attachment.
+     * @example
+     * // Create one Attachment
+     * const Attachment = await prisma.attachment.create({
+     *   data: {
+     *     // ... data to create a Attachment
+     *   }
+     * })
+     * 
+     */
+    create<T extends AttachmentCreateArgs>(args: SelectSubset<T, AttachmentCreateArgs<ExtArgs>>): Prisma__AttachmentClient<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Attachments.
+     * @param {AttachmentCreateManyArgs} args - Arguments to create many Attachments.
+     * @example
+     * // Create many Attachments
+     * const attachment = await prisma.attachment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AttachmentCreateManyArgs>(args?: SelectSubset<T, AttachmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Attachments and returns the data saved in the database.
+     * @param {AttachmentCreateManyAndReturnArgs} args - Arguments to create many Attachments.
+     * @example
+     * // Create many Attachments
+     * const attachment = await prisma.attachment.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Attachments and only return the `id`
+     * const attachmentWithIdOnly = await prisma.attachment.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AttachmentCreateManyAndReturnArgs>(args?: SelectSubset<T, AttachmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Attachment.
+     * @param {AttachmentDeleteArgs} args - Arguments to delete one Attachment.
+     * @example
+     * // Delete one Attachment
+     * const Attachment = await prisma.attachment.delete({
+     *   where: {
+     *     // ... filter to delete one Attachment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AttachmentDeleteArgs>(args: SelectSubset<T, AttachmentDeleteArgs<ExtArgs>>): Prisma__AttachmentClient<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Attachment.
+     * @param {AttachmentUpdateArgs} args - Arguments to update one Attachment.
+     * @example
+     * // Update one Attachment
+     * const attachment = await prisma.attachment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AttachmentUpdateArgs>(args: SelectSubset<T, AttachmentUpdateArgs<ExtArgs>>): Prisma__AttachmentClient<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Attachments.
+     * @param {AttachmentDeleteManyArgs} args - Arguments to filter Attachments to delete.
+     * @example
+     * // Delete a few Attachments
+     * const { count } = await prisma.attachment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AttachmentDeleteManyArgs>(args?: SelectSubset<T, AttachmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Attachments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AttachmentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Attachments
+     * const attachment = await prisma.attachment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AttachmentUpdateManyArgs>(args: SelectSubset<T, AttachmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Attachments and returns the data updated in the database.
+     * @param {AttachmentUpdateManyAndReturnArgs} args - Arguments to update many Attachments.
+     * @example
+     * // Update many Attachments
+     * const attachment = await prisma.attachment.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Attachments and only return the `id`
+     * const attachmentWithIdOnly = await prisma.attachment.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AttachmentUpdateManyAndReturnArgs>(args: SelectSubset<T, AttachmentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Attachment.
+     * @param {AttachmentUpsertArgs} args - Arguments to update or create a Attachment.
+     * @example
+     * // Update or create a Attachment
+     * const attachment = await prisma.attachment.upsert({
+     *   create: {
+     *     // ... data to create a Attachment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Attachment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AttachmentUpsertArgs>(args: SelectSubset<T, AttachmentUpsertArgs<ExtArgs>>): Prisma__AttachmentClient<$Result.GetResult<Prisma.$AttachmentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Attachments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AttachmentCountArgs} args - Arguments to filter Attachments to count.
+     * @example
+     * // Count the number of Attachments
+     * const count = await prisma.attachment.count({
+     *   where: {
+     *     // ... the filter for the Attachments we want to count
+     *   }
+     * })
+    **/
+    count<T extends AttachmentCountArgs>(
+      args?: Subset<T, AttachmentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AttachmentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Attachment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AttachmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AttachmentAggregateArgs>(args: Subset<T, AttachmentAggregateArgs>): Prisma.PrismaPromise<GetAttachmentAggregateType<T>>
+
+    /**
+     * Group by Attachment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AttachmentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AttachmentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AttachmentGroupByArgs['orderBy'] }
+        : { orderBy?: AttachmentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AttachmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAttachmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Attachment model
+   */
+  readonly fields: AttachmentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Attachment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AttachmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Attachment model
+   */
+  interface AttachmentFieldRefs {
+    readonly id: FieldRef<"Attachment", 'String'>
+    readonly moduleType: FieldRef<"Attachment", 'String'>
+    readonly referenceId: FieldRef<"Attachment", 'String'>
+    readonly fileName: FieldRef<"Attachment", 'String'>
+    readonly mimeType: FieldRef<"Attachment", 'String'>
+    readonly size: FieldRef<"Attachment", 'Int'>
+    readonly data: FieldRef<"Attachment", 'Bytes'>
+    readonly createdAt: FieldRef<"Attachment", 'DateTime'>
+    readonly updatedAt: FieldRef<"Attachment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Attachment findUnique
+   */
+  export type AttachmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * Filter, which Attachment to fetch.
+     */
+    where: AttachmentWhereUniqueInput
+  }
+
+  /**
+   * Attachment findUniqueOrThrow
+   */
+  export type AttachmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * Filter, which Attachment to fetch.
+     */
+    where: AttachmentWhereUniqueInput
+  }
+
+  /**
+   * Attachment findFirst
+   */
+  export type AttachmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * Filter, which Attachment to fetch.
+     */
+    where?: AttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Attachments to fetch.
+     */
+    orderBy?: AttachmentOrderByWithRelationInput | AttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Attachments.
+     */
+    cursor?: AttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Attachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Attachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Attachments.
+     */
+    distinct?: AttachmentScalarFieldEnum | AttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * Attachment findFirstOrThrow
+   */
+  export type AttachmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * Filter, which Attachment to fetch.
+     */
+    where?: AttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Attachments to fetch.
+     */
+    orderBy?: AttachmentOrderByWithRelationInput | AttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Attachments.
+     */
+    cursor?: AttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Attachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Attachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Attachments.
+     */
+    distinct?: AttachmentScalarFieldEnum | AttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * Attachment findMany
+   */
+  export type AttachmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * Filter, which Attachments to fetch.
+     */
+    where?: AttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Attachments to fetch.
+     */
+    orderBy?: AttachmentOrderByWithRelationInput | AttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Attachments.
+     */
+    cursor?: AttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Attachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Attachments.
+     */
+    skip?: number
+    distinct?: AttachmentScalarFieldEnum | AttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * Attachment create
+   */
+  export type AttachmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * The data needed to create a Attachment.
+     */
+    data: XOR<AttachmentCreateInput, AttachmentUncheckedCreateInput>
+  }
+
+  /**
+   * Attachment createMany
+   */
+  export type AttachmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Attachments.
+     */
+    data: AttachmentCreateManyInput | AttachmentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Attachment createManyAndReturn
+   */
+  export type AttachmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * The data used to create many Attachments.
+     */
+    data: AttachmentCreateManyInput | AttachmentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Attachment update
+   */
+  export type AttachmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * The data needed to update a Attachment.
+     */
+    data: XOR<AttachmentUpdateInput, AttachmentUncheckedUpdateInput>
+    /**
+     * Choose, which Attachment to update.
+     */
+    where: AttachmentWhereUniqueInput
+  }
+
+  /**
+   * Attachment updateMany
+   */
+  export type AttachmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Attachments.
+     */
+    data: XOR<AttachmentUpdateManyMutationInput, AttachmentUncheckedUpdateManyInput>
+    /**
+     * Filter which Attachments to update
+     */
+    where?: AttachmentWhereInput
+    /**
+     * Limit how many Attachments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Attachment updateManyAndReturn
+   */
+  export type AttachmentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * The data used to update Attachments.
+     */
+    data: XOR<AttachmentUpdateManyMutationInput, AttachmentUncheckedUpdateManyInput>
+    /**
+     * Filter which Attachments to update
+     */
+    where?: AttachmentWhereInput
+    /**
+     * Limit how many Attachments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Attachment upsert
+   */
+  export type AttachmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * The filter to search for the Attachment to update in case it exists.
+     */
+    where: AttachmentWhereUniqueInput
+    /**
+     * In case the Attachment found by the `where` argument doesn't exist, create a new Attachment with this data.
+     */
+    create: XOR<AttachmentCreateInput, AttachmentUncheckedCreateInput>
+    /**
+     * In case the Attachment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AttachmentUpdateInput, AttachmentUncheckedUpdateInput>
+  }
+
+  /**
+   * Attachment delete
+   */
+  export type AttachmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+    /**
+     * Filter which Attachment to delete.
+     */
+    where: AttachmentWhereUniqueInput
+  }
+
+  /**
+   * Attachment deleteMany
+   */
+  export type AttachmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Attachments to delete
+     */
+    where?: AttachmentWhereInput
+    /**
+     * Limit how many Attachments to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Attachment without action
+   */
+  export type AttachmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attachment
+     */
+    select?: AttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Attachment
+     */
+    omit?: AttachmentOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -34794,6 +38847,58 @@ export namespace Prisma {
   export type TransferScalarFieldEnum = (typeof TransferScalarFieldEnum)[keyof typeof TransferScalarFieldEnum]
 
 
+  export const ExpenseCategoryScalarFieldEnum: {
+    id: 'id',
+    outletId: 'outletId',
+    name: 'name',
+    code: 'code',
+    glAccountId: 'glAccountId',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ExpenseCategoryScalarFieldEnum = (typeof ExpenseCategoryScalarFieldEnum)[keyof typeof ExpenseCategoryScalarFieldEnum]
+
+
+  export const ExpenseScalarFieldEnum: {
+    id: 'id',
+    outletId: 'outletId',
+    txnNumber: 'txnNumber',
+    date: 'date',
+    description: 'description',
+    categoryId: 'categoryId',
+    vendorId: 'vendorId',
+    taxableAmount: 'taxableAmount',
+    gstRate: 'gstRate',
+    inputGst: 'inputGst',
+    totalAmount: 'totalAmount',
+    paymentMode: 'paymentMode',
+    accountId: 'accountId',
+    status: 'status',
+    createdBy: 'createdBy',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ExpenseScalarFieldEnum = (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum]
+
+
+  export const AttachmentScalarFieldEnum: {
+    id: 'id',
+    moduleType: 'moduleType',
+    referenceId: 'referenceId',
+    fileName: 'fileName',
+    mimeType: 'mimeType',
+    size: 'size',
+    data: 'data',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AttachmentScalarFieldEnum = (typeof AttachmentScalarFieldEnum)[keyof typeof AttachmentScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -35027,6 +39132,34 @@ export namespace Prisma {
    */
   export type ListEnumTransactionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TransactionType[]'>
     
+
+
+  /**
+   * Reference to a field of type 'Decimal'
+   */
+  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal[]'
+   */
+  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Bytes'
+   */
+  export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
+    
+
+
+  /**
+   * Reference to a field of type 'Bytes[]'
+   */
+  export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
+    
   /**
    * Deep Input Types
    */
@@ -35048,6 +39181,7 @@ export namespace Prisma {
     payments?: PaymentListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
     transactions?: TransactionListRelationFilter
+    expenses?: ExpenseListRelationFilter
     outlets?: OutletListRelationFilter
   }
 
@@ -35064,6 +39198,7 @@ export namespace Prisma {
     payments?: PaymentOrderByRelationAggregateInput
     stockLedger?: StockLedgerOrderByRelationAggregateInput
     transactions?: TransactionOrderByRelationAggregateInput
+    expenses?: ExpenseOrderByRelationAggregateInput
     outlets?: OutletOrderByRelationAggregateInput
   }
 
@@ -35083,6 +39218,7 @@ export namespace Prisma {
     payments?: PaymentListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
     transactions?: TransactionListRelationFilter
+    expenses?: ExpenseListRelationFilter
     outlets?: OutletListRelationFilter
   }, "id" | "email">
 
@@ -35288,6 +39424,7 @@ export namespace Prisma {
     glAccounts?: GLAccountListRelationFilter
     operationalAccounts?: AccountListRelationFilter
     categories?: CategoryListRelationFilter
+    expenseCategories?: ExpenseCategoryListRelationFilter
     batches?: CustomBatchListRelationFilter
     series?: DocumentSeriesListRelationFilter
     parties?: PartyListRelationFilter
@@ -35296,6 +39433,7 @@ export namespace Prisma {
     stocks?: StockListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
     transactions?: TransactionListRelationFilter
+    expenses?: ExpenseListRelationFilter
     users?: UserListRelationFilter
     warehouses?: WarehouseListRelationFilter
   }
@@ -35316,6 +39454,7 @@ export namespace Prisma {
     glAccounts?: GLAccountOrderByRelationAggregateInput
     operationalAccounts?: AccountOrderByRelationAggregateInput
     categories?: CategoryOrderByRelationAggregateInput
+    expenseCategories?: ExpenseCategoryOrderByRelationAggregateInput
     batches?: CustomBatchOrderByRelationAggregateInput
     series?: DocumentSeriesOrderByRelationAggregateInput
     parties?: PartyOrderByRelationAggregateInput
@@ -35324,6 +39463,7 @@ export namespace Prisma {
     stocks?: StockOrderByRelationAggregateInput
     stockLedger?: StockLedgerOrderByRelationAggregateInput
     transactions?: TransactionOrderByRelationAggregateInput
+    expenses?: ExpenseOrderByRelationAggregateInput
     users?: UserOrderByRelationAggregateInput
     warehouses?: WarehouseOrderByRelationAggregateInput
   }
@@ -35347,6 +39487,7 @@ export namespace Prisma {
     glAccounts?: GLAccountListRelationFilter
     operationalAccounts?: AccountListRelationFilter
     categories?: CategoryListRelationFilter
+    expenseCategories?: ExpenseCategoryListRelationFilter
     batches?: CustomBatchListRelationFilter
     series?: DocumentSeriesListRelationFilter
     parties?: PartyListRelationFilter
@@ -35355,6 +39496,7 @@ export namespace Prisma {
     stocks?: StockListRelationFilter
     stockLedger?: StockLedgerListRelationFilter
     transactions?: TransactionListRelationFilter
+    expenses?: ExpenseListRelationFilter
     users?: UserListRelationFilter
     warehouses?: WarehouseListRelationFilter
   }, "id">
@@ -35757,6 +39899,7 @@ export namespace Prisma {
     priceList?: XOR<PriceListNullableScalarRelationFilter, PriceListWhereInput> | null
     payments?: PaymentListRelationFilter
     transactions?: TransactionListRelationFilter
+    expenses?: ExpenseListRelationFilter
     suppliedProducts?: VendorProductListRelationFilter
   }
 
@@ -35789,6 +39932,7 @@ export namespace Prisma {
     priceList?: PriceListOrderByWithRelationInput
     payments?: PaymentOrderByRelationAggregateInput
     transactions?: TransactionOrderByRelationAggregateInput
+    expenses?: ExpenseOrderByRelationAggregateInput
     suppliedProducts?: VendorProductOrderByRelationAggregateInput
   }
 
@@ -35824,6 +39968,7 @@ export namespace Prisma {
     priceList?: XOR<PriceListNullableScalarRelationFilter, PriceListWhereInput> | null
     payments?: PaymentListRelationFilter
     transactions?: TransactionListRelationFilter
+    expenses?: ExpenseListRelationFilter
     suppliedProducts?: VendorProductListRelationFilter
   }, "id">
 
@@ -36180,6 +40325,7 @@ export namespace Prisma {
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
     entries?: LedgerEntryListRelationFilter
     payments?: PaymentListRelationFilter
+    expenseCategories?: ExpenseCategoryListRelationFilter
   }
 
   export type GLAccountOrderByWithRelationInput = {
@@ -36192,6 +40338,7 @@ export namespace Prisma {
     outlet?: OutletOrderByWithRelationInput
     entries?: LedgerEntryOrderByRelationAggregateInput
     payments?: PaymentOrderByRelationAggregateInput
+    expenseCategories?: ExpenseCategoryOrderByRelationAggregateInput
   }
 
   export type GLAccountWhereUniqueInput = Prisma.AtLeast<{
@@ -36208,6 +40355,7 @@ export namespace Prisma {
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
     entries?: LedgerEntryListRelationFilter
     payments?: PaymentListRelationFilter
+    expenseCategories?: ExpenseCategoryListRelationFilter
   }, "id" | "code_outletId">
 
   export type GLAccountOrderByWithAggregationInput = {
@@ -36940,6 +41088,7 @@ export namespace Prisma {
     transfersFrom?: TransferListRelationFilter
     transfersTo?: TransferListRelationFilter
     payments?: PaymentListRelationFilter
+    expenses?: ExpenseListRelationFilter
   }
 
   export type AccountOrderByWithRelationInput = {
@@ -36957,6 +41106,7 @@ export namespace Prisma {
     transfersFrom?: TransferOrderByRelationAggregateInput
     transfersTo?: TransferOrderByRelationAggregateInput
     payments?: PaymentOrderByRelationAggregateInput
+    expenses?: ExpenseOrderByRelationAggregateInput
   }
 
   export type AccountWhereUniqueInput = Prisma.AtLeast<{
@@ -36978,6 +41128,7 @@ export namespace Prisma {
     transfersFrom?: TransferListRelationFilter
     transfersTo?: TransferListRelationFilter
     payments?: PaymentListRelationFilter
+    expenses?: ExpenseListRelationFilter
   }, "id" | "name_outletId">
 
   export type AccountOrderByWithAggregationInput = {
@@ -37238,6 +41389,286 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Transfer"> | Date | string
   }
 
+  export type ExpenseCategoryWhereInput = {
+    AND?: ExpenseCategoryWhereInput | ExpenseCategoryWhereInput[]
+    OR?: ExpenseCategoryWhereInput[]
+    NOT?: ExpenseCategoryWhereInput | ExpenseCategoryWhereInput[]
+    id?: StringFilter<"ExpenseCategory"> | string
+    outletId?: StringFilter<"ExpenseCategory"> | string
+    name?: StringFilter<"ExpenseCategory"> | string
+    code?: StringFilter<"ExpenseCategory"> | string
+    glAccountId?: StringFilter<"ExpenseCategory"> | string
+    isActive?: BoolFilter<"ExpenseCategory"> | boolean
+    createdAt?: DateTimeFilter<"ExpenseCategory"> | Date | string
+    updatedAt?: DateTimeFilter<"ExpenseCategory"> | Date | string
+    outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
+    glAccount?: XOR<GLAccountScalarRelationFilter, GLAccountWhereInput>
+    expenses?: ExpenseListRelationFilter
+  }
+
+  export type ExpenseCategoryOrderByWithRelationInput = {
+    id?: SortOrder
+    outletId?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    glAccountId?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    outlet?: OutletOrderByWithRelationInput
+    glAccount?: GLAccountOrderByWithRelationInput
+    expenses?: ExpenseOrderByRelationAggregateInput
+  }
+
+  export type ExpenseCategoryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    code_outletId?: ExpenseCategoryCodeOutletIdCompoundUniqueInput
+    AND?: ExpenseCategoryWhereInput | ExpenseCategoryWhereInput[]
+    OR?: ExpenseCategoryWhereInput[]
+    NOT?: ExpenseCategoryWhereInput | ExpenseCategoryWhereInput[]
+    outletId?: StringFilter<"ExpenseCategory"> | string
+    name?: StringFilter<"ExpenseCategory"> | string
+    code?: StringFilter<"ExpenseCategory"> | string
+    glAccountId?: StringFilter<"ExpenseCategory"> | string
+    isActive?: BoolFilter<"ExpenseCategory"> | boolean
+    createdAt?: DateTimeFilter<"ExpenseCategory"> | Date | string
+    updatedAt?: DateTimeFilter<"ExpenseCategory"> | Date | string
+    outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
+    glAccount?: XOR<GLAccountScalarRelationFilter, GLAccountWhereInput>
+    expenses?: ExpenseListRelationFilter
+  }, "id" | "code_outletId">
+
+  export type ExpenseCategoryOrderByWithAggregationInput = {
+    id?: SortOrder
+    outletId?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    glAccountId?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ExpenseCategoryCountOrderByAggregateInput
+    _max?: ExpenseCategoryMaxOrderByAggregateInput
+    _min?: ExpenseCategoryMinOrderByAggregateInput
+  }
+
+  export type ExpenseCategoryScalarWhereWithAggregatesInput = {
+    AND?: ExpenseCategoryScalarWhereWithAggregatesInput | ExpenseCategoryScalarWhereWithAggregatesInput[]
+    OR?: ExpenseCategoryScalarWhereWithAggregatesInput[]
+    NOT?: ExpenseCategoryScalarWhereWithAggregatesInput | ExpenseCategoryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ExpenseCategory"> | string
+    outletId?: StringWithAggregatesFilter<"ExpenseCategory"> | string
+    name?: StringWithAggregatesFilter<"ExpenseCategory"> | string
+    code?: StringWithAggregatesFilter<"ExpenseCategory"> | string
+    glAccountId?: StringWithAggregatesFilter<"ExpenseCategory"> | string
+    isActive?: BoolWithAggregatesFilter<"ExpenseCategory"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"ExpenseCategory"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ExpenseCategory"> | Date | string
+  }
+
+  export type ExpenseWhereInput = {
+    AND?: ExpenseWhereInput | ExpenseWhereInput[]
+    OR?: ExpenseWhereInput[]
+    NOT?: ExpenseWhereInput | ExpenseWhereInput[]
+    id?: StringFilter<"Expense"> | string
+    outletId?: StringFilter<"Expense"> | string
+    txnNumber?: StringFilter<"Expense"> | string
+    date?: DateTimeFilter<"Expense"> | Date | string
+    description?: StringFilter<"Expense"> | string
+    categoryId?: StringFilter<"Expense"> | string
+    vendorId?: StringNullableFilter<"Expense"> | string | null
+    taxableAmount?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    gstRate?: IntNullableFilter<"Expense"> | number | null
+    inputGst?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFilter<"Expense"> | string
+    accountId?: StringFilter<"Expense"> | string
+    status?: StringFilter<"Expense"> | string
+    createdBy?: StringFilter<"Expense"> | string
+    createdAt?: DateTimeFilter<"Expense"> | Date | string
+    updatedAt?: DateTimeFilter<"Expense"> | Date | string
+    outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
+    category?: XOR<ExpenseCategoryScalarRelationFilter, ExpenseCategoryWhereInput>
+    vendor?: XOR<PartyNullableScalarRelationFilter, PartyWhereInput> | null
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type ExpenseOrderByWithRelationInput = {
+    id?: SortOrder
+    outletId?: SortOrder
+    txnNumber?: SortOrder
+    date?: SortOrder
+    description?: SortOrder
+    categoryId?: SortOrder
+    vendorId?: SortOrderInput | SortOrder
+    taxableAmount?: SortOrder
+    gstRate?: SortOrderInput | SortOrder
+    inputGst?: SortOrder
+    totalAmount?: SortOrder
+    paymentMode?: SortOrder
+    accountId?: SortOrder
+    status?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    outlet?: OutletOrderByWithRelationInput
+    category?: ExpenseCategoryOrderByWithRelationInput
+    vendor?: PartyOrderByWithRelationInput
+    account?: AccountOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type ExpenseWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ExpenseWhereInput | ExpenseWhereInput[]
+    OR?: ExpenseWhereInput[]
+    NOT?: ExpenseWhereInput | ExpenseWhereInput[]
+    outletId?: StringFilter<"Expense"> | string
+    txnNumber?: StringFilter<"Expense"> | string
+    date?: DateTimeFilter<"Expense"> | Date | string
+    description?: StringFilter<"Expense"> | string
+    categoryId?: StringFilter<"Expense"> | string
+    vendorId?: StringNullableFilter<"Expense"> | string | null
+    taxableAmount?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    gstRate?: IntNullableFilter<"Expense"> | number | null
+    inputGst?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFilter<"Expense"> | string
+    accountId?: StringFilter<"Expense"> | string
+    status?: StringFilter<"Expense"> | string
+    createdBy?: StringFilter<"Expense"> | string
+    createdAt?: DateTimeFilter<"Expense"> | Date | string
+    updatedAt?: DateTimeFilter<"Expense"> | Date | string
+    outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
+    category?: XOR<ExpenseCategoryScalarRelationFilter, ExpenseCategoryWhereInput>
+    vendor?: XOR<PartyNullableScalarRelationFilter, PartyWhereInput> | null
+    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type ExpenseOrderByWithAggregationInput = {
+    id?: SortOrder
+    outletId?: SortOrder
+    txnNumber?: SortOrder
+    date?: SortOrder
+    description?: SortOrder
+    categoryId?: SortOrder
+    vendorId?: SortOrderInput | SortOrder
+    taxableAmount?: SortOrder
+    gstRate?: SortOrderInput | SortOrder
+    inputGst?: SortOrder
+    totalAmount?: SortOrder
+    paymentMode?: SortOrder
+    accountId?: SortOrder
+    status?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ExpenseCountOrderByAggregateInput
+    _avg?: ExpenseAvgOrderByAggregateInput
+    _max?: ExpenseMaxOrderByAggregateInput
+    _min?: ExpenseMinOrderByAggregateInput
+    _sum?: ExpenseSumOrderByAggregateInput
+  }
+
+  export type ExpenseScalarWhereWithAggregatesInput = {
+    AND?: ExpenseScalarWhereWithAggregatesInput | ExpenseScalarWhereWithAggregatesInput[]
+    OR?: ExpenseScalarWhereWithAggregatesInput[]
+    NOT?: ExpenseScalarWhereWithAggregatesInput | ExpenseScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Expense"> | string
+    outletId?: StringWithAggregatesFilter<"Expense"> | string
+    txnNumber?: StringWithAggregatesFilter<"Expense"> | string
+    date?: DateTimeWithAggregatesFilter<"Expense"> | Date | string
+    description?: StringWithAggregatesFilter<"Expense"> | string
+    categoryId?: StringWithAggregatesFilter<"Expense"> | string
+    vendorId?: StringNullableWithAggregatesFilter<"Expense"> | string | null
+    taxableAmount?: DecimalWithAggregatesFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    gstRate?: IntNullableWithAggregatesFilter<"Expense"> | number | null
+    inputGst?: DecimalWithAggregatesFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalWithAggregatesFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringWithAggregatesFilter<"Expense"> | string
+    accountId?: StringWithAggregatesFilter<"Expense"> | string
+    status?: StringWithAggregatesFilter<"Expense"> | string
+    createdBy?: StringWithAggregatesFilter<"Expense"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Expense"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Expense"> | Date | string
+  }
+
+  export type AttachmentWhereInput = {
+    AND?: AttachmentWhereInput | AttachmentWhereInput[]
+    OR?: AttachmentWhereInput[]
+    NOT?: AttachmentWhereInput | AttachmentWhereInput[]
+    id?: StringFilter<"Attachment"> | string
+    moduleType?: StringFilter<"Attachment"> | string
+    referenceId?: StringFilter<"Attachment"> | string
+    fileName?: StringFilter<"Attachment"> | string
+    mimeType?: StringFilter<"Attachment"> | string
+    size?: IntFilter<"Attachment"> | number
+    data?: BytesFilter<"Attachment"> | Bytes
+    createdAt?: DateTimeFilter<"Attachment"> | Date | string
+    updatedAt?: DateTimeFilter<"Attachment"> | Date | string
+  }
+
+  export type AttachmentOrderByWithRelationInput = {
+    id?: SortOrder
+    moduleType?: SortOrder
+    referenceId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    size?: SortOrder
+    data?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AttachmentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AttachmentWhereInput | AttachmentWhereInput[]
+    OR?: AttachmentWhereInput[]
+    NOT?: AttachmentWhereInput | AttachmentWhereInput[]
+    moduleType?: StringFilter<"Attachment"> | string
+    referenceId?: StringFilter<"Attachment"> | string
+    fileName?: StringFilter<"Attachment"> | string
+    mimeType?: StringFilter<"Attachment"> | string
+    size?: IntFilter<"Attachment"> | number
+    data?: BytesFilter<"Attachment"> | Bytes
+    createdAt?: DateTimeFilter<"Attachment"> | Date | string
+    updatedAt?: DateTimeFilter<"Attachment"> | Date | string
+  }, "id">
+
+  export type AttachmentOrderByWithAggregationInput = {
+    id?: SortOrder
+    moduleType?: SortOrder
+    referenceId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    size?: SortOrder
+    data?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AttachmentCountOrderByAggregateInput
+    _avg?: AttachmentAvgOrderByAggregateInput
+    _max?: AttachmentMaxOrderByAggregateInput
+    _min?: AttachmentMinOrderByAggregateInput
+    _sum?: AttachmentSumOrderByAggregateInput
+  }
+
+  export type AttachmentScalarWhereWithAggregatesInput = {
+    AND?: AttachmentScalarWhereWithAggregatesInput | AttachmentScalarWhereWithAggregatesInput[]
+    OR?: AttachmentScalarWhereWithAggregatesInput[]
+    NOT?: AttachmentScalarWhereWithAggregatesInput | AttachmentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Attachment"> | string
+    moduleType?: StringWithAggregatesFilter<"Attachment"> | string
+    referenceId?: StringWithAggregatesFilter<"Attachment"> | string
+    fileName?: StringWithAggregatesFilter<"Attachment"> | string
+    mimeType?: StringWithAggregatesFilter<"Attachment"> | string
+    size?: IntWithAggregatesFilter<"Attachment"> | number
+    data?: BytesWithAggregatesFilter<"Attachment"> | Bytes
+    createdAt?: DateTimeWithAggregatesFilter<"Attachment"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Attachment"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -37251,6 +41682,7 @@ export namespace Prisma {
     payments?: PaymentCreateNestedManyWithoutCreatorInput
     stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    expenses?: ExpenseCreateNestedManyWithoutUserInput
     outlets?: OutletCreateNestedManyWithoutUsersInput
   }
 
@@ -37267,6 +41699,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutUserInput
     outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
   }
 
@@ -37283,6 +41716,7 @@ export namespace Prisma {
     payments?: PaymentUpdateManyWithoutCreatorNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUpdateManyWithoutUserNestedInput
     outlets?: OutletUpdateManyWithoutUsersNestedInput
   }
 
@@ -37299,6 +41733,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutUserNestedInput
     outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
   }
 
@@ -37523,6 +41958,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -37531,6 +41967,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -37551,6 +41988,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -37559,6 +41997,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -37579,6 +42018,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -37587,6 +42027,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -37607,6 +42048,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -37615,6 +42057,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -38027,6 +42470,7 @@ export namespace Prisma {
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     payments?: PaymentCreateNestedManyWithoutPartyInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
   }
 
@@ -38057,6 +42501,7 @@ export namespace Prisma {
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
   }
 
@@ -38087,6 +42532,7 @@ export namespace Prisma {
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     payments?: PaymentUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
   }
 
@@ -38117,6 +42563,7 @@ export namespace Prisma {
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
   }
 
@@ -38515,6 +42962,7 @@ export namespace Prisma {
     outlet: OutletCreateNestedOneWithoutGlAccountsInput
     entries?: LedgerEntryCreateNestedManyWithoutAccountInput
     payments?: PaymentCreateNestedManyWithoutGlAccountInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutGlAccountInput
   }
 
   export type GLAccountUncheckedCreateInput = {
@@ -38526,6 +42974,7 @@ export namespace Prisma {
     outletId: string
     entries?: LedgerEntryUncheckedCreateNestedManyWithoutAccountInput
     payments?: PaymentUncheckedCreateNestedManyWithoutGlAccountInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutGlAccountInput
   }
 
   export type GLAccountUpdateInput = {
@@ -38537,6 +42986,7 @@ export namespace Prisma {
     outlet?: OutletUpdateOneRequiredWithoutGlAccountsNestedInput
     entries?: LedgerEntryUpdateManyWithoutAccountNestedInput
     payments?: PaymentUpdateManyWithoutGlAccountNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutGlAccountNestedInput
   }
 
   export type GLAccountUncheckedUpdateInput = {
@@ -38548,6 +42998,7 @@ export namespace Prisma {
     outletId?: StringFieldUpdateOperationsInput | string
     entries?: LedgerEntryUncheckedUpdateManyWithoutAccountNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutGlAccountNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutGlAccountNestedInput
   }
 
   export type GLAccountCreateManyInput = {
@@ -39250,6 +43701,7 @@ export namespace Prisma {
     transfersFrom?: TransferCreateNestedManyWithoutFromAccountInput
     transfersTo?: TransferCreateNestedManyWithoutToAccountInput
     payments?: PaymentCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateInput = {
@@ -39266,6 +43718,7 @@ export namespace Prisma {
     transfersFrom?: TransferUncheckedCreateNestedManyWithoutFromAccountInput
     transfersTo?: TransferUncheckedCreateNestedManyWithoutToAccountInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUpdateInput = {
@@ -39282,6 +43735,7 @@ export namespace Prisma {
     transfersFrom?: TransferUpdateManyWithoutFromAccountNestedInput
     transfersTo?: TransferUpdateManyWithoutToAccountNestedInput
     payments?: PaymentUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateInput = {
@@ -39298,6 +43752,7 @@ export namespace Prisma {
     transfersFrom?: TransferUncheckedUpdateManyWithoutFromAccountNestedInput
     transfersTo?: TransferUncheckedUpdateManyWithoutToAccountNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateManyInput = {
@@ -39573,6 +44028,304 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ExpenseCategoryCreateInput = {
+    id?: string
+    name: string
+    code: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    outlet: OutletCreateNestedOneWithoutExpenseCategoriesInput
+    glAccount: GLAccountCreateNestedOneWithoutExpenseCategoriesInput
+    expenses?: ExpenseCreateNestedManyWithoutCategoryInput
+  }
+
+  export type ExpenseCategoryUncheckedCreateInput = {
+    id?: string
+    outletId: string
+    name: string
+    code: string
+    glAccountId: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutCategoryInput
+  }
+
+  export type ExpenseCategoryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    outlet?: OutletUpdateOneRequiredWithoutExpenseCategoriesNestedInput
+    glAccount?: GLAccountUpdateOneRequiredWithoutExpenseCategoriesNestedInput
+    expenses?: ExpenseUpdateManyWithoutCategoryNestedInput
+  }
+
+  export type ExpenseCategoryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    glAccountId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expenses?: ExpenseUncheckedUpdateManyWithoutCategoryNestedInput
+  }
+
+  export type ExpenseCategoryCreateManyInput = {
+    id?: string
+    outletId: string
+    name: string
+    code: string
+    glAccountId: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseCategoryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseCategoryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    glAccountId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseCreateInput = {
+    id?: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    outlet: OutletCreateNestedOneWithoutExpensesInput
+    category: ExpenseCategoryCreateNestedOneWithoutExpensesInput
+    vendor?: PartyCreateNestedOneWithoutExpensesInput
+    account: AccountCreateNestedOneWithoutExpensesInput
+    user: UserCreateNestedOneWithoutExpensesInput
+  }
+
+  export type ExpenseUncheckedCreateInput = {
+    id?: string
+    outletId: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    categoryId: string
+    vendorId?: string | null
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    accountId: string
+    status?: string
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    outlet?: OutletUpdateOneRequiredWithoutExpensesNestedInput
+    category?: ExpenseCategoryUpdateOneRequiredWithoutExpensesNestedInput
+    vendor?: PartyUpdateOneWithoutExpensesNestedInput
+    account?: AccountUpdateOneRequiredWithoutExpensesNestedInput
+    user?: UserUpdateOneRequiredWithoutExpensesNestedInput
+  }
+
+  export type ExpenseUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseCreateManyInput = {
+    id?: string
+    outletId: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    categoryId: string
+    vendorId?: string | null
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    accountId: string
+    status?: string
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AttachmentCreateInput = {
+    id?: string
+    moduleType: string
+    referenceId: string
+    fileName: string
+    mimeType?: string
+    size: number
+    data: Bytes
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AttachmentUncheckedCreateInput = {
+    id?: string
+    moduleType: string
+    referenceId: string
+    fileName: string
+    mimeType?: string
+    size: number
+    data: Bytes
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AttachmentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    referenceId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Bytes
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AttachmentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    referenceId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Bytes
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AttachmentCreateManyInput = {
+    id?: string
+    moduleType: string
+    referenceId: string
+    fileName: string
+    mimeType?: string
+    size: number
+    data: Bytes
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AttachmentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    referenceId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Bytes
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AttachmentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    referenceId?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: IntFieldUpdateOperationsInput | number
+    data?: BytesFieldUpdateOperationsInput | Bytes
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -39635,6 +44388,12 @@ export namespace Prisma {
     none?: TransactionWhereInput
   }
 
+  export type ExpenseListRelationFilter = {
+    every?: ExpenseWhereInput
+    some?: ExpenseWhereInput
+    none?: ExpenseWhereInput
+  }
+
   export type OutletListRelationFilter = {
     every?: OutletWhereInput
     some?: OutletWhereInput
@@ -39654,6 +44413,10 @@ export namespace Prisma {
   }
 
   export type TransactionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ExpenseOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -39952,6 +44715,12 @@ export namespace Prisma {
     none?: CategoryWhereInput
   }
 
+  export type ExpenseCategoryListRelationFilter = {
+    every?: ExpenseCategoryWhereInput
+    some?: ExpenseCategoryWhereInput
+    none?: ExpenseCategoryWhereInput
+  }
+
   export type DocumentSeriesListRelationFilter = {
     every?: DocumentSeriesWhereInput
     some?: DocumentSeriesWhereInput
@@ -39991,6 +44760,10 @@ export namespace Prisma {
   }
 
   export type CategoryOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ExpenseCategoryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -41519,6 +46292,211 @@ export namespace Prisma {
     amount?: SortOrder
   }
 
+  export type ExpenseCategoryCodeOutletIdCompoundUniqueInput = {
+    code: string
+    outletId: string
+  }
+
+  export type ExpenseCategoryCountOrderByAggregateInput = {
+    id?: SortOrder
+    outletId?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    glAccountId?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ExpenseCategoryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    outletId?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    glAccountId?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ExpenseCategoryMinOrderByAggregateInput = {
+    id?: SortOrder
+    outletId?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    glAccountId?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type ExpenseCategoryScalarRelationFilter = {
+    is?: ExpenseCategoryWhereInput
+    isNot?: ExpenseCategoryWhereInput
+  }
+
+  export type ExpenseCountOrderByAggregateInput = {
+    id?: SortOrder
+    outletId?: SortOrder
+    txnNumber?: SortOrder
+    date?: SortOrder
+    description?: SortOrder
+    categoryId?: SortOrder
+    vendorId?: SortOrder
+    taxableAmount?: SortOrder
+    gstRate?: SortOrder
+    inputGst?: SortOrder
+    totalAmount?: SortOrder
+    paymentMode?: SortOrder
+    accountId?: SortOrder
+    status?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ExpenseAvgOrderByAggregateInput = {
+    taxableAmount?: SortOrder
+    gstRate?: SortOrder
+    inputGst?: SortOrder
+    totalAmount?: SortOrder
+  }
+
+  export type ExpenseMaxOrderByAggregateInput = {
+    id?: SortOrder
+    outletId?: SortOrder
+    txnNumber?: SortOrder
+    date?: SortOrder
+    description?: SortOrder
+    categoryId?: SortOrder
+    vendorId?: SortOrder
+    taxableAmount?: SortOrder
+    gstRate?: SortOrder
+    inputGst?: SortOrder
+    totalAmount?: SortOrder
+    paymentMode?: SortOrder
+    accountId?: SortOrder
+    status?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ExpenseMinOrderByAggregateInput = {
+    id?: SortOrder
+    outletId?: SortOrder
+    txnNumber?: SortOrder
+    date?: SortOrder
+    description?: SortOrder
+    categoryId?: SortOrder
+    vendorId?: SortOrder
+    taxableAmount?: SortOrder
+    gstRate?: SortOrder
+    inputGst?: SortOrder
+    totalAmount?: SortOrder
+    paymentMode?: SortOrder
+    accountId?: SortOrder
+    status?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ExpenseSumOrderByAggregateInput = {
+    taxableAmount?: SortOrder
+    gstRate?: SortOrder
+    inputGst?: SortOrder
+    totalAmount?: SortOrder
+  }
+
+  export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type BytesFilter<$PrismaModel = never> = {
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Bytes
+  }
+
+  export type AttachmentCountOrderByAggregateInput = {
+    id?: SortOrder
+    moduleType?: SortOrder
+    referenceId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    size?: SortOrder
+    data?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AttachmentAvgOrderByAggregateInput = {
+    size?: SortOrder
+  }
+
+  export type AttachmentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    moduleType?: SortOrder
+    referenceId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    size?: SortOrder
+    data?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AttachmentMinOrderByAggregateInput = {
+    id?: SortOrder
+    moduleType?: SortOrder
+    referenceId?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    size?: SortOrder
+    data?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AttachmentSumOrderByAggregateInput = {
+    size?: SortOrder
+  }
+
+  export type BytesWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Bytes
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBytesFilter<$PrismaModel>
+    _max?: NestedBytesFilter<$PrismaModel>
+  }
+
   export type AuditLogCreateNestedManyWithoutUserInput = {
     create?: XOR<AuditLogCreateWithoutUserInput, AuditLogUncheckedCreateWithoutUserInput> | AuditLogCreateWithoutUserInput[] | AuditLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AuditLogCreateOrConnectWithoutUserInput | AuditLogCreateOrConnectWithoutUserInput[]
@@ -41545,6 +46523,13 @@ export namespace Prisma {
     connectOrCreate?: TransactionCreateOrConnectWithoutUserInput | TransactionCreateOrConnectWithoutUserInput[]
     createMany?: TransactionCreateManyUserInputEnvelope
     connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
+  export type ExpenseCreateNestedManyWithoutUserInput = {
+    create?: XOR<ExpenseCreateWithoutUserInput, ExpenseUncheckedCreateWithoutUserInput> | ExpenseCreateWithoutUserInput[] | ExpenseUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutUserInput | ExpenseCreateOrConnectWithoutUserInput[]
+    createMany?: ExpenseCreateManyUserInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
   }
 
   export type OutletCreateNestedManyWithoutUsersInput = {
@@ -41579,6 +46564,13 @@ export namespace Prisma {
     connectOrCreate?: TransactionCreateOrConnectWithoutUserInput | TransactionCreateOrConnectWithoutUserInput[]
     createMany?: TransactionCreateManyUserInputEnvelope
     connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
+  export type ExpenseUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<ExpenseCreateWithoutUserInput, ExpenseUncheckedCreateWithoutUserInput> | ExpenseCreateWithoutUserInput[] | ExpenseUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutUserInput | ExpenseCreateOrConnectWithoutUserInput[]
+    createMany?: ExpenseCreateManyUserInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
   }
 
   export type OutletUncheckedCreateNestedManyWithoutUsersInput = {
@@ -41659,6 +46651,20 @@ export namespace Prisma {
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
   }
 
+  export type ExpenseUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ExpenseCreateWithoutUserInput, ExpenseUncheckedCreateWithoutUserInput> | ExpenseCreateWithoutUserInput[] | ExpenseUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutUserInput | ExpenseCreateOrConnectWithoutUserInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutUserInput | ExpenseUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ExpenseCreateManyUserInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutUserInput | ExpenseUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutUserInput | ExpenseUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+  }
+
   export type OutletUpdateManyWithoutUsersNestedInput = {
     create?: XOR<OutletCreateWithoutUsersInput, OutletUncheckedCreateWithoutUsersInput> | OutletCreateWithoutUsersInput[] | OutletUncheckedCreateWithoutUsersInput[]
     connectOrCreate?: OutletCreateOrConnectWithoutUsersInput | OutletCreateOrConnectWithoutUsersInput[]
@@ -41726,6 +46732,20 @@ export namespace Prisma {
     update?: TransactionUpdateWithWhereUniqueWithoutUserInput | TransactionUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: TransactionUpdateManyWithWhereWithoutUserInput | TransactionUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ExpenseCreateWithoutUserInput, ExpenseUncheckedCreateWithoutUserInput> | ExpenseCreateWithoutUserInput[] | ExpenseUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutUserInput | ExpenseCreateOrConnectWithoutUserInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutUserInput | ExpenseUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ExpenseCreateManyUserInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutUserInput | ExpenseUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutUserInput | ExpenseUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
   }
 
   export type OutletUncheckedUpdateManyWithoutUsersNestedInput = {
@@ -42004,6 +47024,13 @@ export namespace Prisma {
     connect?: CategoryWhereUniqueInput | CategoryWhereUniqueInput[]
   }
 
+  export type ExpenseCategoryCreateNestedManyWithoutOutletInput = {
+    create?: XOR<ExpenseCategoryCreateWithoutOutletInput, ExpenseCategoryUncheckedCreateWithoutOutletInput> | ExpenseCategoryCreateWithoutOutletInput[] | ExpenseCategoryUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: ExpenseCategoryCreateOrConnectWithoutOutletInput | ExpenseCategoryCreateOrConnectWithoutOutletInput[]
+    createMany?: ExpenseCategoryCreateManyOutletInputEnvelope
+    connect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+  }
+
   export type CustomBatchCreateNestedManyWithoutOutletInput = {
     create?: XOR<CustomBatchCreateWithoutOutletInput, CustomBatchUncheckedCreateWithoutOutletInput> | CustomBatchCreateWithoutOutletInput[] | CustomBatchUncheckedCreateWithoutOutletInput[]
     connectOrCreate?: CustomBatchCreateOrConnectWithoutOutletInput | CustomBatchCreateOrConnectWithoutOutletInput[]
@@ -42060,6 +47087,13 @@ export namespace Prisma {
     connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
   }
 
+  export type ExpenseCreateNestedManyWithoutOutletInput = {
+    create?: XOR<ExpenseCreateWithoutOutletInput, ExpenseUncheckedCreateWithoutOutletInput> | ExpenseCreateWithoutOutletInput[] | ExpenseUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutOutletInput | ExpenseCreateOrConnectWithoutOutletInput[]
+    createMany?: ExpenseCreateManyOutletInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+  }
+
   export type UserCreateNestedManyWithoutOutletsInput = {
     create?: XOR<UserCreateWithoutOutletsInput, UserUncheckedCreateWithoutOutletsInput> | UserCreateWithoutOutletsInput[] | UserUncheckedCreateWithoutOutletsInput[]
     connectOrCreate?: UserCreateOrConnectWithoutOutletsInput | UserCreateOrConnectWithoutOutletsInput[]
@@ -42092,6 +47126,13 @@ export namespace Prisma {
     connectOrCreate?: CategoryCreateOrConnectWithoutOutletInput | CategoryCreateOrConnectWithoutOutletInput[]
     createMany?: CategoryCreateManyOutletInputEnvelope
     connect?: CategoryWhereUniqueInput | CategoryWhereUniqueInput[]
+  }
+
+  export type ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput = {
+    create?: XOR<ExpenseCategoryCreateWithoutOutletInput, ExpenseCategoryUncheckedCreateWithoutOutletInput> | ExpenseCategoryCreateWithoutOutletInput[] | ExpenseCategoryUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: ExpenseCategoryCreateOrConnectWithoutOutletInput | ExpenseCategoryCreateOrConnectWithoutOutletInput[]
+    createMany?: ExpenseCategoryCreateManyOutletInputEnvelope
+    connect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
   }
 
   export type CustomBatchUncheckedCreateNestedManyWithoutOutletInput = {
@@ -42148,6 +47189,13 @@ export namespace Prisma {
     connectOrCreate?: TransactionCreateOrConnectWithoutOutletInput | TransactionCreateOrConnectWithoutOutletInput[]
     createMany?: TransactionCreateManyOutletInputEnvelope
     connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
+  export type ExpenseUncheckedCreateNestedManyWithoutOutletInput = {
+    create?: XOR<ExpenseCreateWithoutOutletInput, ExpenseUncheckedCreateWithoutOutletInput> | ExpenseCreateWithoutOutletInput[] | ExpenseUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutOutletInput | ExpenseCreateOrConnectWithoutOutletInput[]
+    createMany?: ExpenseCreateManyOutletInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
   }
 
   export type UserUncheckedCreateNestedManyWithoutOutletsInput = {
@@ -42211,6 +47259,20 @@ export namespace Prisma {
     update?: CategoryUpdateWithWhereUniqueWithoutOutletInput | CategoryUpdateWithWhereUniqueWithoutOutletInput[]
     updateMany?: CategoryUpdateManyWithWhereWithoutOutletInput | CategoryUpdateManyWithWhereWithoutOutletInput[]
     deleteMany?: CategoryScalarWhereInput | CategoryScalarWhereInput[]
+  }
+
+  export type ExpenseCategoryUpdateManyWithoutOutletNestedInput = {
+    create?: XOR<ExpenseCategoryCreateWithoutOutletInput, ExpenseCategoryUncheckedCreateWithoutOutletInput> | ExpenseCategoryCreateWithoutOutletInput[] | ExpenseCategoryUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: ExpenseCategoryCreateOrConnectWithoutOutletInput | ExpenseCategoryCreateOrConnectWithoutOutletInput[]
+    upsert?: ExpenseCategoryUpsertWithWhereUniqueWithoutOutletInput | ExpenseCategoryUpsertWithWhereUniqueWithoutOutletInput[]
+    createMany?: ExpenseCategoryCreateManyOutletInputEnvelope
+    set?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    disconnect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    delete?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    connect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    update?: ExpenseCategoryUpdateWithWhereUniqueWithoutOutletInput | ExpenseCategoryUpdateWithWhereUniqueWithoutOutletInput[]
+    updateMany?: ExpenseCategoryUpdateManyWithWhereWithoutOutletInput | ExpenseCategoryUpdateManyWithWhereWithoutOutletInput[]
+    deleteMany?: ExpenseCategoryScalarWhereInput | ExpenseCategoryScalarWhereInput[]
   }
 
   export type CustomBatchUpdateManyWithoutOutletNestedInput = {
@@ -42325,6 +47387,20 @@ export namespace Prisma {
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
   }
 
+  export type ExpenseUpdateManyWithoutOutletNestedInput = {
+    create?: XOR<ExpenseCreateWithoutOutletInput, ExpenseUncheckedCreateWithoutOutletInput> | ExpenseCreateWithoutOutletInput[] | ExpenseUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutOutletInput | ExpenseCreateOrConnectWithoutOutletInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutOutletInput | ExpenseUpsertWithWhereUniqueWithoutOutletInput[]
+    createMany?: ExpenseCreateManyOutletInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutOutletInput | ExpenseUpdateWithWhereUniqueWithoutOutletInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutOutletInput | ExpenseUpdateManyWithWhereWithoutOutletInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+  }
+
   export type UserUpdateManyWithoutOutletsNestedInput = {
     create?: XOR<UserCreateWithoutOutletsInput, UserUncheckedCreateWithoutOutletsInput> | UserCreateWithoutOutletsInput[] | UserUncheckedCreateWithoutOutletsInput[]
     connectOrCreate?: UserCreateOrConnectWithoutOutletsInput | UserCreateOrConnectWithoutOutletsInput[]
@@ -42392,6 +47468,20 @@ export namespace Prisma {
     update?: CategoryUpdateWithWhereUniqueWithoutOutletInput | CategoryUpdateWithWhereUniqueWithoutOutletInput[]
     updateMany?: CategoryUpdateManyWithWhereWithoutOutletInput | CategoryUpdateManyWithWhereWithoutOutletInput[]
     deleteMany?: CategoryScalarWhereInput | CategoryScalarWhereInput[]
+  }
+
+  export type ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput = {
+    create?: XOR<ExpenseCategoryCreateWithoutOutletInput, ExpenseCategoryUncheckedCreateWithoutOutletInput> | ExpenseCategoryCreateWithoutOutletInput[] | ExpenseCategoryUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: ExpenseCategoryCreateOrConnectWithoutOutletInput | ExpenseCategoryCreateOrConnectWithoutOutletInput[]
+    upsert?: ExpenseCategoryUpsertWithWhereUniqueWithoutOutletInput | ExpenseCategoryUpsertWithWhereUniqueWithoutOutletInput[]
+    createMany?: ExpenseCategoryCreateManyOutletInputEnvelope
+    set?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    disconnect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    delete?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    connect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    update?: ExpenseCategoryUpdateWithWhereUniqueWithoutOutletInput | ExpenseCategoryUpdateWithWhereUniqueWithoutOutletInput[]
+    updateMany?: ExpenseCategoryUpdateManyWithWhereWithoutOutletInput | ExpenseCategoryUpdateManyWithWhereWithoutOutletInput[]
+    deleteMany?: ExpenseCategoryScalarWhereInput | ExpenseCategoryScalarWhereInput[]
   }
 
   export type CustomBatchUncheckedUpdateManyWithoutOutletNestedInput = {
@@ -42504,6 +47594,20 @@ export namespace Prisma {
     update?: TransactionUpdateWithWhereUniqueWithoutOutletInput | TransactionUpdateWithWhereUniqueWithoutOutletInput[]
     updateMany?: TransactionUpdateManyWithWhereWithoutOutletInput | TransactionUpdateManyWithWhereWithoutOutletInput[]
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutOutletNestedInput = {
+    create?: XOR<ExpenseCreateWithoutOutletInput, ExpenseUncheckedCreateWithoutOutletInput> | ExpenseCreateWithoutOutletInput[] | ExpenseUncheckedCreateWithoutOutletInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutOutletInput | ExpenseCreateOrConnectWithoutOutletInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutOutletInput | ExpenseUpsertWithWhereUniqueWithoutOutletInput[]
+    createMany?: ExpenseCreateManyOutletInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutOutletInput | ExpenseUpdateWithWhereUniqueWithoutOutletInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutOutletInput | ExpenseUpdateManyWithWhereWithoutOutletInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
   }
 
   export type UserUncheckedUpdateManyWithoutOutletsNestedInput = {
@@ -43078,6 +48182,13 @@ export namespace Prisma {
     connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
   }
 
+  export type ExpenseCreateNestedManyWithoutVendorInput = {
+    create?: XOR<ExpenseCreateWithoutVendorInput, ExpenseUncheckedCreateWithoutVendorInput> | ExpenseCreateWithoutVendorInput[] | ExpenseUncheckedCreateWithoutVendorInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutVendorInput | ExpenseCreateOrConnectWithoutVendorInput[]
+    createMany?: ExpenseCreateManyVendorInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+  }
+
   export type VendorProductCreateNestedManyWithoutVendorInput = {
     create?: XOR<VendorProductCreateWithoutVendorInput, VendorProductUncheckedCreateWithoutVendorInput> | VendorProductCreateWithoutVendorInput[] | VendorProductUncheckedCreateWithoutVendorInput[]
     connectOrCreate?: VendorProductCreateOrConnectWithoutVendorInput | VendorProductCreateOrConnectWithoutVendorInput[]
@@ -43104,6 +48215,13 @@ export namespace Prisma {
     connectOrCreate?: TransactionCreateOrConnectWithoutPartyInput | TransactionCreateOrConnectWithoutPartyInput[]
     createMany?: TransactionCreateManyPartyInputEnvelope
     connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
+  export type ExpenseUncheckedCreateNestedManyWithoutVendorInput = {
+    create?: XOR<ExpenseCreateWithoutVendorInput, ExpenseUncheckedCreateWithoutVendorInput> | ExpenseCreateWithoutVendorInput[] | ExpenseUncheckedCreateWithoutVendorInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutVendorInput | ExpenseCreateOrConnectWithoutVendorInput[]
+    createMany?: ExpenseCreateManyVendorInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
   }
 
   export type VendorProductUncheckedCreateNestedManyWithoutVendorInput = {
@@ -43177,6 +48295,20 @@ export namespace Prisma {
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
   }
 
+  export type ExpenseUpdateManyWithoutVendorNestedInput = {
+    create?: XOR<ExpenseCreateWithoutVendorInput, ExpenseUncheckedCreateWithoutVendorInput> | ExpenseCreateWithoutVendorInput[] | ExpenseUncheckedCreateWithoutVendorInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutVendorInput | ExpenseCreateOrConnectWithoutVendorInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutVendorInput | ExpenseUpsertWithWhereUniqueWithoutVendorInput[]
+    createMany?: ExpenseCreateManyVendorInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutVendorInput | ExpenseUpdateWithWhereUniqueWithoutVendorInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutVendorInput | ExpenseUpdateManyWithWhereWithoutVendorInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+  }
+
   export type VendorProductUpdateManyWithoutVendorNestedInput = {
     create?: XOR<VendorProductCreateWithoutVendorInput, VendorProductUncheckedCreateWithoutVendorInput> | VendorProductCreateWithoutVendorInput[] | VendorProductUncheckedCreateWithoutVendorInput[]
     connectOrCreate?: VendorProductCreateOrConnectWithoutVendorInput | VendorProductCreateOrConnectWithoutVendorInput[]
@@ -43231,6 +48363,20 @@ export namespace Prisma {
     update?: TransactionUpdateWithWhereUniqueWithoutPartyInput | TransactionUpdateWithWhereUniqueWithoutPartyInput[]
     updateMany?: TransactionUpdateManyWithWhereWithoutPartyInput | TransactionUpdateManyWithWhereWithoutPartyInput[]
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutVendorNestedInput = {
+    create?: XOR<ExpenseCreateWithoutVendorInput, ExpenseUncheckedCreateWithoutVendorInput> | ExpenseCreateWithoutVendorInput[] | ExpenseUncheckedCreateWithoutVendorInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutVendorInput | ExpenseCreateOrConnectWithoutVendorInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutVendorInput | ExpenseUpsertWithWhereUniqueWithoutVendorInput[]
+    createMany?: ExpenseCreateManyVendorInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutVendorInput | ExpenseUpdateWithWhereUniqueWithoutVendorInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutVendorInput | ExpenseUpdateManyWithWhereWithoutVendorInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
   }
 
   export type VendorProductUncheckedUpdateManyWithoutVendorNestedInput = {
@@ -43651,6 +48797,13 @@ export namespace Prisma {
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
+  export type ExpenseCategoryCreateNestedManyWithoutGlAccountInput = {
+    create?: XOR<ExpenseCategoryCreateWithoutGlAccountInput, ExpenseCategoryUncheckedCreateWithoutGlAccountInput> | ExpenseCategoryCreateWithoutGlAccountInput[] | ExpenseCategoryUncheckedCreateWithoutGlAccountInput[]
+    connectOrCreate?: ExpenseCategoryCreateOrConnectWithoutGlAccountInput | ExpenseCategoryCreateOrConnectWithoutGlAccountInput[]
+    createMany?: ExpenseCategoryCreateManyGlAccountInputEnvelope
+    connect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+  }
+
   export type LedgerEntryUncheckedCreateNestedManyWithoutAccountInput = {
     create?: XOR<LedgerEntryCreateWithoutAccountInput, LedgerEntryUncheckedCreateWithoutAccountInput> | LedgerEntryCreateWithoutAccountInput[] | LedgerEntryUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: LedgerEntryCreateOrConnectWithoutAccountInput | LedgerEntryCreateOrConnectWithoutAccountInput[]
@@ -43663,6 +48816,13 @@ export namespace Prisma {
     connectOrCreate?: PaymentCreateOrConnectWithoutGlAccountInput | PaymentCreateOrConnectWithoutGlAccountInput[]
     createMany?: PaymentCreateManyGlAccountInputEnvelope
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
+  export type ExpenseCategoryUncheckedCreateNestedManyWithoutGlAccountInput = {
+    create?: XOR<ExpenseCategoryCreateWithoutGlAccountInput, ExpenseCategoryUncheckedCreateWithoutGlAccountInput> | ExpenseCategoryCreateWithoutGlAccountInput[] | ExpenseCategoryUncheckedCreateWithoutGlAccountInput[]
+    connectOrCreate?: ExpenseCategoryCreateOrConnectWithoutGlAccountInput | ExpenseCategoryCreateOrConnectWithoutGlAccountInput[]
+    createMany?: ExpenseCategoryCreateManyGlAccountInputEnvelope
+    connect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
   }
 
   export type EnumAccountGroupFieldUpdateOperationsInput = {
@@ -43705,6 +48865,20 @@ export namespace Prisma {
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
+  export type ExpenseCategoryUpdateManyWithoutGlAccountNestedInput = {
+    create?: XOR<ExpenseCategoryCreateWithoutGlAccountInput, ExpenseCategoryUncheckedCreateWithoutGlAccountInput> | ExpenseCategoryCreateWithoutGlAccountInput[] | ExpenseCategoryUncheckedCreateWithoutGlAccountInput[]
+    connectOrCreate?: ExpenseCategoryCreateOrConnectWithoutGlAccountInput | ExpenseCategoryCreateOrConnectWithoutGlAccountInput[]
+    upsert?: ExpenseCategoryUpsertWithWhereUniqueWithoutGlAccountInput | ExpenseCategoryUpsertWithWhereUniqueWithoutGlAccountInput[]
+    createMany?: ExpenseCategoryCreateManyGlAccountInputEnvelope
+    set?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    disconnect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    delete?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    connect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    update?: ExpenseCategoryUpdateWithWhereUniqueWithoutGlAccountInput | ExpenseCategoryUpdateWithWhereUniqueWithoutGlAccountInput[]
+    updateMany?: ExpenseCategoryUpdateManyWithWhereWithoutGlAccountInput | ExpenseCategoryUpdateManyWithWhereWithoutGlAccountInput[]
+    deleteMany?: ExpenseCategoryScalarWhereInput | ExpenseCategoryScalarWhereInput[]
+  }
+
   export type LedgerEntryUncheckedUpdateManyWithoutAccountNestedInput = {
     create?: XOR<LedgerEntryCreateWithoutAccountInput, LedgerEntryUncheckedCreateWithoutAccountInput> | LedgerEntryCreateWithoutAccountInput[] | LedgerEntryUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: LedgerEntryCreateOrConnectWithoutAccountInput | LedgerEntryCreateOrConnectWithoutAccountInput[]
@@ -43731,6 +48905,20 @@ export namespace Prisma {
     update?: PaymentUpdateWithWhereUniqueWithoutGlAccountInput | PaymentUpdateWithWhereUniqueWithoutGlAccountInput[]
     updateMany?: PaymentUpdateManyWithWhereWithoutGlAccountInput | PaymentUpdateManyWithWhereWithoutGlAccountInput[]
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
+  export type ExpenseCategoryUncheckedUpdateManyWithoutGlAccountNestedInput = {
+    create?: XOR<ExpenseCategoryCreateWithoutGlAccountInput, ExpenseCategoryUncheckedCreateWithoutGlAccountInput> | ExpenseCategoryCreateWithoutGlAccountInput[] | ExpenseCategoryUncheckedCreateWithoutGlAccountInput[]
+    connectOrCreate?: ExpenseCategoryCreateOrConnectWithoutGlAccountInput | ExpenseCategoryCreateOrConnectWithoutGlAccountInput[]
+    upsert?: ExpenseCategoryUpsertWithWhereUniqueWithoutGlAccountInput | ExpenseCategoryUpsertWithWhereUniqueWithoutGlAccountInput[]
+    createMany?: ExpenseCategoryCreateManyGlAccountInputEnvelope
+    set?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    disconnect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    delete?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    connect?: ExpenseCategoryWhereUniqueInput | ExpenseCategoryWhereUniqueInput[]
+    update?: ExpenseCategoryUpdateWithWhereUniqueWithoutGlAccountInput | ExpenseCategoryUpdateWithWhereUniqueWithoutGlAccountInput[]
+    updateMany?: ExpenseCategoryUpdateManyWithWhereWithoutGlAccountInput | ExpenseCategoryUpdateManyWithWhereWithoutGlAccountInput[]
+    deleteMany?: ExpenseCategoryScalarWhereInput | ExpenseCategoryScalarWhereInput[]
   }
 
   export type GLAccountCreateNestedOneWithoutEntriesInput = {
@@ -44252,6 +49440,13 @@ export namespace Prisma {
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
+  export type ExpenseCreateNestedManyWithoutAccountInput = {
+    create?: XOR<ExpenseCreateWithoutAccountInput, ExpenseUncheckedCreateWithoutAccountInput> | ExpenseCreateWithoutAccountInput[] | ExpenseUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutAccountInput | ExpenseCreateOrConnectWithoutAccountInput[]
+    createMany?: ExpenseCreateManyAccountInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+  }
+
   export type AccountPaymentModeUncheckedCreateNestedManyWithoutAccountInput = {
     create?: XOR<AccountPaymentModeCreateWithoutAccountInput, AccountPaymentModeUncheckedCreateWithoutAccountInput> | AccountPaymentModeCreateWithoutAccountInput[] | AccountPaymentModeUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: AccountPaymentModeCreateOrConnectWithoutAccountInput | AccountPaymentModeCreateOrConnectWithoutAccountInput[]
@@ -44285,6 +49480,13 @@ export namespace Prisma {
     connectOrCreate?: PaymentCreateOrConnectWithoutOperationalAccountInput | PaymentCreateOrConnectWithoutOperationalAccountInput[]
     createMany?: PaymentCreateManyOperationalAccountInputEnvelope
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
+  export type ExpenseUncheckedCreateNestedManyWithoutAccountInput = {
+    create?: XOR<ExpenseCreateWithoutAccountInput, ExpenseUncheckedCreateWithoutAccountInput> | ExpenseCreateWithoutAccountInput[] | ExpenseUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutAccountInput | ExpenseCreateOrConnectWithoutAccountInput[]
+    createMany?: ExpenseCreateManyAccountInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
   }
 
   export type EnumAccountTypeFieldUpdateOperationsInput = {
@@ -44369,6 +49571,20 @@ export namespace Prisma {
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
+  export type ExpenseUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<ExpenseCreateWithoutAccountInput, ExpenseUncheckedCreateWithoutAccountInput> | ExpenseCreateWithoutAccountInput[] | ExpenseUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutAccountInput | ExpenseCreateOrConnectWithoutAccountInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutAccountInput | ExpenseUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: ExpenseCreateManyAccountInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutAccountInput | ExpenseUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutAccountInput | ExpenseUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+  }
+
   export type AccountPaymentModeUncheckedUpdateManyWithoutAccountNestedInput = {
     create?: XOR<AccountPaymentModeCreateWithoutAccountInput, AccountPaymentModeUncheckedCreateWithoutAccountInput> | AccountPaymentModeCreateWithoutAccountInput[] | AccountPaymentModeUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: AccountPaymentModeCreateOrConnectWithoutAccountInput | AccountPaymentModeCreateOrConnectWithoutAccountInput[]
@@ -44439,6 +49655,20 @@ export namespace Prisma {
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
+  export type ExpenseUncheckedUpdateManyWithoutAccountNestedInput = {
+    create?: XOR<ExpenseCreateWithoutAccountInput, ExpenseUncheckedCreateWithoutAccountInput> | ExpenseCreateWithoutAccountInput[] | ExpenseUncheckedCreateWithoutAccountInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutAccountInput | ExpenseCreateOrConnectWithoutAccountInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutAccountInput | ExpenseUpsertWithWhereUniqueWithoutAccountInput[]
+    createMany?: ExpenseCreateManyAccountInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutAccountInput | ExpenseUpdateWithWhereUniqueWithoutAccountInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutAccountInput | ExpenseUpdateManyWithWhereWithoutAccountInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+  }
+
   export type AccountCreateNestedOneWithoutPaymentModesInput = {
     create?: XOR<AccountCreateWithoutPaymentModesInput, AccountUncheckedCreateWithoutPaymentModesInput>
     connectOrCreate?: AccountCreateOrConnectWithoutPaymentModesInput
@@ -44501,6 +49731,160 @@ export namespace Prisma {
     upsert?: AccountUpsertWithoutTransfersToInput
     connect?: AccountWhereUniqueInput
     update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutTransfersToInput, AccountUpdateWithoutTransfersToInput>, AccountUncheckedUpdateWithoutTransfersToInput>
+  }
+
+  export type OutletCreateNestedOneWithoutExpenseCategoriesInput = {
+    create?: XOR<OutletCreateWithoutExpenseCategoriesInput, OutletUncheckedCreateWithoutExpenseCategoriesInput>
+    connectOrCreate?: OutletCreateOrConnectWithoutExpenseCategoriesInput
+    connect?: OutletWhereUniqueInput
+  }
+
+  export type GLAccountCreateNestedOneWithoutExpenseCategoriesInput = {
+    create?: XOR<GLAccountCreateWithoutExpenseCategoriesInput, GLAccountUncheckedCreateWithoutExpenseCategoriesInput>
+    connectOrCreate?: GLAccountCreateOrConnectWithoutExpenseCategoriesInput
+    connect?: GLAccountWhereUniqueInput
+  }
+
+  export type ExpenseCreateNestedManyWithoutCategoryInput = {
+    create?: XOR<ExpenseCreateWithoutCategoryInput, ExpenseUncheckedCreateWithoutCategoryInput> | ExpenseCreateWithoutCategoryInput[] | ExpenseUncheckedCreateWithoutCategoryInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutCategoryInput | ExpenseCreateOrConnectWithoutCategoryInput[]
+    createMany?: ExpenseCreateManyCategoryInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+  }
+
+  export type ExpenseUncheckedCreateNestedManyWithoutCategoryInput = {
+    create?: XOR<ExpenseCreateWithoutCategoryInput, ExpenseUncheckedCreateWithoutCategoryInput> | ExpenseCreateWithoutCategoryInput[] | ExpenseUncheckedCreateWithoutCategoryInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutCategoryInput | ExpenseCreateOrConnectWithoutCategoryInput[]
+    createMany?: ExpenseCreateManyCategoryInputEnvelope
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+  }
+
+  export type OutletUpdateOneRequiredWithoutExpenseCategoriesNestedInput = {
+    create?: XOR<OutletCreateWithoutExpenseCategoriesInput, OutletUncheckedCreateWithoutExpenseCategoriesInput>
+    connectOrCreate?: OutletCreateOrConnectWithoutExpenseCategoriesInput
+    upsert?: OutletUpsertWithoutExpenseCategoriesInput
+    connect?: OutletWhereUniqueInput
+    update?: XOR<XOR<OutletUpdateToOneWithWhereWithoutExpenseCategoriesInput, OutletUpdateWithoutExpenseCategoriesInput>, OutletUncheckedUpdateWithoutExpenseCategoriesInput>
+  }
+
+  export type GLAccountUpdateOneRequiredWithoutExpenseCategoriesNestedInput = {
+    create?: XOR<GLAccountCreateWithoutExpenseCategoriesInput, GLAccountUncheckedCreateWithoutExpenseCategoriesInput>
+    connectOrCreate?: GLAccountCreateOrConnectWithoutExpenseCategoriesInput
+    upsert?: GLAccountUpsertWithoutExpenseCategoriesInput
+    connect?: GLAccountWhereUniqueInput
+    update?: XOR<XOR<GLAccountUpdateToOneWithWhereWithoutExpenseCategoriesInput, GLAccountUpdateWithoutExpenseCategoriesInput>, GLAccountUncheckedUpdateWithoutExpenseCategoriesInput>
+  }
+
+  export type ExpenseUpdateManyWithoutCategoryNestedInput = {
+    create?: XOR<ExpenseCreateWithoutCategoryInput, ExpenseUncheckedCreateWithoutCategoryInput> | ExpenseCreateWithoutCategoryInput[] | ExpenseUncheckedCreateWithoutCategoryInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutCategoryInput | ExpenseCreateOrConnectWithoutCategoryInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutCategoryInput | ExpenseUpsertWithWhereUniqueWithoutCategoryInput[]
+    createMany?: ExpenseCreateManyCategoryInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutCategoryInput | ExpenseUpdateWithWhereUniqueWithoutCategoryInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutCategoryInput | ExpenseUpdateManyWithWhereWithoutCategoryInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutCategoryNestedInput = {
+    create?: XOR<ExpenseCreateWithoutCategoryInput, ExpenseUncheckedCreateWithoutCategoryInput> | ExpenseCreateWithoutCategoryInput[] | ExpenseUncheckedCreateWithoutCategoryInput[]
+    connectOrCreate?: ExpenseCreateOrConnectWithoutCategoryInput | ExpenseCreateOrConnectWithoutCategoryInput[]
+    upsert?: ExpenseUpsertWithWhereUniqueWithoutCategoryInput | ExpenseUpsertWithWhereUniqueWithoutCategoryInput[]
+    createMany?: ExpenseCreateManyCategoryInputEnvelope
+    set?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    disconnect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    delete?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    connect?: ExpenseWhereUniqueInput | ExpenseWhereUniqueInput[]
+    update?: ExpenseUpdateWithWhereUniqueWithoutCategoryInput | ExpenseUpdateWithWhereUniqueWithoutCategoryInput[]
+    updateMany?: ExpenseUpdateManyWithWhereWithoutCategoryInput | ExpenseUpdateManyWithWhereWithoutCategoryInput[]
+    deleteMany?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+  }
+
+  export type OutletCreateNestedOneWithoutExpensesInput = {
+    create?: XOR<OutletCreateWithoutExpensesInput, OutletUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: OutletCreateOrConnectWithoutExpensesInput
+    connect?: OutletWhereUniqueInput
+  }
+
+  export type ExpenseCategoryCreateNestedOneWithoutExpensesInput = {
+    create?: XOR<ExpenseCategoryCreateWithoutExpensesInput, ExpenseCategoryUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: ExpenseCategoryCreateOrConnectWithoutExpensesInput
+    connect?: ExpenseCategoryWhereUniqueInput
+  }
+
+  export type PartyCreateNestedOneWithoutExpensesInput = {
+    create?: XOR<PartyCreateWithoutExpensesInput, PartyUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: PartyCreateOrConnectWithoutExpensesInput
+    connect?: PartyWhereUniqueInput
+  }
+
+  export type AccountCreateNestedOneWithoutExpensesInput = {
+    create?: XOR<AccountCreateWithoutExpensesInput, AccountUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutExpensesInput
+    connect?: AccountWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutExpensesInput = {
+    create?: XOR<UserCreateWithoutExpensesInput, UserUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutExpensesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type DecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type OutletUpdateOneRequiredWithoutExpensesNestedInput = {
+    create?: XOR<OutletCreateWithoutExpensesInput, OutletUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: OutletCreateOrConnectWithoutExpensesInput
+    upsert?: OutletUpsertWithoutExpensesInput
+    connect?: OutletWhereUniqueInput
+    update?: XOR<XOR<OutletUpdateToOneWithWhereWithoutExpensesInput, OutletUpdateWithoutExpensesInput>, OutletUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type ExpenseCategoryUpdateOneRequiredWithoutExpensesNestedInput = {
+    create?: XOR<ExpenseCategoryCreateWithoutExpensesInput, ExpenseCategoryUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: ExpenseCategoryCreateOrConnectWithoutExpensesInput
+    upsert?: ExpenseCategoryUpsertWithoutExpensesInput
+    connect?: ExpenseCategoryWhereUniqueInput
+    update?: XOR<XOR<ExpenseCategoryUpdateToOneWithWhereWithoutExpensesInput, ExpenseCategoryUpdateWithoutExpensesInput>, ExpenseCategoryUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type PartyUpdateOneWithoutExpensesNestedInput = {
+    create?: XOR<PartyCreateWithoutExpensesInput, PartyUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: PartyCreateOrConnectWithoutExpensesInput
+    upsert?: PartyUpsertWithoutExpensesInput
+    disconnect?: PartyWhereInput | boolean
+    delete?: PartyWhereInput | boolean
+    connect?: PartyWhereUniqueInput
+    update?: XOR<XOR<PartyUpdateToOneWithWhereWithoutExpensesInput, PartyUpdateWithoutExpensesInput>, PartyUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type AccountUpdateOneRequiredWithoutExpensesNestedInput = {
+    create?: XOR<AccountCreateWithoutExpensesInput, AccountUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: AccountCreateOrConnectWithoutExpensesInput
+    upsert?: AccountUpsertWithoutExpensesInput
+    connect?: AccountWhereUniqueInput
+    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutExpensesInput, AccountUpdateWithoutExpensesInput>, AccountUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutExpensesNestedInput = {
+    create?: XOR<UserCreateWithoutExpensesInput, UserUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutExpensesInput
+    upsert?: UserUpsertWithoutExpensesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutExpensesInput, UserUpdateWithoutExpensesInput>, UserUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type BytesFieldUpdateOperationsInput = {
+    set?: Bytes
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -44895,6 +50279,50 @@ export namespace Prisma {
     _max?: NestedEnumTransactionTypeFilter<$PrismaModel>
   }
 
+  export type NestedDecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type NestedBytesFilter<$PrismaModel = never> = {
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Bytes
+  }
+
+  export type NestedBytesWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Bytes
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBytesFilter<$PrismaModel>
+    _max?: NestedBytesFilter<$PrismaModel>
+  }
+
   export type AuditLogCreateWithoutUserInput = {
     id?: string
     action: string
@@ -45073,6 +50501,54 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ExpenseCreateWithoutUserInput = {
+    id?: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    outlet: OutletCreateNestedOneWithoutExpensesInput
+    category: ExpenseCategoryCreateNestedOneWithoutExpensesInput
+    vendor?: PartyCreateNestedOneWithoutExpensesInput
+    account: AccountCreateNestedOneWithoutExpensesInput
+  }
+
+  export type ExpenseUncheckedCreateWithoutUserInput = {
+    id?: string
+    outletId: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    categoryId: string
+    vendorId?: string | null
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    accountId: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseCreateOrConnectWithoutUserInput = {
+    where: ExpenseWhereUniqueInput
+    create: XOR<ExpenseCreateWithoutUserInput, ExpenseUncheckedCreateWithoutUserInput>
+  }
+
+  export type ExpenseCreateManyUserInputEnvelope = {
+    data: ExpenseCreateManyUserInput | ExpenseCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type OutletCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -45089,6 +50565,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -45097,6 +50574,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
 
@@ -45116,6 +50594,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -45124,6 +50603,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
 
@@ -45275,6 +50755,45 @@ export namespace Prisma {
     paidAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
   }
 
+  export type ExpenseUpsertWithWhereUniqueWithoutUserInput = {
+    where: ExpenseWhereUniqueInput
+    update: XOR<ExpenseUpdateWithoutUserInput, ExpenseUncheckedUpdateWithoutUserInput>
+    create: XOR<ExpenseCreateWithoutUserInput, ExpenseUncheckedCreateWithoutUserInput>
+  }
+
+  export type ExpenseUpdateWithWhereUniqueWithoutUserInput = {
+    where: ExpenseWhereUniqueInput
+    data: XOR<ExpenseUpdateWithoutUserInput, ExpenseUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ExpenseUpdateManyWithWhereWithoutUserInput = {
+    where: ExpenseScalarWhereInput
+    data: XOR<ExpenseUpdateManyMutationInput, ExpenseUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type ExpenseScalarWhereInput = {
+    AND?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+    OR?: ExpenseScalarWhereInput[]
+    NOT?: ExpenseScalarWhereInput | ExpenseScalarWhereInput[]
+    id?: StringFilter<"Expense"> | string
+    outletId?: StringFilter<"Expense"> | string
+    txnNumber?: StringFilter<"Expense"> | string
+    date?: DateTimeFilter<"Expense"> | Date | string
+    description?: StringFilter<"Expense"> | string
+    categoryId?: StringFilter<"Expense"> | string
+    vendorId?: StringNullableFilter<"Expense"> | string | null
+    taxableAmount?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    gstRate?: IntNullableFilter<"Expense"> | number | null
+    inputGst?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFilter<"Expense"> | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFilter<"Expense"> | string
+    accountId?: StringFilter<"Expense"> | string
+    status?: StringFilter<"Expense"> | string
+    createdBy?: StringFilter<"Expense"> | string
+    createdAt?: DateTimeFilter<"Expense"> | Date | string
+    updatedAt?: DateTimeFilter<"Expense"> | Date | string
+  }
+
   export type OutletUpsertWithWhereUniqueWithoutUsersInput = {
     where: OutletWhereUniqueInput
     update: XOR<OutletUpdateWithoutUsersInput, OutletUncheckedUpdateWithoutUsersInput>
@@ -45321,6 +50840,7 @@ export namespace Prisma {
     payments?: PaymentCreateNestedManyWithoutCreatorInput
     stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    expenses?: ExpenseCreateNestedManyWithoutUserInput
     outlets?: OutletCreateNestedManyWithoutUsersInput
   }
 
@@ -45336,6 +50856,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutUserInput
     outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
   }
 
@@ -45367,6 +50888,7 @@ export namespace Prisma {
     payments?: PaymentUpdateManyWithoutCreatorNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUpdateManyWithoutUserNestedInput
     outlets?: OutletUpdateManyWithoutUsersNestedInput
   }
 
@@ -45382,6 +50904,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutUserNestedInput
     outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
   }
 
@@ -45401,6 +50924,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -45409,6 +50933,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
   }
 
@@ -45428,6 +50953,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -45436,6 +50962,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
   }
 
@@ -45709,6 +51236,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -45717,6 +51245,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
   }
 
@@ -45736,6 +51265,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -45744,6 +51274,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
   }
 
@@ -45863,6 +51394,7 @@ export namespace Prisma {
     isSystem?: boolean
     entries?: LedgerEntryCreateNestedManyWithoutAccountInput
     payments?: PaymentCreateNestedManyWithoutGlAccountInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutGlAccountInput
   }
 
   export type GLAccountUncheckedCreateWithoutOutletInput = {
@@ -45873,6 +51405,7 @@ export namespace Prisma {
     isSystem?: boolean
     entries?: LedgerEntryUncheckedCreateNestedManyWithoutAccountInput
     payments?: PaymentUncheckedCreateNestedManyWithoutGlAccountInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutGlAccountInput
   }
 
   export type GLAccountCreateOrConnectWithoutOutletInput = {
@@ -45898,6 +51431,7 @@ export namespace Prisma {
     transfersFrom?: TransferCreateNestedManyWithoutFromAccountInput
     transfersTo?: TransferCreateNestedManyWithoutToAccountInput
     payments?: PaymentCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutOutletInput = {
@@ -45913,6 +51447,7 @@ export namespace Prisma {
     transfersFrom?: TransferUncheckedCreateNestedManyWithoutFromAccountInput
     transfersTo?: TransferUncheckedCreateNestedManyWithoutToAccountInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutOutletInput = {
@@ -45952,6 +51487,38 @@ export namespace Prisma {
 
   export type CategoryCreateManyOutletInputEnvelope = {
     data: CategoryCreateManyOutletInput | CategoryCreateManyOutletInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ExpenseCategoryCreateWithoutOutletInput = {
+    id?: string
+    name: string
+    code: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    glAccount: GLAccountCreateNestedOneWithoutExpenseCategoriesInput
+    expenses?: ExpenseCreateNestedManyWithoutCategoryInput
+  }
+
+  export type ExpenseCategoryUncheckedCreateWithoutOutletInput = {
+    id?: string
+    name: string
+    code: string
+    glAccountId: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutCategoryInput
+  }
+
+  export type ExpenseCategoryCreateOrConnectWithoutOutletInput = {
+    where: ExpenseCategoryWhereUniqueInput
+    create: XOR<ExpenseCategoryCreateWithoutOutletInput, ExpenseCategoryUncheckedCreateWithoutOutletInput>
+  }
+
+  export type ExpenseCategoryCreateManyOutletInputEnvelope = {
+    data: ExpenseCategoryCreateManyOutletInput | ExpenseCategoryCreateManyOutletInput[]
     skipDuplicates?: boolean
   }
 
@@ -46045,6 +51612,7 @@ export namespace Prisma {
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     payments?: PaymentCreateNestedManyWithoutPartyInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
   }
 
@@ -46074,6 +51642,7 @@ export namespace Prisma {
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
   }
 
@@ -46299,6 +51868,54 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ExpenseCreateWithoutOutletInput = {
+    id?: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    category: ExpenseCategoryCreateNestedOneWithoutExpensesInput
+    vendor?: PartyCreateNestedOneWithoutExpensesInput
+    account: AccountCreateNestedOneWithoutExpensesInput
+    user: UserCreateNestedOneWithoutExpensesInput
+  }
+
+  export type ExpenseUncheckedCreateWithoutOutletInput = {
+    id?: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    categoryId: string
+    vendorId?: string | null
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    accountId: string
+    status?: string
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseCreateOrConnectWithoutOutletInput = {
+    where: ExpenseWhereUniqueInput
+    create: XOR<ExpenseCreateWithoutOutletInput, ExpenseUncheckedCreateWithoutOutletInput>
+  }
+
+  export type ExpenseCreateManyOutletInputEnvelope = {
+    data: ExpenseCreateManyOutletInput | ExpenseCreateManyOutletInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserCreateWithoutOutletsInput = {
     id?: string
     email: string
@@ -46312,6 +51929,7 @@ export namespace Prisma {
     payments?: PaymentCreateNestedManyWithoutCreatorInput
     stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    expenses?: ExpenseCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOutletsInput = {
@@ -46327,6 +51945,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOutletsInput = {
@@ -46458,6 +52077,36 @@ export namespace Prisma {
     description?: StringNullableFilter<"Category"> | string | null
     isActive?: BoolFilter<"Category"> | boolean
     outletId?: StringFilter<"Category"> | string
+  }
+
+  export type ExpenseCategoryUpsertWithWhereUniqueWithoutOutletInput = {
+    where: ExpenseCategoryWhereUniqueInput
+    update: XOR<ExpenseCategoryUpdateWithoutOutletInput, ExpenseCategoryUncheckedUpdateWithoutOutletInput>
+    create: XOR<ExpenseCategoryCreateWithoutOutletInput, ExpenseCategoryUncheckedCreateWithoutOutletInput>
+  }
+
+  export type ExpenseCategoryUpdateWithWhereUniqueWithoutOutletInput = {
+    where: ExpenseCategoryWhereUniqueInput
+    data: XOR<ExpenseCategoryUpdateWithoutOutletInput, ExpenseCategoryUncheckedUpdateWithoutOutletInput>
+  }
+
+  export type ExpenseCategoryUpdateManyWithWhereWithoutOutletInput = {
+    where: ExpenseCategoryScalarWhereInput
+    data: XOR<ExpenseCategoryUpdateManyMutationInput, ExpenseCategoryUncheckedUpdateManyWithoutOutletInput>
+  }
+
+  export type ExpenseCategoryScalarWhereInput = {
+    AND?: ExpenseCategoryScalarWhereInput | ExpenseCategoryScalarWhereInput[]
+    OR?: ExpenseCategoryScalarWhereInput[]
+    NOT?: ExpenseCategoryScalarWhereInput | ExpenseCategoryScalarWhereInput[]
+    id?: StringFilter<"ExpenseCategory"> | string
+    outletId?: StringFilter<"ExpenseCategory"> | string
+    name?: StringFilter<"ExpenseCategory"> | string
+    code?: StringFilter<"ExpenseCategory"> | string
+    glAccountId?: StringFilter<"ExpenseCategory"> | string
+    isActive?: BoolFilter<"ExpenseCategory"> | boolean
+    createdAt?: DateTimeFilter<"ExpenseCategory"> | Date | string
+    updatedAt?: DateTimeFilter<"ExpenseCategory"> | Date | string
   }
 
   export type CustomBatchUpsertWithWhereUniqueWithoutOutletInput = {
@@ -46647,6 +52296,22 @@ export namespace Prisma {
     data: XOR<TransactionUpdateManyMutationInput, TransactionUncheckedUpdateManyWithoutOutletInput>
   }
 
+  export type ExpenseUpsertWithWhereUniqueWithoutOutletInput = {
+    where: ExpenseWhereUniqueInput
+    update: XOR<ExpenseUpdateWithoutOutletInput, ExpenseUncheckedUpdateWithoutOutletInput>
+    create: XOR<ExpenseCreateWithoutOutletInput, ExpenseUncheckedCreateWithoutOutletInput>
+  }
+
+  export type ExpenseUpdateWithWhereUniqueWithoutOutletInput = {
+    where: ExpenseWhereUniqueInput
+    data: XOR<ExpenseUpdateWithoutOutletInput, ExpenseUncheckedUpdateWithoutOutletInput>
+  }
+
+  export type ExpenseUpdateManyWithWhereWithoutOutletInput = {
+    where: ExpenseScalarWhereInput
+    data: XOR<ExpenseUpdateManyMutationInput, ExpenseUncheckedUpdateManyWithoutOutletInput>
+  }
+
   export type UserUpsertWithWhereUniqueWithoutOutletsInput = {
     where: UserWhereUniqueInput
     update: XOR<UserUpdateWithoutOutletsInput, UserUncheckedUpdateWithoutOutletsInput>
@@ -46722,6 +52387,7 @@ export namespace Prisma {
     inventoryValuationMethod?: string
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -46730,6 +52396,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -46749,6 +52416,7 @@ export namespace Prisma {
     inventoryValuationMethod?: string
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -46757,6 +52425,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -46885,6 +52554,7 @@ export namespace Prisma {
     inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -46893,6 +52563,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -46912,6 +52583,7 @@ export namespace Prisma {
     inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -46920,6 +52592,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -47028,6 +52701,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -47035,6 +52709,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -47055,6 +52730,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -47062,6 +52738,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -47173,6 +52850,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -47180,6 +52858,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -47200,6 +52879,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -47207,6 +52887,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -47653,6 +53334,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -47660,6 +53342,7 @@ export namespace Prisma {
     products?: ProductCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -47680,6 +53363,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -47687,6 +53371,7 @@ export namespace Prisma {
     products?: ProductUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -47797,6 +53482,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -47804,6 +53490,7 @@ export namespace Prisma {
     products?: ProductUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -47824,6 +53511,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -47831,6 +53519,7 @@ export namespace Prisma {
     products?: ProductUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -47969,6 +53658,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     payments?: PaymentCreateNestedManyWithoutOutletInput
@@ -47976,6 +53666,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -47996,6 +53687,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
@@ -48003,6 +53695,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -48145,6 +53838,54 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ExpenseCreateWithoutVendorInput = {
+    id?: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    outlet: OutletCreateNestedOneWithoutExpensesInput
+    category: ExpenseCategoryCreateNestedOneWithoutExpensesInput
+    account: AccountCreateNestedOneWithoutExpensesInput
+    user: UserCreateNestedOneWithoutExpensesInput
+  }
+
+  export type ExpenseUncheckedCreateWithoutVendorInput = {
+    id?: string
+    outletId: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    categoryId: string
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    accountId: string
+    status?: string
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseCreateOrConnectWithoutVendorInput = {
+    where: ExpenseWhereUniqueInput
+    create: XOR<ExpenseCreateWithoutVendorInput, ExpenseUncheckedCreateWithoutVendorInput>
+  }
+
+  export type ExpenseCreateManyVendorInputEnvelope = {
+    data: ExpenseCreateManyVendorInput | ExpenseCreateManyVendorInput[]
+    skipDuplicates?: boolean
+  }
+
   export type VendorProductCreateWithoutVendorInput = {
     id?: string
     lastPrice?: number | null
@@ -48227,6 +53968,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     payments?: PaymentUpdateManyWithoutOutletNestedInput
@@ -48234,6 +53976,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -48254,6 +53997,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
@@ -48261,6 +54005,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -48322,6 +54067,22 @@ export namespace Prisma {
   export type TransactionUpdateManyWithWhereWithoutPartyInput = {
     where: TransactionScalarWhereInput
     data: XOR<TransactionUpdateManyMutationInput, TransactionUncheckedUpdateManyWithoutPartyInput>
+  }
+
+  export type ExpenseUpsertWithWhereUniqueWithoutVendorInput = {
+    where: ExpenseWhereUniqueInput
+    update: XOR<ExpenseUpdateWithoutVendorInput, ExpenseUncheckedUpdateWithoutVendorInput>
+    create: XOR<ExpenseCreateWithoutVendorInput, ExpenseUncheckedCreateWithoutVendorInput>
+  }
+
+  export type ExpenseUpdateWithWhereUniqueWithoutVendorInput = {
+    where: ExpenseWhereUniqueInput
+    data: XOR<ExpenseUpdateWithoutVendorInput, ExpenseUncheckedUpdateWithoutVendorInput>
+  }
+
+  export type ExpenseUpdateManyWithWhereWithoutVendorInput = {
+    where: ExpenseScalarWhereInput
+    data: XOR<ExpenseUpdateManyMutationInput, ExpenseUncheckedUpdateManyWithoutVendorInput>
   }
 
   export type VendorProductUpsertWithWhereUniqueWithoutVendorInput = {
@@ -48525,6 +54286,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -48532,6 +54294,7 @@ export namespace Prisma {
     products?: ProductCreateNestedManyWithoutOutletInput
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -48552,6 +54315,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -48559,6 +54323,7 @@ export namespace Prisma {
     products?: ProductUncheckedCreateNestedManyWithoutOutletInput
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -48729,6 +54494,7 @@ export namespace Prisma {
     outlet: OutletCreateNestedOneWithoutPartiesInput
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     payments?: PaymentCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
   }
 
@@ -48758,6 +54524,7 @@ export namespace Prisma {
     creditBalance?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
   }
 
@@ -48813,6 +54580,7 @@ export namespace Prisma {
     actions?: AuditLogCreateNestedManyWithoutUserInput
     payments?: PaymentCreateNestedManyWithoutCreatorInput
     stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
+    expenses?: ExpenseCreateNestedManyWithoutUserInput
     outlets?: OutletCreateNestedManyWithoutUsersInput
   }
 
@@ -48828,6 +54596,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutUserInput
     outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
   }
 
@@ -49021,6 +54790,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -49028,6 +54798,7 @@ export namespace Prisma {
     products?: ProductUpdateManyWithoutOutletNestedInput
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -49048,6 +54819,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -49055,6 +54827,7 @@ export namespace Prisma {
     products?: ProductUncheckedUpdateManyWithoutOutletNestedInput
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -49183,6 +54956,7 @@ export namespace Prisma {
     outlet?: OutletUpdateOneRequiredWithoutPartiesNestedInput
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     payments?: PaymentUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
   }
 
@@ -49212,6 +54986,7 @@ export namespace Prisma {
     creditBalance?: FloatFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
   }
 
@@ -49279,6 +55054,7 @@ export namespace Prisma {
     actions?: AuditLogUpdateManyWithoutUserNestedInput
     payments?: PaymentUpdateManyWithoutCreatorNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUpdateManyWithoutUserNestedInput
     outlets?: OutletUpdateManyWithoutUsersNestedInput
   }
 
@@ -49294,6 +55070,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutUserNestedInput
     outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
   }
 
@@ -49548,6 +55325,7 @@ export namespace Prisma {
     inventoryValuationMethod?: string
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -49556,6 +55334,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -49575,6 +55354,7 @@ export namespace Prisma {
     inventoryValuationMethod?: string
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -49583,6 +55363,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -49666,6 +55447,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ExpenseCategoryCreateWithoutGlAccountInput = {
+    id?: string
+    name: string
+    code: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    outlet: OutletCreateNestedOneWithoutExpenseCategoriesInput
+    expenses?: ExpenseCreateNestedManyWithoutCategoryInput
+  }
+
+  export type ExpenseCategoryUncheckedCreateWithoutGlAccountInput = {
+    id?: string
+    outletId: string
+    name: string
+    code: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutCategoryInput
+  }
+
+  export type ExpenseCategoryCreateOrConnectWithoutGlAccountInput = {
+    where: ExpenseCategoryWhereUniqueInput
+    create: XOR<ExpenseCategoryCreateWithoutGlAccountInput, ExpenseCategoryUncheckedCreateWithoutGlAccountInput>
+  }
+
+  export type ExpenseCategoryCreateManyGlAccountInputEnvelope = {
+    data: ExpenseCategoryCreateManyGlAccountInput | ExpenseCategoryCreateManyGlAccountInput[]
+    skipDuplicates?: boolean
+  }
+
   export type OutletUpsertWithoutGlAccountsInput = {
     update: XOR<OutletUpdateWithoutGlAccountsInput, OutletUncheckedUpdateWithoutGlAccountsInput>
     create: XOR<OutletCreateWithoutGlAccountsInput, OutletUncheckedCreateWithoutGlAccountsInput>
@@ -49692,6 +55505,7 @@ export namespace Prisma {
     inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -49700,6 +55514,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -49719,6 +55534,7 @@ export namespace Prisma {
     inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -49727,6 +55543,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -49763,6 +55580,22 @@ export namespace Prisma {
     data: XOR<PaymentUpdateManyMutationInput, PaymentUncheckedUpdateManyWithoutGlAccountInput>
   }
 
+  export type ExpenseCategoryUpsertWithWhereUniqueWithoutGlAccountInput = {
+    where: ExpenseCategoryWhereUniqueInput
+    update: XOR<ExpenseCategoryUpdateWithoutGlAccountInput, ExpenseCategoryUncheckedUpdateWithoutGlAccountInput>
+    create: XOR<ExpenseCategoryCreateWithoutGlAccountInput, ExpenseCategoryUncheckedCreateWithoutGlAccountInput>
+  }
+
+  export type ExpenseCategoryUpdateWithWhereUniqueWithoutGlAccountInput = {
+    where: ExpenseCategoryWhereUniqueInput
+    data: XOR<ExpenseCategoryUpdateWithoutGlAccountInput, ExpenseCategoryUncheckedUpdateWithoutGlAccountInput>
+  }
+
+  export type ExpenseCategoryUpdateManyWithWhereWithoutGlAccountInput = {
+    where: ExpenseCategoryScalarWhereInput
+    data: XOR<ExpenseCategoryUpdateManyMutationInput, ExpenseCategoryUncheckedUpdateManyWithoutGlAccountInput>
+  }
+
   export type GLAccountCreateWithoutEntriesInput = {
     id?: string
     code: string
@@ -49771,6 +55604,7 @@ export namespace Prisma {
     isSystem?: boolean
     outlet: OutletCreateNestedOneWithoutGlAccountsInput
     payments?: PaymentCreateNestedManyWithoutGlAccountInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutGlAccountInput
   }
 
   export type GLAccountUncheckedCreateWithoutEntriesInput = {
@@ -49781,6 +55615,7 @@ export namespace Prisma {
     isSystem?: boolean
     outletId: string
     payments?: PaymentUncheckedCreateNestedManyWithoutGlAccountInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutGlAccountInput
   }
 
   export type GLAccountCreateOrConnectWithoutEntriesInput = {
@@ -49814,6 +55649,7 @@ export namespace Prisma {
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     payments?: PaymentCreateNestedManyWithoutPartyInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
   }
 
@@ -49843,6 +55679,7 @@ export namespace Prisma {
     creditBalance?: number
     payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
   }
 
@@ -49935,6 +55772,7 @@ export namespace Prisma {
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     outlet?: OutletUpdateOneRequiredWithoutGlAccountsNestedInput
     payments?: PaymentUpdateManyWithoutGlAccountNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutGlAccountNestedInput
   }
 
   export type GLAccountUncheckedUpdateWithoutEntriesInput = {
@@ -49945,6 +55783,7 @@ export namespace Prisma {
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     outletId?: StringFieldUpdateOperationsInput | string
     payments?: PaymentUncheckedUpdateManyWithoutGlAccountNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutGlAccountNestedInput
   }
 
   export type PartyUpsertWithoutLedgerEntriesInput = {
@@ -49984,6 +55823,7 @@ export namespace Prisma {
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     payments?: PaymentUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
   }
 
@@ -50013,6 +55853,7 @@ export namespace Prisma {
     creditBalance?: FloatFieldUpdateOperationsInput | number
     payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
   }
 
@@ -50153,6 +55994,7 @@ export namespace Prisma {
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     payments?: PaymentCreateNestedManyWithoutPartyInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseCreateNestedManyWithoutVendorInput
   }
 
   export type PartyUncheckedCreateWithoutSuppliedProductsInput = {
@@ -50182,6 +56024,7 @@ export namespace Prisma {
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutVendorInput
   }
 
   export type PartyCreateOrConnectWithoutSuppliedProductsInput = {
@@ -50272,6 +56115,7 @@ export namespace Prisma {
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     payments?: PaymentUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUpdateManyWithoutVendorNestedInput
   }
 
   export type PartyUncheckedUpdateWithoutSuppliedProductsInput = {
@@ -50301,6 +56145,7 @@ export namespace Prisma {
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutVendorNestedInput
   }
 
   export type PartyCreateWithoutPriceListInput = {
@@ -50329,6 +56174,7 @@ export namespace Prisma {
     outlet: OutletCreateNestedOneWithoutPartiesInput
     payments?: PaymentCreateNestedManyWithoutPartyInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
   }
 
@@ -50358,6 +56204,7 @@ export namespace Prisma {
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
   }
 
@@ -50441,6 +56288,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     payments?: PaymentCreateNestedManyWithoutOutletInput
@@ -50448,6 +56296,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -50468,6 +56317,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
@@ -50475,6 +56325,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -50511,6 +56362,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     payments?: PaymentUpdateManyWithoutOutletNestedInput
@@ -50518,6 +56370,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -50538,6 +56391,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
@@ -50545,6 +56399,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -50589,6 +56444,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
     payments?: PaymentCreateNestedManyWithoutOutletInput
@@ -50596,6 +56452,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -50616,6 +56473,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
@@ -50623,6 +56481,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -50749,6 +56608,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
     payments?: PaymentUpdateManyWithoutOutletNestedInput
@@ -50756,6 +56616,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -50776,6 +56637,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
@@ -50783,6 +56645,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -51093,6 +56956,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -51100,6 +56964,7 @@ export namespace Prisma {
     products?: ProductCreateNestedManyWithoutOutletInput
     stocks?: StockCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -51120,6 +56985,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -51127,6 +56993,7 @@ export namespace Prisma {
     products?: ProductUncheckedCreateNestedManyWithoutOutletInput
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -51213,6 +57080,7 @@ export namespace Prisma {
     actions?: AuditLogCreateNestedManyWithoutUserInput
     payments?: PaymentCreateNestedManyWithoutCreatorInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    expenses?: ExpenseCreateNestedManyWithoutUserInput
     outlets?: OutletCreateNestedManyWithoutUsersInput
   }
 
@@ -51228,6 +57096,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutUserInput
     outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
   }
 
@@ -51337,6 +57206,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -51344,6 +57214,7 @@ export namespace Prisma {
     products?: ProductUpdateManyWithoutOutletNestedInput
     stocks?: StockUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -51364,6 +57235,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -51371,6 +57243,7 @@ export namespace Prisma {
     products?: ProductUncheckedUpdateManyWithoutOutletNestedInput
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -51469,6 +57342,7 @@ export namespace Prisma {
     actions?: AuditLogUpdateManyWithoutUserNestedInput
     payments?: PaymentUpdateManyWithoutCreatorNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUpdateManyWithoutUserNestedInput
     outlets?: OutletUpdateManyWithoutUsersNestedInput
   }
 
@@ -51484,6 +57358,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutUserNestedInput
     outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
   }
 
@@ -51581,6 +57456,7 @@ export namespace Prisma {
     isSystem?: boolean
     outlet: OutletCreateNestedOneWithoutGlAccountsInput
     entries?: LedgerEntryCreateNestedManyWithoutAccountInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutGlAccountInput
   }
 
   export type GLAccountUncheckedCreateWithoutPaymentsInput = {
@@ -51591,6 +57467,7 @@ export namespace Prisma {
     isSystem?: boolean
     outletId: string
     entries?: LedgerEntryUncheckedCreateNestedManyWithoutAccountInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutGlAccountInput
   }
 
   export type GLAccountCreateOrConnectWithoutPaymentsInput = {
@@ -51611,6 +57488,7 @@ export namespace Prisma {
     transactions?: AccountTransactionCreateNestedManyWithoutAccountInput
     transfersFrom?: TransferCreateNestedManyWithoutFromAccountInput
     transfersTo?: TransferCreateNestedManyWithoutToAccountInput
+    expenses?: ExpenseCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutPaymentsInput = {
@@ -51626,6 +57504,7 @@ export namespace Prisma {
     transactions?: AccountTransactionUncheckedCreateNestedManyWithoutAccountInput
     transfersFrom?: TransferUncheckedCreateNestedManyWithoutFromAccountInput
     transfersTo?: TransferUncheckedCreateNestedManyWithoutToAccountInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutPaymentsInput = {
@@ -51645,6 +57524,7 @@ export namespace Prisma {
     actions?: AuditLogCreateNestedManyWithoutUserInput
     stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    expenses?: ExpenseCreateNestedManyWithoutUserInput
     outlets?: OutletCreateNestedManyWithoutUsersInput
   }
 
@@ -51660,6 +57540,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutUserInput
     outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
   }
 
@@ -51749,6 +57630,7 @@ export namespace Prisma {
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -51756,6 +57638,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -51776,6 +57659,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -51783,6 +57667,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -51818,6 +57703,7 @@ export namespace Prisma {
     outlet: OutletCreateNestedOneWithoutPartiesInput
     priceList?: PriceListCreateNestedOneWithoutPartiesInput
     transactions?: TransactionCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
   }
 
@@ -51847,6 +57733,7 @@ export namespace Prisma {
     creditBalance?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutVendorInput
     suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
   }
 
@@ -51874,6 +57761,7 @@ export namespace Prisma {
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     outlet?: OutletUpdateOneRequiredWithoutGlAccountsNestedInput
     entries?: LedgerEntryUpdateManyWithoutAccountNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutGlAccountNestedInput
   }
 
   export type GLAccountUncheckedUpdateWithoutPaymentsInput = {
@@ -51884,6 +57772,7 @@ export namespace Prisma {
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     outletId?: StringFieldUpdateOperationsInput | string
     entries?: LedgerEntryUncheckedUpdateManyWithoutAccountNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutGlAccountNestedInput
   }
 
   export type AccountUpsertWithoutPaymentsInput = {
@@ -51910,6 +57799,7 @@ export namespace Prisma {
     transactions?: AccountTransactionUpdateManyWithoutAccountNestedInput
     transfersFrom?: TransferUpdateManyWithoutFromAccountNestedInput
     transfersTo?: TransferUpdateManyWithoutToAccountNestedInput
+    expenses?: ExpenseUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutPaymentsInput = {
@@ -51925,6 +57815,7 @@ export namespace Prisma {
     transactions?: AccountTransactionUncheckedUpdateManyWithoutAccountNestedInput
     transfersFrom?: TransferUncheckedUpdateManyWithoutFromAccountNestedInput
     transfersTo?: TransferUncheckedUpdateManyWithoutToAccountNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type UserUpsertWithoutPaymentsInput = {
@@ -51950,6 +57841,7 @@ export namespace Prisma {
     actions?: AuditLogUpdateManyWithoutUserNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUpdateManyWithoutUserNestedInput
     outlets?: OutletUpdateManyWithoutUsersNestedInput
   }
 
@@ -51965,6 +57857,7 @@ export namespace Prisma {
     actions?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutUserNestedInput
     outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
   }
 
@@ -52066,6 +57959,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -52073,6 +57967,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -52093,6 +57988,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -52100,6 +57996,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -52141,6 +58038,7 @@ export namespace Prisma {
     outlet?: OutletUpdateOneRequiredWithoutPartiesNestedInput
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
   }
 
@@ -52170,6 +58068,7 @@ export namespace Prisma {
     creditBalance?: FloatFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
   }
 
@@ -52320,6 +58219,7 @@ export namespace Prisma {
     inventoryValuationMethod?: string
     glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
     categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
     batches?: CustomBatchCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesCreateNestedManyWithoutOutletInput
     parties?: PartyCreateNestedManyWithoutOutletInput
@@ -52328,6 +58228,7 @@ export namespace Prisma {
     stocks?: StockCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
     transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
     users?: UserCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseCreateNestedManyWithoutOutletInput
   }
@@ -52347,6 +58248,7 @@ export namespace Prisma {
     inventoryValuationMethod?: string
     glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
     categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
     batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
     series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
     parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
@@ -52355,6 +58257,7 @@ export namespace Prisma {
     stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
     stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
     users?: UserUncheckedCreateNestedManyWithoutOutletsInput
     warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
   }
@@ -52530,6 +58433,54 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ExpenseCreateWithoutAccountInput = {
+    id?: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    outlet: OutletCreateNestedOneWithoutExpensesInput
+    category: ExpenseCategoryCreateNestedOneWithoutExpensesInput
+    vendor?: PartyCreateNestedOneWithoutExpensesInput
+    user: UserCreateNestedOneWithoutExpensesInput
+  }
+
+  export type ExpenseUncheckedCreateWithoutAccountInput = {
+    id?: string
+    outletId: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    categoryId: string
+    vendorId?: string | null
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    status?: string
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseCreateOrConnectWithoutAccountInput = {
+    where: ExpenseWhereUniqueInput
+    create: XOR<ExpenseCreateWithoutAccountInput, ExpenseUncheckedCreateWithoutAccountInput>
+  }
+
+  export type ExpenseCreateManyAccountInputEnvelope = {
+    data: ExpenseCreateManyAccountInput | ExpenseCreateManyAccountInput[]
+    skipDuplicates?: boolean
+  }
+
   export type OutletUpsertWithoutOperationalAccountsInput = {
     update: XOR<OutletUpdateWithoutOperationalAccountsInput, OutletUncheckedUpdateWithoutOperationalAccountsInput>
     create: XOR<OutletCreateWithoutOperationalAccountsInput, OutletUncheckedCreateWithoutOperationalAccountsInput>
@@ -52556,6 +58507,7 @@ export namespace Prisma {
     inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -52564,6 +58516,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     users?: UserUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
@@ -52583,6 +58536,7 @@ export namespace Prisma {
     inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -52591,6 +58545,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
@@ -52719,6 +58674,22 @@ export namespace Prisma {
     data: XOR<PaymentUpdateManyMutationInput, PaymentUncheckedUpdateManyWithoutOperationalAccountInput>
   }
 
+  export type ExpenseUpsertWithWhereUniqueWithoutAccountInput = {
+    where: ExpenseWhereUniqueInput
+    update: XOR<ExpenseUpdateWithoutAccountInput, ExpenseUncheckedUpdateWithoutAccountInput>
+    create: XOR<ExpenseCreateWithoutAccountInput, ExpenseUncheckedCreateWithoutAccountInput>
+  }
+
+  export type ExpenseUpdateWithWhereUniqueWithoutAccountInput = {
+    where: ExpenseWhereUniqueInput
+    data: XOR<ExpenseUpdateWithoutAccountInput, ExpenseUncheckedUpdateWithoutAccountInput>
+  }
+
+  export type ExpenseUpdateManyWithWhereWithoutAccountInput = {
+    where: ExpenseScalarWhereInput
+    data: XOR<ExpenseUpdateManyMutationInput, ExpenseUncheckedUpdateManyWithoutAccountInput>
+  }
+
   export type AccountCreateWithoutPaymentModesInput = {
     id?: string
     name: string
@@ -52732,6 +58703,7 @@ export namespace Prisma {
     transfersFrom?: TransferCreateNestedManyWithoutFromAccountInput
     transfersTo?: TransferCreateNestedManyWithoutToAccountInput
     payments?: PaymentCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutPaymentModesInput = {
@@ -52747,6 +58719,7 @@ export namespace Prisma {
     transfersFrom?: TransferUncheckedCreateNestedManyWithoutFromAccountInput
     transfersTo?: TransferUncheckedCreateNestedManyWithoutToAccountInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutPaymentModesInput = {
@@ -52778,6 +58751,7 @@ export namespace Prisma {
     transfersFrom?: TransferUpdateManyWithoutFromAccountNestedInput
     transfersTo?: TransferUpdateManyWithoutToAccountNestedInput
     payments?: PaymentUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutPaymentModesInput = {
@@ -52793,6 +58767,7 @@ export namespace Prisma {
     transfersFrom?: TransferUncheckedUpdateManyWithoutFromAccountNestedInput
     transfersTo?: TransferUncheckedUpdateManyWithoutToAccountNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutTransactionsInput = {
@@ -52808,6 +58783,7 @@ export namespace Prisma {
     transfersFrom?: TransferCreateNestedManyWithoutFromAccountInput
     transfersTo?: TransferCreateNestedManyWithoutToAccountInput
     payments?: PaymentCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutTransactionsInput = {
@@ -52823,6 +58799,7 @@ export namespace Prisma {
     transfersFrom?: TransferUncheckedCreateNestedManyWithoutFromAccountInput
     transfersTo?: TransferUncheckedCreateNestedManyWithoutToAccountInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutTransactionsInput = {
@@ -52854,6 +58831,7 @@ export namespace Prisma {
     transfersFrom?: TransferUpdateManyWithoutFromAccountNestedInput
     transfersTo?: TransferUpdateManyWithoutToAccountNestedInput
     payments?: PaymentUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutTransactionsInput = {
@@ -52869,6 +58847,7 @@ export namespace Prisma {
     transfersFrom?: TransferUncheckedUpdateManyWithoutFromAccountNestedInput
     transfersTo?: TransferUncheckedUpdateManyWithoutToAccountNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutTransfersFromInput = {
@@ -52884,6 +58863,7 @@ export namespace Prisma {
     transactions?: AccountTransactionCreateNestedManyWithoutAccountInput
     transfersTo?: TransferCreateNestedManyWithoutToAccountInput
     payments?: PaymentCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutTransfersFromInput = {
@@ -52899,6 +58879,7 @@ export namespace Prisma {
     transactions?: AccountTransactionUncheckedCreateNestedManyWithoutAccountInput
     transfersTo?: TransferUncheckedCreateNestedManyWithoutToAccountInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutTransfersFromInput = {
@@ -52919,6 +58900,7 @@ export namespace Prisma {
     transactions?: AccountTransactionCreateNestedManyWithoutAccountInput
     transfersFrom?: TransferCreateNestedManyWithoutFromAccountInput
     payments?: PaymentCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutTransfersToInput = {
@@ -52934,6 +58916,7 @@ export namespace Prisma {
     transactions?: AccountTransactionUncheckedCreateNestedManyWithoutAccountInput
     transfersFrom?: TransferUncheckedCreateNestedManyWithoutFromAccountInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOperationalAccountInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutTransfersToInput = {
@@ -52965,6 +58948,7 @@ export namespace Prisma {
     transactions?: AccountTransactionUpdateManyWithoutAccountNestedInput
     transfersTo?: TransferUpdateManyWithoutToAccountNestedInput
     payments?: PaymentUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutTransfersFromInput = {
@@ -52980,6 +58964,7 @@ export namespace Prisma {
     transactions?: AccountTransactionUncheckedUpdateManyWithoutAccountNestedInput
     transfersTo?: TransferUncheckedUpdateManyWithoutToAccountNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUpsertWithoutTransfersToInput = {
@@ -53006,6 +58991,7 @@ export namespace Prisma {
     transactions?: AccountTransactionUpdateManyWithoutAccountNestedInput
     transfersFrom?: TransferUpdateManyWithoutFromAccountNestedInput
     payments?: PaymentUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutTransfersToInput = {
@@ -53021,6 +59007,751 @@ export namespace Prisma {
     transactions?: AccountTransactionUncheckedUpdateManyWithoutAccountNestedInput
     transfersFrom?: TransferUncheckedUpdateManyWithoutFromAccountNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
+  }
+
+  export type OutletCreateWithoutExpenseCategoriesInput = {
+    id?: string
+    name: string
+    address?: string | null
+    state?: string | null
+    invoicePrefix: string
+    invoiceStartingNumber?: number
+    gstin?: string | null
+    bankDetails?: string | null
+    negativeStockPolicy?: string
+    batchTrackingEnabled?: boolean
+    allowRawCashBills?: boolean
+    inventoryValuationMethod?: string
+    glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
+    operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
+    categories?: CategoryCreateNestedManyWithoutOutletInput
+    batches?: CustomBatchCreateNestedManyWithoutOutletInput
+    series?: DocumentSeriesCreateNestedManyWithoutOutletInput
+    parties?: PartyCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
+    products?: ProductCreateNestedManyWithoutOutletInput
+    stocks?: StockCreateNestedManyWithoutOutletInput
+    stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    transactions?: TransactionCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseCreateNestedManyWithoutOutletInput
+    users?: UserCreateNestedManyWithoutOutletsInput
+    warehouses?: WarehouseCreateNestedManyWithoutOutletInput
+  }
+
+  export type OutletUncheckedCreateWithoutExpenseCategoriesInput = {
+    id?: string
+    name: string
+    address?: string | null
+    state?: string | null
+    invoicePrefix: string
+    invoiceStartingNumber?: number
+    gstin?: string | null
+    bankDetails?: string | null
+    negativeStockPolicy?: string
+    batchTrackingEnabled?: boolean
+    allowRawCashBills?: boolean
+    inventoryValuationMethod?: string
+    glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
+    operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
+    series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
+    parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
+    products?: ProductUncheckedCreateNestedManyWithoutOutletInput
+    stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
+    stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    expenses?: ExpenseUncheckedCreateNestedManyWithoutOutletInput
+    users?: UserUncheckedCreateNestedManyWithoutOutletsInput
+    warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
+  }
+
+  export type OutletCreateOrConnectWithoutExpenseCategoriesInput = {
+    where: OutletWhereUniqueInput
+    create: XOR<OutletCreateWithoutExpenseCategoriesInput, OutletUncheckedCreateWithoutExpenseCategoriesInput>
+  }
+
+  export type GLAccountCreateWithoutExpenseCategoriesInput = {
+    id?: string
+    code: string
+    name: string
+    group: $Enums.AccountGroup
+    isSystem?: boolean
+    outlet: OutletCreateNestedOneWithoutGlAccountsInput
+    entries?: LedgerEntryCreateNestedManyWithoutAccountInput
+    payments?: PaymentCreateNestedManyWithoutGlAccountInput
+  }
+
+  export type GLAccountUncheckedCreateWithoutExpenseCategoriesInput = {
+    id?: string
+    code: string
+    name: string
+    group: $Enums.AccountGroup
+    isSystem?: boolean
+    outletId: string
+    entries?: LedgerEntryUncheckedCreateNestedManyWithoutAccountInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutGlAccountInput
+  }
+
+  export type GLAccountCreateOrConnectWithoutExpenseCategoriesInput = {
+    where: GLAccountWhereUniqueInput
+    create: XOR<GLAccountCreateWithoutExpenseCategoriesInput, GLAccountUncheckedCreateWithoutExpenseCategoriesInput>
+  }
+
+  export type ExpenseCreateWithoutCategoryInput = {
+    id?: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    outlet: OutletCreateNestedOneWithoutExpensesInput
+    vendor?: PartyCreateNestedOneWithoutExpensesInput
+    account: AccountCreateNestedOneWithoutExpensesInput
+    user: UserCreateNestedOneWithoutExpensesInput
+  }
+
+  export type ExpenseUncheckedCreateWithoutCategoryInput = {
+    id?: string
+    outletId: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    vendorId?: string | null
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    accountId: string
+    status?: string
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseCreateOrConnectWithoutCategoryInput = {
+    where: ExpenseWhereUniqueInput
+    create: XOR<ExpenseCreateWithoutCategoryInput, ExpenseUncheckedCreateWithoutCategoryInput>
+  }
+
+  export type ExpenseCreateManyCategoryInputEnvelope = {
+    data: ExpenseCreateManyCategoryInput | ExpenseCreateManyCategoryInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OutletUpsertWithoutExpenseCategoriesInput = {
+    update: XOR<OutletUpdateWithoutExpenseCategoriesInput, OutletUncheckedUpdateWithoutExpenseCategoriesInput>
+    create: XOR<OutletCreateWithoutExpenseCategoriesInput, OutletUncheckedCreateWithoutExpenseCategoriesInput>
+    where?: OutletWhereInput
+  }
+
+  export type OutletUpdateToOneWithWhereWithoutExpenseCategoriesInput = {
+    where?: OutletWhereInput
+    data: XOR<OutletUpdateWithoutExpenseCategoriesInput, OutletUncheckedUpdateWithoutExpenseCategoriesInput>
+  }
+
+  export type OutletUpdateWithoutExpenseCategoriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    invoicePrefix?: StringFieldUpdateOperationsInput | string
+    invoiceStartingNumber?: IntFieldUpdateOperationsInput | number
+    gstin?: NullableStringFieldUpdateOperationsInput | string | null
+    bankDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    negativeStockPolicy?: StringFieldUpdateOperationsInput | string
+    batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
+    operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
+    categories?: CategoryUpdateManyWithoutOutletNestedInput
+    batches?: CustomBatchUpdateManyWithoutOutletNestedInput
+    series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
+    parties?: PartyUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
+    products?: ProductUpdateManyWithoutOutletNestedInput
+    stocks?: StockUpdateManyWithoutOutletNestedInput
+    stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
+    users?: UserUpdateManyWithoutOutletsNestedInput
+    warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
+  }
+
+  export type OutletUncheckedUpdateWithoutExpenseCategoriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    invoicePrefix?: StringFieldUpdateOperationsInput | string
+    invoiceStartingNumber?: IntFieldUpdateOperationsInput | number
+    gstin?: NullableStringFieldUpdateOperationsInput | string | null
+    bankDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    negativeStockPolicy?: StringFieldUpdateOperationsInput | string
+    batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
+    operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
+    series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
+    parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
+    products?: ProductUncheckedUpdateManyWithoutOutletNestedInput
+    stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
+    stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
+    users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
+    warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
+  }
+
+  export type GLAccountUpsertWithoutExpenseCategoriesInput = {
+    update: XOR<GLAccountUpdateWithoutExpenseCategoriesInput, GLAccountUncheckedUpdateWithoutExpenseCategoriesInput>
+    create: XOR<GLAccountCreateWithoutExpenseCategoriesInput, GLAccountUncheckedCreateWithoutExpenseCategoriesInput>
+    where?: GLAccountWhereInput
+  }
+
+  export type GLAccountUpdateToOneWithWhereWithoutExpenseCategoriesInput = {
+    where?: GLAccountWhereInput
+    data: XOR<GLAccountUpdateWithoutExpenseCategoriesInput, GLAccountUncheckedUpdateWithoutExpenseCategoriesInput>
+  }
+
+  export type GLAccountUpdateWithoutExpenseCategoriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    group?: EnumAccountGroupFieldUpdateOperationsInput | $Enums.AccountGroup
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    outlet?: OutletUpdateOneRequiredWithoutGlAccountsNestedInput
+    entries?: LedgerEntryUpdateManyWithoutAccountNestedInput
+    payments?: PaymentUpdateManyWithoutGlAccountNestedInput
+  }
+
+  export type GLAccountUncheckedUpdateWithoutExpenseCategoriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    group?: EnumAccountGroupFieldUpdateOperationsInput | $Enums.AccountGroup
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    outletId?: StringFieldUpdateOperationsInput | string
+    entries?: LedgerEntryUncheckedUpdateManyWithoutAccountNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutGlAccountNestedInput
+  }
+
+  export type ExpenseUpsertWithWhereUniqueWithoutCategoryInput = {
+    where: ExpenseWhereUniqueInput
+    update: XOR<ExpenseUpdateWithoutCategoryInput, ExpenseUncheckedUpdateWithoutCategoryInput>
+    create: XOR<ExpenseCreateWithoutCategoryInput, ExpenseUncheckedCreateWithoutCategoryInput>
+  }
+
+  export type ExpenseUpdateWithWhereUniqueWithoutCategoryInput = {
+    where: ExpenseWhereUniqueInput
+    data: XOR<ExpenseUpdateWithoutCategoryInput, ExpenseUncheckedUpdateWithoutCategoryInput>
+  }
+
+  export type ExpenseUpdateManyWithWhereWithoutCategoryInput = {
+    where: ExpenseScalarWhereInput
+    data: XOR<ExpenseUpdateManyMutationInput, ExpenseUncheckedUpdateManyWithoutCategoryInput>
+  }
+
+  export type OutletCreateWithoutExpensesInput = {
+    id?: string
+    name: string
+    address?: string | null
+    state?: string | null
+    invoicePrefix: string
+    invoiceStartingNumber?: number
+    gstin?: string | null
+    bankDetails?: string | null
+    negativeStockPolicy?: string
+    batchTrackingEnabled?: boolean
+    allowRawCashBills?: boolean
+    inventoryValuationMethod?: string
+    glAccounts?: GLAccountCreateNestedManyWithoutOutletInput
+    operationalAccounts?: AccountCreateNestedManyWithoutOutletInput
+    categories?: CategoryCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryCreateNestedManyWithoutOutletInput
+    batches?: CustomBatchCreateNestedManyWithoutOutletInput
+    series?: DocumentSeriesCreateNestedManyWithoutOutletInput
+    parties?: PartyCreateNestedManyWithoutOutletInput
+    payments?: PaymentCreateNestedManyWithoutOutletInput
+    products?: ProductCreateNestedManyWithoutOutletInput
+    stocks?: StockCreateNestedManyWithoutOutletInput
+    stockLedger?: StockLedgerCreateNestedManyWithoutOutletInput
+    transactions?: TransactionCreateNestedManyWithoutOutletInput
+    users?: UserCreateNestedManyWithoutOutletsInput
+    warehouses?: WarehouseCreateNestedManyWithoutOutletInput
+  }
+
+  export type OutletUncheckedCreateWithoutExpensesInput = {
+    id?: string
+    name: string
+    address?: string | null
+    state?: string | null
+    invoicePrefix: string
+    invoiceStartingNumber?: number
+    gstin?: string | null
+    bankDetails?: string | null
+    negativeStockPolicy?: string
+    batchTrackingEnabled?: boolean
+    allowRawCashBills?: boolean
+    inventoryValuationMethod?: string
+    glAccounts?: GLAccountUncheckedCreateNestedManyWithoutOutletInput
+    operationalAccounts?: AccountUncheckedCreateNestedManyWithoutOutletInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutOutletInput
+    expenseCategories?: ExpenseCategoryUncheckedCreateNestedManyWithoutOutletInput
+    batches?: CustomBatchUncheckedCreateNestedManyWithoutOutletInput
+    series?: DocumentSeriesUncheckedCreateNestedManyWithoutOutletInput
+    parties?: PartyUncheckedCreateNestedManyWithoutOutletInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOutletInput
+    products?: ProductUncheckedCreateNestedManyWithoutOutletInput
+    stocks?: StockUncheckedCreateNestedManyWithoutOutletInput
+    stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutOutletInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutOutletInput
+    users?: UserUncheckedCreateNestedManyWithoutOutletsInput
+    warehouses?: WarehouseUncheckedCreateNestedManyWithoutOutletInput
+  }
+
+  export type OutletCreateOrConnectWithoutExpensesInput = {
+    where: OutletWhereUniqueInput
+    create: XOR<OutletCreateWithoutExpensesInput, OutletUncheckedCreateWithoutExpensesInput>
+  }
+
+  export type ExpenseCategoryCreateWithoutExpensesInput = {
+    id?: string
+    name: string
+    code: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    outlet: OutletCreateNestedOneWithoutExpenseCategoriesInput
+    glAccount: GLAccountCreateNestedOneWithoutExpenseCategoriesInput
+  }
+
+  export type ExpenseCategoryUncheckedCreateWithoutExpensesInput = {
+    id?: string
+    outletId: string
+    name: string
+    code: string
+    glAccountId: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseCategoryCreateOrConnectWithoutExpensesInput = {
+    where: ExpenseCategoryWhereUniqueInput
+    create: XOR<ExpenseCategoryCreateWithoutExpensesInput, ExpenseCategoryUncheckedCreateWithoutExpensesInput>
+  }
+
+  export type PartyCreateWithoutExpensesInput = {
+    id?: string
+    type: $Enums.PartyType
+    name: string
+    gstin?: string | null
+    pan?: string | null
+    address: string
+    state: string
+    contactInfo?: string | null
+    creditPeriod?: number
+    creditLimit?: number | null
+    openingBalance?: number
+    outstandingBalance?: number
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
+    bankName?: string | null
+    email?: string | null
+    isActive?: boolean
+    openingBalanceLocked?: boolean
+    phone?: string | null
+    creditBalance?: number
+    ledgerEntries?: LedgerEntryCreateNestedManyWithoutPartyInput
+    outlet: OutletCreateNestedOneWithoutPartiesInput
+    priceList?: PriceListCreateNestedOneWithoutPartiesInput
+    payments?: PaymentCreateNestedManyWithoutPartyInput
+    transactions?: TransactionCreateNestedManyWithoutPartyInput
+    suppliedProducts?: VendorProductCreateNestedManyWithoutVendorInput
+  }
+
+  export type PartyUncheckedCreateWithoutExpensesInput = {
+    id?: string
+    type: $Enums.PartyType
+    name: string
+    gstin?: string | null
+    pan?: string | null
+    address: string
+    state: string
+    contactInfo?: string | null
+    creditPeriod?: number
+    creditLimit?: number | null
+    openingBalance?: number
+    priceListId?: string | null
+    outletId: string
+    outstandingBalance?: number
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfsc?: string | null
+    bankName?: string | null
+    email?: string | null
+    isActive?: boolean
+    openingBalanceLocked?: boolean
+    phone?: string | null
+    creditBalance?: number
+    ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutPartyInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutPartyInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutPartyInput
+    suppliedProducts?: VendorProductUncheckedCreateNestedManyWithoutVendorInput
+  }
+
+  export type PartyCreateOrConnectWithoutExpensesInput = {
+    where: PartyWhereUniqueInput
+    create: XOR<PartyCreateWithoutExpensesInput, PartyUncheckedCreateWithoutExpensesInput>
+  }
+
+  export type AccountCreateWithoutExpensesInput = {
+    id?: string
+    name: string
+    type: $Enums.AccountType
+    openingBalance?: number
+    currentBalance?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    outlet: OutletCreateNestedOneWithoutOperationalAccountsInput
+    paymentModes?: AccountPaymentModeCreateNestedManyWithoutAccountInput
+    transactions?: AccountTransactionCreateNestedManyWithoutAccountInput
+    transfersFrom?: TransferCreateNestedManyWithoutFromAccountInput
+    transfersTo?: TransferCreateNestedManyWithoutToAccountInput
+    payments?: PaymentCreateNestedManyWithoutOperationalAccountInput
+  }
+
+  export type AccountUncheckedCreateWithoutExpensesInput = {
+    id?: string
+    name: string
+    type: $Enums.AccountType
+    openingBalance?: number
+    currentBalance?: number
+    outletId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    paymentModes?: AccountPaymentModeUncheckedCreateNestedManyWithoutAccountInput
+    transactions?: AccountTransactionUncheckedCreateNestedManyWithoutAccountInput
+    transfersFrom?: TransferUncheckedCreateNestedManyWithoutFromAccountInput
+    transfersTo?: TransferUncheckedCreateNestedManyWithoutToAccountInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOperationalAccountInput
+  }
+
+  export type AccountCreateOrConnectWithoutExpensesInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutExpensesInput, AccountUncheckedCreateWithoutExpensesInput>
+  }
+
+  export type UserCreateWithoutExpensesInput = {
+    id?: string
+    email: string
+    name: string
+    role: $Enums.Role
+    password: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    actions?: AuditLogCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutCreatorInput
+    stockLedger?: StockLedgerCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    outlets?: OutletCreateNestedManyWithoutUsersInput
+  }
+
+  export type UserUncheckedCreateWithoutExpensesInput = {
+    id?: string
+    email: string
+    name: string
+    role: $Enums.Role
+    password: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    actions?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutCreatorInput
+    stockLedger?: StockLedgerUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    outlets?: OutletUncheckedCreateNestedManyWithoutUsersInput
+  }
+
+  export type UserCreateOrConnectWithoutExpensesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutExpensesInput, UserUncheckedCreateWithoutExpensesInput>
+  }
+
+  export type OutletUpsertWithoutExpensesInput = {
+    update: XOR<OutletUpdateWithoutExpensesInput, OutletUncheckedUpdateWithoutExpensesInput>
+    create: XOR<OutletCreateWithoutExpensesInput, OutletUncheckedCreateWithoutExpensesInput>
+    where?: OutletWhereInput
+  }
+
+  export type OutletUpdateToOneWithWhereWithoutExpensesInput = {
+    where?: OutletWhereInput
+    data: XOR<OutletUpdateWithoutExpensesInput, OutletUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type OutletUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    invoicePrefix?: StringFieldUpdateOperationsInput | string
+    invoiceStartingNumber?: IntFieldUpdateOperationsInput | number
+    gstin?: NullableStringFieldUpdateOperationsInput | string | null
+    bankDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    negativeStockPolicy?: StringFieldUpdateOperationsInput | string
+    batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
+    operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
+    categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
+    batches?: CustomBatchUpdateManyWithoutOutletNestedInput
+    series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
+    parties?: PartyUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUpdateManyWithoutOutletNestedInput
+    products?: ProductUpdateManyWithoutOutletNestedInput
+    stocks?: StockUpdateManyWithoutOutletNestedInput
+    stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
+    transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    users?: UserUpdateManyWithoutOutletsNestedInput
+    warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
+  }
+
+  export type OutletUncheckedUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    invoicePrefix?: StringFieldUpdateOperationsInput | string
+    invoiceStartingNumber?: IntFieldUpdateOperationsInput | number
+    gstin?: NullableStringFieldUpdateOperationsInput | string | null
+    bankDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    negativeStockPolicy?: StringFieldUpdateOperationsInput | string
+    batchTrackingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    allowRawCashBills?: BoolFieldUpdateOperationsInput | boolean
+    inventoryValuationMethod?: StringFieldUpdateOperationsInput | string
+    glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
+    operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
+    batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
+    series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
+    parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOutletNestedInput
+    products?: ProductUncheckedUpdateManyWithoutOutletNestedInput
+    stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
+    stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    users?: UserUncheckedUpdateManyWithoutOutletsNestedInput
+    warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
+  }
+
+  export type ExpenseCategoryUpsertWithoutExpensesInput = {
+    update: XOR<ExpenseCategoryUpdateWithoutExpensesInput, ExpenseCategoryUncheckedUpdateWithoutExpensesInput>
+    create: XOR<ExpenseCategoryCreateWithoutExpensesInput, ExpenseCategoryUncheckedCreateWithoutExpensesInput>
+    where?: ExpenseCategoryWhereInput
+  }
+
+  export type ExpenseCategoryUpdateToOneWithWhereWithoutExpensesInput = {
+    where?: ExpenseCategoryWhereInput
+    data: XOR<ExpenseCategoryUpdateWithoutExpensesInput, ExpenseCategoryUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type ExpenseCategoryUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    outlet?: OutletUpdateOneRequiredWithoutExpenseCategoriesNestedInput
+    glAccount?: GLAccountUpdateOneRequiredWithoutExpenseCategoriesNestedInput
+  }
+
+  export type ExpenseCategoryUncheckedUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    glAccountId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PartyUpsertWithoutExpensesInput = {
+    update: XOR<PartyUpdateWithoutExpensesInput, PartyUncheckedUpdateWithoutExpensesInput>
+    create: XOR<PartyCreateWithoutExpensesInput, PartyUncheckedCreateWithoutExpensesInput>
+    where?: PartyWhereInput
+  }
+
+  export type PartyUpdateToOneWithWhereWithoutExpensesInput = {
+    where?: PartyWhereInput
+    data: XOR<PartyUpdateWithoutExpensesInput, PartyUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type PartyUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumPartyTypeFieldUpdateOperationsInput | $Enums.PartyType
+    name?: StringFieldUpdateOperationsInput | string
+    gstin?: NullableStringFieldUpdateOperationsInput | string | null
+    pan?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+    contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    creditPeriod?: IntFieldUpdateOperationsInput | number
+    creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
+    openingBalance?: FloatFieldUpdateOperationsInput | number
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    creditBalance?: FloatFieldUpdateOperationsInput | number
+    ledgerEntries?: LedgerEntryUpdateManyWithoutPartyNestedInput
+    outlet?: OutletUpdateOneRequiredWithoutPartiesNestedInput
+    priceList?: PriceListUpdateOneWithoutPartiesNestedInput
+    payments?: PaymentUpdateManyWithoutPartyNestedInput
+    transactions?: TransactionUpdateManyWithoutPartyNestedInput
+    suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
+  }
+
+  export type PartyUncheckedUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumPartyTypeFieldUpdateOperationsInput | $Enums.PartyType
+    name?: StringFieldUpdateOperationsInput | string
+    gstin?: NullableStringFieldUpdateOperationsInput | string | null
+    pan?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+    contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    creditPeriod?: IntFieldUpdateOperationsInput | number
+    creditLimit?: NullableFloatFieldUpdateOperationsInput | number | null
+    openingBalance?: FloatFieldUpdateOperationsInput | number
+    priceListId?: NullableStringFieldUpdateOperationsInput | string | null
+    outletId?: StringFieldUpdateOperationsInput | string
+    outstandingBalance?: FloatFieldUpdateOperationsInput | number
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfsc?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    openingBalanceLocked?: BoolFieldUpdateOperationsInput | boolean
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    creditBalance?: FloatFieldUpdateOperationsInput | number
+    ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
+    suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
+  }
+
+  export type AccountUpsertWithoutExpensesInput = {
+    update: XOR<AccountUpdateWithoutExpensesInput, AccountUncheckedUpdateWithoutExpensesInput>
+    create: XOR<AccountCreateWithoutExpensesInput, AccountUncheckedCreateWithoutExpensesInput>
+    where?: AccountWhereInput
+  }
+
+  export type AccountUpdateToOneWithWhereWithoutExpensesInput = {
+    where?: AccountWhereInput
+    data: XOR<AccountUpdateWithoutExpensesInput, AccountUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type AccountUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
+    openingBalance?: FloatFieldUpdateOperationsInput | number
+    currentBalance?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    outlet?: OutletUpdateOneRequiredWithoutOperationalAccountsNestedInput
+    paymentModes?: AccountPaymentModeUpdateManyWithoutAccountNestedInput
+    transactions?: AccountTransactionUpdateManyWithoutAccountNestedInput
+    transfersFrom?: TransferUpdateManyWithoutFromAccountNestedInput
+    transfersTo?: TransferUpdateManyWithoutToAccountNestedInput
+    payments?: PaymentUpdateManyWithoutOperationalAccountNestedInput
+  }
+
+  export type AccountUncheckedUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
+    openingBalance?: FloatFieldUpdateOperationsInput | number
+    currentBalance?: FloatFieldUpdateOperationsInput | number
+    outletId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentModes?: AccountPaymentModeUncheckedUpdateManyWithoutAccountNestedInput
+    transactions?: AccountTransactionUncheckedUpdateManyWithoutAccountNestedInput
+    transfersFrom?: TransferUncheckedUpdateManyWithoutFromAccountNestedInput
+    transfersTo?: TransferUncheckedUpdateManyWithoutToAccountNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOperationalAccountNestedInput
+  }
+
+  export type UserUpsertWithoutExpensesInput = {
+    update: XOR<UserUpdateWithoutExpensesInput, UserUncheckedUpdateWithoutExpensesInput>
+    create: XOR<UserCreateWithoutExpensesInput, UserUncheckedCreateWithoutExpensesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutExpensesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutExpensesInput, UserUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type UserUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    password?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    actions?: AuditLogUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutCreatorNestedInput
+    stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    outlets?: OutletUpdateManyWithoutUsersNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    password?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    actions?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
+    stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    outlets?: OutletUncheckedUpdateManyWithoutUsersNestedInput
   }
 
   export type AuditLogCreateManyUserInput = {
@@ -53084,6 +59815,25 @@ export namespace Prisma {
     remarks?: string | null
     billType?: $Enums.BillType
     paidAt?: Date | string | null
+  }
+
+  export type ExpenseCreateManyUserInput = {
+    id?: string
+    outletId: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    categoryId: string
+    vendorId?: string | null
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    accountId: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type AuditLogUpdateWithoutUserInput = {
@@ -53287,6 +60037,63 @@ export namespace Prisma {
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type ExpenseUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    outlet?: OutletUpdateOneRequiredWithoutExpensesNestedInput
+    category?: ExpenseCategoryUpdateOneRequiredWithoutExpensesNestedInput
+    vendor?: PartyUpdateOneWithoutExpensesNestedInput
+    account?: AccountUpdateOneRequiredWithoutExpensesNestedInput
+  }
+
+  export type ExpenseUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type OutletUpdateWithoutUsersInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -53303,6 +60110,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUpdateManyWithoutOutletNestedInput
     categories?: CategoryUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUpdateManyWithoutOutletNestedInput
     parties?: PartyUpdateManyWithoutOutletNestedInput
@@ -53311,6 +60119,7 @@ export namespace Prisma {
     stocks?: StockUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUpdateManyWithoutOutletNestedInput
     warehouses?: WarehouseUpdateManyWithoutOutletNestedInput
   }
 
@@ -53330,6 +60139,7 @@ export namespace Prisma {
     glAccounts?: GLAccountUncheckedUpdateManyWithoutOutletNestedInput
     operationalAccounts?: AccountUncheckedUpdateManyWithoutOutletNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutOutletNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutOutletNestedInput
     batches?: CustomBatchUncheckedUpdateManyWithoutOutletNestedInput
     series?: DocumentSeriesUncheckedUpdateManyWithoutOutletNestedInput
     parties?: PartyUncheckedUpdateManyWithoutOutletNestedInput
@@ -53338,6 +60148,7 @@ export namespace Prisma {
     stocks?: StockUncheckedUpdateManyWithoutOutletNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutOutletNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutOutletNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutOutletNestedInput
     warehouses?: WarehouseUncheckedUpdateManyWithoutOutletNestedInput
   }
 
@@ -53732,6 +60543,16 @@ export namespace Prisma {
     isActive?: boolean
   }
 
+  export type ExpenseCategoryCreateManyOutletInput = {
+    id?: string
+    name: string
+    code: string
+    glAccountId: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type CustomBatchCreateManyOutletInput = {
     id?: string
     batchNumber: string
@@ -53852,6 +60673,25 @@ export namespace Prisma {
     paidAt?: Date | string | null
   }
 
+  export type ExpenseCreateManyOutletInput = {
+    id?: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    categoryId: string
+    vendorId?: string | null
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    accountId: string
+    status?: string
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type WarehouseCreateManyOutletInput = {
     id?: string
     name: string
@@ -53870,6 +60710,7 @@ export namespace Prisma {
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     entries?: LedgerEntryUpdateManyWithoutAccountNestedInput
     payments?: PaymentUpdateManyWithoutGlAccountNestedInput
+    expenseCategories?: ExpenseCategoryUpdateManyWithoutGlAccountNestedInput
   }
 
   export type GLAccountUncheckedUpdateWithoutOutletInput = {
@@ -53880,6 +60721,7 @@ export namespace Prisma {
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     entries?: LedgerEntryUncheckedUpdateManyWithoutAccountNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutGlAccountNestedInput
+    expenseCategories?: ExpenseCategoryUncheckedUpdateManyWithoutGlAccountNestedInput
   }
 
   export type GLAccountUncheckedUpdateManyWithoutOutletInput = {
@@ -53903,6 +60745,7 @@ export namespace Prisma {
     transfersFrom?: TransferUpdateManyWithoutFromAccountNestedInput
     transfersTo?: TransferUpdateManyWithoutToAccountNestedInput
     payments?: PaymentUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutOutletInput = {
@@ -53918,6 +60761,7 @@ export namespace Prisma {
     transfersFrom?: TransferUncheckedUpdateManyWithoutFromAccountNestedInput
     transfersTo?: TransferUncheckedUpdateManyWithoutToAccountNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOperationalAccountNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateManyWithoutOutletInput = {
@@ -53956,6 +60800,38 @@ export namespace Prisma {
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type ExpenseCategoryUpdateWithoutOutletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    glAccount?: GLAccountUpdateOneRequiredWithoutExpenseCategoriesNestedInput
+    expenses?: ExpenseUpdateManyWithoutCategoryNestedInput
+  }
+
+  export type ExpenseCategoryUncheckedUpdateWithoutOutletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    glAccountId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expenses?: ExpenseUncheckedUpdateManyWithoutCategoryNestedInput
+  }
+
+  export type ExpenseCategoryUncheckedUpdateManyWithoutOutletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    glAccountId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CustomBatchUpdateWithoutOutletInput = {
@@ -54049,6 +60925,7 @@ export namespace Prisma {
     priceList?: PriceListUpdateOneWithoutPartiesNestedInput
     payments?: PaymentUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
   }
 
@@ -54078,6 +60955,7 @@ export namespace Prisma {
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
   }
 
@@ -54342,6 +61220,63 @@ export namespace Prisma {
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type ExpenseUpdateWithoutOutletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    category?: ExpenseCategoryUpdateOneRequiredWithoutExpensesNestedInput
+    vendor?: PartyUpdateOneWithoutExpensesNestedInput
+    account?: AccountUpdateOneRequiredWithoutExpensesNestedInput
+    user?: UserUpdateOneRequiredWithoutExpensesNestedInput
+  }
+
+  export type ExpenseUncheckedUpdateWithoutOutletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutOutletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserUpdateWithoutOutletsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -54355,6 +61290,7 @@ export namespace Prisma {
     payments?: PaymentUpdateManyWithoutCreatorNestedInput
     stockLedger?: StockLedgerUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOutletsInput = {
@@ -54370,6 +61306,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutCreatorNestedInput
     stockLedger?: StockLedgerUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutOutletsInput = {
@@ -54870,6 +61807,25 @@ export namespace Prisma {
     paidAt?: Date | string | null
   }
 
+  export type ExpenseCreateManyVendorInput = {
+    id?: string
+    outletId: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    categoryId: string
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    accountId: string
+    status?: string
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type VendorProductCreateManyVendorInput = {
     id?: string
     variantId: string
@@ -55040,6 +61996,63 @@ export namespace Prisma {
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     billType?: EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ExpenseUpdateWithoutVendorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    outlet?: OutletUpdateOneRequiredWithoutExpensesNestedInput
+    category?: ExpenseCategoryUpdateOneRequiredWithoutExpensesNestedInput
+    account?: AccountUpdateOneRequiredWithoutExpensesNestedInput
+    user?: UserUpdateOneRequiredWithoutExpensesNestedInput
+  }
+
+  export type ExpenseUncheckedUpdateWithoutVendorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutVendorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type VendorProductUpdateWithoutVendorInput = {
@@ -55450,6 +62463,16 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type ExpenseCategoryCreateManyGlAccountInput = {
+    id?: string
+    outletId: string
+    name: string
+    code: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type LedgerEntryUpdateWithoutAccountInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -55531,6 +62554,38 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ExpenseCategoryUpdateWithoutGlAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    outlet?: OutletUpdateOneRequiredWithoutExpenseCategoriesNestedInput
+    expenses?: ExpenseUpdateManyWithoutCategoryNestedInput
+  }
+
+  export type ExpenseCategoryUncheckedUpdateWithoutGlAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expenses?: ExpenseUncheckedUpdateManyWithoutCategoryNestedInput
+  }
+
+  export type ExpenseCategoryUncheckedUpdateManyWithoutGlAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type PartyCreateManyPriceListInput = {
     id?: string
     type: $Enums.PartyType
@@ -55588,6 +62643,7 @@ export namespace Prisma {
     outlet?: OutletUpdateOneRequiredWithoutPartiesNestedInput
     payments?: PaymentUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUpdateManyWithoutVendorNestedInput
   }
 
@@ -55617,6 +62673,7 @@ export namespace Prisma {
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutPartyNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutPartyNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutPartyNestedInput
+    expenses?: ExpenseUncheckedUpdateManyWithoutVendorNestedInput
     suppliedProducts?: VendorProductUncheckedUpdateManyWithoutVendorNestedInput
   }
 
@@ -55747,6 +62804,25 @@ export namespace Prisma {
     notes?: string | null
     createdBy: string
     createdAt?: Date | string
+  }
+
+  export type ExpenseCreateManyAccountInput = {
+    id?: string
+    outletId: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    categoryId: string
+    vendorId?: string | null
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    status?: string
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type AccountPaymentModeUpdateWithoutAccountInput = {
@@ -55921,6 +62997,139 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    outlet?: OutletUpdateOneRequiredWithoutExpensesNestedInput
+    category?: ExpenseCategoryUpdateOneRequiredWithoutExpensesNestedInput
+    vendor?: PartyUpdateOneWithoutExpensesNestedInput
+    user?: UserUpdateOneRequiredWithoutExpensesNestedInput
+  }
+
+  export type ExpenseUncheckedUpdateWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseCreateManyCategoryInput = {
+    id?: string
+    outletId: string
+    txnNumber: string
+    date: Date | string
+    description: string
+    vendorId?: string | null
+    taxableAmount: Decimal | DecimalJsLike | number | string
+    gstRate?: number | null
+    inputGst?: Decimal | DecimalJsLike | number | string
+    totalAmount: Decimal | DecimalJsLike | number | string
+    paymentMode: string
+    accountId: string
+    status?: string
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ExpenseUpdateWithoutCategoryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    outlet?: OutletUpdateOneRequiredWithoutExpensesNestedInput
+    vendor?: PartyUpdateOneWithoutExpensesNestedInput
+    account?: AccountUpdateOneRequiredWithoutExpensesNestedInput
+    user?: UserUpdateOneRequiredWithoutExpensesNestedInput
+  }
+
+  export type ExpenseUncheckedUpdateWithoutCategoryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ExpenseUncheckedUpdateManyWithoutCategoryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    outletId?: StringFieldUpdateOperationsInput | string
+    txnNumber?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    description?: StringFieldUpdateOperationsInput | string
+    vendorId?: NullableStringFieldUpdateOperationsInput | string | null
+    taxableAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gstRate?: NullableIntFieldUpdateOperationsInput | number | null
+    inputGst?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    paymentMode?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

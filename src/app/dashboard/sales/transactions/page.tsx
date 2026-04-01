@@ -28,11 +28,17 @@ export default async function SalesTransactionsPage({
     redirect("/dashboard");
   }
 
+  console.log(`\n[SalesTransactionsPage] Page loaded:`);
+  console.log(`  - currentOutletId: ${currentOutletId}`);
+  console.log(`  - searchParams:`, searchParams);
+
   // Parse pagination and filter params
   const pagination = parsePaginationParams(searchParams);
   const tab = typeof searchParams.tab === "string" ? searchParams.tab : "invoices";
   const search = typeof searchParams.search === "string" ? searchParams.search : "";
   const status = typeof searchParams.status === "string" ? searchParams.status : "ALL";
+
+  console.log(`  - tab: ${tab}, search: "${search}", status: ${status}`);
 
   // Fetch only the active tab's data
   let tabData: { data: any[]; pagination: PaginationMeta };
@@ -44,7 +50,13 @@ export default async function SalesTransactionsPage({
       search: search || undefined,
       status: status || "ALL",
     });
-    tabData = res.success && res.data ? res.data : { data: [], pagination: defaultPagination };
+    console.log(`[Transactions] Invoices fetch - Success: ${res.success}, Data count: ${res.data?.data?.length || 0}`);
+    if (res.success && res.data) {
+      tabData = res.data;
+    } else {
+      console.error("Failed to fetch invoices:", res.error);
+      tabData = { data: [], pagination: defaultPagination };
+    }
   } else if (tab === "returns") {
     const res = await getSalesReturnsPaginated(currentOutletId, {
       page: pagination.page,
@@ -52,15 +64,24 @@ export default async function SalesTransactionsPage({
       search: search || undefined,
       status: status || "ALL",
     });
-    tabData = res.success && res.data ? res.data : { data: [], pagination: defaultPagination };
+    console.log(`[Transactions] Returns fetch - Success: ${res.success}, Data count: ${res.data?.data?.length || 0}`);
+    if (res.success && res.data) {
+      tabData = res.data;
+    } else {
+      console.error("Failed to fetch returns:", res.error);
+      tabData = { data: [], pagination: defaultPagination };
+    }
   } else {
     tabData = { data: [], pagination: defaultPagination };
   }
 
+  console.log(`[Transactions] Final tabData for tab="${tab}": ${tabData.data.length} records`);
+  console.log(`[Transactions] Outlet: ${currentOutletId}, Pagination: page=${pagination.page}, limit=${pagination.limit}`);
+
   return (
     <Suspense fallback={<SalesTransactionsSkeleton />}>
       <SalesTransactionsClient
-        initialData={tabData.data || []}
+        initialData={tabData.data}
         initialPagination={tabData.pagination}
         tab={tab}
       />

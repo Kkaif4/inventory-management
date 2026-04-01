@@ -10,9 +10,35 @@ export type DocumentType =
   | "CREDIT_NOTE"
   | "STOCK_RETURN"
   | "QUOTATION"
-  | "RECEIPT";
+  | "RECEIPT"
+  | "EXPENSE";
 
 export const NumberingService = {
+  async peekNextNumber(
+    db: Prisma.TransactionClient | any,
+    outletId: string,
+    type: DocumentType,
+  ): Promise<string> {
+    const now = new Date();
+    const financialYear = this.getFinancialYear(now);
+    const prefix = this.getPrefix(type);
+
+    const client = db?.documentSeries ? db : prisma;
+
+    const series = await (client as any).documentSeries.findUnique({
+      where: {
+        type_financialYear_outletId: {
+          type,
+          financialYear,
+          outletId,
+        },
+      },
+    });
+
+    const nextNumber = series ? series.nextNumber : 1;
+    return `${prefix}/${financialYear}/${nextNumber.toString().padStart(4, "0")}`;
+  },
+
   async getNextNumber(
     db: Prisma.TransactionClient | any, // Accepts prisma or tx client
     outletId: string,
@@ -91,6 +117,7 @@ export const NumberingService = {
       STOCK_RETURN: "SR",
       QUOTATION: "QTN",
       RECEIPT: "RCP",
+      EXPENSE: "EXP",
     };
     return prefixes[type];
   },

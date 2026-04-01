@@ -12,6 +12,8 @@ import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError } from "@/lib/exceptions";
 import { roundToTwo } from "@/lib/utils";
 import { authOptions } from "@/lib/auth";
+import { NumberingService } from "@/domains/foundation/numbering-service";
+import { migrateAttachments } from "@/actions/attachments";
 
 /**
  * Calculate GST breakdown based on outlet state and place of supply
@@ -120,6 +122,7 @@ export async function handleCreateSalesInvoice(
 
     const result = await createSalesInvoice({
       billType: formData.billType,
+      txnNumber: formData.txnNumber,
       partyId: formData.billType === "NO1" ? formData.partyId : undefined,
       fromOutletId: formData.fromOutletId,
       items,
@@ -132,6 +135,16 @@ export async function handleCreateSalesInvoice(
       buyerName: formData.buyerName,
       buyerPhone: formData.buyerPhone,
     });
+
+    // If invoice was created successfully, migrate any temporary attachments
+    if (result.success && result.data?.invoice?.id) {
+      const tempReferenceId = `TEMP:${formData.txnNumber}`;
+      await migrateAttachments(
+        "INVOICE",
+        tempReferenceId,
+        result.data.invoice.id,
+      );
+    }
 
     // Return full result with invoice and FIFO breakdown for UI notification
     return result;
@@ -237,5 +250,27 @@ export async function getOutletFIFOSettings(outletId: string) {
       fifoEnabled,
       inventoryValuationMethod: outlet.inventoryValuationMethod,
     };
+  });
+}
+
+/**
+ * Peek at the next invoice number without incrementing the counter
+ */
+export async function peekNextInvoiceNumber(
+  outletId: string,
+  billType: "NO1" | "NO2",
+) {
+  return withErrorHandler(async () => {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) throw new ValidationError("Not authenticated");
+
+    const type = billType === "NO2" ? "CASH_MEMO" : "SALES_INVOICE";
+    const nextNumber = await NumberingService.peekNextNumber(
+      prisma,
+      outletId,
+      type as any,
+    );
+
+    return nextNumber;
   });
 }

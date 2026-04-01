@@ -431,6 +431,49 @@ exports.Prisma.TransferScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ExpenseCategoryScalarFieldEnum = {
+  id: 'id',
+  outletId: 'outletId',
+  name: 'name',
+  code: 'code',
+  glAccountId: 'glAccountId',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ExpenseScalarFieldEnum = {
+  id: 'id',
+  outletId: 'outletId',
+  txnNumber: 'txnNumber',
+  date: 'date',
+  description: 'description',
+  categoryId: 'categoryId',
+  vendorId: 'vendorId',
+  taxableAmount: 'taxableAmount',
+  gstRate: 'gstRate',
+  inputGst: 'inputGst',
+  totalAmount: 'totalAmount',
+  paymentMode: 'paymentMode',
+  accountId: 'accountId',
+  status: 'status',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AttachmentScalarFieldEnum = {
+  id: 'id',
+  moduleType: 'moduleType',
+  referenceId: 'referenceId',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  size: 'size',
+  data: 'data',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -542,7 +585,10 @@ exports.Prisma.ModelName = {
   Account: 'Account',
   AccountPaymentMode: 'AccountPaymentMode',
   AccountTransaction: 'AccountTransaction',
-  Transfer: 'Transfer'
+  Transfer: 'Transfer',
+  ExpenseCategory: 'ExpenseCategory',
+  Expense: 'Expense',
+  Attachment: 'Attachment'
 };
 
 /**

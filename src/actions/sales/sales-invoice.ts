@@ -8,18 +8,15 @@ import {
 import { AccountingService } from "@/domains/accounting/ledger-service";
 import { roundToTwo } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
-import { NumberingService } from "@/domains/foundation/numbering-service";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError } from "@/lib/exceptions";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
-import {
-  parsePaginationParams,
-  calculatePagination,
-} from "@/lib/pagination";
+import { parsePaginationParams, calculatePagination } from "@/lib/pagination";
 import { PaginatedResult, BasePaginationParams } from "@/types/pagination";
 
 export async function createSalesInvoice(data: {
   billType: "NO1" | "NO2";
+  txnNumber: string;
   partyId?: string;
   fromOutletId: string;
   items: {
@@ -43,6 +40,12 @@ export async function createSalesInvoice(data: {
   buyerPhone?: string;
 }) {
   return withErrorHandler(async () => {
+    console.log(`[createSalesInvoice] Creating invoice:`);
+    console.log(`  - outletId: ${data.fromOutletId}`);
+    console.log(`  - txnNumber: ${data.txnNumber}`);
+    console.log(`  - billType: ${data.billType}`);
+    console.log(`  - items: ${data.items.length}`);
+
     await validateSessionOutletAccess(data.fromOutletId);
     const isNo2 = data.billType === "NO2";
 
@@ -125,12 +128,20 @@ export async function createSalesInvoice(data: {
     }
 
     return await prisma.$transaction(async (tx) => {
-      // 1. Generate Transaction Number (CM vs INV)
-      const txnNumber = await NumberingService.getNextNumber(
-        tx,
-        data.fromOutletId,
-        isNo2 ? "CASH_MEMO" : "SALES_INVOICE",
-      );
+      // 1. Validate and use provided Transaction Number
+      // Check for uniqueness within the outlet
+      const existing = await tx.transaction.findFirst({
+        where: {
+          txnNumber: data.txnNumber,
+          outletId: data.fromOutletId,
+        },
+      });
+      if (existing) {
+        throw new ValidationError(
+          `Invoice number "${data.txnNumber}" already exists for this outlet`,
+        );
+      }
+      const txnNumber = data.txnNumber;
 
       // 1.5. FIFO Pricing Pre-calculation (if enabled)
       const fifoEnabled =
@@ -264,17 +275,26 @@ export async function createSalesInvoice(data: {
       }
 
       revalidatePath("/dashboard/sales/invoices");
+      revalidatePath("/dashboard/sales/transactions");
+
+      console.log(`[createSalesInvoice] ✅ Invoice created successfully:`);
+      console.log(`  - invoiceId: ${invoice.id}`);
+      console.log(`  - txnNumber: ${invoice.txnNumber}`);
+      console.log(`  - status: ${invoice.status}`);
+      console.log(`  - outletId: ${invoice.outletId}`);
 
       // 6. Return invoice with FIFO breakdown if applicable
       return {
         invoice,
-        fifoBreakdown: fifoEnabled ? fifoBreakdowns.map((r, i) => ({
-          variantId: data.items[i].variantId,
-          userRate: data.items[i].rate,
-          fifoRate: r.weightedAvgCost,
-          quantity: r.totalQty,
-          batchesUsed: r.batchesUsed,
-        })) : null,
+        fifoBreakdown: fifoEnabled
+          ? fifoBreakdowns.map((r, i) => ({
+              variantId: data.items[i].variantId,
+              userRate: data.items[i].rate,
+              fifoRate: r.weightedAvgCost,
+              quantity: r.totalQty,
+              batchesUsed: r.batchesUsed,
+            }))
+          : null,
       };
     });
   });
@@ -321,6 +341,7 @@ export async function getSalesInvoicesPaginated(
     status?: string;
   },
 ) {
+  console.log("-----------------------hello");
   return withErrorHandler(async (): Promise<PaginatedResult<any>> => {
     await validateSessionOutletAccess(outletId);
 
@@ -347,7 +368,9 @@ export async function getSalesInvoicesPaginated(
       andClauses.push({ status });
     }
 
+    console.log("andClauses: ", andClauses);
     const where = { AND: andClauses };
+    console.log("[Debug] Fetching total count of matching invoices...");
 
     const [total, invoices] = await Promise.all([
       prisma.transaction.count({ where }),
@@ -378,6 +401,13 @@ export async function getSalesInvoicesPaginated(
         take: limit,
       }),
     ]);
+
+    console.log(
+      `[getSalesInvoicesPaginated] Results: ${total} total, ${invoices.length} on this page`,
+    );
+    if (invoices.length > 0) {
+      console.log(`[getSalesInvoicesPaginated] First invoice:`, invoices[0]);
+    }
 
     const pagination = calculatePagination(total, page, limit);
 
@@ -437,7 +467,7 @@ export async function updateSalesInvoiceFreightAndRemarks(
   data: {
     freightCost?: number;
     remarks?: string;
-  }
+  },
 ) {
   return withErrorHandler(async () => {
     const invoice = await prisma.transaction.findUnique({
@@ -450,7 +480,9 @@ export async function updateSalesInvoiceFreightAndRemarks(
 
     // Only allow updates for DRAFT or POSTED invoices
     if (!["DRAFT", "POSTED"].includes(invoice.status)) {
-      throw new ValidationError("Cannot update invoice that is not in DRAFT or POSTED status");
+      throw new ValidationError(
+        "Cannot update invoice that is not in DRAFT or POSTED status",
+      );
     }
 
     const updated = await prisma.transaction.update({
@@ -463,6 +495,7 @@ export async function updateSalesInvoiceFreightAndRemarks(
 
     revalidatePath("/dashboard/sales/invoices");
     revalidatePath(`/dashboard/sales/invoices/${invoiceId}`);
+    revalidatePath("/dashboard/sales/transactions");
 
     return updated;
   });
@@ -566,6 +599,7 @@ export async function saveSalesInvoiceDraft(data: {
       });
 
       revalidatePath("/dashboard/sales/invoices");
+      revalidatePath("/dashboard/sales/transactions");
       return draft;
     });
   });
@@ -633,10 +667,6 @@ export async function editSalesInvoice(
     const freightCost = data.freightCost || 0;
     const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
 
-    // Get default warehouse, fallback to first if no default set
-    const warehouseId =
-      outlet.warehouses.find((w) => w.isDefault)?.id ||
-      outlet.warehouses[0]?.id;
     const variants = await prisma.variant.findMany({
       where: { id: { in: data.items.map((i) => i.variantId) } },
       include: { product: true },
@@ -681,6 +711,7 @@ export async function editSalesInvoice(
       });
 
       revalidatePath("/dashboard/sales/invoices");
+      revalidatePath("/dashboard/sales/transactions");
       return updated;
     });
   });
@@ -898,6 +929,7 @@ export async function appendItemsToInvoice(
       }
 
       revalidatePath("/dashboard/sales/invoices");
+      revalidatePath("/dashboard/sales/transactions");
 
       return updated;
     });

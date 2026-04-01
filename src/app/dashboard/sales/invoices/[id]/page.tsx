@@ -17,6 +17,7 @@ import {
   Truck,
   MessageSquare,
   Percent,
+  Paperclip,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ import { useOutletStore } from "@/store/use-outlet-store";
 import { useSession } from "next-auth/react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AttachmentSection } from "@/components/attachments";
 
 type Invoice = Awaited<ReturnType<typeof getSalesInvoice>>;
 
@@ -46,6 +48,7 @@ export default function InvoiceDetailPage() {
   const [payDrawerOpen, setPayDrawerOpen] = useState(false);
   const [appendDrawerOpen, setAppendDrawerOpen] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(false);
+  const [attachmentCount, setAttachmentCount] = useState(0);
 
   // Editable fields for freight and remarks
   const [isEditingFreight, setIsEditingFreight] = useState(false);
@@ -186,6 +189,21 @@ export default function InvoiceDetailPage() {
               <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight">
                 {invoice.txnNumber}
               </h1>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1 h-7 px-2 text-xs"
+                onClick={() => {
+                  const attachmentSection =
+                    document.getElementById("attachment-section");
+                  attachmentSection?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                <Paperclip className="w-3 h-3" />
+                {attachmentCount > 0 && (
+                  <span className="font-semibold">{attachmentCount}</span>
+                )}
+              </Button>
               <StatusBadge status={invoice.status.toLowerCase()} />
               {invoice.billType === "NO2" && (
                 <span className="text-[10px] bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full uppercase">
@@ -607,6 +625,21 @@ export default function InvoiceDetailPage() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Attachments Section */}
+      {invoice && (
+        <div
+          id="attachment-section"
+          className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto"
+        >
+          <AttachmentSection
+            moduleType="INVOICE"
+            referenceId={invoice.id}
+            className="mt-6"
+            onAttachmentCountChange={setAttachmentCount}
+          />
         </div>
       )}
 

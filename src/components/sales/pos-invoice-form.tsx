@@ -13,6 +13,7 @@ import { useOutletStore } from "@/store/use-outlet-store";
 import { POSInvoiceHeader } from "@/components/sales/pos-invoice-header";
 import { POSInvoiceTable } from "@/components/sales/pos-invoice-table";
 import { POSInvoiceFooter } from "@/components/sales/pos-invoice-footer";
+import { peekNextInvoiceNumber } from "@/actions/sales/invoice-form-handler";
 
 interface POSInvoiceFormProps {
   mode: "create" | "edit";
@@ -38,6 +39,8 @@ export function POSInvoiceForm({
   const [isDirty, setIsDirty] = React.useState(false);
   const [selectedCustomer, setSelectedCustomer] = React.useState<any>(null);
   const [isGlobalDiscount, setIsGlobalDiscount] = React.useState(true);
+  const [invoiceNumber, setInvoiceNumber] = React.useState("");
+  const [attachmentCount, setAttachmentCount] = React.useState(0);
 
   // Refs for keyboard shortcut targets
   const formContainerRef = React.useRef<HTMLDivElement>(null);
@@ -50,6 +53,7 @@ export function POSInvoiceForm({
     defaultValues: (invoice
       ? {
           billType: invoice.billType || "NO1",
+          txnNumber: invoice.txnNumber || "",
           date: invoice.date ? new Date(invoice.date) : new Date(),
           fromOutletId: invoice.outletId || "",
           partyId: invoice.partyId || "",
@@ -62,6 +66,7 @@ export function POSInvoiceForm({
         }
       : {
           billType: "NO1",
+          txnNumber: "",
           date: new Date(),
           fromOutletId: currentOutletId || "",
           partyId: "",
@@ -85,6 +90,57 @@ export function POSInvoiceForm({
   const headerDiscount = form.watch("headerDiscount");
   const freightCost = form.watch("freightCost");
   const isPosted = invoice?.status === "POSTED";
+
+  // Load next invoice number when outlet or bill type changes
+  React.useEffect(() => {
+    if (!fromOutletId) return;
+
+    const loadNextNumber = async () => {
+      const res = await peekNextInvoiceNumber(
+        fromOutletId,
+        billType as "NO1" | "NO2",
+      );
+      if (res.success && res.data) {
+        setInvoiceNumber(res.data);
+        form.setValue("txnNumber", res.data);
+      }
+    };
+
+    loadNextNumber();
+  }, [fromOutletId, billType, form]);
+
+  // Load attachment count - from temp ref during creation, from invoice ID after posting
+  React.useEffect(() => {
+    const loadAttachments = async () => {
+      try {
+        // During creation: load from TEMP:invoiceNumber
+        // After posting: load from invoice ID
+        const referenceId = invoice?.id || `TEMP:${invoiceNumber}`;
+
+        if (!referenceId || referenceId === "TEMP:") {
+          setAttachmentCount(0);
+          return;
+        }
+
+        const params = new URLSearchParams({
+          moduleType: "INVOICE",
+          referenceId,
+        });
+        const response = await fetch(`/api/attachments/by-reference?${params}`);
+        const result = await response.json();
+        if (result.success && result.data) {
+          setAttachmentCount(result.data.length);
+        } else {
+          setAttachmentCount(0);
+        }
+      } catch (error) {
+        console.error("Failed to load attachments:", error);
+        setAttachmentCount(0);
+      }
+    };
+
+    loadAttachments();
+  }, [invoice?.id, invoiceNumber]);
 
   // ─── Calculations (useMemo) ───────────────────────────────────────────────
   const totals = React.useMemo(() => {
@@ -283,8 +339,16 @@ export function POSInvoiceForm({
             billType={billType}
             isPosted={isPosted}
             hasItems={filledItemsCount > 0}
+            invoiceNumber={invoiceNumber}
+            onInvoiceNumberChange={(value) => {
+              setInvoiceNumber(value);
+              form.setValue("txnNumber", value);
+            }}
             onCustomerLoad={setSelectedCustomer}
             customerSearchRef={customerSearchRef}
+            invoiceId={invoice?.id}
+            attachmentCount={attachmentCount}
+            onAttachmentCountChange={setAttachmentCount}
           />
 
           {/* Middle: Product search + items table */}

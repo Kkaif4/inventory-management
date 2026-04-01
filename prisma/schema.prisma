@@ -20,6 +20,7 @@ model User {
   payments     Payment[]
   stockLedger  StockLedger[]
   transactions Transaction[]
+  expenses     Expense[]
   outlets      Outlet[]      @relation("OutletToUser")
 }
 
@@ -68,6 +69,7 @@ model Outlet {
   glAccounts               GLAccount[]
   operationalAccounts      Account[]
   categories               Category[]
+  expenseCategories        ExpenseCategory[]
   batches                  CustomBatch[]
   series                   DocumentSeries[]
   parties                  Party[]
@@ -76,6 +78,7 @@ model Outlet {
   stocks                   Stock[]
   stockLedger              StockLedger[]
   transactions             Transaction[]
+  expenses                 Expense[]
   users                    User[]           @relation("OutletToUser")
   warehouses               Warehouse[]
 }
@@ -178,6 +181,7 @@ model Party {
   priceList            PriceList?      @relation(fields: [priceListId], references: [id])
   payments             Payment[]
   transactions         Transaction[]
+  expenses             Expense[]
   suppliedProducts     VendorProduct[]
 
   @@index([outletId, type, isActive])
@@ -255,6 +259,7 @@ model GLAccount {
   outlet   Outlet        @relation(fields: [outletId], references: [id])
   entries  LedgerEntry[]
   payments Payment[]
+  expenseCategories ExpenseCategory[]
 
   @@unique([code, outletId])
 }
@@ -413,6 +418,7 @@ model Account {
   transfersFrom Transfer[]           @relation("fromAccount")
   transfersTo   Transfer[]           @relation("toAccount")
   payments      Payment[]
+  expenses      Expense[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -482,6 +488,86 @@ model Transfer {
 
   @@index([fromAccountId])
   @@index([toAccountId])
+  @@index([createdAt])
+}
+
+model ExpenseCategory {
+  id String @id @default(cuid())
+  outletId String
+  outlet Outlet @relation(fields: [outletId], references: [id], onDelete: Cascade)
+
+  name String
+  code String // 5001, 5002, etc.
+  glAccountId String
+  glAccount GLAccount @relation(fields: [glAccountId], references: [id])
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  expenses Expense[]
+
+  @@unique([code, outletId])
+  @@index([outletId])
+  @@index([glAccountId])
+}
+
+model Expense {
+  id String @id @default(cuid())
+  outletId String
+  outlet Outlet @relation(fields: [outletId], references: [id], onDelete: Cascade)
+
+  txnNumber String // EXP-0001, EXP-0002
+  date DateTime
+  description String
+
+  categoryId String
+  category ExpenseCategory @relation(fields: [categoryId], references: [id])
+
+  vendorId String?
+  vendor Party? @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  taxableAmount Decimal @db.Decimal(12, 2)
+  gstRate Int? // 0, 5, 12, 18
+  inputGst Decimal @db.Decimal(12, 2) @default(0)
+  totalAmount Decimal @db.Decimal(12, 2)
+
+  paymentMode String // "CASH", "BANK_TRANSFER", "UPI", "CHEQUE"
+  accountId String
+  account Account @relation(fields: [accountId], references: [id])
+
+  status String @default("POSTED") // DRAFT, POSTED, CANCELLED
+
+  createdBy String
+  user User @relation(fields: [createdBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([outletId])
+  @@index([categoryId])
+  @@index([accountId])
+  @@index([date])
+  @@index([status])
+}
+
+model Attachment {
+  id String @id @default(cuid())
+
+  moduleType String // "EXPENSE" | "INVOICE"
+  referenceId String
+
+  fileName String
+  mimeType String @default("image/webp")
+  size Int
+  data Bytes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleType, referenceId])
+  @@index([moduleType])
   @@index([createdAt])
 }
 

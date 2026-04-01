@@ -239,6 +239,152 @@ async function main() {
     );
   }
 
+  // 12. Create GL Accounts for Expense Categories (5xxx series)
+  const expenseGLAccounts = [
+    { code: "5001", name: "Rent Expense" },
+    { code: "5002", name: "Salary Expense" },
+    { code: "5003", name: "Utilities Expense" },
+    { code: "5004", name: "Fuel & Travel Expense" },
+    { code: "5005", name: "Miscellaneous Expense" },
+  ];
+
+  const glAccountMap: Record<string, string> = {};
+
+  for (const glAcc of expenseGLAccounts) {
+    let glAccount = await prisma.gLAccount.findFirst({
+      where: { code: glAcc.code, outletId: outlet.id },
+    });
+
+    if (!glAccount) {
+      glAccount = await prisma.gLAccount.create({
+        data: {
+          code: glAcc.code,
+          name: glAcc.name,
+          group: "EXPENSE",
+          outletId: outlet.id,
+        },
+      });
+    }
+    glAccountMap[glAcc.code] = glAccount.id;
+  }
+  console.log("Seed: Expense GL Accounts created (5001-5005)");
+
+  // 13. Create Expense Categories linked to GL Accounts
+  const expenseCategories = [
+    { name: "Rent", code: "5001" },
+    { name: "Salary", code: "5002" },
+    { name: "Utilities", code: "5003" },
+    { name: "Fuel & Travel", code: "5004" },
+    { name: "Miscellaneous", code: "5005" },
+  ];
+
+  const expenseCategoryMap: Record<string, string> = {};
+
+  for (const cat of expenseCategories) {
+    let expCat = await prisma.expenseCategory.findFirst({
+      where: { code: cat.code, outletId: outlet.id },
+    });
+
+    if (!expCat) {
+      expCat = await prisma.expenseCategory.create({
+        data: {
+          name: cat.name,
+          code: cat.code,
+          glAccountId: glAccountMap[cat.code],
+          outletId: outlet.id,
+          isActive: true,
+        },
+      });
+    }
+    expenseCategoryMap[cat.code] = expCat.id;
+  }
+  console.log("Seed: Expense Categories created (Rent, Salary, Utilities, Fuel, Misc)");
+
+  // 14. Create sample Expense records
+  if (adminUser) {
+    const today = new Date();
+
+    // Sample rent expense (POSTED) - 25000 @ 0% GST
+    const rentExpenseExists = await prisma.expense.findFirst({
+      where: { txnNumber: "EXP-0001", outletId: outlet.id },
+    });
+
+    if (!rentExpenseExists) {
+      await prisma.expense.create({
+        data: {
+          txnNumber: "EXP-0001",
+          date: today,
+          outletId: outlet.id,
+          categoryId: expenseCategoryMap["5001"],
+          description: "Monthly rent for shop premises",
+          vendorId: vendor.id,
+          paymentMode: "CHEQUE",
+          accountId: cashAccount.id,
+          taxableAmount: 25000,
+          gstRate: null,
+          inputGst: 0,
+          totalAmount: 25000,
+          status: "POSTED",
+          createdBy: adminUser.id,
+        } as any,
+      });
+    }
+
+    // Sample salary expense (POSTED) - 15000 @ 0% GST
+    const salaryExpenseExists = await prisma.expense.findFirst({
+      where: { txnNumber: "EXP-0002", outletId: outlet.id },
+    });
+
+    if (!salaryExpenseExists) {
+      await prisma.expense.create({
+        data: {
+          txnNumber: "EXP-0002",
+          date: today,
+          outletId: outlet.id,
+          categoryId: expenseCategoryMap["5002"],
+          description: "Staff salary payment",
+          vendorId: vendor.id,
+          paymentMode: "CASH",
+          accountId: cashAccount.id,
+          taxableAmount: 15000,
+          gstRate: null,
+          inputGst: 0,
+          totalAmount: 15000,
+          status: "POSTED",
+          createdBy: adminUser.id,
+        } as any,
+      });
+    }
+
+    // Sample utilities expense (DRAFT) - 3500 @ 18% GST = 630 ITC
+    const utilitiesExpenseExists = await prisma.expense.findFirst({
+      where: { txnNumber: "EXP-0003", outletId: outlet.id },
+    });
+
+    if (!utilitiesExpenseExists) {
+      await prisma.expense.create({
+        data: {
+          txnNumber: "EXP-0003",
+          date: today,
+          outletId: outlet.id,
+          categoryId: expenseCategoryMap["5003"],
+          description: "Electricity and water bills",
+          vendorId: vendor.id,
+          paymentMode: "ONLINE_TRANSFER",
+          accountId: bankAccount.id,
+          taxableAmount: 3500,
+          gstRate: 18,
+          inputGst: 630,
+          totalAmount: 4130,
+          status: "DRAFT",
+          createdBy: adminUser.id,
+        } as any,
+      });
+    }
+
+    console.log("Seed: Sample expenses created (Rent, Salary, Utilities)");
+  }
+
   console.log("Seed: Completed successfully");
 }
 

@@ -5,6 +5,7 @@
     "productsAndstock": "PRODUCTS & STOCK",
     "procurement": "PROCUREMENT",
     "parties": "PARTIES",
+    "expenses": "EXPENSES",
     "reports": "REPORTS",
     "finance": "FINANCE",
     "financials": "FINANCIALS",
@@ -29,6 +30,9 @@
     "pnl": "P&L Statement",
     "balanceSheet": "Balance Sheet",
     "gstReports": "GST Reports",
+    "expenses": "Expenses",
+    "expenseDashboard": "Expense Dashboard",
+    "expenseReports": "Expense Reports",
     "settings": "Settings",
     "auditLogs": "Audit Logs",
     "roles": "Roles Matrix"

@@ -5,6 +5,7 @@
     "productsAndstock": "उत्पाद और स्टॉक",
     "procurement": "खरीद",
     "parties": "पक्षकार",
+    "reports": "रिपोर्ट",
     "finance": "वित्त",
     "financials": "वित्तीय",
     "admin": "प्रशासन"
@@ -27,6 +28,9 @@
     "pnl": "P&L विवरण",
     "balanceSheet": "बैलेंस शीट",
     "gstReports": "जीएसटी रिपोर्ट",
+    "expenses": "खर्च",
+    "expenseDashboard": "खर्च डैशबोर्ड",
+    "expenseReports": "खर्च रिपोर्ट",
     "settings": "सेटिंग्स",
     "auditLogs": "ऑडिट लॉग",
     "roles": "भूमिका मैट्रिक्स"

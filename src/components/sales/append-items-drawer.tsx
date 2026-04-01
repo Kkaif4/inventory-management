@@ -85,7 +85,6 @@ export function AppendItemsDrawer({
       return;
     }
 
-    console.log("[AppendItemsDrawer] Searching for:", search);
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
@@ -107,7 +106,6 @@ export function AppendItemsDrawer({
 
   // Reset when drawer opens/closes
   useEffect(() => {
-    console.log("[AppendItemsDrawer] Drawer open state:", open);
     if (!open) {
       setSearch("");
       setItems([]);
@@ -123,7 +121,6 @@ export function AppendItemsDrawer({
   }, [open]);
 
   const selectProduct = useCallback((product: any, variant: any) => {
-    console.log("[AppendItemsDrawer] Product selected:", product, variant);
     setPendingProduct({ product, variant });
     setPendingQty("1");
     setSearch("");
@@ -159,7 +156,6 @@ export function AppendItemsDrawer({
       gstRate,
     };
 
-    console.log("[AppendItemsDrawer] Adding item:", newItem);
     setItems((prev) => [...prev, newItem]);
     setPendingProduct(null);
     setPendingQty("1");
@@ -220,7 +216,6 @@ export function AppendItemsDrawer({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearch(e.target.value);
       setIsSearchOpen(true);
-      console.log("[AppendItemsDrawer] Search input changed:", e.target.value);
     },
     [],
   );

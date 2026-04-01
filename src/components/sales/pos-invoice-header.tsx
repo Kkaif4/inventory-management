@@ -7,13 +7,29 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { lookupCustomerByPhone } from "@/actions/parties";
 import { useOutletStore } from "@/store/use-outlet-store";
-import { Loader2, CheckCircle2, XCircle, User } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  User,
+  Paperclip,
+  Upload,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 interface POSInvoiceHeaderProps {
   form: UseFormReturn<any>;
@@ -21,8 +37,13 @@ interface POSInvoiceHeaderProps {
   billType: string;
   isPosted: boolean;
   hasItems: boolean;
+  invoiceNumber: string;
+  onInvoiceNumberChange: (value: string) => void;
   onCustomerLoad?: (customer: any) => void;
   customerSearchRef?: React.RefObject<HTMLInputElement | null>;
+  invoiceId?: string;
+  attachmentCount?: number;
+  onAttachmentCountChange?: (count: number) => void;
 }
 
 export function POSInvoiceHeader({
@@ -31,22 +52,37 @@ export function POSInvoiceHeader({
   billType,
   isPosted,
   hasItems,
+  invoiceNumber,
+  onInvoiceNumberChange,
   onCustomerLoad,
   customerSearchRef,
+  invoiceId,
+  attachmentCount = 0,
+  onAttachmentCountChange,
 }: POSInvoiceHeaderProps) {
   const t = useTranslations("billing");
   const { currentOutletId } = useOutletStore();
-  const [phone, setPhone] = React.useState("");
-  const [billingName, setBillingName] = React.useState("");
+  const [phone, setPhone] = React.useState<string>("");
+  const [billingName, setBillingName] = React.useState<string>("");
   const [lookupState, setLookupState] = React.useState<
     "idle" | "loading" | "found" | "not-found"
   >("idle");
   const [foundCustomer, setFoundCustomer] = React.useState<any>(null);
+  const [attachmentDialogOpen, setAttachmentDialogOpen] = React.useState(false);
+  const [attachmentUploading, setAttachmentUploading] = React.useState(false);
 
   const dateValue =
     form.watch("date") instanceof Date
       ? form.watch("date").toISOString().split("T")[0]
       : "";
+
+  // Initialize from form values on mount
+  React.useEffect(() => {
+    const buyerPhone = form.getValues("buyerPhone");
+    const buyerName = form.getValues("buyerName");
+    if (buyerPhone) setPhone(String(buyerPhone));
+    if (buyerName) setBillingName(String(buyerName));
+  }, []);
 
   const handlePhoneChange = async (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 10);
@@ -89,12 +125,55 @@ export function POSInvoiceHeader({
     form.setValue("buyerName", name);
   };
 
-  React.useEffect(() => {
-    const buyerPhone = form.getValues("buyerPhone");
-    const buyerName = form.getValues("buyerName");
-    if (buyerPhone) setPhone(buyerPhone);
-    if (buyerName) setBillingName(buyerName);
-  }, [form]);
+  const handleAttachmentUpload = async (file: File) => {
+    if (!invoiceNumber) {
+      toast.error("Please enter invoice number first");
+      return;
+    }
+
+    setAttachmentUploading(true);
+    try {
+      // Use TEMP:invoiceNumber as temporary reference
+      const tempReference = `TEMP:${invoiceNumber}`;
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("moduleType", "INVOICE");
+      formData.append("referenceId", tempReference);
+
+      const response = await fetch("/api/attachments/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        toast.error(result.error?.message || "Failed to upload attachment");
+        return;
+      }
+
+      toast.success("Attachment uploaded successfully");
+
+      // Update attachment count
+      const newCount = attachmentCount + 1;
+      onAttachmentCountChange?.(newCount);
+      setAttachmentUploading(false);
+      setAttachmentDialogOpen(false);
+    } catch (error) {
+      toast.error("Error uploading attachment");
+      console.error("Upload error:", error);
+    } finally {
+      setAttachmentUploading(false);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleAttachmentUpload(file);
+    }
+  };
 
   const isNO1 = billType === "NO1";
 
@@ -226,7 +305,10 @@ export function POSInvoiceHeader({
         {/* Row 2: Customer search */}
         <div className="flex items-center gap-4 px-4 py-2.5">
           {/* Phone input */}
-          <div className="relative shrink-0" title={t("tooltips.customerPhone")}>
+          <div
+            className="relative shrink-0"
+            title={t("tooltips.customerPhone")}
+          >
             <Input
               ref={customerSearchRef}
               value={phone}
@@ -275,6 +357,38 @@ export function POSInvoiceHeader({
             />
           </div>
 
+          {/* Invoice Number */}
+          <div className="flex items-center gap-2" title="Invoice Number">
+            <Input
+              value={invoiceNumber}
+              onChange={(e) => onInvoiceNumberChange(e.target.value)}
+              disabled={isPosted}
+              placeholder="INV/2025-26/0001"
+              className="h-9 w-44 text-sm font-mono focus:ring-2 focus:ring-blue-500"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1 h-9 px-2 text-xs shrink-0"
+              title={invoiceId ? "Manage attachments" : "Add attachments"}
+              onClick={() => {
+                if (invoiceId) {
+                  // Open detail page for attachments if posted
+                  window.location.href = `/dashboard/sales/invoices/${invoiceId}`;
+                } else {
+                  // Open upload dialog for draft
+                  setAttachmentDialogOpen(true);
+                }
+              }}
+            >
+              <Paperclip className="w-3 h-3" />
+              {attachmentCount > 0 && (
+                <span className="font-semibold">{attachmentCount}</span>
+              )}
+            </Button>
+          </div>
+
           {/* Customer info badges */}
           {foundCustomer && (
             <div className="flex items-center gap-2 shrink-0">
@@ -287,8 +401,7 @@ export function POSInvoiceHeader({
                 <span
                   className={cn(
                     "px-2 py-1 text-xs rounded",
-                    foundCustomer.outstandingBalance >
-                      foundCustomer.creditLimit
+                    foundCustomer.outstandingBalance > foundCustomer.creditLimit
                       ? "bg-red-50 text-red-700"
                       : "bg-slate-100 text-slate-600",
                   )}
@@ -307,6 +420,43 @@ export function POSInvoiceHeader({
           )}
         </div>
       </div>
+
+      {/* Attachment Upload Dialog */}
+      <Dialog
+        open={attachmentDialogOpen}
+        onOpenChange={setAttachmentDialogOpen}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Attachment</DialogTitle>
+            <DialogDescription>
+              Upload supporting documents for invoice {invoiceNumber}. (Max 5MB,
+              JPG/PNG)
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+              <input
+                type="file"
+                accept="image/jpeg,image/png"
+                onChange={handleFileSelect}
+                disabled={attachmentUploading}
+                className="hidden"
+                id="attachment-input"
+              />
+              <label htmlFor="attachment-input" className="cursor-pointer">
+                <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="text-sm font-medium text-slate-900">
+                  {attachmentUploading ? "Uploading..." : "Click to upload"}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  JPG or PNG, max 5MB
+                </p>
+              </label>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }

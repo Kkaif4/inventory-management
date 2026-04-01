@@ -149,6 +149,26 @@ const navigation = [
     ],
   },
   {
+    group: "EXPENSES",
+    items: [
+      {
+        name: "Expenses",
+        href: "/dashboard/expenses",
+        icon: Receipt,
+      },
+      {
+        name: "Expense Dashboard",
+        href: "/dashboard/expenses/dashboard",
+        icon: BarChartBig,
+      },
+      {
+        name: "Expense Reports",
+        href: "/dashboard/expenses/reports",
+        icon: BarChart3,
+      },
+    ],
+  },
+  {
     group: "ADMIN",
     items: [
       //   { name: "Settings", href: "/dashboard/settings", icon: Settings },
@@ -194,10 +214,9 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                 </p>
               )}
               {group.items.map((item) => {
+                // Exact match or match with trailing slash
                 const isActive =
-                  pathname === item.href ||
-                  (item.href !== "/dashboard" &&
-                    pathname.startsWith(item.href));
+                  pathname === item.href || pathname === `${item.href}/`;
                 // Map item names to keys
                 const itemNameMap: Record<string, string> = {
                   Dashboard: "dashboard",
@@ -218,6 +237,9 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                   "P&L Statement": "pnl",
                   "Balance Sheet": "balanceSheet",
                   "GST Reports": "gstReports",
+                  Expenses: "expenses",
+                  "Expense Dashboard": "expenseDashboard",
+                  "Expense Reports": "expenseReports",
                   Settings: "settings",
                   "Audit Logs": "auditLogs",
                   "Roles Matrix": "roles",
