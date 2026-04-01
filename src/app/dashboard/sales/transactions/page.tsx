@@ -20,25 +20,25 @@ const defaultPagination: PaginationMeta = {
 export default async function SalesTransactionsPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const currentOutletId = await getCurrentSessionOutlet();
+  // Await searchParams since it's a Promise in Next.js 15+
+  const params = await searchParams;
+
 
   if (!currentOutletId) {
     redirect("/dashboard");
   }
 
   console.log(`\n[SalesTransactionsPage] Page loaded:`);
-  console.log(`  - currentOutletId: ${currentOutletId}`);
-  console.log(`  - searchParams:`, searchParams);
 
   // Parse pagination and filter params
-  const pagination = parsePaginationParams(searchParams);
-  const tab = typeof searchParams.tab === "string" ? searchParams.tab : "invoices";
-  const search = typeof searchParams.search === "string" ? searchParams.search : "";
-  const status = typeof searchParams.status === "string" ? searchParams.status : "ALL";
+  const pagination = parsePaginationParams(params);
+  const tab = typeof params.tab === "string" ? params.tab : "invoices";
+  const search = typeof params.search === "string" ? params.search : "";
+  const status = typeof params.status === "string" ? params.status : "ALL";
 
-  console.log(`  - tab: ${tab}, search: "${search}", status: ${status}`);
 
   // Fetch only the active tab's data
   let tabData: { data: any[]; pagination: PaginationMeta };
@@ -76,7 +76,6 @@ export default async function SalesTransactionsPage({
   }
 
   console.log(`[Transactions] Final tabData for tab="${tab}": ${tabData.data.length} records`);
-  console.log(`[Transactions] Outlet: ${currentOutletId}, Pagination: page=${pagination.page}, limit=${pagination.limit}`);
 
   return (
     <Suspense fallback={<SalesTransactionsSkeleton />}>

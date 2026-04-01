@@ -7,17 +7,18 @@ import { CustomersClient } from "./customers-client";
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const outletId = await getCurrentSessionOutlet();
+  const params = await searchParams;
 
   // Parse query params with type safety
-  const pagination = parsePaginationParams(searchParams);
-  const search = typeof searchParams.search === "string" ? searchParams.search : "";
-  const status = typeof searchParams.status === "string" ? searchParams.status : "ACTIVE";
-  const typeFilter = typeof searchParams.typeFilter === "string" ? searchParams.typeFilter : "ALL";
-  const state = typeof searchParams.state === "string" ? searchParams.state : null;
-  const hasOverdue = searchParams.hasOverdue === "true";
+  const pagination = parsePaginationParams(params);
+  const search = typeof params.search === "string" ? params.search : "";
+  const status = typeof params.status === "string" ? params.status : "ACTIVE";
+  const typeFilter = typeof params.typeFilter === "string" ? params.typeFilter : "ALL";
+  const state = typeof params.state === "string" ? params.state : null;
+  const hasOverdue = params.hasOverdue === "true";
 
   const res = await getCustomersPaginated(outletId, {
     page: pagination.page,

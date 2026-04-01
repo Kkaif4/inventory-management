@@ -78,8 +78,6 @@ export default function SalesUnifiedClient() {
     return item.category === filterType;
   });
 
-  console.log("Filtered Data: ", filteredData);
-
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "txnNumber",

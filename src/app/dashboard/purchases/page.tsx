@@ -24,8 +24,11 @@ const defaultPagination: PaginationMeta = {
 export default async function PurchasesPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  // Await searchParams since it's a Promise in Next.js 15+
+  const params = await searchParams;
+
   const currentOutletId = await getCurrentSessionOutlet();
 
   if (!currentOutletId) {
@@ -33,10 +36,10 @@ export default async function PurchasesPage({
   }
 
   // Parse pagination and filter params
-  const pagination = parsePaginationParams(searchParams);
-  const tab = typeof searchParams.tab === "string" ? searchParams.tab : "orders";
-  const search = typeof searchParams.search === "string" ? searchParams.search : "";
-  const status = typeof searchParams.status === "string" ? searchParams.status : "ALL";
+  const pagination = parsePaginationParams(params);
+  const tab = typeof params.tab === "string" ? params.tab : "orders";
+  const search = typeof params.search === "string" ? params.search : "";
+  const status = typeof params.status === "string" ? params.status : "ALL";
 
   // Fetch only the active tab's data
   let tabData: { data: any[]; pagination: PaginationMeta };
@@ -48,7 +51,10 @@ export default async function PurchasesPage({
       search: search || undefined,
       status: status || "ALL",
     });
-    tabData = res.success && res.data ? res.data : { data: [], pagination: defaultPagination };
+    tabData =
+      res.success && res.data
+        ? res.data
+        : { data: [], pagination: defaultPagination };
   } else if (tab === "orders") {
     const res = await getPurchaseOrdersPaginated(currentOutletId, {
       page: pagination.page,
@@ -56,7 +62,10 @@ export default async function PurchasesPage({
       search: search || undefined,
       status: status || "ALL",
     });
-    tabData = res.success && res.data ? res.data : { data: [], pagination: defaultPagination };
+    tabData =
+      res.success && res.data
+        ? res.data
+        : { data: [], pagination: defaultPagination };
   } else if (tab === "bills") {
     const res = await getBillsPaginated(currentOutletId, {
       page: pagination.page,
@@ -64,7 +73,10 @@ export default async function PurchasesPage({
       search: search || undefined,
       status: status || "ALL",
     });
-    tabData = res.success && res.data ? res.data : { data: [], pagination: defaultPagination };
+    tabData =
+      res.success && res.data
+        ? res.data
+        : { data: [], pagination: defaultPagination };
   } else if (tab === "returns") {
     const res = await getPurchaseReturnsPaginated(currentOutletId, {
       page: pagination.page,
@@ -72,7 +84,10 @@ export default async function PurchasesPage({
       search: search || undefined,
       status: status || "ALL",
     });
-    tabData = res.success && res.data ? res.data : { data: [], pagination: defaultPagination };
+    tabData =
+      res.success && res.data
+        ? res.data
+        : { data: [], pagination: defaultPagination };
   } else {
     tabData = { data: [], pagination: defaultPagination };
   }

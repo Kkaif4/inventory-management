@@ -42,7 +42,7 @@ export interface ImageMetadata {
  */
 export function validateImageFile(
   file: any,
-  maxSizeMB: number = 5
+  maxSizeMB: number = 5,
 ): { valid: boolean; error?: string } {
   const allowedMimes = ["image/jpeg", "image/png"];
   const maxSizeBytes = maxSizeMB * 1024 * 1024;
@@ -71,9 +71,11 @@ export function validateImageFile(
  * PNG: 89 50 4E 47 (‰PNG)
  * JPEG: FF D8 FF (ÿØÿ)
  */
-export function validateImageMagicBytes(
-  buffer: Buffer
-): { valid: boolean; format?: string; error?: string } {
+export function validateImageMagicBytes(buffer: Buffer): {
+  valid: boolean;
+  format?: string;
+  error?: string;
+} {
   if (!buffer || buffer.length < 3) {
     return { valid: false, error: "Buffer too small for format validation" };
   }
@@ -118,22 +120,22 @@ export function validateImageMagicBytes(
  */
 export async function compressAndEncodeImage(
   buffer: Buffer,
-  options: CompressionOptions = {}
+  options: CompressionOptions = {},
 ): Promise<ProcessedImageData> {
   const startTime = Date.now();
   const originalSize = buffer.length;
 
   try {
-    const {
-      quality = 80,
-      maxWidth = 400,
-    } = options;
+    const { quality = 80, maxWidth = 400 } = options;
 
     // Validate input metadata
     const metadata = await sharp(buffer).metadata();
-    if (!metadata.format || !["jpeg", "png", "webp"].includes(metadata.format)) {
+    if (
+      !metadata.format ||
+      !["jpeg", "png", "webp"].includes(metadata.format)
+    ) {
       throw new Error(
-        `Invalid image format: ${metadata.format || "unknown"}. Only JPEG and PNG are supported.`
+        `Invalid image format: ${metadata.format || "unknown"}. Only JPEG and PNG are supported.`,
       );
     }
 
@@ -154,13 +156,6 @@ export async function compressAndEncodeImage(
     const compressionRatio = getCompressionRatio(originalSize, compressedSize);
     const processingTime = Date.now() - startTime;
 
-    console.log(`[ImageProcessing] Compression complete:`);
-    console.log(`  Original: ${formatFileSize(originalSize)}`);
-    console.log(`  Compressed: ${formatFileSize(compressedSize)}`);
-    console.log(`  Reduction: ${compressionRatio}%`);
-    console.log(`  Encoded: ${formatFileSize(Math.ceil(compressedSize * 1.33))}`);
-    console.log(`  Time: ${processingTime}ms`);
-
     return {
       buffer: optimized,
       base64: base64String,
@@ -172,7 +167,8 @@ export async function compressAndEncodeImage(
       compressionRatio,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     console.error(`[ImageProcessing] Compression failed: ${errorMessage}`);
     throw new Error(`Image compression failed: ${errorMessage}`);
   }
@@ -195,7 +191,8 @@ export async function getImageMetadata(buffer: Buffer): Promise<ImageMetadata> {
       isValid: magicBytes.valid,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     console.error(`[ImageProcessing] Metadata read failed: ${errorMessage}`);
     throw new Error(`Failed to read image metadata: ${errorMessage}`);
   }
@@ -219,7 +216,8 @@ export function extractBase64FromDataUri(dataUri: string): Buffer {
 
     return Buffer.from(base64Content, "base64");
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     throw new Error(`Failed to extract Base64 from data URI: ${errorMessage}`);
   }
 }
@@ -229,7 +227,7 @@ export function extractBase64FromDataUri(dataUri: string): Buffer {
  */
 export function getCompressionRatio(
   originalSize: number,
-  compressedSize: number
+  compressedSize: number,
 ): number {
   if (originalSize === 0) return 0;
   return Math.round(((originalSize - compressedSize) / originalSize) * 100);
@@ -253,7 +251,5 @@ export function formatFileSize(bytes: number): string {
   const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return (
-    Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
-  );
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 }

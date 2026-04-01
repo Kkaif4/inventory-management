@@ -33,14 +33,9 @@ export async function debugTransactionsForOutlet(outletId: string) {
       take: 20,
     });
 
-    console.log(`\nAll transactions for outlet (last 20):`);
-    console.log(`Total in DB for this outlet: ${allTransactions.length}`);
     if (allTransactions.length > 0) {
       console.table(allTransactions);
-    } else {
-      console.log("  ❌ No transactions found!");
     }
-
     // Count by type
     const invoiceCount = await prisma.transaction.count({
       where: { type: "SALES_INVOICE", outletId },
@@ -49,21 +44,11 @@ export async function debugTransactionsForOutlet(outletId: string) {
       where: { type: { in: ["CREDIT_NOTE", "STOCK_RETURN"] }, outletId },
     });
 
-    console.log(`\nCounts by type:`);
-    console.log(`  SALES_INVOICE: ${invoiceCount}`);
-    console.log(`  CREDIT_NOTE/STOCK_RETURN: ${returnCount}`);
-
     // Check if there are invoices in OTHER outlets
     const invoicesInOtherOutlets = await prisma.transaction.count({
       where: { type: "SALES_INVOICE" },
     });
     const allOutlets = await prisma.outlet.count();
-
-    console.log(`\nSystem-wide stats:`);
-    console.log(`  Total outlets: ${allOutlets}`);
-    console.log(
-      `  Total SALES_INVOICE transactions: ${invoicesInOtherOutlets}`,
-    );
 
     // Return summary
     return {

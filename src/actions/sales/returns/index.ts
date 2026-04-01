@@ -9,10 +9,7 @@ import { roundToTwo } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import { withErrorHandler } from "@/lib/error-handler";
 import { NotFoundError } from "@/lib/exceptions";
-import {
-  parsePaginationParams,
-  calculatePagination,
-} from "@/lib/pagination";
+import { parsePaginationParams, calculatePagination } from "@/lib/pagination";
 import { PaginatedResult, BasePaginationParams } from "@/types/pagination";
 
 export async function createSalesReturn(data: {
@@ -187,12 +184,6 @@ export async function getSalesReturnsPaginated(
 
     const { search, status } = params;
 
-    console.log(`[getSalesReturnsPaginated] Fetching returns:`);
-    console.log(`  - outletId: ${outletId}`);
-    console.log(`  - page: ${page}, limit: ${limit}`);
-    console.log(`  - search: ${search || "none"}`);
-    console.log(`  - status: ${status || "ALL"}`);
-
     const andClauses: any[] = [
       { type: { in: ["CREDIT_NOTE", "STOCK_RETURN"] } },
       { outletId },
@@ -212,8 +203,6 @@ export async function getSalesReturnsPaginated(
     }
 
     const where = { AND: andClauses };
-
-    console.log(`[getSalesReturnsPaginated] WHERE clause:`, JSON.stringify(where, null, 2));
 
     const [total, returns] = await Promise.all([
       prisma.transaction.count({ where }),
@@ -240,11 +229,6 @@ export async function getSalesReturnsPaginated(
         take: limit,
       }),
     ]);
-
-    console.log(`[getSalesReturnsPaginated] Results: ${total} total, ${returns.length} on this page`);
-    if (returns.length > 0) {
-      console.log(`[getSalesReturnsPaginated] First return:`, returns[0]);
-    }
 
     const pagination = calculatePagination(total, page, limit);
 

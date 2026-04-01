@@ -40,12 +40,6 @@ export async function createSalesInvoice(data: {
   buyerPhone?: string;
 }) {
   return withErrorHandler(async () => {
-    console.log(`[createSalesInvoice] Creating invoice:`);
-    console.log(`  - outletId: ${data.fromOutletId}`);
-    console.log(`  - txnNumber: ${data.txnNumber}`);
-    console.log(`  - billType: ${data.billType}`);
-    console.log(`  - items: ${data.items.length}`);
-
     await validateSessionOutletAccess(data.fromOutletId);
     const isNo2 = data.billType === "NO2";
 
@@ -276,12 +270,7 @@ export async function createSalesInvoice(data: {
 
       revalidatePath("/dashboard/sales/invoices");
       revalidatePath("/dashboard/sales/transactions");
-
-      console.log(`[createSalesInvoice] ✅ Invoice created successfully:`);
-      console.log(`  - invoiceId: ${invoice.id}`);
-      console.log(`  - txnNumber: ${invoice.txnNumber}`);
-      console.log(`  - status: ${invoice.status}`);
-      console.log(`  - outletId: ${invoice.outletId}`);
+      revalidatePath("/dashboard/sales");
 
       // 6. Return invoice with FIFO breakdown if applicable
       return {
@@ -341,7 +330,6 @@ export async function getSalesInvoicesPaginated(
     status?: string;
   },
 ) {
-  console.log("-----------------------hello");
   return withErrorHandler(async (): Promise<PaginatedResult<any>> => {
     await validateSessionOutletAccess(outletId);
 
@@ -368,9 +356,7 @@ export async function getSalesInvoicesPaginated(
       andClauses.push({ status });
     }
 
-    console.log("andClauses: ", andClauses);
     const where = { AND: andClauses };
-    console.log("[Debug] Fetching total count of matching invoices...");
 
     const [total, invoices] = await Promise.all([
       prisma.transaction.count({ where }),
@@ -401,13 +387,6 @@ export async function getSalesInvoicesPaginated(
         take: limit,
       }),
     ]);
-
-    console.log(
-      `[getSalesInvoicesPaginated] Results: ${total} total, ${invoices.length} on this page`,
-    );
-    if (invoices.length > 0) {
-      console.log(`[getSalesInvoicesPaginated] First invoice:`, invoices[0]);
-    }
 
     const pagination = calculatePagination(total, page, limit);
 
@@ -600,6 +579,7 @@ export async function saveSalesInvoiceDraft(data: {
 
       revalidatePath("/dashboard/sales/invoices");
       revalidatePath("/dashboard/sales/transactions");
+      revalidatePath("/dashboard/sales");
       return draft;
     });
   });
@@ -712,6 +692,7 @@ export async function editSalesInvoice(
 
       revalidatePath("/dashboard/sales/invoices");
       revalidatePath("/dashboard/sales/transactions");
+      revalidatePath("/dashboard/sales");
       return updated;
     });
   });
@@ -930,6 +911,7 @@ export async function appendItemsToInvoice(
 
       revalidatePath("/dashboard/sales/invoices");
       revalidatePath("/dashboard/sales/transactions");
+      revalidatePath("/dashboard/sales");
 
       return updated;
     });

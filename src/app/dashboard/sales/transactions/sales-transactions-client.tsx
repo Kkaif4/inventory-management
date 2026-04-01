@@ -51,7 +51,6 @@ export function SalesTransactionsClient({
 
   // Sync data AND pagination when they change
   useEffect(() => {
-    console.log(`[TransactionsClient] Tab: ${currentTab}, Data count: ${initialData.length}, Initial pagination:`, initialPagination);
     setData(initialData);
     setPagination(initialPagination);
   }, [initialData, initialPagination, currentTab]);

@@ -239,6 +239,38 @@ async function main() {
     );
   }
 
+  // 11b. Create Core GL Accounts for Sales Invoicing (required for invoice creation)
+  const coreGLAccounts = [
+    { code: "1002", name: "Accounts Receivable" },
+    { code: "1003", name: "Sales/Debtors" },
+    { code: "2002", name: "Accounts Payable" },
+    { code: "2003", name: "Input GST" },
+    { code: "2004", name: "Output GST" },
+    { code: "3001", name: "Sales Revenue" },
+  ];
+
+  for (const glAcc of coreGLAccounts) {
+    let glAccount = await prisma.gLAccount.findFirst({
+      where: { code: glAcc.code, outletId: outlet.id },
+    });
+
+    if (!glAccount) {
+      await prisma.gLAccount.create({
+        data: {
+          code: glAcc.code,
+          name: glAcc.name,
+          group: glAcc.code.startsWith("1")
+            ? "ASSET"
+            : glAcc.code.startsWith("2")
+              ? "LIABILITY"
+              : "INCOME",
+          outletId: outlet.id,
+        },
+      });
+    }
+  }
+  console.log("Seed: Core GL Accounts created (1002, 1003, 2002-2004, 3001)");
+
   // 12. Create GL Accounts for Expense Categories (5xxx series)
   const expenseGLAccounts = [
     { code: "5001", name: "Rent Expense" },
@@ -298,7 +330,9 @@ async function main() {
     }
     expenseCategoryMap[cat.code] = expCat.id;
   }
-  console.log("Seed: Expense Categories created (Rent, Salary, Utilities, Fuel, Misc)");
+  console.log(
+    "Seed: Expense Categories created (Rent, Salary, Utilities, Fuel, Misc)",
+  );
 
   // 14. Create sample Expense records
   if (adminUser) {

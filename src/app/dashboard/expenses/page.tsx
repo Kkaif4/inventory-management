@@ -22,26 +22,22 @@ function ExpensesSkeleton() {
 export default async function ExpensesPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  // Await searchParams since it's a Promise in Next.js 15+
+  const params = await searchParams;
+
   const outletId = await getCurrentSessionOutlet();
 
   // Parse query params
-  const pagination = parsePaginationParams(searchParams);
+  const pagination = parsePaginationParams(params);
   const categoryId =
-    typeof searchParams.categoryId === "string"
-      ? searchParams.categoryId
-      : undefined;
-  const status =
-    typeof searchParams.status === "string" ? searchParams.status : undefined;
+    typeof params.categoryId === "string" ? params.categoryId : undefined;
+  const status = typeof params.status === "string" ? params.status : undefined;
   const dateFrom =
-    typeof searchParams.dateFrom === "string"
-      ? new Date(searchParams.dateFrom)
-      : undefined;
+    typeof params.dateFrom === "string" ? new Date(params.dateFrom) : undefined;
   const dateTo =
-    typeof searchParams.dateTo === "string"
-      ? new Date(searchParams.dateTo)
-      : undefined;
+    typeof params.dateTo === "string" ? new Date(params.dateTo) : undefined;
 
   const res = await getExpenses(
     outletId,

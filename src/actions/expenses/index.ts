@@ -30,14 +30,6 @@ import type {
  */
 export async function createExpense(data: CreateExpenseInput) {
   return withErrorHandler(async () => {
-    console.log("[Expense] Creating expense with data:", {
-      outletId: data.outletId,
-      categoryId: data.categoryId,
-      accountId: data.accountId,
-      amount: data.taxableAmount,
-      description: data.description?.substring(0, 30),
-    });
-
     // Validate input
     const validated = createExpenseSchema.parse(data);
     const userId = await validateSessionOutletAccess(validated.outletId);

@@ -7,19 +7,19 @@ import { VendorsClient } from "./vendors-client";
 export default async function VendorsPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  // Await searchParams since it's a Promise in Next.js 15+
+  const params = await searchParams;
+
   const outletId = await getCurrentSessionOutlet();
 
   // Parse query params with type safety
-  const pagination = parsePaginationParams(searchParams);
-  const search =
-    typeof searchParams.search === "string" ? searchParams.search : "";
-  const status =
-    typeof searchParams.status === "string" ? searchParams.status : "ACTIVE";
-  const state =
-    typeof searchParams.state === "string" ? searchParams.state : null;
-  const hasOverdue = searchParams.hasOverdue === "true";
+  const pagination = parsePaginationParams(params);
+  const search = typeof params.search === "string" ? params.search : "";
+  const status = typeof params.status === "string" ? params.status : "ACTIVE";
+  const state = typeof params.state === "string" ? params.state : null;
+  const hasOverdue = params.hasOverdue === "true";
 
   const res = await getVendorsPaginated(outletId, {
     page: pagination.page,
