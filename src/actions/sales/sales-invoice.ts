@@ -436,6 +436,9 @@ export async function getSalesInvoice(invoiceId: string) {
         },
         orderBy: { paymentDate: "asc" },
       },
+      oldBillPayments: {
+        orderBy: { paymentDate: "asc" },
+      },
       user: { select: { id: true, name: true } },
     },
   });

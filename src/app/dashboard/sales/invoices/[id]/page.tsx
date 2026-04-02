@@ -144,7 +144,9 @@ export default function InvoiceDetailPage() {
   }
 
   const totalPaid =
-    invoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
+    invoice.billType === "OLD"
+      ? (invoice as any).oldBillPayments?.reduce((sum: number, p: any) => sum + p.amount, 0) ?? 0
+      : invoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
   const outstanding = Math.max(0, invoice.grandTotal - totalPaid);
 
   // Pay button visibility per FRD Section 2 & 10
@@ -208,6 +210,11 @@ export default function InvoiceDetailPage() {
               {invoice.billType === "NO2" && (
                 <span className="text-[10px] bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full uppercase">
                   Cash Memo
+                </span>
+              )}
+              {invoice.billType === "OLD" && (
+                <span className="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full uppercase">
+                  Historical Record
                 </span>
               )}
             </div>
@@ -475,11 +482,13 @@ export default function InvoiceDetailPage() {
                   <tr key={item.id} className="hover:bg-slate-50">
                     <td className="px-5 py-3">
                       <p className="font-bold text-slate-900 uppercase tracking-tight">
-                        {item.variant.product.name}
+                        {item.variant?.product?.name || item.itemDescription || "—"}
                       </p>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        {item.variant.sku}
-                      </p>
+                      {item.variant && (
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          {item.variant.sku}
+                        </p>
+                      )}
                     </td>
                     <td className="px-5 py-3 text-right font-mono text-slate-700">
                       {item.quantity}
@@ -543,8 +552,10 @@ export default function InvoiceDetailPage() {
                 Payment History
               </span>
               <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                {invoice.payments.length} receipt
-                {invoice.payments.length > 1 ? "s" : ""}
+                {invoice.billType === "OLD" 
+                  ? `${(invoice as any).oldBillPayments?.length ?? 0} historical entry`
+                  : `${invoice.payments?.length ?? 0} receipt`}
+                {(invoice.billType === "OLD" ? ((invoice as any).oldBillPayments?.length ?? 0) : (invoice.payments?.length ?? 0)) > 1 ? "s" : ""}
               </span>
             </div>
             {historyExpanded ? (
@@ -567,34 +578,62 @@ export default function InvoiceDetailPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {invoice.payments.map((p) => (
-                    <tr key={p.id} className="hover:bg-slate-50">
-                      <td className="px-5 py-3 font-mono font-bold text-slate-800 text-xs">
-                        {p.txnNumber}
-                      </td>
-                      <td className="px-5 py-3 text-slate-600 text-xs">
-                        {new Date(p.paymentDate).toLocaleDateString("en-IN", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-medium">
-                          {p.paymentMode === "BankTransfer"
-                            ? "Bank Transfer"
-                            : p.paymentMode}
-                          {p.glAccount ? ` · ${p.glAccount.name}` : ""}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-slate-500 text-xs font-mono">
-                        {p.referenceNo || "—"}
-                      </td>
-                      <td className="px-5 py-3 text-right font-bold text-emerald-700">
-                        {fmt(p.amount)}
-                      </td>
-                    </tr>
-                  ))}
+                  {invoice.billType === "OLD" ? (
+                    (invoice as any).oldBillPayments?.map((p: any) => (
+                      <tr key={p.id} className="hover:bg-slate-50">
+                        <td className="px-5 py-3 font-mono font-bold text-slate-800 text-xs">
+                          {invoice.txnNumber}-PAY
+                        </td>
+                        <td className="px-5 py-3 text-slate-600 text-xs">
+                          {new Date(p.paymentDate).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-medium">
+                            Historical Payment
+                          </span>
+                        </td>
+                        <td className="px-5 py-3 text-slate-500 text-xs font-mono">
+                          {p.note || "—"}
+                        </td>
+                        <td className="px-5 py-3 text-right font-bold text-emerald-700">
+                          {fmt(p.amount)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    invoice.payments.map((p) => (
+                      <tr key={p.id} className="hover:bg-slate-50">
+                        <td className="px-5 py-3 font-mono font-bold text-slate-800 text-xs">
+                          {p.txnNumber}
+                        </td>
+                        <td className="px-5 py-3 text-slate-600 text-xs">
+                          {new Date(p.paymentDate).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-medium">
+                            {p.paymentMode === "BankTransfer"
+                              ? "Bank Transfer"
+                              : p.paymentMode}
+                            {p.glAccount ? ` · ${p.glAccount.name}` : ""}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3 text-slate-500 text-xs font-mono">
+                          {p.referenceNo || "—"}
+                        </td>
+                        <td className="px-5 py-3 text-right font-bold text-emerald-700">
+                          {fmt(p.amount)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
                 <tfoot className="border-t border-slate-200 bg-slate-50">
                   <tr>

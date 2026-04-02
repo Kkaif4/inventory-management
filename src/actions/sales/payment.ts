@@ -41,9 +41,9 @@ export async function recordInvoicePayment(
       });
 
       if (!invoice) throw new NotFoundError("Invoice not found");
-      if (invoice.billType === "NO2") {
+      if (["NO2", "OLD"].includes(invoice.billType)) {
         throw new ValidationError(
-          "No.2 (Cash Memo) invoices cannot have payments recorded against them.",
+          `${invoice.billType === "NO2" ? "No.2 (Cash Memo)" : "Historical"} invoices cannot have secondary payments recorded against them.`,
         );
       }
       if (["PAID", "CANCELLED", "DRAFT"].includes(invoice.status)) {

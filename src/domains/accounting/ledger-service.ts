@@ -13,6 +13,7 @@ export const AccountingService = {
     data: {
       transactionId: string;
       partyId?: string;
+      date?: Date; // Optional — pass historical date for OLD bills; omit for current date
       entries: {
         accountId: string;
         debit?: number;
@@ -21,7 +22,7 @@ export const AccountingService = {
       }[];
     },
   ) {
-    const { transactionId, entries, partyId } = data;
+    const { transactionId, entries, partyId, date } = data;
 
     // Validate entry balance
     const totalDebit = roundToTwo(
@@ -43,6 +44,7 @@ export const AccountingService = {
         debit: roundToTwo(entry.debit || 0),
         credit: roundToTwo(entry.credit || 0),
         reference: entry.reference,
+        ...(date ? { date } : {}), // Use historical date if provided, else Prisma default(now())
       })),
     });
   },

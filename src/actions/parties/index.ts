@@ -73,13 +73,13 @@ export async function getPartiesWithBalances(
 }
 
 /**
- * Lookup a customer by phone number (exact 10-digit match)
+ * Search customers by phone number (can return multiple matches for OLD bills logic)
  */
-export async function lookupCustomerByPhone(outletId: string, phone: string) {
+export async function searchCustomersByPhone(outletId: string, phone: string) {
   return withErrorHandler(async () => {
     await validateSessionOutletAccess(outletId);
 
-    const party = await prisma.party.findFirst({
+    const parties = await prisma.party.findMany({
       where: {
         outletId,
         type: "CUSTOMER",
@@ -99,9 +99,11 @@ export async function lookupCustomerByPhone(outletId: string, phone: string) {
         outstandingBalance: true,
         creditPeriod: true,
       },
+      orderBy: { name: "asc" },
+      take: 10,
     });
 
-    return party; // null if not found
+    return parties;
   });
 }
 

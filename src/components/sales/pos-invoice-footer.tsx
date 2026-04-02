@@ -3,7 +3,7 @@
 import * as React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { Loader2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Loader2, ToggleLeft, ToggleRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,7 @@ interface POSInvoiceFooterProps {
   isGlobalDiscount: boolean;
   onToggleDiscountMode: () => void;
   notesRef?: React.RefObject<HTMLInputElement | null>;
+  paymentFieldArray?: any; // UseFieldArrayReturn
 }
 
 export function POSInvoiceFooter({
@@ -54,6 +55,7 @@ export function POSInvoiceFooter({
   isGlobalDiscount,
   onToggleDiscountMode,
   notesRef,
+  paymentFieldArray,
 }: POSInvoiceFooterProps) {
   const t = useTranslations("billing");
   const isNO1 = billType === "NO1";
@@ -158,6 +160,73 @@ export function POSInvoiceFooter({
           </div>
         )}
 
+        {/* Payments row for OLD bills */}
+        {billType === "OLD" && !isPosted && (
+          <div className="px-4 py-3 border-b border-slate-100 bg-indigo-50/20">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-bold text-indigo-900 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                Historical Payments
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 text-[10px] font-bold uppercase border-indigo-200 text-indigo-700 bg-white hover:bg-indigo-50"
+                onClick={() => paymentFieldArray?.append({ amount: 0, paymentDate: new Date().toISOString().split("T")[0], note: "" })}
+              >
+                + Add Payment Row
+              </Button>
+            </div>
+            
+            <div className="space-y-2">
+              {paymentFieldArray?.fields.map((field: any, index: number) => (
+                <div key={field.id} className="flex items-center gap-3 animate-in fade-in slide-in-from-left-1">
+                  <div className="flex-1 max-w-[150px]">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Amount"
+                      value={form.watch(`payments.${index}.amount`) || ""}
+                      onChange={(e) => form.setValue(`payments.${index}.amount`, parseFloat(e.target.value) || 0)}
+                      className="h-8 text-xs font-mono bg-white border-indigo-100"
+                    />
+                  </div>
+                  <div className="flex-1 max-w-[150px]">
+                    <Input
+                      type="date"
+                      value={form.watch(`payments.${index}.paymentDate`) instanceof Date 
+                                ? form.watch(`payments.${index}.paymentDate`).toISOString().split("T")[0]
+                                : form.watch(`payments.${index}.paymentDate`) || ""}
+                      onChange={(e) => form.setValue(`payments.${index}.paymentDate`, e.target.value)}
+                      className="h-8 text-xs bg-white border-indigo-100"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Note (e.g. Cash, Check #...)"
+                      value={form.watch(`payments.${index}.note`) || ""}
+                      onChange={(e) => form.setValue(`payments.${index}.note`, e.target.value)}
+                      className="h-8 text-xs bg-white border-indigo-100"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => paymentFieldArray?.remove(index)}
+                    className="text-slate-400 hover:text-red-500 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+              
+              {paymentFieldArray?.fields.length === 0 && (
+                <p className="text-xs text-slate-500 italic py-2">No payments recorded. Bill will be marked as UNPAID.</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Main footer row */}
         <div className="flex items-center gap-3 px-4 py-3">
           {/* Left controls */}
@@ -219,9 +288,23 @@ export function POSInvoiceFooter({
             <span className="text-xs text-slate-400 mr-1.5 uppercase tracking-wider font-medium">
               {t("footer.total")}
             </span>
-            <span className="text-2xl font-black font-mono text-slate-900">
-              ₹{grandTotal.toFixed(2)}
-            </span>
+            {billType === "OLD" ? (
+              <div className="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded px-2 py-1 focus-within:ring-2 focus-within:ring-indigo-500">
+                <span className="text-xl font-black font-mono text-indigo-700">₹</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.watch("grandTotal") ?? grandTotal.toFixed(2)}
+                  onChange={(e) => form.setValue("grandTotal", parseFloat(e.target.value) || 0)}
+                  disabled={isPosted}
+                  className="w-28 text-xl font-black font-mono bg-transparent outline-none text-indigo-900 border-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+            ) : (
+              <span className="text-2xl font-black font-mono text-slate-900">
+                ₹{grandTotal.toFixed(2)}
+              </span>
+            )}
           </div>
 
           {/* Credit warning */}

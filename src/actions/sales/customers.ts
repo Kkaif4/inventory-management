@@ -356,6 +356,34 @@ export async function getCustomerDetails(id: string) {
   });
 }
 
+// ─── Create Minimal Customer (for Old Bill Mode) ──────────────────────────────────
+export async function createMinimalCustomer(
+  outletId: string,
+  data: { name: string; phone?: string; state?: string }
+) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+
+    // Creates Party: type=CUSTOMER, address="—", state=data.state??"—"
+    const party = await prisma.party.create({
+      data: {
+        type: "CUSTOMER",
+        outletId,
+        name: data.name,
+        phone: data.phone,
+        state: data.state || "—",
+        address: "—",
+        outstandingBalance: 0,
+        creditPeriod: 0,
+        isActive: true,
+      },
+    });
+
+    revalidatePath("/dashboard/sales/customers");
+    return party;
+  });
+}
+
 // ─── Create new Customer ─────────────────────────────────────────────────────
 export async function createCustomer(
   outletId: string,

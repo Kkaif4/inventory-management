@@ -5,7 +5,8 @@ import { UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { lookupCustomerByPhone } from "@/actions/parties";
+import { searchCustomersByPhone } from "@/actions/parties";
+import { createMinimalCustomer } from "@/actions/sales/customers";
 import { useOutletStore } from "@/store/use-outlet-store";
 import {
   Loader2,
@@ -67,7 +68,9 @@ export function POSInvoiceHeader({
   const [lookupState, setLookupState] = React.useState<
     "idle" | "loading" | "found" | "not-found"
   >("idle");
-  const [foundCustomer, setFoundCustomer] = React.useState<any>(null);
+  const [foundCustomers, setFoundCustomers] = React.useState<any[]>([]);
+  const [showCustomerPicker, setShowCustomerPicker] = React.useState(false);
+  const [showCreateCustomer, setShowCreateCustomer] = React.useState(false);
   const [attachmentDialogOpen, setAttachmentDialogOpen] = React.useState(false);
   const [attachmentUploading, setAttachmentUploading] = React.useState(false);
 
@@ -91,33 +94,75 @@ export function POSInvoiceHeader({
     if (digits.length === 10 && currentOutletId) {
       setLookupState("loading");
       try {
-        const res = await lookupCustomerByPhone(currentOutletId, digits);
-        if (res.success && res.data) {
-          setLookupState("found");
-          setFoundCustomer(res.data);
-          setBillingName(res.data.name);
-          form.setValue("partyId", res.data.id);
-          form.setValue("buyerPhone", digits);
-          form.setValue("buyerName", res.data.name);
-          if (onCustomerLoad) onCustomerLoad(res.data);
+        const res = await searchCustomersByPhone(currentOutletId, digits);
+        if (res.success && res.data && res.data.length > 0) {
+          setFoundCustomers(res.data);
+          if (res.data.length === 1) {
+            const customer = res.data[0];
+            setLookupState("found");
+            setBillingName(customer.name);
+            form.setValue("partyId", customer.id);
+            form.setValue("buyerPhone", digits);
+            form.setValue("buyerName", customer.name);
+            if (onCustomerLoad) onCustomerLoad(customer);
+          } else {
+            setLookupState("found");
+            setShowCustomerPicker(true);
+          }
         } else {
           setLookupState("not-found");
-          setFoundCustomer(null);
+          setFoundCustomers([]);
           form.setValue("partyId", "");
           form.setValue("buyerPhone", digits);
+          setShowCreateCustomer(true);
         }
       } catch {
         setLookupState("not-found");
-        setFoundCustomer(null);
+        setFoundCustomers([]);
       }
     } else {
       setLookupState("idle");
-      setFoundCustomer(null);
+      setFoundCustomers([]);
       if (digits.length === 0) {
         form.setValue("partyId", "");
         setBillingName("");
       }
     }
+  };
+
+  const handleCreateCustomer = async () => {
+    if (!billingName || !phone || !currentOutletId) return;
+    setLookupState("loading");
+    try {
+      const res = await createMinimalCustomer(currentOutletId, {
+        name: billingName,
+        phone: phone,
+      });
+      if (res.success && res.data) {
+        const customer = res.data;
+        setLookupState("found");
+        setFoundCustomers([customer]);
+        form.setValue("partyId", customer.id);
+        form.setValue("buyerPhone", phone);
+        form.setValue("buyerName", customer.name);
+        if (onCustomerLoad) onCustomerLoad(customer);
+        setShowCreateCustomer(false);
+        toast.success("Customer created");
+      }
+    } catch {
+      toast.error("Failed to create customer");
+      setLookupState("not-found");
+    }
+  };
+
+  const selectCustomer = (customer: any) => {
+    setLookupState("found");
+    setBillingName(customer.name);
+    form.setValue("partyId", customer.id);
+    form.setValue("buyerPhone", customer.phone);
+    form.setValue("buyerName", customer.name);
+    if (onCustomerLoad) onCustomerLoad(customer);
+    setShowCustomerPicker(false);
   };
 
   const handleBillingNameChange = (name: string) => {
@@ -229,6 +274,32 @@ export function POSInvoiceHeader({
               </TooltipTrigger>
               <TooltipContent>{t("tooltips.no2Cash")}</TooltipContent>
             </Tooltip>
+            {/* OLD Bill Type */}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    disabled={hasItems || isPosted}
+                    onClick={() => {
+                      form.setValue("billType", "OLD");
+                      form.setValue("partyId", "");
+                      form.setValue("isInformal", true);
+                    }}
+                    className={cn(
+                      "px-4 h-9 text-sm font-bold transition-colors border-l border-slate-200",
+                      billType === "OLD"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-white text-slate-600 hover:bg-slate-50",
+                      (hasItems || isPosted) && "opacity-60 cursor-not-allowed",
+                    )}
+                  />
+                }
+              >
+                OLD
+              </TooltipTrigger>
+              <TooltipContent>Historical Record (No Stock/Ledger)</TooltipContent>
+            </Tooltip>
           </div>
 
           {isPosted && (
@@ -295,10 +366,12 @@ export function POSInvoiceHeader({
               "text-xs font-bold px-3 py-1.5 rounded shrink-0",
               isNO1
                 ? "bg-slate-100 text-slate-600"
-                : "bg-amber-50 text-amber-700",
+                : billType === "OLD"
+                  ? "bg-indigo-50 text-indigo-700"
+                  : "bg-amber-50 text-amber-700",
             )}
           >
-            {isNO1 ? t("header.legalInvoice") : t("header.cashMemo")}
+            {isNO1 ? t("header.legalInvoice") : billType === "OLD" ? "Historical Record" : t("header.cashMemo")}
           </span>
         </div>
 
@@ -357,15 +430,34 @@ export function POSInvoiceHeader({
             />
           </div>
 
-          {/* Invoice Number */}
+          {/* Invoice/Bill Number */}
           <div className="flex items-center gap-2" title="Invoice Number">
-            <Input
-              value={invoiceNumber}
-              onChange={(e) => onInvoiceNumberChange(e.target.value)}
-              disabled={isPosted}
-              placeholder="INV/2025-26/0001"
-              className="h-9 w-44 text-sm font-mono focus:ring-2 focus:ring-blue-500"
-            />
+            {billType === "OLD" ? (
+              <div className="flex items-center gap-1 group relative">
+                <span className="text-xs font-bold text-slate-400 absolute left-2 pointer-events-none group-focus-within:hidden">
+                  OLD/
+                </span>
+                <Input
+                  value={form.watch("customBillNo") || ""}
+                  onChange={(e) => {
+                    const val = e.target.value.toUpperCase();
+                    form.setValue("customBillNo", val);
+                    onInvoiceNumberChange(`OLD/${val}`);
+                  }}
+                  disabled={isPosted}
+                  placeholder="BOOK-REF"
+                  className="h-9 w-44 text-sm font-bold pl-12 uppercase focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            ) : (
+              <Input
+                value={invoiceNumber}
+                onChange={(e) => onInvoiceNumberChange(e.target.value)}
+                disabled={isPosted}
+                placeholder="INV/2025-26/0001"
+                className="h-9 w-44 text-sm font-mono focus:ring-2 focus:ring-blue-500"
+              />
+            )}
             <Button
               type="button"
               variant="outline"
@@ -390,36 +482,112 @@ export function POSInvoiceHeader({
           </div>
 
           {/* Customer info badges */}
-          {foundCustomer && (
+          {foundCustomers.length === 1 && (
             <div className="flex items-center gap-2 shrink-0">
-              {foundCustomer.gstin && (
+              {foundCustomers[0].gstin && (
                 <span className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded font-mono">
-                  {foundCustomer.gstin}
+                  {foundCustomers[0].gstin}
                 </span>
               )}
-              {foundCustomer.creditLimit != null && (
+              {foundCustomers[0].creditLimit != null && (
                 <span
                   className={cn(
                     "px-2 py-1 text-xs rounded",
-                    foundCustomer.outstandingBalance > foundCustomer.creditLimit
+                    foundCustomers[0].outstandingBalance > foundCustomers[0].creditLimit
                       ? "bg-red-50 text-red-700"
                       : "bg-slate-100 text-slate-600",
                   )}
                 >
-                  ₹{foundCustomer.outstandingBalance?.toLocaleString()} / ₹
-                  {foundCustomer.creditLimit?.toLocaleString()}
+                  ₹{foundCustomers[0].outstandingBalance?.toLocaleString()} / ₹
+                  {foundCustomers[0].creditLimit?.toLocaleString()}
                 </span>
               )}
             </div>
           )}
 
           {lookupState === "not-found" && phone.length === 10 && (
-            <span className="text-xs text-amber-600 font-medium">
-              {t("header.newCustomerHint")}
-            </span>
+            <Button
+              type="button"
+              variant="link"
+              className="h-auto p-0 text-xs text-amber-600 font-bold hover:text-amber-700"
+              onClick={() => setShowCreateCustomer(true)}
+            >
+              + Create New Customer
+            </Button>
           )}
         </div>
       </div>
+
+      {/* Multiple Customer Picker Dialog */}
+      <Dialog open={showCustomerPicker} onOpenChange={setShowCustomerPicker}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Multiple Customers Found</DialogTitle>
+            <DialogDescription>
+              Select the correct customer for phone number {phone}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2 max-h-[300px] overflow-y-auto pr-2">
+            {foundCustomers.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => selectCustomer(c)}
+                className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-left"
+              >
+                <div>
+                  <div className="font-bold text-slate-900">{c.name}</div>
+                  <div className="text-xs text-slate-500">{c.phone}</div>
+                </div>
+                {c.state && (
+                  <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded uppercase font-bold text-slate-600">
+                    {c.state}
+                  </span>
+                )}
+              </button>
+            ))}
+            <Button
+              variant="outline"
+              className="mt-2 border-dashed"
+              onClick={() => {
+                setShowCustomerPicker(false);
+                setShowCreateCustomer(true);
+              }}
+            >
+              + Add Another with same Phone
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Minimal Customer Dialog */}
+      <Dialog open={showCreateCustomer} onOpenChange={setShowCreateCustomer}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Customer</DialogTitle>
+            <DialogDescription>
+              Quickly add customer details for {phone}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700">Full Name</label>
+              <Input
+                value={billingName}
+                onChange={(e) => setBillingName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <Button 
+              className="w-full bg-slate-900" 
+              onClick={handleCreateCustomer}
+              disabled={!billingName || lookupState === "loading"}
+            >
+              {lookupState === "loading" && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Save & Select
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Attachment Upload Dialog */}
       <Dialog

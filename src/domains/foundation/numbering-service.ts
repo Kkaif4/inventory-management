@@ -11,7 +11,8 @@ export type DocumentType =
   | "STOCK_RETURN"
   | "QUOTATION"
   | "RECEIPT"
-  | "EXPENSE";
+  | "EXPENSE"
+  | "OLD_BILL";
 
 export const NumberingService = {
   async peekNextNumber(
@@ -118,6 +119,7 @@ export const NumberingService = {
       QUOTATION: "QTN",
       RECEIPT: "RCP",
       EXPENSE: "EXP",
+      OLD_BILL: "OLD",
     };
     return prefixes[type];
   },

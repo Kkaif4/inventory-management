@@ -14,6 +14,8 @@ import { POSInvoiceHeader } from "@/components/sales/pos-invoice-header";
 import { POSInvoiceTable } from "@/components/sales/pos-invoice-table";
 import { POSInvoiceFooter } from "@/components/sales/pos-invoice-footer";
 import { peekNextInvoiceNumber } from "@/actions/sales/invoice-form-handler";
+import { handleCreateOldBill } from "@/actions/sales/old-bill-form-handler";
+import { Button } from "@/components/ui/button";
 
 interface POSInvoiceFormProps {
   mode: "create" | "edit";
@@ -84,6 +86,11 @@ export function POSInvoiceForm({
     name: "items",
   });
 
+  const paymentFieldArray = useFieldArray({
+    control: form.control,
+    name: "payments",
+  });
+
   const billType = form.watch("billType");
   const fromOutletId = form.watch("fromOutletId");
   const items = form.watch("items");
@@ -96,13 +103,16 @@ export function POSInvoiceForm({
     if (!fromOutletId) return;
 
     const loadNextNumber = async () => {
+      // OLD bills skip numbering lookup if custom is used, but we can peek for visual
       const res = await peekNextInvoiceNumber(
         fromOutletId,
-        billType as "NO1" | "NO2",
+        billType === "OLD" ? "OLD_BILL" as any : billType as "NO1" | "NO2",
       );
       if (res.success && res.data) {
         setInvoiceNumber(res.data);
-        form.setValue("txnNumber", res.data);
+        if (billType !== "OLD") {
+          form.setValue("txnNumber", res.data);
+        }
       }
     };
 
@@ -197,20 +207,43 @@ export function POSInvoiceForm({
   ).length;
 
   const canSubmit =
-    filledItemsCount > 0 &&
-    !!fromOutletId &&
-    (billType === "NO2" || !!(form.watch("partyId") as string));
+    billType === "OLD" 
+      ? ((items?.length ?? 0) > 0 || (form.getValues("grandTotal") ?? 0) > 0) && !!fromOutletId && !!form.watch("buyerName")
+      : filledItemsCount > 0 &&
+        !!fromOutletId &&
+        (billType === "NO2" || !!(form.watch("partyId") as string));
 
   // ─── Submission ───────────────────────────────────────────────────────────
   const handleFormSubmit = async (data: FormValues) => {
     try {
       setIsSubmitting(true);
+      
+      if (data.billType === "OLD") {
+        // Mapping for OLD bill schema
+        const oldBillData = {
+          ...data,
+          items: (data.items || []).map((item: any) => ({
+            itemDescription: item.itemDescription || item.description || item.productName || "Item",
+            quantity: item.quantity || 1,
+            rate: item.rate || 0,
+          })),
+        };
+        const res = await handleCreateOldBill(oldBillData as any);
+        if (res.success) {
+          toast.success("Historical record saved");
+          router.push("/dashboard/sales/invoices");
+        } else {
+          toast.error(res.error?.message || "Failed to save historical record");
+        }
+        return;
+      }
+
       if (!onSubmitProp) {
         toast.error(t("toasts.noHandler"));
         return;
       }
 
-      // Filter out empty rows
+      // Filter out empty rows for standard invoices
       const cleanedData = {
         ...data,
         items: (data.items || []).filter((item: any) => item.variantId),
@@ -319,7 +352,9 @@ export function POSInvoiceForm({
     mode === "create"
       ? billType === "NO1"
         ? t("footer.postInvoice")
-        : t("footer.postCashBill")
+        : billType === "OLD"
+          ? "Save Historical Record"
+          : t("footer.postCashBill")
       : t("footer.update");
 
   return (
@@ -381,6 +416,7 @@ export function POSInvoiceForm({
             isGlobalDiscount={isGlobalDiscount}
             onToggleDiscountMode={toggleDiscountMode}
             notesRef={notesRef}
+            paymentFieldArray={paymentFieldArray}
           />
         </div>
       </form>

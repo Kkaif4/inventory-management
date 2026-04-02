@@ -49,10 +49,42 @@ export const createNo2InvoiceSchema = z.object({
   remarks: z.string().optional(),
 });
 
+const oldBillPaymentSchema = z.object({
+  amount: z.number().min(0.01),
+  paymentDate: z.coerce.date(),
+  note: z.string().optional(),
+});
+
+export const createOldBillSchema = z.object({
+  billType: z.literal("OLD"),
+  fromOutletId: z.string().min(1),
+  customBillNo: z.string().optional(),       // Optional — auto-generated if blank
+  date: z.coerce.date(),                     // Historical bill date
+  buyerName: z.string().min(1, "Customer name is required"),
+  buyerPhone: z.string().optional(),         // Reference only, NOT a unique key
+  partyId: z.string().optional(),            // Set after user picks/creates customer
+  grandTotal: z.number().min(0.01, "Total must be > 0"),
+  items: z.array(z.object({
+    itemDescription: z.string().min(1),
+    quantity: z.number().min(0.01),
+    rate: z.number().min(0),
+  })).optional(),
+  payments: z.array(oldBillPaymentSchema).default([]),
+  remarks: z.string().optional(),
+}).superRefine((data, ctx) => {
+  const totalPaid = data.payments.reduce((s, p) => s + p.amount, 0);
+  if (totalPaid > data.grandTotal + 0.005) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Payments exceed total", path: ["payments"] });
+  }
+});
+
+export type OldBillFormValues = z.infer<typeof createOldBillSchema>;
+
 // Combined schema
 export const invoiceSchema = z.discriminatedUnion("billType", [
   createNo1InvoiceSchema,
   createNo2InvoiceSchema,
+  createOldBillSchema,
 ]);
 
 export type InvoiceFormValues = z.infer<typeof invoiceSchema>;

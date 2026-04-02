@@ -3,7 +3,8 @@
 import * as React from "react";
 import { UseFormReturn, UseFieldArrayReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { X, Search, Package } from "lucide-react";
+import { X, Search, Package, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { getProducts } from "@/actions/products";
@@ -140,10 +141,27 @@ export function POSInvoiceTable({
         const item = flatVariants[highlightedIndex];
         selectProduct(item.product, item.variant);
       }
-    } else if (e.key === "Escape") {
-      setSearch("");
-      setIsSearchOpen(false);
     }
+  };
+
+  const addManualItem = () => {
+    if (!search || billType !== "OLD") return;
+    append({
+      variantId: null,
+      productName: search,
+      itemDescription: search,
+      description: search,
+      quantity: 1,
+      unit: "BASE",
+      rate: 0,
+      discountPercent: 0,
+      gstRate: 0,
+      hsnCode: "",
+      taxableValue: 0,
+      lineTotal: 0,
+    });
+    setSearch("");
+    setIsSearchOpen(false);
   };
 
   const handleQtyKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -273,37 +291,58 @@ export function POSInvoiceTable({
                     >
                       <div className="max-h-[260px] overflow-y-auto">
                         {flatVariants.length === 0 && !isLoading ? (
-                          <div className="py-5 text-center text-sm text-slate-400">
-                            No products found
+                          <div className="py-5 text-center">
+                            <p className="text-sm text-slate-400 mb-3 ml-2">No products found</p>
+                            {billType === "OLD" && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="w-[90%] mx-auto h-9 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 font-bold"
+                                onClick={addManualItem}
+                              >
+                                + Add "{search}" as manual entry
+                              </Button>
+                            )}
                           </div>
                         ) : (
-                          flatVariants.map((item, idx) => (
-                            <button
-                              key={item.variant.id}
-                              type="button"
-                              className={cn(
-                                "w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors",
-                                idx === highlightedIndex
-                                  ? "bg-blue-50 text-blue-900"
-                                  : "text-slate-700 hover:bg-slate-50",
-                              )}
-                              onMouseEnter={() => setHighlightedIndex(idx)}
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                selectProduct(item.product, item.variant);
-                              }}
-                            >
-                              <span className="font-mono text-xs text-slate-400 w-24 shrink-0 truncate">
-                                {item.variant.sku}
-                              </span>
-                              <span className="font-medium truncate flex-1">
-                                {item.product.name}
-                              </span>
-                              <span className="text-sm text-slate-500 font-mono shrink-0">
-                                ₹{item.variant.sellingPrice}
-                              </span>
-                            </button>
-                          ))
+                          <>
+                            {flatVariants.map((item, idx) => (
+                              <button
+                                key={item.variant.id}
+                                type="button"
+                                className={cn(
+                                  "w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors",
+                                  idx === highlightedIndex
+                                    ? "bg-blue-50 text-blue-900"
+                                    : "text-slate-700 hover:bg-slate-50",
+                                )}
+                                onMouseEnter={() => setHighlightedIndex(idx)}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  selectProduct(item.product, item.variant);
+                                }}
+                              >
+                                <span className="font-mono text-xs text-slate-400 w-24 shrink-0 truncate">
+                                  {item.variant.sku}
+                                </span>
+                                <span className="font-medium truncate flex-1">
+                                  {item.product.name}
+                                </span>
+                                <span className="text-sm text-slate-500 font-mono shrink-0">
+                                  ₹{item.variant.sellingPrice}
+                                </span>
+                              </button>
+                            ))}
+                            {billType === "OLD" && (
+                              <button
+                                type="button"
+                                className="w-full text-center py-2 text-xs font-bold text-blue-600 bg-slate-50 hover:bg-blue-50 border-t"
+                                onClick={addManualItem}
+                              >
+                                + Add "{search}" as manual entry
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                       <div className="border-t px-4 py-1.5 text-xs text-slate-400">
@@ -385,11 +424,23 @@ export function POSInvoiceTable({
                     </td>
                     <td className="px-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-slate-800 truncate">
-                          {form.watch(`items.${index}.description`) ||
-                            form.watch(`items.${index}.productName`) ||
-                            "—"}
-                        </span>
+                        {billType === "OLD" ? (
+                          <Input
+                            value={form.watch(`items.${index}.itemDescription`) || form.watch(`items.${index}.description`) || ""}
+                            onChange={(e) => {
+                              form.setValue(`items.${index}.itemDescription`, e.target.value);
+                              form.setValue(`items.${index}.description`, e.target.value);
+                            }}
+                            disabled={isPosted}
+                            className="h-8 text-sm font-medium border-slate-200 focus:ring-2 focus:ring-blue-500"
+                          />
+                        ) : (
+                          <span className="text-sm font-medium text-slate-800 truncate">
+                            {form.watch(`items.${index}.description`) ||
+                              form.watch(`items.${index}.productName`) ||
+                              "—"}
+                          </span>
+                        )}
                         {isNO1 && form.watch(`items.${index}.hsnCode`) && (
                           <span className="text-xs font-mono text-slate-400 shrink-0">
                             {form.watch(`items.${index}.hsnCode`)}
