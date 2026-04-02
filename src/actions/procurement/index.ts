@@ -10,10 +10,7 @@ import { normalizeToStockQty } from "@/lib/unit-conversion";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ForbiddenError, NotFoundError } from "@/lib/exceptions";
-import {
-  parsePaginationParams,
-  calculatePagination,
-} from "@/lib/pagination";
+import { parsePaginationParams, calculatePagination } from "@/lib/pagination";
 import { PaginatedResult, BasePaginationParams } from "@/types/pagination";
 
 import { PurchaseItemPayload } from "./types";
@@ -549,6 +546,7 @@ export async function acceptPurchaseOrder(
 
       // 2. Update Stock for each item (Convert to Base Unit)
       for (const item of po.items) {
+        if (!item.variantId) continue;
         const baseQuantity = normalizeToStockQty({
           quantity: item.quantity,
           isPurchase: true,

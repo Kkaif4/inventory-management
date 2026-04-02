@@ -92,7 +92,7 @@ export function InvoiceForm({
 
   const billType = form.watch("billType");
   const fromOutletId = form.watch("fromOutletId");
-  const items = form.watch("items");
+  const items = form.watch("items") || [];
   const headerDiscount = form.watch("headerDiscount");
   const freightCost = form.watch("freightCost");
 
@@ -106,7 +106,7 @@ export function InvoiceForm({
       sum +
       ((item?.quantity || 0) *
         (item?.rate || 0) *
-        (item?.discountPercent || 0)) /
+        ((item as any)?.discountPercent || 0)) /
         100,
     0,
   );
@@ -116,7 +116,10 @@ export function InvoiceForm({
   const subtotal = subtotalBeforeHeaderDiscount - headerDiscountAmount;
   const totalTax = items.reduce((sum, item) => {
     const tax =
-      ((item?.quantity || 0) * (item?.rate || 0) * (item?.gstRate || 0)) / 100;
+      ((item?.quantity || 0) *
+        (item?.rate || 0) *
+        ((item as any)?.gstRate || 0)) /
+      100;
     return sum + tax;
   }, 0);
   const grandTotal = subtotal + totalTax + freightCost;

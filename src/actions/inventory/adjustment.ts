@@ -134,6 +134,8 @@ export async function approveAdjustment(
 
       // Apply the adjustment
       for (const item of transaction.items) {
+        if (!item.variantId) continue;
+
         await StockService.moveStock(tx, {
           outletId,
           warehouseId: transaction.fromLocationId!,

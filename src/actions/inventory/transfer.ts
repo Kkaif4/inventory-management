@@ -134,6 +134,8 @@ export async function createTransfer(
       });
 
       for (const item of data.items) {
+        if (!item.variantId) continue;
+
         await tx.transactionItem.create({
           data: {
             transactionId: transaction.id,
@@ -181,6 +183,8 @@ export async function receiveTransfer(
       }
 
       for (const item of transaction.items) {
+        if (!item.variantId) continue;
+
         // Move stock INTO target warehouse
         await StockService.moveStock(tx, {
           outletId,
