@@ -48,13 +48,14 @@ export async function getCustomers(outletId: string) {
         transactions: {
           where: {
             type: "SALES_INVOICE",
-            status: { in: ["POSTED", "PARTIALLY_PAID"] },
+            status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
           },
           select: {
             id: true,
             grandTotal: true,
             date: true,
             payments: { select: { amount: true } },
+            oldBillPayments: { select: { amount: true } },
           },
         },
       },
@@ -69,7 +70,9 @@ export async function getCustomers(outletId: string) {
 
       // Calculate overdue and outstanding from unpaid invoices
       party.transactions.forEach((inv) => {
-        const totalPaid = inv.payments.reduce((a, b) => a + b.amount, 0);
+        const regularPayments = inv.payments.reduce((a, b) => a + b.amount, 0);
+        const oldBillPaymentsTotal = inv.oldBillPayments.reduce((a, b) => a + b.amount, 0);
+        const totalPaid = regularPayments + oldBillPaymentsTotal;
         const outstanding = inv.grandTotal - totalPaid;
 
         if (outstanding > 0.005) {
@@ -161,13 +164,14 @@ export async function getCustomersPaginated(
           transactions: {
             where: {
               type: "SALES_INVOICE",
-              status: { in: ["POSTED", "PARTIALLY_PAID"] },
+              status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
             },
             select: {
               id: true,
               grandTotal: true,
               date: true,
               payments: { select: { amount: true } },
+              oldBillPayments: { select: { amount: true } },
             },
           },
         },
@@ -186,7 +190,9 @@ export async function getCustomersPaginated(
 
       // Calculate overdue and outstanding from unpaid invoices
       party.transactions.forEach((inv) => {
-        const totalPaid = inv.payments.reduce((a, b) => a + b.amount, 0);
+        const regularPayments = inv.payments.reduce((a, b) => a + b.amount, 0);
+        const oldBillPaymentsTotal = inv.oldBillPayments.reduce((a, b) => a + b.amount, 0);
+        const totalPaid = regularPayments + oldBillPaymentsTotal;
         const outstanding = inv.grandTotal - totalPaid;
 
         if (outstanding > 0.005) {
@@ -241,6 +247,7 @@ export async function getCustomerDetails(id: string) {
           where: { type: "SALES_INVOICE" },
           include: {
             payments: { select: { amount: true } },
+            oldBillPayments: { select: { id: true, amount: true, paymentDate: true } },
           },
           orderBy: { date: "desc" },
         },
@@ -248,7 +255,7 @@ export async function getCustomerDetails(id: string) {
           where: { invoiceId: { not: "" } }, // Valid invoice payments
           orderBy: { paymentDate: "desc" },
           include: {
-            glAccount: { select: { name: true } },
+            account: { select: { name: true, type: true } },
             invoice: { select: { txnNumber: true } },
           },
         },
@@ -277,7 +284,10 @@ export async function getCustomerDetails(id: string) {
     for (const inv of party.transactions) {
       if (inv.status === "CANCELLED" || inv.status === "DRAFT") continue;
 
-      const totalPaid = inv.payments.reduce((a, b) => a + b.amount, 0);
+      // For old bills, use oldBillPayments; for regular invoices, use payments
+      const regularPayments = inv.payments.reduce((a, b) => a + b.amount, 0);
+      const oldBillPaymentsTotal = inv.oldBillPayments.reduce((a, b) => a + b.amount, 0);
+      const totalPaid = roundToTwo(regularPayments + oldBillPaymentsTotal);
       const outstanding = roundToTwo(inv.grandTotal - totalPaid);
 
       // Accumulate calculated outstanding (sum of all unpaid invoices)
@@ -319,11 +329,45 @@ export async function getCustomerDetails(id: string) {
       if (outstanding > 0.005) openInvoices.push(invoiceData);
     }
 
+    // Combine regular payments with old bill payments for complete payment history
+    const paymentHistory: any[] = [];
+
+    // Add regular payments
     for (const pymt of party.payments) {
+      paymentHistory.push({
+        id: pymt.id,
+        paymentDate: pymt.paymentDate,
+        amount: pymt.amount,
+        referenceNo: pymt.referenceNo,
+        account: pymt.account,
+        invoice: pymt.invoice,
+        invoiceId: pymt.invoiceId,
+      });
       if (pymt.paymentDate >= fyStart) {
         totalReceivedFy += pymt.amount;
       }
     }
+
+    // Add old bill payments from transactions
+    for (const inv of party.transactions) {
+      for (const obp of inv.oldBillPayments || []) {
+        paymentHistory.push({
+          id: obp.id,
+          paymentDate: obp.paymentDate,
+          amount: obp.amount,
+          referenceNo: null,
+          account: null,
+          invoice: { txnNumber: inv.txnNumber },
+          invoiceId: inv.id,
+        });
+        if (obp.paymentDate >= fyStart) {
+          totalReceivedFy += obp.amount;
+        }
+      }
+    }
+
+    // Sort by date descending
+    paymentHistory.sort((a, b) => b.paymentDate.getTime() - a.paymentDate.getTime());
 
     return {
       party: {
@@ -351,7 +395,7 @@ export async function getCustomerDetails(id: string) {
       },
       openInvoices,
       allInvoices,
-      paymentHistory: party.payments,
+      paymentHistory,
     };
   });
 }
@@ -431,7 +475,7 @@ export async function createCustomer(
 
       // Implement opening balance ledger entry
       if (validated.openingBalance > 0) {
-        const debtorAcc = await tx.gLAccount.findFirst({
+        const debtorAcc = await tx.account.findFirst({
           where: { code: "1003", outletId },
         });
         if (debtorAcc) {
@@ -513,7 +557,7 @@ export async function updateCustomer(id: string, data: CustomerFormValues) {
 
       if (diff !== 0) {
         // Adjust opening balance ledger entry
-        const debtorAcc = await tx.gLAccount.findFirst({
+        const debtorAcc = await tx.account.findFirst({
           where: { code: "1003", outletId: currentParty.outletId },
         });
         if (debtorAcc) {

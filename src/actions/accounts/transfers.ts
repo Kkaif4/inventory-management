@@ -11,6 +11,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { validateTransfer } from "@/lib/account-validation";
 import { roundToTwo } from "@/lib/utils";
+import { AccountingService } from "@/domains/accounting/ledger-service";
 
 /**
  * Transfer funds between two accounts
@@ -144,12 +145,33 @@ export async function transferBetweenAccounts(data: {
         data: { currentBalance: toNewBalance },
       });
 
+      // Create GL Entries for Transfer (Double-Entry)
+      // Dr Destination account (receiving funds)
+      // Cr Source account (sending funds)
+      await AccountingService.postJournalEntry(tx, {
+        transactionId: txf.id,
+        date: data.date,
+        entries: [
+          {
+            accountId: data.toAccountId,
+            debit: roundedAmount,
+            reference: data.remarks || `Transfer from ${fromAccount.name}`,
+          },
+          {
+            accountId: data.fromAccountId,
+            credit: roundedAmount,
+            reference: data.remarks || `Transfer to ${toAccount.name}`,
+          },
+        ],
+      });
+
       return txf;
     });
 
     revalidatePath("/dashboard/financials/accounts");
     revalidatePath(`/dashboard/financials/accounts/${data.fromAccountId}`);
     revalidatePath(`/dashboard/financials/accounts/${data.toAccountId}`);
+    revalidatePath("/dashboard/financials/ledger");
 
     return transfer;
   });

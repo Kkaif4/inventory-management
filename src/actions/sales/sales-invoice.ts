@@ -5,7 +5,6 @@ import {
   StockService,
   FIFOAllocationResult,
 } from "@/domains/inventory/stock-service";
-import { AccountingService } from "@/domains/accounting/ledger-service";
 import { roundToTwo } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import { withErrorHandler } from "@/lib/error-handler";
@@ -62,23 +61,6 @@ export async function createSalesInvoice(data: {
       );
     }
 
-    // 2. Prep Accounting Accounts (Only for NO1)
-    let accounts: any[] = [];
-    if (!isNo2) {
-      const accountCodes = ["3001", "1003", "2002", "2003", "2004"];
-      accounts = await prisma.gLAccount.findMany({
-        where: { code: { in: accountCodes }, outletId: data.fromOutletId },
-      });
-      if (
-        !accounts.find((a) => a.code === "3001") ||
-        !accounts.find((a) => a.code === "1003")
-      ) {
-        throw new Error(
-          "Core accounting labels (Sales/Debtors) missing for this outlet.",
-        );
-      }
-    }
-
     const allowNegative =
       outlet.negativeStockPolicy === "WARN" ||
       outlet.negativeStockPolicy === "ALLOW";
@@ -103,23 +85,6 @@ export async function createSalesInvoice(data: {
     const warehouseId =
       outlet.warehouses.find((w) => w.isDefault)?.id ||
       outlet.warehouses[0]?.id;
-
-    // 3. Credit Limit Check (Strictly NO1)
-    if (!isNo2 && data.partyId) {
-      const party = await prisma.party.findUnique({
-        where: { id: data.partyId },
-      });
-      if (party?.creditLimit && party.creditLimit > 0) {
-        const currentBalance = await AccountingService.getPartyBalance(
-          data.partyId,
-        );
-        if (currentBalance + grandTotal > party.creditLimit) {
-          throw new ValidationError(
-            `Credit limit exceeded. Limit: ₹${party.creditLimit}, New Balance: ₹${currentBalance + grandTotal}`,
-          );
-        }
-      }
-    }
 
     return await prisma.$transaction(async (tx) => {
       // 1. Validate and use provided Transaction Number
@@ -205,7 +170,7 @@ export async function createSalesInvoice(data: {
         },
       });
 
-      // 3. Stock Update (Constant for both)
+      // 3. Stock Update
       await StockService.batchUpdateStock(tx, {
         transactionId: invoice.id,
         userId: data.userId,
@@ -222,57 +187,109 @@ export async function createSalesInvoice(data: {
         }),
       });
 
-      // 4. Accounting Entries (Conditional Block - NO1 ONLY)
-      if (!isNo2) {
-        const salesAcc = accounts.find((a) => a.code === "3001")!;
-        const debtorAcc = accounts.find((a) => a.code === "1003")!;
-        const outputCgstAcc = accounts.find((a) => a.code === "2002");
-        const outputSgstAcc = accounts.find((a) => a.code === "2003");
-        const outputIgstAcc = accounts.find((a) => a.code === "2004");
+      // 3b. Create Ledger Entries for Sales Invoice
+      // Get standard GL accounts for this outlet
+      const debtorAcc = await tx.account.findUnique({
+        where: { code_outletId: { code: "1003", outletId: data.fromOutletId } },
+      });
+      const salesAcc = await tx.account.findUnique({
+        where: { code_outletId: { code: "3001", outletId: data.fromOutletId } },
+      });
+      const cgstAcc = await tx.account.findUnique({
+        where: { code_outletId: { code: "2002", outletId: data.fromOutletId } },
+      });
+      const sgstAcc = await tx.account.findUnique({
+        where: { code_outletId: { code: "2003", outletId: data.fromOutletId } },
+      });
+      const igstAcc = await tx.account.findUnique({
+        where: { code_outletId: { code: "2004", outletId: data.fromOutletId } },
+      });
 
-        const entries = [
-          { accountId: salesAcc.id, credit: totalTaxable },
-          { accountId: debtorAcc.id, debit: grandTotal },
-        ];
+      const ledgerEntries: {
+        accountId: string;
+        partyId: string | null;
+        transactionId: string;
+        date: Date;
+        debit: number;
+        credit: number;
+        reference: string;
+      }[] = [];
 
-        if (totalCgst > 0 && outputCgstAcc)
-          entries.push({ accountId: outputCgstAcc.id, credit: totalCgst });
-        if (totalSgst > 0 && outputSgstAcc)
-          entries.push({ accountId: outputSgstAcc.id, credit: totalSgst });
-        if (totalIgst > 0 && outputIgstAcc)
-          entries.push({ accountId: outputIgstAcc.id, credit: totalIgst });
-
-        if (freightCost > 0) {
-          const salesEntry = entries.find((e) => e.accountId === salesAcc.id);
-          if (salesEntry)
-            salesEntry.credit = roundToTwo(
-              (salesEntry.credit || 0) + freightCost,
-            );
-        }
-
-        await AccountingService.postJournalEntry(tx, {
+      // Dr. Sundry Debtors (Customer) - total amount payable by customer
+      if (debtorAcc) {
+        ledgerEntries.push({
+          accountId: debtorAcc.id,
+          partyId: data.partyId || null,
           transactionId: invoice.id,
-          partyId: data.partyId!,
-          entries,
+          date: data.date,
+          debit: grandTotal,
+          credit: 0,
+          reference: `Invoice ${txnNumber}`,
         });
+      }
 
-        // 5. Update Customer Outstanding Balance (increment denormalized cache)
-        // Outstanding represents unpaid amount from sales invoices
-        await tx.party.update({
-          where: { id: data.partyId },
-          data: {
-            outstandingBalance: {
-              increment: grandTotal,
-            },
-          },
+      // Cr. Sales Account - taxable amount
+      if (salesAcc) {
+        ledgerEntries.push({
+          accountId: salesAcc.id,
+          partyId: null,
+          transactionId: invoice.id,
+          date: data.date,
+          debit: 0,
+          credit: totalTaxable,
+          reference: `Invoice ${txnNumber}`,
         });
+      }
+
+      // Cr. Output CGST
+      if (cgstAcc && totalCgst > 0) {
+        ledgerEntries.push({
+          accountId: cgstAcc.id,
+          partyId: null,
+          transactionId: invoice.id,
+          date: data.date,
+          debit: 0,
+          credit: totalCgst,
+          reference: `CGST on Invoice ${txnNumber}`,
+        });
+      }
+
+      // Cr. Output SGST
+      if (sgstAcc && totalSgst > 0) {
+        ledgerEntries.push({
+          accountId: sgstAcc.id,
+          partyId: null,
+          transactionId: invoice.id,
+          date: data.date,
+          debit: 0,
+          credit: totalSgst,
+          reference: `SGST on Invoice ${txnNumber}`,
+        });
+      }
+
+      // Cr. Output IGST
+      if (igstAcc && totalIgst > 0) {
+        ledgerEntries.push({
+          accountId: igstAcc.id,
+          partyId: null,
+          transactionId: invoice.id,
+          date: data.date,
+          debit: 0,
+          credit: totalIgst,
+          reference: `IGST on Invoice ${txnNumber}`,
+        });
+      }
+
+      if (ledgerEntries.length > 0) {
+        await tx.ledgerEntry.createMany({ data: ledgerEntries });
       }
 
       revalidatePath("/dashboard/sales/invoices");
       revalidatePath("/dashboard/sales/transactions");
       revalidatePath("/dashboard/sales");
+      revalidatePath("/dashboard/financials/ledger");
 
-      // 6. Return invoice with FIFO breakdown if applicable
+      // 4. Return invoice with FIFO breakdown if applicable
       return {
         invoice,
         fifoBreakdown: fifoEnabled
@@ -430,8 +447,7 @@ export async function getSalesInvoice(invoiceId: string) {
           paymentMode: true,
           referenceNo: true,
           notes: true,
-          glAccount: { select: { name: true } },
-          operationalAccount: { select: { name: true, type: true } },
+          account: { select: { name: true, type: true } },
           creator: { select: { name: true } },
         },
         orderBy: { paymentDate: "asc" },
@@ -764,24 +780,6 @@ export async function appendItemsToInvoice(
     const deltaTax = roundToTwo(deltaCgst + deltaSgst + deltaIgst);
     const deltaGrandTotal = roundToTwo(deltaTaxable + deltaTax);
 
-    // 4. For NO1: Credit limit check on delta
-    if (invoice.billType === "NO1" && invoice.partyId) {
-      const party = await prisma.party.findUnique({
-        where: { id: invoice.partyId },
-      });
-      if (party?.creditLimit && party.creditLimit > 0) {
-        const currentBalance = await AccountingService.getPartyBalance(
-          invoice.partyId,
-        );
-        const totalOutstanding = currentBalance + deltaGrandTotal;
-        if (totalOutstanding > party.creditLimit) {
-          throw new ValidationError(
-            `Credit limit exceeded. Limit: ₹${party.creditLimit}, New Balance: ₹${totalOutstanding}`,
-          );
-        }
-      }
-    }
-
     const allowNegative =
       outlet.negativeStockPolicy === "WARN" ||
       outlet.negativeStockPolicy === "ALLOW";
@@ -862,55 +860,6 @@ export async function appendItemsToInvoice(
           allowNegative,
         })),
       });
-
-      // Accounting entries for NO1 only
-      if (invoice.billType === "NO1" && invoice.partyId) {
-        const accountCodes = ["3001", "1003", "2002", "2003", "2004"];
-        const accounts = await tx.gLAccount.findMany({
-          where: { code: { in: accountCodes }, outletId: invoice.outletId },
-        });
-
-        if (
-          !accounts.find((a) => a.code === "3001") ||
-          !accounts.find((a) => a.code === "1003")
-        ) {
-          throw new Error(
-            "Core accounting labels (Sales/Debtors) missing for this outlet.",
-          );
-        }
-
-        const salesAcc = accounts.find((a) => a.code === "3001")!;
-        const debtorAcc = accounts.find((a) => a.code === "1003")!;
-        const outputCgstAcc = accounts.find((a) => a.code === "2002");
-        const outputSgstAcc = accounts.find((a) => a.code === "2003");
-        const outputIgstAcc = accounts.find((a) => a.code === "2004");
-
-        const entries = [
-          { accountId: salesAcc.id, credit: deltaTaxable },
-          { accountId: debtorAcc.id, debit: deltaGrandTotal },
-        ];
-
-        if (deltaCgst > 0 && outputCgstAcc)
-          entries.push({ accountId: outputCgstAcc.id, credit: deltaCgst });
-        if (deltaSgst > 0 && outputSgstAcc)
-          entries.push({ accountId: outputSgstAcc.id, credit: deltaSgst });
-        if (deltaIgst > 0 && outputIgstAcc)
-          entries.push({ accountId: outputIgstAcc.id, credit: deltaIgst });
-
-        await AccountingService.postJournalEntry(tx, {
-          transactionId: invoiceId,
-          partyId: invoice.partyId,
-          entries,
-        });
-
-        // Increment party outstanding balance
-        await tx.party.update({
-          where: { id: invoice.partyId },
-          data: {
-            outstandingBalance: { increment: deltaGrandTotal },
-          },
-        });
-      }
 
       revalidatePath("/dashboard/sales/invoices");
       revalidatePath("/dashboard/sales/transactions");

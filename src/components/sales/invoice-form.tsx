@@ -122,7 +122,7 @@ export function InvoiceForm({
       100;
     return sum + tax;
   }, 0);
-  const grandTotal = subtotal + totalTax + freightCost;
+  const grandTotal = subtotal + totalTax + (freightCost || 0);
 
   const handleCancel = () => {
     if (isDirty) {
@@ -735,7 +735,7 @@ export function InvoiceForm({
               subtotal={subtotal}
               gstBreakup={[]}
               totalTax={totalTax}
-              freightCost={freightCost}
+              freightCost={freightCost || 0}
               roundOff={0}
               grandTotal={grandTotal}
               isPosted={isPosted}

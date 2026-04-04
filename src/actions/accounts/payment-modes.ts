@@ -24,6 +24,10 @@ export async function getPaymentModesForAccount(accountId: string) {
       throw new NotFoundError("Account not found");
     }
 
+    if (!account.type) {
+      return []; // Non-operational accounts have no payment modes
+    }
+
     return ALLOWED_PAYMENT_MODES[account.type];
   });
 }
@@ -67,6 +71,11 @@ export async function addPaymentModeToAccount(
 
     if (account.outletId !== outletId) {
       throw new ForbiddenError("Access denied to this account");
+    }
+
+    // Only operational (CASH/BANK) accounts can have payment modes
+    if (!account.type) {
+      throw new ValidationError("Non-operational accounts cannot have payment modes");
     }
 
     // Validate payment mode is allowed for account type
@@ -169,6 +178,10 @@ export async function validatePaymentModeForAccountAction(
 
     if (!account) {
       throw new NotFoundError("Account not found");
+    }
+
+    if (!account.type) {
+      throw new ValidationError("Non-operational accounts cannot have payment modes");
     }
 
     return validatePaymentModeForAccount(account.type, paymentMode);

@@ -8,6 +8,7 @@ import { roundToTwo } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import type { RecordPaymentFormValues } from "@/validations/payment.validation";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
+import type { AccountType } from "@/generated/prisma";
 
 // ─── Record a payment against a posted invoice ──────────────────────────────
 // Implements concurrency-safe validation: outstanding balance is computed
@@ -81,6 +82,11 @@ export async function recordInvoicePayment(
       );
 
       // ── 4. Create Payment Record ───────────────────────────────────────────
+      // Validate that accountId is provided (now required in Payment model)
+      if (!data.bankAccountId) {
+        throw new ValidationError("Payment account is required");
+      }
+
       const payment = await tx.payment.create({
         data: {
           txnNumber,
@@ -90,19 +96,69 @@ export async function recordInvoicePayment(
           amount: data.amount,
           paymentDate: new Date(data.paymentDate),
           paymentMode: data.paymentMode,
-          glAccountId: data.bankAccountId || null,
-          operationalAccountId: data.operationalAccountId || null,
+          accountId: data.bankAccountId,
           referenceNo: data.referenceNo || null,
           notes: data.notes || null,
           createdBy: data.userId,
         },
       });
 
-      // ── 4b. Record in Operational Account (if provided) ──────────────────────
-      if (data.operationalAccountId) {
+      // ── 4b. Create Ledger Entries for Payment Receipt ─────────────────────
+      // Dr. Cash/Bank (or specified account), Cr. Sundry Debtors (Customer)
+      const debtorAcc = await tx.account.findUnique({
+        where: { code_outletId: { code: "1003", outletId: data.outletId } },
+      });
+
+      // Use the operational account's linked GL account, or default to Cash/Bank based on payment mode
+      let cashBankAcc = await tx.account.findUnique({
+        where: { code_outletId: { code: "1001", outletId: data.outletId } }, // Default: Cash in Hand
+      });
+
+      // If a bank account is selected, try to find its linked GL account
+      if (data.bankAccountId) {
+        const account = await tx.account.findUnique({
+          where: { id: data.bankAccountId },
+        });
+        if (account) {
+          // For bank accounts, use standard bank account (1002)
+          cashBankAcc = await tx.account.findUnique({
+            where: { code_outletId: { code: "1002", outletId: data.outletId } },
+          });
+        }
+      }
+
+      if (debtorAcc && cashBankAcc) {
+        await tx.ledgerEntry.createMany({
+          data: [
+            // Dr. Cash/Bank - money received
+            {
+              transactionId: payment.id,
+              accountId: cashBankAcc.id,
+              partyId: data.partyId,
+              date: new Date(data.paymentDate),
+              debit: data.amount,
+              credit: 0,
+              reference: `Receipt ${txnNumber} for Invoice ${invoice.txnNumber}`,
+            },
+            // Cr. Sundry Debtors - customer's outstanding reduced
+            {
+              transactionId: payment.id,
+              accountId: debtorAcc.id,
+              partyId: data.partyId,
+              date: new Date(data.paymentDate),
+              debit: 0,
+              credit: data.amount,
+              reference: `Receipt ${txnNumber} for Invoice ${invoice.txnNumber}`,
+            },
+          ],
+        });
+      }
+
+      // ── 4b. Record in Account (if provided) ──────────────────────
+      if (data.bankAccountId) {
         // Get current account balance for snapshot
         const account = await tx.account.findUnique({
-          where: { id: data.operationalAccountId },
+          where: { id: data.bankAccountId },
           select: { currentBalance: true },
         });
 
@@ -112,14 +168,14 @@ export async function recordInvoicePayment(
           // Record the transaction
           await tx.accountTransaction.create({
             data: {
-              accountId: data.operationalAccountId,
+              accountId: data.bankAccountId,
               type: "IN",
               amount: data.amount,
               paymentMode: data.paymentMode as any,
-              chequeNumber: data.chequeNumber,
+              chequeNumber: data.chequeNumber || null,
               chequeDate: data.chequeDate ? new Date(data.chequeDate) : null,
-              upiReferenceId: data.upiReferenceId,
-              transactionId: data.transactionId,
+              upiReferenceId: data.utrReferenceId || null,
+              transactionId: data.transactionId || null,
               balanceAfter: newBalance,
               linkedTxnId: data.invoiceId,
               linkedTxnType: "INVOICE_PAYMENT",
@@ -130,7 +186,7 @@ export async function recordInvoicePayment(
 
           // Update account balance
           await tx.account.update({
-            where: { id: data.operationalAccountId },
+            where: { id: data.bankAccountId },
             data: { currentBalance: newBalance },
           });
         }
@@ -217,61 +273,9 @@ export async function recordInvoicePayment(
         }
       }
 
-      // ── 7. Create Journal Entry (Dr Bank/Cash, Cr Customer/Debtor) ─────────
-      // Determine debit account: Cash or Bank
-      let debitAccountCode = "1001"; // Default: Cash in Hand
-      if (["BankTransfer", "Cheque", "DD", "UPI"].includes(data.paymentMode)) {
-        // For bank modes, use the selected bank account
-        if (data.bankAccountId) {
-          const bankAcc = await tx.gLAccount.findUnique({
-            where: { id: data.bankAccountId },
-            select: { id: true },
-          });
-          if (!bankAcc) throw new NotFoundError("Bank account not found");
-        }
-      }
-
-      // Debtors account code = 1003 (as established in invoice action)
-      const [debtorAcc, debitAcc] = await Promise.all([
-        tx.gLAccount.findFirst({
-          where: { code: "1003", outletId: data.outletId },
-        }),
-        data.bankAccountId
-          ? tx.gLAccount.findUnique({ where: { id: data.bankAccountId } })
-          : tx.gLAccount.findFirst({
-              where: { code: debitAccountCode, outletId: data.outletId },
-            }),
-      ]);
-
-      if (debtorAcc && debitAcc) {
-        await tx.ledgerEntry.createMany({
-          data: [
-            {
-              // Cr Customer Debtor — reduces amount owed
-              accountId: debtorAcc.id,
-              partyId: invoice.partyId ?? undefined,
-              transactionId: invoice.id,
-              date: new Date(data.paymentDate),
-              debit: 0,
-              credit: data.amount,
-              reference: `${txnNumber} — ${data.paymentMode}`,
-            },
-            {
-              // Dr Bank / Cash — money comes in
-              accountId: debitAcc.id,
-              partyId: invoice.partyId ?? undefined,
-              transactionId: invoice.id,
-              date: new Date(data.paymentDate),
-              debit: data.amount,
-              credit: 0,
-              reference: `${txnNumber} — ${data.paymentMode}`,
-            },
-          ],
-        });
-      }
-
       revalidatePath(`/dashboard/sales/invoices/${data.invoiceId}`);
       revalidatePath("/dashboard/sales/invoices");
+      revalidatePath("/dashboard/financials/ledger");
 
       return {
         payment,
@@ -296,8 +300,7 @@ export async function getInvoicePayments(invoiceId: string) {
         paymentMode: true,
         referenceNo: true,
         notes: true,
-        glAccount: { select: { name: true } },
-        operationalAccount: { select: { name: true, type: true } },
+        account: { select: { name: true, type: true } },
         creator: { select: { name: true } },
       },
       orderBy: { paymentDate: "asc" }, // Chronological — oldest first per FRD
@@ -306,31 +309,14 @@ export async function getInvoicePayments(invoiceId: string) {
   });
 }
 
-// ─── Get bank accounts configured for an outlet (GL accounts for bookkeeping)
-export async function getOutletBankAccounts(outletId: string) {
-  return withErrorHandler(async () => {
-    const accounts = await prisma.gLAccount.findMany({
-      where: {
-        outletId,
-        group: "ASSET",
-        // Bank accounts typically have codes in a known range; filter by name pattern
-        OR: [
-          { code: { startsWith: "1002" } }, // Bank accounts
-          { name: { contains: "Bank", mode: "insensitive" } },
-        ],
-      },
-      select: { id: true, name: true, code: true },
-      orderBy: { name: "asc" },
-    });
-    return accounts;
-  });
-}
-
-// ─── Get operational accounts (for payment drawer account selector)
-export async function getOutletOperationalAccounts(outletId: string) {
+// ─── Get user-created accounts for an outlet (filtered by type)
+export async function getOutletAccounts(outletId: string, type?: AccountType) {
   return withErrorHandler(async () => {
     const accounts = await prisma.account.findMany({
-      where: { outletId },
+      where: {
+        outletId,
+        ...(type && { type }),
+      },
       select: {
         id: true,
         name: true,

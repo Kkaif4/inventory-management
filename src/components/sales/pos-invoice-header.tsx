@@ -5,7 +5,7 @@ import { UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { searchCustomersByPhone } from "@/actions/parties";
+import { searchCustomersByPhone, searchCustomersByName } from "@/actions/parties";
 import { createMinimalCustomer } from "@/actions/sales/customers";
 import { useOutletStore } from "@/store/use-outlet-store";
 import {
@@ -31,6 +31,9 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { AttachmentList } from "@/components/attachments/attachment-list";
+import { AttachmentPreviewDialog } from "@/components/attachments/attachment-preview-dialog";
+import type { AttachmentMetadata } from "@/types/expense.types";
 
 interface POSInvoiceHeaderProps {
   form: UseFormReturn<any>;
@@ -73,6 +76,14 @@ export function POSInvoiceHeader({
   const [showCreateCustomer, setShowCreateCustomer] = React.useState(false);
   const [attachmentDialogOpen, setAttachmentDialogOpen] = React.useState(false);
   const [attachmentUploading, setAttachmentUploading] = React.useState(false);
+  const [attachmentsList, setAttachmentsList] = React.useState<AttachmentMetadata[]>([]);
+  const [previewAttachmentId, setPreviewAttachmentId] = React.useState<string | null>(null);
+  const [previewFileName, setPreviewFileName] = React.useState<string>("");
+  const [nameSearchResults, setNameSearchResults] = React.useState<any[]>([]);
+  const [showNameDropdown, setShowNameDropdown] = React.useState(false);
+  const [nameSearchLoading, setNameSearchLoading] = React.useState(false);
+  const nameSearchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nameInputRef = React.useRef<HTMLInputElement>(null);
 
   const dateValue =
     form.watch("date") instanceof Date
@@ -87,6 +98,11 @@ export function POSInvoiceHeader({
     if (buyerName) setBillingName(String(buyerName));
   }, []);
 
+  // Load attachments when invoice number changes
+  React.useEffect(() => {
+    loadAttachmentsList();
+  }, [invoiceNumber]);
+
   const handlePhoneChange = async (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 10);
     setPhone(digits);
@@ -95,7 +111,7 @@ export function POSInvoiceHeader({
       setLookupState("loading");
       try {
         const res = await searchCustomersByPhone(currentOutletId, digits);
-        if (res.success && res.data && res.data.length > 0) {
+        if (res && res.success && res.data && res.data.length > 0) {
           setFoundCustomers(res.data);
           if (res.data.length === 1) {
             const customer = res.data[0];
@@ -116,7 +132,8 @@ export function POSInvoiceHeader({
           form.setValue("buyerPhone", digits);
           setShowCreateCustomer(true);
         }
-      } catch {
+      } catch (err) {
+        console.error("Phone search error:", err);
         setLookupState("not-found");
         setFoundCustomers([]);
       }
@@ -163,11 +180,82 @@ export function POSInvoiceHeader({
     form.setValue("buyerName", customer.name);
     if (onCustomerLoad) onCustomerLoad(customer);
     setShowCustomerPicker(false);
+    setShowNameDropdown(false);
+    setNameSearchResults([]);
+  };
+
+  const selectCustomerFromName = (customer: any) => {
+    setLookupState("found");
+    setBillingName(customer.name);
+    setPhone(customer.phone || "");
+    form.setValue("partyId", customer.id);
+    form.setValue("buyerPhone", customer.phone || "");
+    form.setValue("buyerName", customer.name);
+    if (onCustomerLoad) onCustomerLoad(customer);
+    setFoundCustomers([customer]);
+    setShowNameDropdown(false);
+    setNameSearchResults([]);
   };
 
   const handleBillingNameChange = (name: string) => {
     setBillingName(name);
     form.setValue("buyerName", name);
+
+    if (nameSearchTimerRef.current) clearTimeout(nameSearchTimerRef.current);
+
+    if (name.length >= 2 && currentOutletId) {
+      setNameSearchLoading(true);
+      nameSearchTimerRef.current = setTimeout(async () => {
+        try {
+          const res = await searchCustomersByName(currentOutletId, name);
+          if (res.success && res.data && res.data.length > 0) {
+            setNameSearchResults(res.data);
+            setShowNameDropdown(true);
+          } else {
+            setNameSearchResults([]);
+            setShowNameDropdown(false);
+          }
+        } finally {
+          setNameSearchLoading(false);
+        }
+      }, 300);
+    } else {
+      setNameSearchResults([]);
+      setShowNameDropdown(false);
+      setNameSearchLoading(false);
+    }
+  };
+
+  const handleNameInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && showNameDropdown && nameSearchResults.length > 0) {
+      e.preventDefault();
+      selectCustomerFromName(nameSearchResults[0]);
+    }
+  };
+
+  const loadAttachmentsList = async () => {
+    if (!invoiceNumber) {
+      setAttachmentsList([]);
+      return;
+    }
+
+    try {
+      const tempReference = `TEMP:${invoiceNumber}`;
+      const params = new URLSearchParams({
+        moduleType: "INVOICE",
+        referenceId: tempReference,
+      });
+      const response = await fetch(`/api/attachments/by-reference?${params}`);
+      const result = await response.json();
+      if (result.success && result.data) {
+        setAttachmentsList(result.data);
+      } else {
+        setAttachmentsList([]);
+      }
+    } catch (error) {
+      console.error("Failed to load attachments:", error);
+      setAttachmentsList([]);
+    }
   };
 
   const handleAttachmentUpload = async (file: File) => {
@@ -200,10 +288,12 @@ export function POSInvoiceHeader({
 
       toast.success("Attachment uploaded successfully");
 
+      // Reload attachments list
+      await loadAttachmentsList();
+
       // Update attachment count
       const newCount = attachmentCount + 1;
       onAttachmentCountChange?.(newCount);
-      setAttachmentUploading(false);
       setAttachmentDialogOpen(false);
     } catch (error) {
       toast.error("Error uploading attachment");
@@ -211,6 +301,17 @@ export function POSInvoiceHeader({
     } finally {
       setAttachmentUploading(false);
     }
+  };
+
+  const handleAttachmentDelete = (deletedId: string) => {
+    setAttachmentsList((prev) => prev.filter((a) => a.id !== deletedId));
+    const newCount = Math.max(0, attachmentCount - 1);
+    onAttachmentCountChange?.(newCount);
+  };
+
+  const handlePreviewAttachment = (id: string, fileName: string) => {
+    setPreviewAttachmentId(id);
+    setPreviewFileName(fileName);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -413,10 +514,13 @@ export function POSInvoiceHeader({
           </div>
 
           {/* Billing Name */}
-          <div title={t("tooltips.billingName")}>
+          <div className="relative" title={t("tooltips.billingName")}>
             <Input
+              ref={nameInputRef}
               value={billingName}
               onChange={(e) => handleBillingNameChange(e.target.value)}
+              onKeyDown={handleNameInputKeyDown}
+              onBlur={() => setTimeout(() => setShowNameDropdown(false), 150)}
               disabled={isPosted}
               placeholder={
                 lookupState === "found"
@@ -428,6 +532,31 @@ export function POSInvoiceHeader({
                 lookupState === "found" && "bg-emerald-50/50",
               )}
             />
+            {nameSearchLoading && (
+              <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-blue-500" />
+            )}
+            {showNameDropdown && nameSearchResults.length > 0 && (
+              <div className="absolute z-50 top-full left-0 mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                {nameSearchResults.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onMouseDown={() => selectCustomerFromName(c)}
+                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-blue-50 text-left transition-colors border-b border-slate-100 last:border-b-0"
+                  >
+                    <div>
+                      <div className="text-sm font-semibold text-slate-900">{c.name}</div>
+                      <div className="text-xs text-slate-500">{c.phone || "No phone"}</div>
+                    </div>
+                    {c.state && (
+                      <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-bold text-slate-500">
+                        {c.state}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Invoice/Bill Number */}
@@ -596,13 +725,30 @@ export function POSInvoiceHeader({
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Attachment</DialogTitle>
+            <DialogTitle>Manage Attachments</DialogTitle>
             <DialogDescription>
-              Upload supporting documents for invoice {invoiceNumber}. (Max 5MB,
+              Upload or remove documents for invoice {invoiceNumber}. (Max 5MB,
               JPG/PNG)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Attachments List */}
+            {attachmentsList.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-slate-700">
+                  Uploaded Attachments ({attachmentsList.length})
+                </p>
+                <AttachmentList
+                  attachments={attachmentsList}
+                  moduleType="INVOICE"
+                  referenceId={`TEMP:${invoiceNumber}`}
+                  onDelete={handleAttachmentDelete}
+                  onPreview={handlePreviewAttachment}
+                />
+              </div>
+            )}
+
+            {/* Upload Zone */}
             <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
               <input
                 type="file"
@@ -625,6 +771,17 @@ export function POSInvoiceHeader({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Attachment Preview Dialog */}
+      <AttachmentPreviewDialog
+        attachmentId={previewAttachmentId}
+        fileName={previewFileName}
+        open={!!previewAttachmentId}
+        onClose={() => {
+          setPreviewAttachmentId(null);
+          setPreviewFileName("");
+        }}
+      />
     </TooltipProvider>
   );
 }

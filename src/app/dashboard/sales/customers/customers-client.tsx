@@ -185,10 +185,11 @@ export function CustomersClient({
 
   // Update URL when debounced search changes
   useEffect(() => {
-    if (debouncedSearch !== searchParams.get("search")) {
+    const currentSearch = searchParams.get("search") || "";
+    if (debouncedSearch !== currentSearch) {
       updateFilters({ search: debouncedSearch });
     }
-  }, [debouncedSearch, searchParams, updateFilters]);
+  }, [debouncedSearch, updateFilters]);
 
   const handleViewDetails = useCallback(
     (customerId: string) => {

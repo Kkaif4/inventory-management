@@ -10,13 +10,18 @@ import { createPayment, getAccounts } from "@/actions/accounting";
 import { getParties } from "@/actions/parties";
 import { Save } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { PaymentModeSelector } from "@/components/accounts/payment-mode-selector";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useOutletStore } from "@/store/use-outlet-store";
+import { useWatch } from "react-hook-form";
 import {
   GeneralPaymentFormValues,
   generalPaymentSchema,
 } from "@/validations/payment.validation";
+import { PaymentMode } from "@/generated/prisma";
+import { ALLOWED_PAYMENT_MODES } from "@/lib/account-validation";
+import { getTodayDate } from "@/lib/utils/date";
 
 function NewPaymentReceiptContent() {
   const router = useRouter();
@@ -53,17 +58,38 @@ function NewPaymentReceiptContent() {
     register,
     handleSubmit,
     setValue,
+    control,
+    watch,
     formState: { errors },
   } = useForm<GeneralPaymentFormValues>({
     resolver: zodResolver(generalPaymentSchema) as any,
     defaultValues: {
       partyId: partyIdFromUrl || "",
-      paymentDate: new Date().toISOString().split("T")[0],
-      amount: undefined,
-      paymentMode: "Cash",
+      paymentDate: getTodayDate(),
+      paymentMode: undefined,
       bankAccountId: "",
+      chequeDate: undefined,
+      chequeNumber: undefined,
     },
   });
+
+  const selectedAccountId = watch("bankAccountId");
+  const selectedAccount = accounts.find((a) => a.id === selectedAccountId);
+
+  // Auto-set payment mode when account is selected
+  useEffect(() => {
+    if (selectedAccount) {
+      const accountType = selectedAccount.type as "CASH" | "BANK";
+      const allowedModes = ALLOWED_PAYMENT_MODES[accountType];
+
+      // For CASH accounts, auto-select CASH mode
+      if (accountType === "CASH") {
+        setValue("paymentMode", "CASH");
+      } else {
+        setValue("paymentMode", "ONLINE_TRANSFER");
+      }
+    }
+  }, [selectedAccount, setValue]);
 
   const onSubmit = async (data: GeneralPaymentFormValues) => {
     try {
@@ -75,7 +101,7 @@ function NewPaymentReceiptContent() {
         amount: data.amount,
         date: new Date(data.paymentDate),
         type: "PAYMENT_RECEIPT",
-        reference: data.referenceNo,
+        reference: data.referenceNo || "",
       });
       if (res.success) {
         toast.success("Receipt recorded successfully");
@@ -100,22 +126,27 @@ function NewPaymentReceiptContent() {
     return null;
   }
 
-  const cancelHref = source === "customer" && sourceId
-    ? `/dashboard/sales/customers/${sourceId}`
-    : "/dashboard/sales/transactions";
+  const cancelHref =
+    source === "customer" && sourceId
+      ? `/dashboard/sales/customers/${sourceId}`
+      : "/dashboard/sales/transactions";
 
-  const breadcrumbs = source === "customer" && sourceId
-    ? [
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Customers", href: "/dashboard/sales/customers" },
-        { label: sourceName || "Customer", href: `/dashboard/sales/customers/${sourceId}` },
-        { label: "Payment Receipt" },
-      ]
-    : [
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Accounts", href: "/dashboard/accounts" },
-        { label: "Payment Receipt" },
-      ];
+  const breadcrumbs =
+    source === "customer" && sourceId
+      ? [
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Customers", href: "/dashboard/sales/customers" },
+          {
+            label: sourceName || "Customer",
+            href: `/dashboard/sales/customers/${sourceId}`,
+          },
+          { label: "Payment Receipt" },
+        ]
+      : [
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Accounts", href: "/dashboard/accounts" },
+          { label: "Payment Receipt" },
+        ];
 
   return (
     <div className="max-w-xl mx-auto space-y-6 pt-10">
@@ -160,7 +191,7 @@ function NewPaymentReceiptContent() {
               <option value="">Select Account...</option>
               {accounts.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.name} ({a.code})
+                  {a.name} ({a.type}) - {a.code}
                 </option>
               ))}
             </select>
@@ -170,6 +201,23 @@ function NewPaymentReceiptContent() {
               </p>
             )}
           </div>
+
+          {selectedAccountId && (
+            <div>
+              <PaymentModeSelector
+                accountId={selectedAccountId}
+                value={watch("paymentMode") as PaymentMode}
+                onChange={(mode) => setValue("paymentMode", mode)}
+                required={true}
+                label="Payment Mode"
+              />
+              {errors.paymentMode && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.paymentMode.message}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>

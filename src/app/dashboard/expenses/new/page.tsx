@@ -49,9 +49,12 @@ export default function NewExpensePage() {
     defaultValues: {
       outletId: currentOutletId,
       date: new Date(),
+      categoryId: "",
+      accountId: "",
       description: "",
       paymentMode: "CASH",
-      taxableAmount: 0,
+      // Note: taxableAmount omitted from defaultValues to start as undefined
+      // User MUST enter a positive amount before form validates
       gstRate: undefined,
       inputGst: 0,
       vendorId: undefined,

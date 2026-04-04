@@ -16,9 +16,12 @@ async function AccountsContent() {
     throw new Error(result.error?.message || "Failed to load accounts");
   }
 
-  const accounts = result.data || [];
+  // Filter to only operational accounts (CASH/BANK), exclude GL-only accounts
+  const operationalAccounts = (result.data || []).filter(
+    (acc) => acc.type === "CASH" || acc.type === "BANK"
+  ) as any;
 
-  return <AccountListView accounts={accounts} />;
+  return <AccountListView accounts={operationalAccounts} />;
 }
 
 function Loading() {

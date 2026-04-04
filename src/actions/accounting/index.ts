@@ -17,7 +17,7 @@ export async function setupCOA(outletId: string) {
 
 export async function getAccounts(outletId: string) {
   return withErrorHandler(async () => {
-    return await prisma.gLAccount.findMany({
+    return await prisma.account.findMany({
       orderBy: { code: "asc" },
       where: {
         outletId,
@@ -101,13 +101,13 @@ export async function createPayment(data: {
       const roundedAmount = roundToTwo(data.amount);
 
       // 2. Accounting Entries
-      const bankAcc = await tx.gLAccount.findUnique({
+      const bankAcc = await tx.account.findUnique({
         where: { id: data.accountId },
       });
-      const creditorAcc = await tx.gLAccount.findUnique({
+      const creditorAcc = await tx.account.findUnique({
         where: { code_outletId: { code: "2001", outletId: data.outletId } },
       }); // Sundry Creditors
-      const debtorAcc = await tx.gLAccount.findUnique({
+      const debtorAcc = await tx.account.findUnique({
         where: { code_outletId: { code: "1003", outletId: data.outletId } },
       }); // Sundry Debtors
 

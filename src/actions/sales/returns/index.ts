@@ -52,7 +52,7 @@ export async function createSalesReturn(data: {
         where: { id: { in: data.items.map((i) => i.variantId) } },
         include: { product: true },
       }),
-      prisma.gLAccount.findMany({
+      prisma.account.findMany({
         where: { code: { in: accountCodes } },
       }),
     ]);

@@ -9,6 +9,7 @@ import { createPayment, getAccounts } from "@/actions/accounting";
 import { getParties } from "@/actions/parties";
 import { Save } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { PaymentModeSelector } from "@/components/accounts/payment-mode-selector";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useOutletStore } from "@/store/use-outlet-store";
@@ -16,6 +17,8 @@ import {
   generalPaymentSchema,
   GeneralPaymentFormValues,
 } from "@/validations/payment.validation";
+import { PaymentMode } from "@/generated/prisma";
+import { getTodayDate } from "@/lib/utils/date";
 
 function NewPaymentMadeContent() {
   const router = useRouter();
@@ -52,17 +55,40 @@ function NewPaymentMadeContent() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<GeneralPaymentFormValues>({
     resolver: zodResolver(generalPaymentSchema) as any,
     defaultValues: {
       partyId: partyIdFromUrl || "",
-      paymentDate: new Date().toISOString().split("T")[0],
+      paymentDate: getTodayDate(),
       amount: undefined,
-      paymentMode: "Cash",
+      paymentMode: undefined,
       bankAccountId: "",
+      chequeDate: undefined,
+      chequeNumber: undefined,
     },
   });
+
+  const selectedAccountId = watch("bankAccountId");
+  const selectedAccount = accounts.find((a) => a.id === selectedAccountId);
+  const selectedMode = watch("paymentMode");
+  const chequeDate = watch("chequeDate");
+
+  // Auto-set payment mode when account is selected
+  useEffect(() => {
+    if (selectedAccount) {
+      const accountType = selectedAccount.type as "CASH" | "BANK";
+
+      // For CASH accounts, auto-select CASH mode
+      if (accountType === "CASH") {
+        setValue("paymentMode", "CASH");
+      } else {
+        // For BANK accounts, clear the selection so user can choose
+        // Don't reset to empty, keep previous value or let user select
+      }
+    }
+  }, [selectedAccount, setValue]);
 
   const onSubmit = async (data: GeneralPaymentFormValues) => {
     try {
@@ -74,7 +100,7 @@ function NewPaymentMadeContent() {
         amount: data.amount,
         date: new Date(data.paymentDate),
         type: "PAYMENT_MADE",
-        reference: data.referenceNo,
+        reference: data.referenceNo || undefined,
       });
       if (res.success) {
         toast.success("Payment recorded successfully");
@@ -99,22 +125,27 @@ function NewPaymentMadeContent() {
     return null;
   }
 
-  const cancelHref = source === "vendor" && sourceId
-    ? `/dashboard/purchase/vendors/${sourceId}`
-    : "/dashboard/purchases";
+  const cancelHref =
+    source === "vendor" && sourceId
+      ? `/dashboard/purchase/vendors/${sourceId}`
+      : "/dashboard/purchases";
 
-  const breadcrumbs = source === "vendor" && sourceId
-    ? [
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Vendors", href: "/dashboard/purchase/vendors" },
-        { label: sourceName || "Vendor", href: `/dashboard/purchase/vendors/${sourceId}` },
-        { label: "Make Payment" },
-      ]
-    : [
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Accounts", href: "/dashboard/accounts" },
-        { label: "Make Payment" },
-      ];
+  const breadcrumbs =
+    source === "vendor" && sourceId
+      ? [
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Vendors", href: "/dashboard/purchase/vendors" },
+          {
+            label: sourceName || "Vendor",
+            href: `/dashboard/purchase/vendors/${sourceId}`,
+          },
+          { label: "Make Payment" },
+        ]
+      : [
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Accounts", href: "/dashboard/accounts" },
+          { label: "Make Payment" },
+        ];
 
   return (
     <div className="max-w-xl mx-auto space-y-6 pt-10">
@@ -159,7 +190,7 @@ function NewPaymentMadeContent() {
               <option value="">Select Account...</option>
               {accounts.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.name} ({a.code})
+                  {a.name} ({a.type}) - {a.code}
                 </option>
               ))}
             </select>
@@ -169,6 +200,23 @@ function NewPaymentMadeContent() {
               </p>
             )}
           </div>
+
+          {selectedAccountId && (
+            <div>
+              <PaymentModeSelector
+                accountId={selectedAccountId}
+                value={watch("paymentMode") as PaymentMode}
+                onChange={(mode) => setValue("paymentMode", mode)}
+                required={true}
+                label="Payment Mode"
+              />
+              {errors.paymentMode && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.paymentMode.message}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>

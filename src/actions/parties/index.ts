@@ -107,6 +107,38 @@ export async function searchCustomersByPhone(outletId: string, phone: string) {
   });
 }
 
+/**
+ * Search customers by name (case-insensitive partial match)
+ */
+export async function searchCustomersByName(outletId: string, name: string) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+
+    const parties = await prisma.party.findMany({
+      where: {
+        outletId,
+        type: "CUSTOMER",
+        name: { contains: name, mode: "insensitive" },
+      },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        contactInfo: true,
+        gstin: true,
+        state: true,
+        creditLimit: true,
+        outstandingBalance: true,
+        creditPeriod: true,
+      },
+      orderBy: { name: "asc" },
+      take: 8,
+    });
+
+    return parties;
+  });
+}
+
 export async function getVendorsByProduct(variantId: string, outletId: string) {
   return withErrorHandler(async () => {
     // Validate user has access to this outlet
@@ -168,10 +200,10 @@ export async function createParty(
       // 2. Handle Opening Balance if present
       if (data.openingBalance && data.openingBalance !== 0) {
         // Find system accounts
-        const offsetAcc = await tx.gLAccount.findUnique({
+        const offsetAcc = await tx.account.findUnique({
           where: { code_outletId: { code: "5001", outletId } },
         });
-        const partyGroupAcc = await tx.gLAccount.findUnique({
+        const partyGroupAcc = await tx.account.findUnique({
           where: {
             code_outletId: {
               code: data.type === "VENDOR" ? "2001" : "1003",

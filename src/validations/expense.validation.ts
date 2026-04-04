@@ -4,14 +4,14 @@ import { z } from "zod";
  * Expense Creation Schema
  */
 export const createExpenseSchema = z.object({
-  outletId: z.string().cuid("Invalid outlet ID"),
+  outletId: z.string().min(1, "Outlet ID is required"),
   date: z.date("Date is required"),
-  categoryId: z.string().cuid("Invalid category ID"),
-  description: z.string().min(5, "Description must be at least 5 characters").max(500, "Description must not exceed 500 characters"),
-  vendorId: z.string().cuid("Invalid vendor ID").optional(),
+  categoryId: z.string().min(1, "Category is required"),
+  description: z.string().min(1, "Description is required").max(500, "Description must not exceed 500 characters"),
+  vendorId: z.string().optional(),
   paymentMode: z.enum(["CASH", "BANK_TRANSFER", "UPI", "CHEQUE"]).default("CASH"),
-  accountId: z.string().cuid("Invalid account ID"),
-  taxableAmount: z.number().positive("Taxable amount must be greater than 0"),
+  accountId: z.string().min(1, "Account is required"),
+  taxableAmount: z.number({ message: "Taxable amount is required" }).positive("Taxable amount must be greater than 0"),
   gstRate: z.number().min(0).max(100).optional(),
   inputGst: z.number().min(0).optional(),
   status: z.enum(["DRAFT", "POSTED"]).default("POSTED").optional(),
@@ -35,7 +35,7 @@ export type UpdateExpenseInput = z.infer<typeof updateExpenseSchema>;
 export const createExpenseCategorySchema = z.object({
   name: z.string().min(3, "Category name must be at least 3 characters").max(50, "Category name must not exceed 50 characters"),
   code: z.string().regex(/^5\d{3}$/, "Code must be a valid GL account (5xxx format)"),
-  glAccountId: z.string().cuid("Invalid GL account ID"),
+  accountId: z.string().cuid("Invalid GL account ID"),
   outletId: z.string().cuid("Invalid outlet ID"),
 });
 

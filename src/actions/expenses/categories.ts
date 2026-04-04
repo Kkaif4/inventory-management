@@ -29,7 +29,7 @@ export async function getExpenseCategories(outletId: string) {
         isActive: true,
       },
       include: {
-        glAccount: true,
+        account: true,
       },
       orderBy: { code: "asc" },
     });
@@ -47,18 +47,18 @@ export async function createExpenseCategory(data: CreateExpenseCategoryInput) {
     await validateSessionOutletAccess(validated.outletId);
 
     // Verify GL account exists and is 5xxx
-    const glAccount = await prisma.gLAccount.findFirst({
+    const account = await prisma.account.findFirst({
       where: {
-        id: validated.glAccountId,
+        id: validated.accountId,
         outletId: validated.outletId,
       },
     });
 
-    if (!glAccount) {
+    if (!account) {
       throw new NotFoundError("GL account not found");
     }
 
-    if (!glAccount.code.startsWith("5")) {
+    if (!account.code || !account.code.startsWith("5")) {
       throw new ValidationError(
         "GL account must be an expense account (5xxx series)"
       );
@@ -83,7 +83,7 @@ export async function createExpenseCategory(data: CreateExpenseCategoryInput) {
         ...validated,
       },
       include: {
-        glAccount: true,
+        account: true,
       },
     });
 
@@ -120,7 +120,7 @@ export async function updateExpenseCategory(
         isActive: validated.isActive !== undefined ? validated.isActive : undefined,
       },
       include: {
-        glAccount: true,
+        account: true,
       },
     });
 
@@ -161,20 +161,23 @@ export async function initializeDefaultExpenseCategories(outletId: string) {
 
       if (!existing) {
         // Get or create GL account
-        let glAccount = await prisma.gLAccount.findFirst({
+        let expenseAccount = await prisma.account.findFirst({
           where: {
             code: cat.code,
             outletId,
           },
         });
 
-        if (!glAccount) {
-          glAccount = await prisma.gLAccount.create({
+        if (!expenseAccount) {
+          expenseAccount = await prisma.account.create({
             data: {
               code: cat.code,
               name: cat.name,
               group: "EXPENSE",
               isSystem: true,
+              type: null,
+              openingBalance: 0,
+              currentBalance: 0,
               outletId,
             },
           });
@@ -185,12 +188,12 @@ export async function initializeDefaultExpenseCategories(outletId: string) {
           data: {
             name: cat.name,
             code: cat.code,
-            glAccountId: glAccount.id,
+            accountId: expenseAccount.id,
             outletId,
             isActive: true,
           },
           include: {
-            glAccount: true,
+            account: true,
           },
         });
 
@@ -217,7 +220,7 @@ export async function getExpenseCategoryDetail(
     const category = await prisma.expenseCategory.findFirst({
       where: { id: categoryId, outletId },
       include: {
-        glAccount: true,
+        account: true,
       },
     });
 

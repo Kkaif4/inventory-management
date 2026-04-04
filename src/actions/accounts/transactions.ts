@@ -46,6 +46,11 @@ export async function recordAccountTransaction(data: {
       throw new ForbiddenError("Access denied to this account");
     }
 
+    // Only operational accounts can have transactions
+    if (!account.type) {
+      throw new ValidationError("Non-operational accounts cannot have payment transactions");
+    }
+
     // Validate payment mode
     const modeValidation = validatePaymentModeForAccount(
       account.type,

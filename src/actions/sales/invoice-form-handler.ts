@@ -107,48 +107,52 @@ export async function handleCreateSalesInvoice(
   outletState?: string,
   placeOfSupply?: string,
 ) {
-  return withErrorHandler(async () => {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      throw new ValidationError("Unauthorized");
-    }
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new ValidationError("Unauthorized");
+  }
 
-    const items = transformItems(
-      formData.items,
-      formData.billType,
-      outletState,
-      placeOfSupply,
-    );
+  const items = transformItems(
+    formData.items,
+    formData.billType,
+    outletState,
+    placeOfSupply,
+  );
 
-    const result = await createSalesInvoice({
-      billType: formData.billType,
-      txnNumber: formData.txnNumber,
-      partyId: formData.billType === "NO1" ? formData.partyId : undefined,
-      fromOutletId: formData.fromOutletId,
-      items,
-      date:
-        formData.date instanceof Date ? formData.date : new Date(formData.date),
-      userId: session.user.id,
-      headerDiscount: formData.headerDiscount || 0,
-      freightCost: formData.freightCost || 0,
-      remarks: formData.remarks,
-      buyerName: formData.buyerName,
-      buyerPhone: formData.buyerPhone,
-    });
+  const result = await createSalesInvoice({
+    billType: formData.billType,
+    txnNumber: formData.txnNumber,
+    partyId: formData.billType === "NO1" ? formData.partyId : undefined,
+    fromOutletId: formData.fromOutletId,
+    items,
+    date:
+      formData.date instanceof Date ? formData.date : new Date(formData.date),
+    userId: session.user.id,
+    headerDiscount: formData.headerDiscount || 0,
+    freightCost: formData.freightCost || 0,
+    remarks: formData.remarks,
+    buyerName: formData.buyerName,
+    buyerPhone: formData.buyerPhone,
+  });
 
-    // If invoice was created successfully, migrate any temporary attachments
-    if (result.success && result.data?.invoice?.id) {
+  // If invoice was created successfully, migrate any temporary attachments
+  if (result.success && result.data?.invoice?.id) {
+    try {
       const tempReferenceId = `TEMP:${formData.txnNumber}`;
       await migrateAttachments(
         "INVOICE",
         tempReferenceId,
         result.data.invoice.id,
       );
+    } catch (error) {
+      console.error("Failed to migrate attachments:", error);
+      // Don't fail the invoice creation if attachment migration fails
     }
+  }
 
-    // Return full result with invoice and FIFO breakdown for UI notification
-    return result;
-  });
+  // Return full result with invoice and FIFO breakdown for UI notification
+  // Already has success/error wrapped by createSalesInvoice
+  return result;
 }
 
 /**

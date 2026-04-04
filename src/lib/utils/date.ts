@@ -45,3 +45,5 @@ export function parseBatchDate(dateStr: string, rowNumber: number): Date {
 
   return date;
 }
+
+export const getTodayDate = () => new Date().toISOString().split("T")[0];

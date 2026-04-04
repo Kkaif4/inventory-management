@@ -18,12 +18,13 @@ import { Label } from "@/components/ui/label";
 import { X, Wallet } from "lucide-react";
 import {
   recordPaymentSchema,
-  PAYMENT_MODES,
-  PAYMENT_MODES_REQUIRING_BANK,
+  ACCOUNT_TYPE_FOR_MODE,
   type RecordPaymentFormValues,
 } from "@/validations/payment.validation";
 import { recordVendorBillPayment } from "@/actions/purchase/payment";
-import { getOutletBankAccounts } from "@/actions/sales/payment";
+import { PaymentModeSelector } from "@/components/payments/payment-mode-selector";
+import { AccountSelector } from "@/components/payments/account-selector";
+import { ModeSpecificFields } from "@/components/payments/mode-specific-fields";
 
 interface VendorPaymentDrawerProps {
   open: boolean;
@@ -50,15 +51,13 @@ export function VendorPaymentDrawer({
   onSuccess,
 }: VendorPaymentDrawerProps) {
   const outstanding = Math.max(0, bill.grandTotal - bill.totalPaid);
-  const [bankAccounts, setBankAccounts] = useState<
-    { id: string; name: string; code: string }[]
-  >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     reset,
     formState: { errors },
   } = useForm<RecordPaymentFormValues>({
@@ -69,11 +68,17 @@ export function VendorPaymentDrawer({
       partyId: bill.partyId,
       paymentDate: new Date().toISOString().split("T")[0],
       amount: outstanding,
-      paymentMode: "BankTransfer",
+      paymentMode: "CASH",
       bankAccountId: undefined,
+      operationalAccountId: undefined,
       referenceNo: "",
       notes: "",
-    },
+      chequeNumber: undefined,
+      chequeDate: undefined,
+      utrReferenceId: undefined,
+      transactionId: undefined,
+      cardReference: undefined,
+    } as any,
   });
 
   // Reset when bill changes
@@ -84,26 +89,47 @@ export function VendorPaymentDrawer({
       partyId: bill.partyId,
       paymentDate: new Date().toISOString().split("T")[0],
       amount: outstanding,
-      paymentMode: "BankTransfer",
+      paymentMode: "CASH",
       bankAccountId: undefined,
+      operationalAccountId: undefined,
       referenceNo: "",
       notes: "",
-    });
+      chequeNumber: undefined,
+      chequeDate: undefined,
+      utrReferenceId: undefined,
+      transactionId: undefined,
+      cardReference: undefined,
+    } as any);
   }, [bill.id, outstanding, reset]);
 
-  // Load bank accounts
-  useEffect(() => {
-    getOutletBankAccounts(bill.outletId).then((res) => {
-      if (res.success && res.data) setBankAccounts(res.data);
-    });
-  }, [bill.outletId]);
 
-  const paymentMode = watch("paymentMode");
+  const paymentMode = watch("paymentMode") as any;
   const amountInput = watch("amount") ?? 0;
   const remainingAfter = Math.max(0, outstanding - (amountInput || 0));
-  const requiresBank = (
-    PAYMENT_MODES_REQUIRING_BANK as readonly string[]
-  ).includes(paymentMode);
+  const requiresBank =
+    paymentMode &&
+    ACCOUNT_TYPE_FOR_MODE[paymentMode as keyof typeof ACCOUNT_TYPE_FOR_MODE] === "BANK";
+
+  // Clear mode-specific fields when payment mode changes
+  useEffect(() => {
+    if (paymentMode !== "CHEQUE") {
+      setValue("chequeNumber", undefined);
+      setValue("chequeDate", undefined);
+    }
+    if (paymentMode !== "UPI") {
+      setValue("utrReferenceId", undefined);
+    }
+    if (paymentMode !== "ONLINE_TRANSFER") {
+      setValue("transactionId", undefined);
+    }
+    if (paymentMode !== "CARD") {
+      setValue("cardReference", undefined);
+    }
+    // Clear bank account when switching from bank mode to CASH
+    if (!requiresBank && paymentMode === "CASH") {
+      setValue("bankAccountId", undefined);
+    }
+  }, [paymentMode, requiresBank, setValue]);
 
   const onSubmit = async (data: RecordPaymentFormValues) => {
     if (data.amount > outstanding + 0.005) {
@@ -266,53 +292,33 @@ export function VendorPaymentDrawer({
             )}
           </div>
 
-          {/* Payment Mode */}
-          <div>
-            <Label className="text-xs font-semibold text-slate-700 mb-1">
-              Payment Mode *
-            </Label>
-            <select
-              {...register("paymentMode")}
-              className="w-full h-10 px-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
-            >
-              {PAYMENT_MODES.map((m) => (
-                <option key={m} value={m}>
-                  {m === "BankTransfer" ? "Bank Transfer" : m}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Payment Mode Selector */}
+          <PaymentModeSelector
+            value={paymentMode}
+            onChange={(mode) => setValue("paymentMode", mode)}
+            disabled={false}
+            required={true}
+          />
 
-          {/* Bank Account — conditional */}
-          {requiresBank && (
-            <div>
-              <Label className="text-xs font-semibold text-slate-700 mb-1">
-                Bank Account *
-              </Label>
-              {bankAccounts.length === 0 ? (
-                <p className="text-amber-600 text-xs border border-amber-200 rounded-lg bg-amber-50 p-3">
-                  No bank accounts configured. Add one in Outlet Settings.
-                </p>
-              ) : (
-                <select
-                  {...register("bankAccountId")}
-                  className="w-full h-10 px-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
-                >
-                  <option value="">Select bank account...</option>
-                  {bankAccounts.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-              {errors.bankAccountId && (
-                <p className="text-red-500 text-[10px] mt-1">
-                  {errors.bankAccountId.message}
-                </p>
-              )}
-            </div>
+          {/* Account Selection — required for all payment modes */}
+          {paymentMode && (
+            <AccountSelector
+              paymentMode={paymentMode}
+              value={watch("bankAccountId") || null}
+              onChange={(accountId) => setValue("bankAccountId", accountId)}
+              outletId={bill.outletId}
+              disabled={false}
+              required={true}
+              label="Account"
+            />
           )}
+
+          {/* Mode-Specific Fields */}
+          <ModeSpecificFields
+            paymentMode={paymentMode}
+            form={{ register }}
+            errors={errors}
+          />
 
           {/* Reference No */}
           <div>

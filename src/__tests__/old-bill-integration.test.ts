@@ -96,7 +96,7 @@ describe("Old Bill Mode Integration Tests", () => {
 
     await prisma.transaction.deleteMany({ where: { outletId: testOutletId } });
     await prisma.party.deleteMany({ where: { outletId: testOutletId } });
-    await prisma.gLAccount.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.account.deleteMany({ where: { outletId: testOutletId } });
     await prisma.variant.deleteMany({ where: { product: { outletId: testOutletId } } });
     await prisma.product.deleteMany({ where: { outletId: testOutletId } });
     await prisma.category.deleteMany({ where: { outletId: testOutletId } });
@@ -264,7 +264,7 @@ describe("Old Bill Mode Integration Tests", () => {
     expect(partyLedger.length).toBeGreaterThanOrEqual(2); // At least the 1000 invoice debit and 600 payment credit
 
     // 2. Account Statement (Sundry Debtors)
-    const debtorAcc = await prisma.gLAccount.findUnique({
+    const debtorAcc = await prisma.account.findUnique({
       where: { code_outletId: { code: "1003", outletId: testOutletId } }
     });
     

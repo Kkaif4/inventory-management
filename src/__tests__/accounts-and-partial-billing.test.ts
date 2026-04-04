@@ -114,7 +114,7 @@ describe("Accounts & Partial Billing", () => {
     ];
 
     for (const acc of glAccounts) {
-      await prisma.gLAccount.upsert({
+      await prisma.account.upsert({
         where: { code_outletId: { code: acc.code, outletId: testOutletId } },
         update: {},
         create: { ...acc, outletId: testOutletId },
@@ -294,7 +294,7 @@ describe("Accounts & Partial Billing", () => {
       amount: 1180,
       paymentDate: new Date().toISOString().split("T")[0],
       paymentMode: "Cash",
-      operationalAccountId: cashAccountId,
+      accountId: cashAccountId,
       userId: testUserId,
     });
 

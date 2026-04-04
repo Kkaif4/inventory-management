@@ -50,7 +50,7 @@ export async function createExpense(data: CreateExpenseInput) {
         outletId: validated.outletId,
       },
       include: {
-        glAccount: true,
+        account: true,
       },
     });
 
@@ -128,7 +128,7 @@ export async function createExpense(data: CreateExpenseInput) {
           },
           include: {
             category: {
-              include: { glAccount: true },
+              include: { account: true },
             },
             vendor: true,
             account: true,
@@ -138,11 +138,30 @@ export async function createExpense(data: CreateExpenseInput) {
 
         // Only process financial updates if expense is POSTED (not DRAFT)
         if (expense.status === "POSTED") {
-          // Try to create GL entries (optional - if accounting service is set up)
+          // Create GL entries (double-entry bookkeeping)
           try {
-            const expenseGlAccount = category.glAccount;
+            const expenseGlAccount = category.account;
             if (expenseGlAccount) {
-              // Prepare journal entries for GL
+              // Determine GL account for cash/bank being spent
+              // Map Account type to GL account code
+              let cashGlAccount = null;
+              if (account.type === "CASH") {
+                cashGlAccount = await tx.account.findFirst({
+                  where: {
+                    code: "1001",
+                    outletId: validated.outletId,
+                  },
+                });
+              } else if (account.type === "BANK") {
+                cashGlAccount = await tx.account.findFirst({
+                  where: {
+                    code: "1002",
+                    outletId: validated.outletId,
+                  },
+                });
+              }
+
+              // Prepare double-entry journal entries
               const entries: Array<{
                 accountId: string;
                 debit?: number;
@@ -150,20 +169,21 @@ export async function createExpense(data: CreateExpenseInput) {
               }> = [
                 {
                   accountId: expenseGlAccount.id,
-                  debit: Number(validated.taxableAmount),
+                  debit: Number(totalAmount), // Full expense amount (incl GST)
                 },
               ];
 
-              // Add GST if applicable
-              if (inputGst > 0 && validated.gstRate && validated.gstRate > 0) {
-                // For now, just add to expense GL account
-                // Proper GST split can be implemented later
+              // Add credit to cash/bank GL account
+              if (cashGlAccount) {
+                entries.push({
+                  accountId: cashGlAccount.id,
+                  credit: Number(totalAmount),
+                });
               }
 
               // Post journal entry if accounting service available
               try {
                 await AccountingService.postJournalEntry(tx, {
-                  transactionId: expense.id,
                   entries,
                 });
               } catch (glError) {
@@ -216,7 +236,7 @@ export async function getExpenseDetail(expenseId: string, outletId: string) {
       },
       include: {
         category: {
-          include: { glAccount: true },
+          include: { account: true },
         },
         vendor: true,
         account: true,
@@ -459,7 +479,7 @@ export async function postExpense(expenseId: string, outletId: string) {
       where: { id: expenseId, outletId },
       include: {
         category: {
-          include: { glAccount: true },
+          include: { account: true },
         },
         account: true,
       },
@@ -480,7 +500,7 @@ export async function postExpense(expenseId: string, outletId: string) {
         data: { status: "POSTED" },
         include: {
           category: {
-            include: { glAccount: true },
+            include: { account: true },
           },
           vendor: true,
           account: true,
@@ -490,7 +510,7 @@ export async function postExpense(expenseId: string, outletId: string) {
 
       // Try to create GL entries
       try {
-        const expenseGlAccount = expense.category.glAccount;
+        const expenseGlAccount = expense.category.account;
         if (expenseGlAccount) {
           const entries: Array<{
             accountId: string;
@@ -505,7 +525,6 @@ export async function postExpense(expenseId: string, outletId: string) {
 
           try {
             await AccountingService.postJournalEntry(tx, {
-              transactionId: expense.id,
               entries,
             });
           } catch (glError) {

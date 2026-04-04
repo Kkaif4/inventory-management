@@ -66,8 +66,7 @@ model Outlet {
   batchTrackingEnabled     Boolean           @default(false)
   allowRawCashBills        Boolean           @default(false)
   inventoryValuationMethod String            @default("NONE")
-  glAccounts               GLAccount[]
-  operationalAccounts      Account[]
+  accounts                 Account[]
   categories               Category[]
   expenseCategories        ExpenseCategory[]
   batches                  CustomBatch[]
@@ -252,34 +251,25 @@ model TransactionItem {
   variant         Variant?    @relation(fields: [variantId], references: [id])
 }
 
-model GLAccount {
-  id                String            @id @default(cuid())
-  code              String
-  name              String
-  group             AccountGroup
-  isSystem          Boolean           @default(false)
-  outletId          String
-  outlet            Outlet            @relation(fields: [outletId], references: [id])
-  entries           LedgerEntry[]
-  payments          Payment[]
-  expenseCategories ExpenseCategory[]
-
-  @@unique([code, outletId])
-}
-
 model LedgerEntry {
   id            String       @id @default(cuid())
   accountId     String
   partyId       String?
   transactionId String?
+  journalId     String?
   date          DateTime     @default(now())
   debit         Float        @default(0)
   credit        Float        @default(0)
   reference     String?
   isReconciled  Boolean      @default(false)
-  account       GLAccount    @relation(fields: [accountId], references: [id])
+  account       Account      @relation(fields: [accountId], references: [id])
   party         Party?       @relation(fields: [partyId], references: [id])
   transaction   Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@index([accountId])
+  @@index([date])
+  @@index([journalId])
+  @@index([accountId, date])
 }
 
 model VendorProduct {
@@ -367,26 +357,24 @@ model StockLedger {
 }
 
 model Payment {
-  id                   String      @id @default(cuid())
-  txnNumber            String      @unique
-  invoiceId            String
-  outletId             String
-  partyId              String
-  amount               Float
-  paymentDate          DateTime
-  paymentMode          String
-  glAccountId          String? // GL Account for bookkeeping
-  operationalAccountId String? // Operational Account for fund tracking
-  referenceNo          String?
-  notes                String?
-  createdBy            String
-  createdAt            DateTime    @default(now())
-  glAccount            GLAccount?  @relation(fields: [glAccountId], references: [id])
-  operationalAccount   Account?    @relation(fields: [operationalAccountId], references: [id])
-  creator              User        @relation(fields: [createdBy], references: [id])
-  invoice              Transaction @relation(fields: [invoiceId], references: [id])
-  outlet               Outlet      @relation(fields: [outletId], references: [id])
-  party                Party       @relation(fields: [partyId], references: [id])
+  id              String      @id @default(cuid())
+  txnNumber       String      @unique
+  invoiceId       String
+  outletId        String
+  partyId         String
+  amount          Float
+  paymentDate     DateTime
+  paymentMode     String
+  accountId       String
+  referenceNo     String?
+  notes           String?
+  createdBy       String
+  createdAt       DateTime    @default(now())
+  account         Account     @relation(fields: [accountId], references: [id])
+  creator         User        @relation(fields: [createdBy], references: [id])
+  invoice         Transaction @relation(fields: [invoiceId], references: [id])
+  outlet          Outlet      @relation(fields: [outletId], references: [id])
+  party           Party       @relation(fields: [partyId], references: [id])
 
   @@index([invoiceId])
   @@index([partyId, outletId])
@@ -408,27 +396,34 @@ model PriceListEntry {
 // ============================================
 
 model Account {
-  id             String      @id @default(cuid())
+  id             String       @id @default(cuid())
+  code           String?
   name           String
-  type           AccountType // CASH | BANK
-  openingBalance Float       @default(0)
-  currentBalance Float       @default(0)
+  group          AccountGroup
+  type           AccountType?
+  isSystem       Boolean      @default(false)
+  openingBalance Float        @default(0)
+  currentBalance Float        @default(0)
   outletId       String
-  outlet         Outlet      @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  outlet         Outlet       @relation(fields: [outletId], references: [id], onDelete: Cascade)
 
+  entries       LedgerEntry[]
   paymentModes  AccountPaymentMode[]
   transactions  AccountTransaction[]
   transfersFrom Transfer[]           @relation("fromAccount")
   transfersTo   Transfer[]           @relation("toAccount")
   payments      Payment[]
   expenses      Expense[]
+  expenseCategories ExpenseCategory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([code, outletId])
   @@unique([name, outletId])
   @@index([outletId])
   @@index([type])
+  @@index([outletId, group])
 }
 
 model AccountPaymentMode {
@@ -495,14 +490,14 @@ model Transfer {
 }
 
 model ExpenseCategory {
-  id       String @id @default(cuid())
-  outletId String
-  outlet   Outlet @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  outletId  String
+  outlet    Outlet  @relation(fields: [outletId], references: [id], onDelete: Cascade)
 
-  name        String
-  code        String // 5001, 5002, etc.
-  glAccountId String
-  glAccount   GLAccount @relation(fields: [glAccountId], references: [id])
+  name      String
+  code      String
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id])
 
   isActive Boolean @default(true)
 
@@ -513,7 +508,7 @@ model ExpenseCategory {
 
   @@unique([code, outletId])
   @@index([outletId])
-  @@index([glAccountId])
+  @@index([accountId])
 }
 
 model Expense {

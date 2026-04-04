@@ -27,21 +27,12 @@ import {
   Eye,
   Loader2,
   X,
-  Filter,
-  RotateCcw,
 } from "lucide-react";
 
 import { ReportsLayout } from "@/components/reports";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ReportFilters } from "@/components/reports/report-filters";
 import {
   Dialog,
   DialogContent,
@@ -224,9 +215,33 @@ export default function PnLClient({
   };
 
   // Handle outlet change
-  const handleOutletChange = (outletId: string | null) => {
-    if (!outletId) return;
+  const handleOutletChange = (outletId: string) => {
     updateURL({ outletId });
+  };
+
+  // Handle date range change from ReportFilters
+  const handleFilterDateChange = (startDate: Date, endDate: Date) => {
+    updateURL({
+      preset: "custom",
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    });
+  };
+
+  // Handle reset
+  const handleReset = () => {
+    updateURL({
+      preset: null,
+      startDate: null,
+      endDate: null,
+      outletId: null,
+    });
+    setShowComparison(false);
+  };
+
+  // Handle apply (no-op since filters update URL on change)
+  const handleApply = () => {
+    // Filters are updated live via URL params
   };
 
   // Handle drill-down click
@@ -323,119 +338,89 @@ export default function PnLClient({
       title="Profit & Loss Statement"
       description="Income vs Expenditure Statement with period comparison"
     >
-      {/* Filter Panel */}
-      <Card className="mb-6">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Filter className="w-5 h-5 text-blue-600" />
-              <CardTitle className="text-lg">Report Filters</CardTitle>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                handlePresetChange("this_month");
-                handleOutletChange(currentOutletId);
-                setShowComparison(false);
-              }}
-            >
-              <RotateCcw className="w-4 h-4 mr-1" />
-              Reset
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Period Preset - Separate from ReportFilters */}
+      <Card className="mb-4">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Period Preset */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">
                 Period Preset
               </label>
-              <Select value={currentPreset} onValueChange={handlePresetChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PERIOD_PRESETS.map((preset) => (
-                    <SelectItem key={preset.value} value={preset.value}>
-                      {preset.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Date Range */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">
-                Date Range
-              </label>
-              <DateRangePicker
-                value={{ from: currentPeriodStart, to: currentPeriodEnd }}
-                onChange={handleDateRangeChange}
-                placeholder="Select period"
-              />
-            </div>
-
-            {/* Outlet Filter */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">
-                Outlet
-              </label>
-              <Select
-                value={selectedOutletId}
-                onValueChange={handleOutletChange}
+              <select
+                value={currentPreset}
+                onChange={(e) => handlePresetChange(e.target.value as PeriodPreset)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    All Outlets (Consolidated)
-                  </SelectItem>
-                  {outlets.map((outlet) => (
-                    <SelectItem key={outlet.id} value={outlet.id}>
-                      {outlet.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {PERIOD_PRESETS.map((preset) => (
+                  <option key={preset.value} value={preset.value}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Comparison Toggle */}
+            {/* Period Info Display */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">
-                Comparison
+              <label className="text-sm font-medium text-slate-700 opacity-0">
+                &nbsp;
               </label>
-              <Button
-                variant={showComparison ? "default" : "outline"}
-                className="w-full"
-                onClick={() => setShowComparison(!showComparison)}
-              >
-                {showComparison ? "Hide Comparison" : "Show Comparison"}
-              </Button>
-            </div>
-          </div>
-
-          {/* Period Info Display */}
-          <div className="mt-4 flex items-center gap-4 text-sm text-slate-500">
-            <div className="flex items-center gap-1">
-              <Calendar className="w-4 h-4" />
-              <span>
-                {formatDate(currentPeriodStart)} -{" "}
-                {formatDate(currentPeriodEnd)}
-              </span>
-            </div>
-            {data.outletInfo && (
-              <div className="flex items-center gap-1">
-                <Building2 className="w-4 h-4" />
-                <span>{data.outletInfo.name}</span>
+              <div className="flex items-center gap-4 text-sm text-slate-600 pt-2">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {formatDate(currentPeriodStart)} - {formatDate(currentPeriodEnd)}
+                  </span>
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Outlet Display */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 opacity-0">
+                &nbsp;
+              </label>
+              {data.outletInfo && (
+                <div className="flex items-center gap-2 text-sm text-slate-600 pt-2">
+                  <Building2 className="w-4 h-4" />
+                  <span>{data.outletInfo.name}</span>
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Main Filter Panel - Using ReportFilters Component */}
+      <ReportFilters
+        outlets={outlets}
+        selectedOutletId={selectedOutletId}
+        onOutletChange={handleOutletChange}
+        startDate={currentPeriodStart}
+        endDate={currentPeriodEnd}
+        onDateChange={handleFilterDateChange}
+        onReset={handleReset}
+        onApply={handleApply}
+        isPending={isPending}
+        showDateRange={true}
+        showOutlet={true}
+        allowMultipleOutlets={true}
+        applyButtonLabel="Apply Filters"
+      >
+        {/* Comparison Toggle */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">
+            Comparison
+          </label>
+          <Button
+            variant={showComparison ? "default" : "outline"}
+            className="w-full"
+            onClick={() => setShowComparison(!showComparison)}
+          >
+            {showComparison ? "Hide Comparison" : "Show Comparison"}
+          </Button>
+        </div>
+      </ReportFilters>
 
       {/* Loading State */}
       {isPending && (

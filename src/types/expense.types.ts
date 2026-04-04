@@ -145,11 +145,11 @@ export interface ExpenseCategoryDetail {
   id: string;
   name: string;
   code: string;
-  glAccountId: string;
-  glAccount: {
+  accountId: string;
+  account: {
     id: string;
     name: string;
-    code: string;
+    code: string | null;
   };
   isActive: boolean;
   createdAt: Date;
@@ -221,7 +221,7 @@ export interface UpdateExpenseFormData {
 export interface CreateExpenseCategoryFormData {
   name: string;
   code: string;
-  glAccountId: string;
+  accountId: string;
   outletId: string;
 }
 
@@ -229,7 +229,7 @@ export interface CreateExpenseCategoryFormData {
 export type CreateExpenseCategoryInput = {
   name: string;
   code: string;
-  glAccountId: string;
+  accountId: string;
   outletId: string;
 };
 

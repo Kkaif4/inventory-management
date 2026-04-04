@@ -11,7 +11,7 @@ export const AccountingService = {
   async postJournalEntry(
     tx: any,
     data: {
-      transactionId: string;
+      transactionId?: string;
       partyId?: string;
       date?: Date; // Optional — pass historical date for OLD bills; omit for current date
       entries: {
@@ -53,7 +53,7 @@ export const AccountingService = {
    * Helper to find standard accounts by name/code
    */
   async findAccountByCode(code: string, outletId: string) {
-    return await prisma.gLAccount.findUnique({
+    return await prisma.account.findUnique({
       where: { code_outletId: { code, outletId } },
     });
   },
@@ -158,10 +158,10 @@ export async function initializeCOA(outletId: string) {
   ];
 
   for (const acc of accounts) {
-    await prisma.gLAccount.upsert({
+    await prisma.account.upsert({
       where: { code_outletId: { code: acc.code, outletId } },
       update: {},
-      create: { ...acc, outletId } as any,
+      create: { ...acc, outletId, openingBalance: 0, currentBalance: 0, type: null } as any,
     });
   }
 }

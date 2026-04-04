@@ -352,22 +352,22 @@ export async function createPurchaseBill(data: {
       });
 
       // 3. Automated Accounting Entries
-      const purchaseAcc = await tx.gLAccount.findUnique({
+      const purchaseAcc = await tx.account.findUnique({
         where: { code_outletId: { code: "4001", outletId: source.outletId } },
       });
-      const inputCgstAcc = await tx.gLAccount.findUnique({
+      const inputCgstAcc = await tx.account.findUnique({
         where: { code_outletId: { code: "1005", outletId: source.outletId } },
       });
-      const inputSgstAcc = await tx.gLAccount.findUnique({
+      const inputSgstAcc = await tx.account.findUnique({
         where: { code_outletId: { code: "1006", outletId: source.outletId } },
       });
-      const inputIgstAcc = await tx.gLAccount.findUnique({
+      const inputIgstAcc = await tx.account.findUnique({
         where: { code_outletId: { code: "1007", outletId: source.outletId } },
       });
-      const creditorAcc = await tx.gLAccount.findUnique({
+      const creditorAcc = await tx.account.findUnique({
         where: { code_outletId: { code: "2001", outletId: source.outletId } },
       });
-      const freightAcc = await tx.gLAccount.findUnique({
+      const freightAcc = await tx.account.findUnique({
         where: { code_outletId: { code: "4002", outletId: source.outletId } },
       });
 

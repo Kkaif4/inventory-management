@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 const invoiceItemSchema = z.object({
-  variantId: z.string(),
+  variantId: z.string().min(1, "Product is required"),
   productName: z.string().optional(),
-  description: z.string(),
+  description: z.string().min(1, "Description is required"),
   quantity: z.number().min(0.01, "Qty > 0"),
   unit: z.enum(["BASE", "SALES"]).default("BASE"),
   rate: z.number().min(0, "Rate >= 0"),
@@ -20,7 +20,7 @@ const invoiceItemSchema = z.object({
 // No.1 Legal Invoice Schema
 export const createNo1InvoiceSchema = z.object({
   billType: z.literal("NO1"),
-  txnNumber: z.string().min(1, "Invoice number is required"),
+  txnNumber: z.string().optional(),
   partyId: z.string().min(1, "Customer is required"),
   fromOutletId: z.string().min(1, "Outlet is required"),
   date: z.coerce.date(),
@@ -37,7 +37,7 @@ export const createNo1InvoiceSchema = z.object({
 // No.2 Raw Cash Memo Schema
 export const createNo2InvoiceSchema = z.object({
   billType: z.literal("NO2"),
-  txnNumber: z.string().min(1, "Invoice number is required"),
+  txnNumber: z.string().optional(),
   fromOutletId: z.string().min(1, "Outlet is required"),
   date: z.coerce.date(),
   buyerName: z.string().default(""),
@@ -50,14 +50,14 @@ export const createNo2InvoiceSchema = z.object({
 });
 
 const oldBillPaymentSchema = z.object({
-  amount: z.number().min(0.01),
+  amount: z.number().min(0.01, "Payment amount must be > 0"),
   paymentDate: z.coerce.date(),
   note: z.string().optional(),
 });
 
 export const createOldBillSchema = z.object({
   billType: z.literal("OLD"),
-  fromOutletId: z.string().min(1),
+  fromOutletId: z.string().min(1, "Outlet is required"),
   customBillNo: z.string().optional(),       // Optional — auto-generated if blank
   date: z.coerce.date(),                     // Historical bill date
   buyerName: z.string().min(1, "Customer name is required"),
@@ -65,13 +65,28 @@ export const createOldBillSchema = z.object({
   partyId: z.string().optional(),            // Set after user picks/creates customer
   grandTotal: z.number().min(0.01, "Total must be > 0"),
   items: z.array(z.object({
-    itemDescription: z.string().min(1),
-    quantity: z.number().min(0.01),
-    rate: z.number().min(0),
+    itemDescription: z.string().min(1, "Item description required"),
+    quantity: z.number().min(0.01, "Quantity > 0"),
+    rate: z.number().min(0, "Rate >= 0"),
   })).optional(),
+  headerDiscount: z.number().min(0).max(100).default(0).optional(), // Bill discount %
+  freightCost: z.number().min(0, "Freight >= 0").default(0).optional(),
   payments: z.array(oldBillPaymentSchema).default([]),
   remarks: z.string().optional(),
 }).superRefine((data, ctx) => {
+  // Validate total is calculated correctly: (sum(quantity * rate) - headerDiscount%) + freight
+  const itemsSubtotal = (data.items || []).reduce((sum, item) => sum + (item.quantity * item.rate), 0);
+  const discountAmount = (itemsSubtotal * (data.headerDiscount || 0)) / 100;
+  const expectedTotal = itemsSubtotal - discountAmount + (data.freightCost || 0);
+
+  if (Math.abs(data.grandTotal - expectedTotal) > 0.01) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Total mismatch: Expected ₹${expectedTotal.toFixed(2)} (items - discount + freight), got ₹${data.grandTotal.toFixed(2)}`,
+      path: ["grandTotal"]
+    });
+  }
+
   const totalPaid = data.payments.reduce((s, p) => s + p.amount, 0);
   if (totalPaid > data.grandTotal + 0.005) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Payments exceed total", path: ["payments"] });

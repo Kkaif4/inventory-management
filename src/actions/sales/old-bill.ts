@@ -24,6 +24,25 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
     await validateSessionOutletAccess(data.fromOutletId);
 
     return await prisma.$transaction(async (tx) => {
+      // 0. Calculate grandTotal from items, discount, freight
+      // Formula: (quantity * rate) - (discount%) + freight
+      const itemsSubtotal = roundToTwo(
+        (data.items || []).reduce((sum, item) => {
+          return sum + roundToTwo(item.quantity * item.rate);
+        }, 0)
+      );
+
+      const discountAmount = roundToTwo((itemsSubtotal * (data.headerDiscount || 0)) / 100);
+      const calculatedGrandTotal = roundToTwo(itemsSubtotal - discountAmount + (data.freightCost || 0));
+
+      // Validate that provided grandTotal matches calculation (within tolerance)
+      if (Math.abs(data.grandTotal - calculatedGrandTotal) > 0.01) {
+        throw new ValidationError(
+          `Total mismatch: Calculated ₹${calculatedGrandTotal} but got ₹${data.grandTotal}. ` +
+          `Total = (Quantity × Rate) - (Discount%) + Freight`
+        );
+      }
+
       // 1. Party Handling - Phone is NOT a unique key for OLD bills
       let partyId = data.partyId;
       if (!partyId) {
@@ -47,7 +66,7 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
       let txnNumber: string;
       if (data.customBillNo?.trim()) {
         txnNumber = `OLD/${data.customBillNo.trim()}`;
-        
+
         // Check for uniqueness within the system
         const existing = await tx.transaction.findUnique({
           where: { txnNumber },
@@ -62,11 +81,11 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
 
       // 3. Determine Status & Payment Date (Historical)
       const totalPaid = roundToTwo(data.payments.reduce((s, p) => s + p.amount, 0));
-      const balance = roundToTwo(data.grandTotal - totalPaid);
+      const balance = roundToTwo(calculatedGrandTotal - totalPaid);
       let status = "POSTED";
       let paidAt: Date | null = null;
 
-      if (totalPaid >= data.grandTotal - 0.005) {
+      if (totalPaid >= calculatedGrandTotal - 0.005) {
         status = "PAID";
         if (data.payments.length > 0) {
           paidAt = new Date(Math.max(...data.payments.map(p => new Date(p.paymentDate).getTime())));
@@ -79,13 +98,13 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
 
       // 4. Fetch GL Accounts for ledger entries
       const [salesAcc, debtorAcc, cashAcc] = await Promise.all([
-        tx.gLAccount.findUnique({
+        tx.account.findUnique({
           where: { code_outletId: { code: "3001", outletId: data.fromOutletId } },
         }),
-        tx.gLAccount.findUnique({
+        tx.account.findUnique({
           where: { code_outletId: { code: "1003", outletId: data.fromOutletId } },
         }),
-        tx.gLAccount.findUnique({
+        tx.account.findUnique({
           where: { code_outletId: { code: "1001", outletId: data.fromOutletId } },
         }),
       ]);
@@ -108,10 +127,11 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
           partyId,
           outletId: data.fromOutletId,
           userId: data.userId,
-          grandTotal: data.grandTotal,
-          totalTaxable: data.grandTotal,
+          grandTotal: calculatedGrandTotal,
+          totalTaxable: itemsSubtotal,
           totalTax: 0,
-          freightCost: 0,
+          globalDiscount: data.headerDiscount || 0,
+          freightCost: data.freightCost || 0,
           status,
           paidAt,
           remarks: data.remarks,
@@ -147,8 +167,16 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
         partyId,
         date: new Date(data.date), // Historical bill date, NOT today
         entries: [
-          { accountId: debtorAcc.id, debit: roundToTwo(data.grandTotal) },
-          { accountId: salesAcc.id, credit: roundToTwo(data.grandTotal) },
+          {
+            accountId: debtorAcc.id,
+            debit: calculatedGrandTotal,
+            reference: `Historical bill ${txnNumber}`
+          },
+          {
+            accountId: salesAcc.id,
+            credit: calculatedGrandTotal,
+            reference: `Historical bill ${txnNumber}`
+          },
         ],
       });
 
@@ -163,14 +191,22 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
           partyId,
           date: new Date(payment.paymentDate), // Historical payment date, NOT today
           entries: [
-            { accountId: cashAcc.id, debit: roundToTwo(payment.amount) },
-            { accountId: debtorAcc.id, credit: roundToTwo(payment.amount) },
+            {
+              accountId: cashAcc.id,
+              debit: roundToTwo(payment.amount),
+              reference: `Payment for historical bill ${txnNumber}`
+            },
+            {
+              accountId: debtorAcc.id,
+              credit: roundToTwo(payment.amount),
+              reference: `Payment for historical bill ${txnNumber}`
+            },
           ],
         });
       }
 
       // 8. Update Party outstanding balance
-      //    Only increment by the unpaid portion (grandTotal - totalPaid)
+      //    Only increment by the unpaid portion (calculatedGrandTotal - totalPaid)
       if (balance > 0.005) {
         await tx.party.update({
           where: { id: partyId },
@@ -190,10 +226,14 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
          await migrateAttachments("INVOICE", `TEMP:${data.customBillNo}`, transaction.id);
       }
 
+      // Revalidate all affected pages
       revalidatePath("/dashboard/sales/invoices");
       revalidatePath("/dashboard/reports/sales");
-      
-      return { transaction };
+      revalidatePath(`/dashboard/sales/customers/${partyId}`);
+      revalidatePath("/dashboard/sales/customers");
+      revalidatePath("/dashboard/financials/ledger");
+
+      return { transaction, partyId };
     });
   });
 }

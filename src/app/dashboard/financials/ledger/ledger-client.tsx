@@ -5,8 +5,17 @@ import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { TableToolbar } from "@/components/ui/table-toolbar";
+import { ReportFilters } from "@/components/reports/report-filters";
 
-export function LedgerClient({ entries }: { entries: any[] }) {
+export function LedgerClient({
+  entries,
+  outlets,
+}: {
+  entries: any[];
+  outlets: { id: string; name: string }[];
+}) {
+  // Note: Ledger is typically showing all entries, but filter UI is available
+  const defaultOutlet = outlets[0]?.id || "";
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "date",
@@ -65,13 +74,23 @@ export function LedgerClient({ entries }: { entries: any[] }) {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <PageHeader
         title="General Ledger"
         subtitle="Detailed record of all financial transactions."
         breadcrumbs={[{ label: "Financials" }, { label: "Ledger" }]}
       />
-      <TableToolbar searchPlaceholder="Search entries..." />
+
+      {/* Filter Panel - Reusable Component */}
+      <ReportFilters
+        outlets={outlets}
+        selectedOutletId={defaultOutlet}
+        showDateRange={false}
+        showOutlet={true}
+        applyButtonLabel="Search"
+      />
+
+      <TableToolbar searchPlaceholder="Search by account, reference, or description..." />
       <DataTable columns={columns} data={entries} />
     </div>
   );

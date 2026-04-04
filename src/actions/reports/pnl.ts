@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/error-handler";
 import { requireAdminSession, getSessionWithOutlets } from "@/lib/outlet-auth";
+import { roundToTwo } from "@/lib/utils";
 
 export interface PnLLineItem {
   accountId: string;
@@ -116,183 +117,157 @@ export async function getPnL(
 }
 
 /**
- * Calculate P&L for a single period
+ * Calculate P&L for a single period using actual transaction data
+ * No longer dependent on GL accounts — derives from transactions and expenses
  */
 async function calculatePnLPeriod(
   startDate: Date,
   endDate: Date,
   outletId?: string,
 ): Promise<PnLStructure> {
-  // Build where clause for ledger entries
-  const entriesWhere: any = {
-    date: {
-      gte: startDate,
-      lte: endDate,
-    },
-  };
-
-  // If outletId is provided, filter by outlet through transaction
-  // Note: Ledger entries don't have outletId directly, so we need to join via transaction
-  // or filter accounts by outletId
-  const accountWhere: any = {};
-  if (outletId) {
-    accountWhere.outletId = outletId;
-  }
-
-  // Fetch all relevant accounts with their entries for the period
-  const accounts = await prisma.gLAccount.findMany({
+  // ─── SALES REVENUE ───────────────────────────────────────────────────────
+  // Sum of all SALES_INVOICE grand totals
+  const salesInvoices = await prisma.transaction.groupBy({
+    by: ["billType"],
     where: {
-      ...accountWhere,
-      group: { in: ["INCOME", "EXPENSE"] },
+      type: "SALES_INVOICE",
+      date: { gte: startDate, lte: endDate },
+      status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
+      ...(outletId && { outletId }),
     },
-    include: {
-      entries: {
-        where: entriesWhere,
-        select: {
-          debit: true,
-          credit: true,
-        },
-      },
-    },
+    _sum: { grandTotal: true },
   });
 
-  // Categorize accounts by code ranges
-  const salesNo1 = accounts.find((a) => a.code === "3001");
-  const salesNo2 = accounts.find((a) => a.code === "3002");
+  const salesNo1Amount = roundToTwo(
+    salesInvoices.find((s) => s.billType === "NO1")?._sum.grandTotal ?? 0,
+  );
+  const salesNo2Amount = roundToTwo(
+    salesInvoices.find((s) => s.billType === "NO2")?._sum.grandTotal ?? 0,
+  );
 
-  const purchases = accounts.find((a) => a.code === "4001");
-  const freightInward = accounts.find((a) => a.code === "4002");
-
-  // Calculate amounts for each account
-  const calculateBalance = (account: (typeof accounts)[0], group: string) => {
-    const totalDebit = account.entries.reduce((sum, e) => sum + e.debit, 0);
-    const totalCredit = account.entries.reduce((sum, e) => sum + e.credit, 0);
-
-    if (group === "INCOME") {
-      return totalCredit - totalDebit; // Income = Credit - Debit
-    } else {
-      return totalDebit - totalCredit; // Expense = Debit - Credit
-    }
-  };
-
-  // Build line items
-  const salesNo1Item: PnLLineItem | null = salesNo1
+  const salesNo1Item: PnLLineItem | null = salesNo1Amount > 0
     ? {
-        accountId: salesNo1.id,
-        accountCode: salesNo1.code,
-        accountName: salesNo1.name,
-        amount: calculateBalance(salesNo1, "INCOME"),
+        accountId: "sales-no1-synthetic",
+        accountCode: "3001",
+        accountName: "Sales (NO1 - GST)",
+        amount: salesNo1Amount,
       }
     : null;
 
-  const salesNo2Item: PnLLineItem | null = salesNo2
+  const salesNo2Item: PnLLineItem | null = salesNo2Amount > 0
     ? {
-        accountId: salesNo2.id,
-        accountCode: salesNo2.code,
-        accountName: salesNo2.name,
-        amount: calculateBalance(salesNo2, "INCOME"),
+        accountId: "sales-no2-synthetic",
+        accountCode: "3002",
+        accountName: "Cash Sales (NO2)",
+        amount: salesNo2Amount,
       }
     : null;
 
-  // Other income accounts (3xxx except 3001, 3002)
-  const otherIncomeItems: PnLLineItem[] = accounts
-    .filter(
-      (a) =>
-        a.group === "INCOME" &&
-        a.code.startsWith("3") &&
-        a.code !== "3001" &&
-        a.code !== "3002",
-    )
-    .map((a) => ({
-      accountId: a.id,
-      accountCode: a.code,
-      accountName: a.name,
-      amount: calculateBalance(a, "INCOME"),
-    }))
-    .filter((item) => item.amount !== 0); // Filter zero balances
+  const grossRevenue = roundToTwo(salesNo1Amount + salesNo2Amount);
 
-  // Calculate Gross Revenue
-  const grossRevenue =
-    (salesNo1Item?.amount || 0) +
-    (salesNo2Item?.amount || 0) +
-    otherIncomeItems.reduce((sum, item) => sum + item.amount, 0);
+  // ─── COST OF GOODS SOLD ──────────────────────────────────────────────────
+  // Purchase Bills: Sum of BILL grand totals
+  const purchaseBills = await prisma.transaction.aggregate({
+    where: {
+      type: "PURCHASE_BILL",
+      date: { gte: startDate, lte: endDate },
+      status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
+      ...(outletId && { outletId }),
+    },
+    _sum: { grandTotal: true },
+  });
 
-  // COGS Section
-  const purchasesItem: PnLLineItem | null = purchases
+  const purchasesAmount = roundToTwo(purchaseBills._sum.grandTotal ?? 0);
+
+  const purchasesItem: PnLLineItem | null = purchasesAmount > 0
     ? {
-        accountId: purchases.id,
-        accountCode: purchases.code,
-        accountName: purchases.name,
-        amount: calculateBalance(purchases, "EXPENSE"),
+        accountId: "purchases-synthetic",
+        accountCode: "4001",
+        accountName: "Purchases",
+        amount: purchasesAmount,
       }
     : null;
 
-  const freightInwardItem: PnLLineItem | null = freightInward
+  // Freight: Sum of freightCost from all invoices/bills
+  const freightTotal = await prisma.transaction.aggregate({
+    where: {
+      type: { in: ["SALES_INVOICE", "PURCHASE_BILL"] },
+      date: { gte: startDate, lte: endDate },
+      status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
+      ...(outletId && { outletId }),
+    },
+    _sum: { freightCost: true },
+  });
+
+  const freightAmount = roundToTwo(freightTotal._sum.freightCost ?? 0);
+
+  const freightInwardItem: PnLLineItem | null = freightAmount > 0
     ? {
-        accountId: freightInward.id,
-        accountCode: freightInward.code,
-        accountName: freightInward.name,
-        amount: calculateBalance(freightInward, "EXPENSE"),
+        accountId: "freight-synthetic",
+        accountCode: "4002",
+        accountName: "Freight Inward",
+        amount: freightAmount,
       }
     : null;
 
-  // Other direct expenses (4xxx except 4001, 4002)
-  const directExpenseItems: PnLLineItem[] = accounts
-    .filter(
-      (a) =>
-        a.group === "EXPENSE" &&
-        a.code.startsWith("4") &&
-        a.code !== "4001" &&
-        a.code !== "4002",
-    )
-    .map((a) => ({
-      accountId: a.id,
-      accountCode: a.code,
-      accountName: a.name,
-      amount: calculateBalance(a, "EXPENSE"),
-    }))
-    .filter((item) => item.amount !== 0);
-
-  // Calculate Total COGS
-  const totalCOGS =
-    (purchasesItem?.amount || 0) +
-    (freightInwardItem?.amount || 0) +
-    directExpenseItems.reduce((sum, item) => sum + item.amount, 0);
+  const totalCOGS = roundToTwo(purchasesAmount + freightAmount);
 
   // Gross Profit
-  const grossProfit = grossRevenue - totalCOGS;
+  const grossProfit = roundToTwo(grossRevenue - totalCOGS);
   const grossProfitPercent =
-    grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0;
+    grossRevenue > 0 ? roundToTwo((grossProfit / grossRevenue) * 100) : 0;
 
-  // Operating Expenses (5xxx)
-  const operatingExpenseItems: PnLLineItem[] = accounts
-    .filter((a) => a.group === "EXPENSE" && a.code.startsWith("5"))
-    .map((a) => ({
-      accountId: a.id,
-      accountCode: a.code,
-      accountName: a.name,
-      amount: calculateBalance(a, "EXPENSE"),
-    }))
-    .filter((item) => item.amount !== 0);
+  // ─── OPERATING EXPENSES ──────────────────────────────────────────────────
+  // Group expenses by category
+  const expenses = await prisma.expense.groupBy({
+    by: ["categoryId"],
+    where: {
+      date: { gte: startDate, lte: endDate },
+      ...(outletId && { outletId }),
+    },
+    _sum: { totalAmount: true },
+  });
 
-  const totalOperatingExpenses = operatingExpenseItems.reduce(
-    (sum, item) => sum + item.amount,
-    0,
+  // Fetch category names for labeling
+  const categoryIds = expenses.map((e) => e.categoryId);
+  const categories = await prisma.expenseCategory.findMany({
+    where: { id: { in: categoryIds } },
+    select: { id: true, name: true },
+  });
+
+  const categoryMap = Object.fromEntries(
+    categories.map((c) => [c.id, c.name]),
+  );
+
+  const operatingExpenseItems: PnLLineItem[] = expenses
+    .map((exp) => {
+      const amount = roundToTwo(Number(exp._sum.totalAmount ?? 0));
+      return {
+        accountId: exp.categoryId,
+        accountCode: "5xxx",
+        accountName: categoryMap[exp.categoryId] || "Unknown Category",
+        amount,
+      };
+    })
+    .filter((item) => item.amount > 0);
+
+  const totalOperatingExpenses = roundToTwo(
+    operatingExpenseItems.reduce((sum, item) => sum + item.amount, 0),
   );
 
   // Net Profit
-  const netProfit = grossProfit - totalOperatingExpenses;
+  const netProfit = roundToTwo(grossProfit - totalOperatingExpenses);
   const netProfitPercent =
-    grossRevenue > 0 ? (netProfit / grossRevenue) * 100 : 0;
+    grossRevenue > 0 ? roundToTwo((netProfit / grossRevenue) * 100) : 0;
 
   return {
     salesNo1: salesNo1Item,
     salesNo2: salesNo2Item,
-    otherIncome: otherIncomeItems,
+    otherIncome: [], // No other income tracked currently
     grossRevenue,
     purchases: purchasesItem,
     freightInward: freightInwardItem,
-    directExpenses: directExpenseItems,
+    directExpenses: [], // Direct expenses rolled into COGS
     totalCOGS,
     grossProfit,
     grossProfitPercent,
@@ -305,6 +280,7 @@ async function calculatePnLPeriod(
 
 /**
  * Get drill-down details for a specific P&L line item
+ * accountId format: "sales-no1-synthetic", "sales-no2-synthetic", "purchases-synthetic", or actual categoryId
  */
 export async function getPnLDrillDown(
   accountId: string,
@@ -315,57 +291,143 @@ export async function getPnLDrillDown(
   return withErrorHandler(async () => {
     await requireAdminSession();
 
-    const entriesWhere: any = {
-      accountId,
-      date: {
-        gte: startDate,
-        lte: endDate,
-      },
-    };
-
-    const entries = await prisma.ledgerEntry.findMany({
-      where: entriesWhere,
-      include: {
-        transaction: {
+    // Synthetic accounts (sales, purchases, freight)
+    if (accountId.includes("synthetic")) {
+      if (accountId === "sales-no1-synthetic") {
+        const invoices = await prisma.transaction.findMany({
+          where: {
+            type: "SALES_INVOICE",
+            billType: "NO1",
+            date: { gte: startDate, lte: endDate },
+            status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
+            ...(outletId && { outletId }),
+          },
           select: {
             id: true,
             txnNumber: true,
-            type: true,
             date: true,
-            party: {
-              select: {
-                name: true,
-              },
-            },
+            grandTotal: true,
+            party: { select: { name: true } },
           },
-        },
-        account: {
+          orderBy: { date: "desc" },
+        });
+        return invoices.map((inv) => ({
+          id: inv.id,
+          date: inv.date,
+          reference: inv.txnNumber,
+          debit: 0,
+          credit: inv.grandTotal,
+          accountName: "Sales (NO1 - GST)",
+          accountCode: "3001",
+          transaction: {
+            id: inv.id,
+            number: inv.txnNumber,
+            type: "SALES_INVOICE",
+            date: inv.date,
+            partyName: inv.party?.name,
+          },
+        }));
+      } else if (accountId === "sales-no2-synthetic") {
+        const invoices = await prisma.transaction.findMany({
+          where: {
+            type: "SALES_INVOICE",
+            billType: "NO2",
+            date: { gte: startDate, lte: endDate },
+            status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
+            ...(outletId && { outletId }),
+          },
           select: {
-            name: true,
-            code: true,
+            id: true,
+            txnNumber: true,
+            date: true,
+            grandTotal: true,
           },
-        },
+          orderBy: { date: "desc" },
+        });
+        return invoices.map((inv) => ({
+          id: inv.id,
+          date: inv.date,
+          reference: inv.txnNumber,
+          debit: 0,
+          credit: inv.grandTotal,
+          accountName: "Cash Sales (NO2)",
+          accountCode: "3002",
+          transaction: {
+            id: inv.id,
+            number: inv.txnNumber,
+            type: "SALES_INVOICE",
+            date: inv.date,
+            partyName: null,
+          },
+        }));
+      } else if (accountId === "purchases-synthetic") {
+        const bills = await prisma.transaction.findMany({
+          where: {
+            type: "PURCHASE_BILL",
+            date: { gte: startDate, lte: endDate },
+            status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
+            ...(outletId && { outletId }),
+          },
+          select: {
+            id: true,
+            txnNumber: true,
+            date: true,
+            grandTotal: true,
+            party: { select: { name: true } },
+          },
+          orderBy: { date: "desc" },
+        });
+        return bills.map((bill) => ({
+          id: bill.id,
+          date: bill.date,
+          reference: bill.txnNumber,
+          debit: bill.grandTotal,
+          credit: 0,
+          accountName: "Purchases",
+          accountCode: "4001",
+          transaction: {
+            id: bill.id,
+            number: bill.txnNumber,
+            type: "PURCHASE_BILL",
+            date: bill.date,
+            partyName: bill.party?.name,
+          },
+        }));
+      }
+    }
+
+    // Real account IDs: Expense categories
+    const expenses = await prisma.expense.findMany({
+      where: {
+        categoryId: accountId,
+        date: { gte: startDate, lte: endDate },
+        ...(outletId && { outletId }),
+      },
+      select: {
+        id: true,
+        date: true,
+        totalAmount: true,
+        description: true,
+        category: { select: { name: true } },
       },
       orderBy: { date: "desc" },
     });
 
-    return entries.map((entry) => ({
-      id: entry.id,
-      date: entry.date,
-      reference: entry.reference,
-      debit: entry.debit,
-      credit: entry.credit,
-      accountName: entry.account.name,
-      accountCode: entry.account.code,
-      transaction: entry.transaction
-        ? {
-            id: entry.transaction.id,
-            number: entry.transaction.txnNumber,
-            type: entry.transaction.type,
-            date: entry.transaction.date,
-            partyName: entry.transaction.party?.name,
-          }
-        : null,
+    return expenses.map((exp) => ({
+      id: exp.id,
+      date: exp.date,
+      reference: exp.description || "Expense",
+      debit: Number(exp.totalAmount),
+      credit: 0,
+      accountName: exp.category.name,
+      accountCode: "5xxx",
+      transaction: {
+        id: exp.id,
+        number: exp.id,
+        type: "EXPENSE",
+        date: exp.date,
+        partyName: null,
+      },
     }));
   });
 }

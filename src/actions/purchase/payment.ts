@@ -8,6 +8,7 @@ import { roundToTwo } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import type { RecordPaymentFormValues } from "@/validations/payment.validation";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
+import { AccountingService } from "@/domains/accounting/ledger-service";
 
 // ─── Record a payment against a posted bill ────────────────────────────────────
 // For vendors (we pay TO vendors). Updates accounts: Dr Creditor, Cr Bank/Cash
@@ -72,6 +73,11 @@ export async function recordVendorBillPayment(
       );
 
       // ── 4. Create Payment Record ───────────────────────────────────────────────
+      // Validate that accountId is provided (now required in Payment model)
+      if (!data.bankAccountId) {
+        throw new ValidationError("Payment account is required");
+      }
+
       const payment = await tx.payment.create({
         data: {
           txnNumber,
@@ -81,12 +87,78 @@ export async function recordVendorBillPayment(
           amount: data.amount,
           paymentDate: new Date(data.paymentDate),
           paymentMode: data.paymentMode,
-          glAccountId: data.bankAccountId || null,
+          accountId: data.bankAccountId,
           referenceNo: data.referenceNo || null,
           notes: data.notes || null,
           createdBy: data.userId,
         },
       });
+
+      // ── 4b. Create GL Entries for Payment (Double-Entry) ─────────────────────
+      // Dr Creditors (2001), Cr Cash/Bank (payment account)
+      const creditorAcc = await tx.account.findUnique({
+        where: { code_outletId: { code: "2001", outletId: data.outletId } },
+      });
+
+      if (creditorAcc && data.bankAccountId) {
+        await AccountingService.postJournalEntry(tx, {
+          transactionId: payment.id,
+          partyId: data.partyId,
+          date: new Date(data.paymentDate),
+          entries: [
+            // Dr Creditors - liability reduced
+            {
+              accountId: creditorAcc.id,
+              debit: data.amount,
+              reference: `Payment ${txnNumber} for Bill ${bill.txnNumber}`,
+            },
+            // Cr Cash/Bank - money paid out
+            {
+              accountId: data.bankAccountId,
+              credit: data.amount,
+              reference: `Payment ${txnNumber} for Bill ${bill.txnNumber}`,
+            },
+          ],
+        });
+      }
+
+      // ── 4c. Record in Account (if provided) ──────────────────────
+      if (data.bankAccountId) {
+        // Get current account balance for snapshot
+        const account = await tx.account.findUnique({
+          where: { id: data.bankAccountId },
+          select: { currentBalance: true },
+        });
+
+        if (account) {
+          const newBalance = roundToTwo(account.currentBalance - data.amount);
+
+          // Record the transaction
+          await tx.accountTransaction.create({
+            data: {
+              accountId: data.bankAccountId,
+              type: "OUT",
+              amount: data.amount,
+              paymentMode: data.paymentMode as any,
+              chequeNumber: data.chequeNumber || null,
+              chequeDate: data.chequeDate ? new Date(data.chequeDate) : null,
+              upiReferenceId: data.utrReferenceId || null,
+              transactionId: data.transactionId || null,
+              balanceAfter: newBalance,
+              linkedTxnId: data.invoiceId,
+              linkedTxnType: "VENDOR_PAYMENT",
+              remarks: `Payment for bill ${bill.txnNumber}`,
+              userId: data.userId,
+            },
+          });
+
+          // Update account balance
+          await tx.account.update({
+            where: { id: data.bankAccountId },
+            data: { currentBalance: newBalance },
+          });
+        }
+      }
 
       // ── 5. Update Bill Status ──────────────────────────────────────────────────
       const newTotalPaid = roundToTwo(totalPaid + data.amount);
@@ -166,63 +238,10 @@ export async function recordVendorBillPayment(
         }
       }
 
-      // ── 7. Create Journal Entry (Dr Creditor, Cr Bank/Cash) ────────────────────
-      // For vendor payments: we're paying OUT, so:
-      // - Debit: Creditor (reduce what we owe)
-      // - Credit: Bank/Cash (reduce bank balance)
-
-      let creditAccountCode = "1001"; // Default: Cash in Hand
-      if (["BankTransfer", "Cheque", "DD", "UPI"].includes(data.paymentMode)) {
-        if (data.bankAccountId) {
-          const bankAcc = await tx.account.findUnique({
-            where: { id: data.bankAccountId },
-            select: { id: true },
-          });
-          if (!bankAcc) throw new NotFoundError("Bank account not found");
-        }
-      }
-
-      // Creditor account code = 2001
-      const [creditorAcc, creditAcc] = await Promise.all([
-        tx.gLAccount.findFirst({
-          where: { code: "2001", outletId: data.outletId },
-        }),
-        data.bankAccountId
-          ? tx.gLAccount.findUnique({ where: { id: data.bankAccountId } })
-          : tx.gLAccount.findFirst({
-              where: { code: creditAccountCode, outletId: data.outletId },
-            }),
-      ]);
-
-      if (creditorAcc && creditAcc) {
-        await tx.ledgerEntry.createMany({
-          data: [
-            {
-              // Dr Creditor — reduces amount we owe
-              accountId: creditorAcc.id,
-              partyId: bill.partyId ?? undefined,
-              transactionId: bill.id,
-              date: new Date(data.paymentDate),
-              debit: data.amount,
-              credit: 0,
-              reference: `${txnNumber} — ${data.paymentMode}`,
-            },
-            {
-              // Cr Bank / Cash — money goes out
-              accountId: creditAcc.id,
-              partyId: bill.partyId ?? undefined,
-              transactionId: bill.id,
-              date: new Date(data.paymentDate),
-              debit: 0,
-              credit: data.amount,
-              reference: `${txnNumber} — ${data.paymentMode}`,
-            },
-          ],
-        });
-      }
 
       revalidatePath(`/dashboard/purchase/vendors/${data.partyId}`);
       revalidatePath("/dashboard/purchase/vendors");
+      revalidatePath("/dashboard/financials/ledger");
 
       return {
         payment,

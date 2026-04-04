@@ -622,7 +622,7 @@ export default function InvoiceDetailPage() {
                             {p.paymentMode === "BankTransfer"
                               ? "Bank Transfer"
                               : p.paymentMode}
-                            {p.glAccount ? ` · ${p.glAccount.name}` : ""}
+                            {p.account ? ` · ${p.account.name}` : ""}
                           </span>
                         </td>
                         <td className="px-5 py-3 text-slate-500 text-xs font-mono">

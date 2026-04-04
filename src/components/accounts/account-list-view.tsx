@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 type Account = {
   id: string;
   name: string;
-  type: "CASH" | "BANK";
+  type: "CASH" | "BANK" | null;
   openingBalance: number;
   currentBalance: number;
   createdAt: Date | string;
@@ -40,9 +40,10 @@ export function AccountListView({ accounts }: AccountListViewProps) {
     return "text-emerald-600";
   };
 
-  const getAccountIcon = (type: string) => {
+  const getAccountIcon = (type: string | null) => {
     if (type === "CASH") return "💵";
-    return "🏦";
+    if (type === "BANK") return "🏦";
+    return "📊";
   };
 
   if (accounts.length === 0) {
@@ -169,16 +170,18 @@ export function AccountListView({ accounts }: AccountListViewProps) {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <Badge
-                      variant={account.type === "CASH" ? "default" : "secondary"}
-                      className={`${
-                        account.type === "CASH"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {account.type}
-                    </Badge>
+                    {account.type && (
+                      <Badge
+                        variant={account.type === "CASH" ? "default" : "secondary"}
+                        className={`${
+                          account.type === "CASH"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
+                        {account.type}
+                      </Badge>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-right text-slate-700 font-mono text-sm">
                     ₹{account.openingBalance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}

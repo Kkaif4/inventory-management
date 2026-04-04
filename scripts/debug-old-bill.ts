@@ -32,7 +32,7 @@ async function run() {
   } catch (e) {
     console.error("EXCEPTION:::", e);
   } finally {
-    await prisma.gLAccount.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.account.deleteMany({ where: { outletId: testOutletId } });
     await prisma.outlet.delete({ where: { id: testOutletId } });
     await prisma.user.delete({ where: { id: testUserId } });
   }

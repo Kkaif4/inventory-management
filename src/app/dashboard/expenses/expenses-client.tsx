@@ -413,8 +413,8 @@ export function ExpensesClient({
         <DataTable
           columns={columns}
           data={initialData}
-          onRowClick={(row: any) =>
-            router.push(`/dashboard/expenses/${row.original.id}`)
+          onRowClick={(expense: any) =>
+            router.push(`/dashboard/expenses/${expense.id}`)
           }
           emptyState={
             <div className="py-12 text-center">

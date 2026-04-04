@@ -65,6 +65,7 @@ export function POSInvoiceForm({
           headerDiscount: invoice.headerDiscount || 0,
           freightCost: invoice.freightCost || 0,
           remarks: invoice.remarks || "",
+          ...(invoice.billType === "OLD" && { grandTotal: invoice.grandTotal || 0, payments: invoice.payments || [] }),
         }
       : {
           billType: "NO1",
@@ -78,6 +79,8 @@ export function POSInvoiceForm({
           headerDiscount: 0,
           freightCost: 0,
           remarks: "",
+          grandTotal: 0,
+          payments: [],
         }) as any,
   });
 
@@ -106,7 +109,7 @@ export function POSInvoiceForm({
       // OLD bills skip numbering lookup if custom is used, but we can peek for visual
       const res = await peekNextInvoiceNumber(
         fromOutletId,
-        billType === "OLD" ? "OLD_BILL" as any : billType as "NO1" | "NO2",
+        billType === "OLD" ? ("OLD_BILL" as any) : (billType as "NO1" | "NO2"),
       );
       if (res.success && res.data) {
         setInvoiceNumber(res.data);
@@ -117,7 +120,7 @@ export function POSInvoiceForm({
     };
 
     loadNextNumber();
-  }, [fromOutletId, billType, form]);
+  }, [fromOutletId, billType]);
 
   // Load attachment count - from temp ref during creation, from invoice ID after posting
   React.useEffect(() => {
@@ -149,7 +152,12 @@ export function POSInvoiceForm({
       }
     };
 
-    loadAttachments();
+    // Only load if we have a valid reference
+    if ((invoice?.id || invoiceNumber) && invoiceNumber !== "") {
+      loadAttachments();
+    } else {
+      setAttachmentCount(0);
+    }
   }, [invoice?.id, invoiceNumber]);
 
   // ─── Calculations (useMemo) ───────────────────────────────────────────────
@@ -160,6 +168,24 @@ export function POSInvoiceForm({
       0,
     );
 
+    // OLD bills: calculation with discount support (quantity * rate) - discount% + freight
+    if (billType === "OLD") {
+      const discountAmount = isGlobalDiscount
+        ? (itemsTotal * (headerDiscount || 0)) / 100
+        : 0;
+      const subtotal = itemsTotal - discountAmount;
+      const grandTotal = subtotal + (freightCost || 0);
+      return {
+        itemsTotal,
+        lineDiscounts: 0,
+        subtotal,
+        totalDiscount: discountAmount,
+        totalTax: 0,
+        grandTotal,
+      };
+    }
+
+    // Standard invoices (NO1, NO2): include discounts and tax
     const lineDiscounts = (items || []).reduce(
       (sum: number, item: any) =>
         sum +
@@ -199,7 +225,14 @@ export function POSInvoiceForm({
       totalTax,
       grandTotal,
     };
-  }, [items, headerDiscount, freightCost, isGlobalDiscount]);
+  }, [items, headerDiscount, freightCost, isGlobalDiscount, billType]);
+
+  // Update form grandTotal for OLD bills when totals change
+  React.useEffect(() => {
+    if (billType === "OLD") {
+      form.setValue("grandTotal", totals.grandTotal);
+    }
+  }, [billType, totals.grandTotal, form]);
 
   // Count items with products
   const filledItemsCount = (items || []).filter(
@@ -207,8 +240,10 @@ export function POSInvoiceForm({
   ).length;
 
   const canSubmit =
-    billType === "OLD" 
-      ? ((items?.length ?? 0) > 0 || (form.getValues("grandTotal") ?? 0) > 0) && !!fromOutletId && !!form.watch("buyerName")
+    billType === "OLD"
+      ? ((items?.length ?? 0) > 0 || (form.getValues("grandTotal") ?? 0) > 0) &&
+        !!fromOutletId &&
+        !!form.watch("buyerName")
       : filledItemsCount > 0 &&
         !!fromOutletId &&
         (billType === "NO2" || !!(form.watch("partyId") as string));
@@ -217,19 +252,27 @@ export function POSInvoiceForm({
   const handleFormSubmit = async (data: FormValues) => {
     try {
       setIsSubmitting(true);
-      
+
       if (data.billType === "OLD") {
         // Mapping for OLD bill schema
         const oldBillData = {
           ...data,
           items: (data.items || []).map((item: any) => ({
-            itemDescription: item.itemDescription || item.description || item.productName || "Item",
+            itemDescription:
+              item.itemDescription ||
+              item.description ||
+              item.productName ||
+              "Item",
             quantity: item.quantity || 1,
             rate: item.rate || 0,
           })),
+          headerDiscount: data.headerDiscount || 0,
+          payments: (data as any).payments || [],
         };
         const res = await handleCreateOldBill(oldBillData as any);
         if (res.success) {
+          // Reset state before navigation
+          setAttachmentCount(0);
           toast.success("Historical record saved");
           router.push("/dashboard/sales/invoices");
         } else {
@@ -251,6 +294,8 @@ export function POSInvoiceForm({
 
       const res = await onSubmitProp(cleanedData as any);
       if (res.success) {
+        // Reset state before navigation
+        setAttachmentCount(0);
         toast.success(
           mode === "create" ? t("toasts.posted") : t("toasts.updated"),
         );
@@ -269,7 +314,23 @@ export function POSInvoiceForm({
   const handleValidationClick = async () => {
     const isValid = await form.trigger();
     if (!isValid) {
-      toast.error(t("toasts.validationError"));
+      // Get all field errors
+      const errors = form.formState.errors;
+      const errorMessages: string[] = [];
+
+      // Collect error messages from all fields
+      Object.entries(errors).forEach(([field, error]: any) => {
+        if (error?.message) {
+          errorMessages.push(`${field}: ${error.message}`);
+        }
+      });
+
+      if (errorMessages.length > 0) {
+        // Show first 3 errors
+        toast.error(errorMessages.slice(0, 3).join("\n"));
+      } else {
+        toast.error(t("toasts.validationError"));
+      }
     } else {
       form.handleSubmit(handleFormSubmit)();
     }

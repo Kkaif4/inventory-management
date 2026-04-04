@@ -41,11 +41,16 @@ export async function createAccount(data: {
       data: {
         name: data.name,
         type: data.type,
+        group: "ASSET", // CASH and BANK accounts are always ASSET (overdraft logic handles reclassification)
+        isSystem: false, // User-created account
         openingBalance,
         currentBalance: openingBalance,
         outletId: data.outletId,
       },
     });
+
+    // TODO: Post opening balance journal entry if openingBalance > 0
+    // Dr: this account, Cr: 5001 (Opening Balance Offset / Equity)
 
     revalidatePath("/dashboard/financials/accounts");
     return account;
