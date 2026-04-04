@@ -1,10 +1,9 @@
 "use client";
 
-import { getAccounts, setupCOA } from "@/actions/accounting";
+import { getAccounts } from "@/actions/accounting";
 import { useOutletStore } from "@/store/use-outlet-store";
 import {
   Loader2,
-  Settings,
   LayoutGrid,
   AlertCircle,
   CheckCircle2,
@@ -73,44 +72,23 @@ export default function AccountsPage() {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-slate-900">
-              Chart of Accounts
+              Accounts
             </h2>
             <p className="text-sm text-slate-500">
-              Manage your financial structure and ledgers.
+              Manage your financial accounts and general ledger.
             </p>
           </div>
         </div>
-
-        {accounts.length === 0 && (
-          <button
-            onClick={async () => {
-              const res = await setupCOA(currentOutletId);
-              if (res.success) {
-                toast.success("Standard accounts initialized successfully");
-                window.location.reload(); // Refresh to show new accounts
-              } else {
-                toast.error(
-                  "Failed to initialize accounts: " + res.error?.message,
-                );
-              }
-            }}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center text-sm font-medium shadow-sm transition-all active:scale-95"
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Initialize Standard Accounts
-          </button>
-        )}
       </div>
 
       {accounts.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
           <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-slate-900">
-            No accounts configured
+            No accounts created
           </h3>
           <p className="text-slate-500 max-w-sm mx-auto mt-1 mb-6">
-            You need to initialize the standard chart of accounts before
-            recording any financial transactions.
+            Create accounts as needed for your business. Essential accounts (Cash, Debtors, Sales) will be auto-created when recording transactions.
           </p>
         </div>
       ) : (

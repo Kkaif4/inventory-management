@@ -1,19 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { initializeCOA } from "@/domains/accounting/ledger-service";
 import { revalidatePath } from "next/cache";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import { withErrorHandler } from "@/lib/error-handler";
 import { ForbiddenError, NotFoundError } from "@/lib/exceptions";
 import { roundToTwo } from "@/lib/utils";
-
-export async function setupCOA(outletId: string) {
-  return withErrorHandler(async () => {
-    await initializeCOA(outletId);
-    revalidatePath("/dashboard/accounts");
-  });
-}
 
 export async function getAccounts(outletId: string) {
   return withErrorHandler(async () => {

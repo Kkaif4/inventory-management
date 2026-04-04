@@ -68,7 +68,6 @@ model Outlet {
   inventoryValuationMethod String            @default("NONE")
   accounts                 Account[]
   categories               Category[]
-  expenseCategories        ExpenseCategory[]
   batches                  CustomBatch[]
   series                   DocumentSeries[]
   parties                  Party[]
@@ -414,7 +413,6 @@ model Account {
   transfersTo   Transfer[]           @relation("toAccount")
   payments      Payment[]
   expenses      Expense[]
-  expenseCategories ExpenseCategory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -490,25 +488,18 @@ model Transfer {
 }
 
 model ExpenseCategory {
-  id        String  @id @default(cuid())
-  outletId  String
-  outlet    Outlet  @relation(fields: [outletId], references: [id], onDelete: Cascade)
-
-  name      String
-  code      String
-  accountId String
-  account   Account @relation(fields: [accountId], references: [id])
-
-  isActive Boolean @default(true)
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  code        String?
+  isActive    Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   expenses Expense[]
 
-  @@unique([code, outletId])
-  @@index([outletId])
-  @@index([accountId])
+  @@index([code])
 }
 
 model Expense {

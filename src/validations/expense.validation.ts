@@ -8,7 +8,7 @@ export const createExpenseSchema = z.object({
   date: z.date("Date is required"),
   categoryId: z.string().min(1, "Category is required"),
   description: z.string().min(1, "Description is required").max(500, "Description must not exceed 500 characters"),
-  vendorId: z.string().optional(),
+  vendorId: z.string().optional().transform((val) => (val ? val : undefined)),
   paymentMode: z.enum(["CASH", "BANK_TRANSFER", "UPI", "CHEQUE"]).default("CASH"),
   accountId: z.string().min(1, "Account is required"),
   taxableAmount: z.number({ message: "Taxable amount is required" }).positive("Taxable amount must be greater than 0"),

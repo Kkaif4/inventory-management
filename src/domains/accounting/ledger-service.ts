@@ -96,68 +96,19 @@ export const AccountingService = {
   },
 };
 
+/**
+ * Initialize minimum GL accounts required for double-entry bookkeeping (old bills, etc)
+ * Only creates 3 essential accounts - no predefined chart of accounts
+ * All other accounts are user-generated
+ */
 export async function initializeCOA(outletId: string) {
-  const accounts = [
-    // Assets
+  const essentialAccounts = [
     { code: "1001", name: "Cash in Hand", group: "ASSET", isSystem: true },
-    {
-      code: "1002",
-      name: "Standard Bank Account",
-      group: "ASSET",
-      isSystem: true,
-    },
-    {
-      code: "1003",
-      name: "Sundry Debtors (Customers)",
-      group: "ASSET",
-      isSystem: true,
-    },
-    {
-      code: "1004",
-      name: "Inventory Asset Account",
-      group: "ASSET",
-      isSystem: true,
-    },
-    { code: "1005", name: "Input CGST", group: "ASSET", isSystem: true },
-    { code: "1006", name: "Input SGST", group: "ASSET", isSystem: true },
-    { code: "1007", name: "Input IGST", group: "ASSET", isSystem: true },
-
-    // Liabilities
-    {
-      code: "2001",
-      name: "Sundry Creditors (Vendors)",
-      group: "LIABILITY",
-      isSystem: true,
-    },
-    { code: "2002", name: "Output CGST", group: "LIABILITY", isSystem: true },
-    { code: "2003", name: "Output SGST", group: "LIABILITY", isSystem: true },
-    { code: "2004", name: "Output IGST", group: "LIABILITY", isSystem: true },
-
-    // Income
+    { code: "1003", name: "Sundry Debtors", group: "ASSET", isSystem: true },
     { code: "3001", name: "Sales Account", group: "INCOME", isSystem: true },
-
-    // Expense
-    {
-      code: "4001",
-      name: "Purchase Account",
-      group: "EXPENSE",
-      isSystem: true,
-    },
-    {
-      code: "4002",
-      name: "Freight & Carriage Inward",
-      group: "EXPENSE",
-      isSystem: true,
-    },
-    {
-      code: "5001",
-      name: "Opening Balance Offset",
-      group: "EQUITY",
-      isSystem: true,
-    },
   ];
 
-  for (const acc of accounts) {
+  for (const acc of essentialAccounts) {
     await prisma.account.upsert({
       where: { code_outletId: { code: acc.code, outletId } },
       update: {},

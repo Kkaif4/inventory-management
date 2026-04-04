@@ -53,8 +53,7 @@ export default function NewExpensePage() {
       accountId: "",
       description: "",
       paymentMode: "CASH",
-      // Note: taxableAmount omitted from defaultValues to start as undefined
-      // User MUST enter a positive amount before form validates
+      taxableAmount: 0,
       gstRate: undefined,
       inputGst: 0,
       vendorId: undefined,
@@ -104,6 +103,7 @@ export default function NewExpensePage() {
         ...data,
         outletId: currentOutletId,
         status: submitStatus,
+        vendorId: data.vendorId || undefined, // Convert empty string to undefined
       };
 
       const res = await createExpense(submitData);
@@ -239,7 +239,9 @@ export default function NewExpensePage() {
                     <FormItem>
                       <FormLabel>Vendor (Optional)</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) =>
+                          field.onChange(value || undefined)
+                        }
                         value={field.value || ""}
                       >
                         <FormControl>

@@ -6,7 +6,6 @@ import {
   PrismaClient,
   Role,
   AccountType,
-  AccountGroup,
 } from "@/generated/prisma";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
@@ -253,7 +252,9 @@ async function main() {
     });
     log(
       `✓ Bank account: ${bankAccount2.name} | Opening: ₹25,000 | Supports: UPI, CHEQUE, ONLINE_TRANSFER, CARD`,
-    ); // 9. Create sample Account Transaction (initial deposit)
+    );
+
+    // 10. Create sample Account Transaction (initial deposit)
     const adminUser = await prisma.user.findUnique({
       where: { email: "admin@admin.com" },
     });
@@ -275,209 +276,37 @@ async function main() {
       );
     }
 
-    logSection("📊 GL Accounts (Chart of Accounts)");
+    logSection("💳 Expense Categories (Global - for Filtering & Reports)");
 
-    // Define account groups and accounts
-    const accountStructure = [
-      {
-        group: AccountGroup.ASSET,
-        code: "1001",
-        name: "Cash in Hand",
-      },
-      {
-        group: AccountGroup.ASSET,
-        code: "1002",
-        name: "Bank Accounts",
-      },
-      {
-        group: AccountGroup.ASSET,
-        code: "1010",
-        name: "Accounts Receivable",
-      },
-      {
-        group: AccountGroup.LIABILITY,
-        code: "2001",
-        name: "Accounts Payable",
-      },
-      {
-        group: AccountGroup.LIABILITY,
-        code: "2010",
-        name: "GST Input Tax Credit",
-      },
-      {
-        group: AccountGroup.EQUITY,
-        code: "3001",
-        name: "Capital Account",
-      },
-      {
-        group: AccountGroup.INCOME,
-        code: "4001",
-        name: "Sales Revenue",
-      },
-      {
-        group: AccountGroup.INCOME,
-        code: "4002",
-        name: "Service Revenue",
-      },
-      {
-        group: AccountGroup.EXPENSE,
-        code: "5001",
-        name: "Rent Expense",
-      },
-      {
-        group: AccountGroup.EXPENSE,
-        code: "5002",
-        name: "Salaries & Wages",
-      },
-      {
-        group: AccountGroup.EXPENSE,
-        code: "5003",
-        name: "Utilities (Electricity, Water)",
-      },
-      {
-        group: AccountGroup.EXPENSE,
-        code: "5004",
-        name: "Fuel & Transportation",
-      },
-      {
-        group: AccountGroup.EXPENSE,
-        code: "5005",
-        name: "Office Supplies",
-      },
-      {
-        group: AccountGroup.EXPENSE,
-        code: "5006",
-        name: "Marketing & Advertising",
-      },
-      {
-        group: AccountGroup.EXPENSE,
-        code: "5007",
-        name: "Repairs & Maintenance",
-      },
-      {
-        group: AccountGroup.EXPENSE,
-        code: "5008",
-        name: "Professional Services",
-      },
-      {
-        group: AccountGroup.EXPENSE,
-        code: "5009",
-        name: "Insurance",
-      },
-      {
-        group: AccountGroup.EXPENSE,
-        code: "5010",
-        name: "Miscellaneous Expenses",
-      },
-    ];
-
-    // Create GL accounts (now merged into Account model)
-    for (const acc of accountStructure) {
-      const existing = await prisma.account.findFirst({
-        where: {
-          code: acc.code,
-          outletId: outlet.id,
-        },
-      });
-
-      if (!existing) {
-        await prisma.account.create({
-          data: {
-            code: acc.code,
-            name: acc.name,
-            group: acc.group,
-            isSystem: true,
-            type: null,
-            openingBalance: 0,
-            currentBalance: 0,
-            outletId: outlet.id,
-          },
-        });
-        log(`GL Account: ${acc.code} - ${acc.name}`);
-      }
-    }
-
-    logSection("💳 Expense Categories (Predefined)");
-
-    // Define predefined expense categories
+    // Global expense categories for filtering and reporting
     const expenseCategories = [
-      { code: "5001", name: "Rent", description: "Rent and lease payments" },
-      {
-        code: "5002",
-        name: "Salaries & Wages",
-        description: "Employee salaries and wages",
-      },
-      {
-        code: "5003",
-        name: "Utilities",
-        description: "Electricity, water, and other utilities",
-      },
-      {
-        code: "5004",
-        name: "Fuel & Transportation",
-        description: "Fuel, vehicle maintenance, and transport costs",
-      },
-      {
-        code: "5005",
-        name: "Office Supplies",
-        description: "Office supplies and consumables",
-      },
-      {
-        code: "5006",
-        name: "Marketing & Advertising",
-        description: "Marketing, advertising, and promotional expenses",
-      },
-      {
-        code: "5007",
-        name: "Repairs & Maintenance",
-        description: "Building and equipment repairs",
-      },
-      {
-        code: "5008",
-        name: "Professional Services",
-        description: "Accounting, legal, and consulting fees",
-      },
-      {
-        code: "5009",
-        name: "Insurance",
-        description: "Business insurance premiums",
-      },
-      {
-        code: "5010",
-        name: "Miscellaneous",
-        description: "Other miscellaneous expenses",
-      },
+      { name: "Rent", description: "Rent and lease payments", code: "EXP-001" },
+      { name: "Salaries & Wages", description: "Employee salaries and wages", code: "EXP-002" },
+      { name: "Utilities", description: "Electricity, water, and other utilities", code: "EXP-003" },
+      { name: "Fuel & Transportation", description: "Fuel, vehicle maintenance, and transport costs", code: "EXP-004" },
+      { name: "Office Supplies", description: "Office supplies and consumables", code: "EXP-005" },
+      { name: "Marketing & Advertising", description: "Marketing, advertising, and promotional expenses", code: "EXP-006" },
+      { name: "Repairs & Maintenance", description: "Building and equipment repairs", code: "EXP-007" },
+      { name: "Professional Services", description: "Accounting, legal, and consulting fees", code: "EXP-008" },
+      { name: "Insurance", description: "Business insurance premiums", code: "EXP-009" },
+      { name: "Miscellaneous", description: "Other miscellaneous expenses", code: "EXP-010" },
     ];
 
     for (const cat of expenseCategories) {
-      const existing = await prisma.expenseCategory.findFirst({
-        where: {
-          code: cat.code,
-          outletId: outlet.id,
-        },
+      const existing = await prisma.expenseCategory.findUnique({
+        where: { name: cat.name },
       });
 
       if (!existing) {
-        // Get the account for this category (merged into Account model)
-        const account = await prisma.account.findFirst({
-          where: {
+        await prisma.expenseCategory.create({
+          data: {
+            name: cat.name,
+            description: cat.description,
             code: cat.code,
-            outletId: outlet.id,
+            isActive: true,
           },
         });
-
-        if (account) {
-          await prisma.expenseCategory.create({
-            data: {
-              name: cat.name,
-              code: cat.code,
-              accountId: account.id,
-              outletId: outlet.id,
-              isActive: true,
-            },
-          });
-          log(`Expense Category: ${cat.code} - ${cat.name}`);
-        }
+        log(`Expense Category: ${cat.code} - ${cat.name}`);
       }
     }
 

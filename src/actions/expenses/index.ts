@@ -43,21 +43,17 @@ export async function createExpense(data: CreateExpenseInput) {
       throw new NotFoundError("Outlet not found");
     }
 
-    // Verify category exists and belongs to outlet
-    const category = await prisma.expenseCategory.findFirst({
+    // Verify category exists (global categories)
+    const category = await prisma.expenseCategory.findUnique({
       where: {
         id: validated.categoryId,
-        outletId: validated.outletId,
-      },
-      include: {
-        account: true,
       },
     });
 
     if (!category) {
       console.error("[Expense] Category not found:", validated.categoryId);
       throw new NotFoundError(
-        "Expense category not found. Please ensure the category exists and belongs to your outlet.",
+        "Expense category not found.",
       );
     }
 
@@ -127,9 +123,7 @@ export async function createExpense(data: CreateExpenseInput) {
             createdBy: userId, // Use actual user ID from session
           },
           include: {
-            category: {
-              include: { account: true },
-            },
+            category: true,
             vendor: true,
             account: true,
             user: true,
@@ -140,8 +134,9 @@ export async function createExpense(data: CreateExpenseInput) {
         if (expense.status === "POSTED") {
           // Create GL entries (double-entry bookkeeping)
           try {
-            const expenseGlAccount = category.account;
-            if (expenseGlAccount) {
+            // Use the selected account (where money is being spent from)
+            const expenseAccount = expense.account;
+            if (expenseAccount) {
               // Determine GL account for cash/bank being spent
               // Map Account type to GL account code
               let cashGlAccount = null;
@@ -168,7 +163,7 @@ export async function createExpense(data: CreateExpenseInput) {
                 credit?: number;
               }> = [
                 {
-                  accountId: expenseGlAccount.id,
+                  accountId: expenseAccount.id,
                   debit: Number(totalAmount), // Full expense amount (incl GST)
                 },
               ];
@@ -235,9 +230,7 @@ export async function getExpenseDetail(expenseId: string, outletId: string) {
         outletId,
       },
       include: {
-        category: {
-          include: { account: true },
-        },
+        category: true,
         vendor: true,
         account: true,
         user: true,
@@ -478,9 +471,7 @@ export async function postExpense(expenseId: string, outletId: string) {
     const expense = await prisma.expense.findFirst({
       where: { id: expenseId, outletId },
       include: {
-        category: {
-          include: { account: true },
-        },
+        category: true,
         account: true,
       },
     });
@@ -499,26 +490,23 @@ export async function postExpense(expenseId: string, outletId: string) {
         where: { id: expenseId },
         data: { status: "POSTED" },
         include: {
-          category: {
-            include: { account: true },
-          },
+          category: true,
           vendor: true,
           account: true,
           user: true,
         },
       });
 
-      // Try to create GL entries
+      // Try to create GL entries (using selected account)
       try {
-        const expenseGlAccount = expense.category.account;
-        if (expenseGlAccount) {
+        if (expense.account) {
           const entries: Array<{
             accountId: string;
             debit?: number;
             credit?: number;
           }> = [
             {
-              accountId: expenseGlAccount.id,
+              accountId: expense.account.id,
               debit: Number(expense.taxableAmount),
             },
           ];

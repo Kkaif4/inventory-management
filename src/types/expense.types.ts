@@ -34,7 +34,7 @@ export interface ExpenseDetail {
   category: {
     id: string;
     name: string;
-    code: string;
+    code?: string | null;
   };
   vendor?: {
     id: string;
@@ -65,7 +65,7 @@ export interface ExpenseListItem {
   category: {
     id: string;
     name: string;
-    code: string;
+    code?: string | null;
   };
   description: string;
   taxableAmount: number | Decimal;
@@ -144,13 +144,8 @@ export interface PaginatedExpenses {
 export interface ExpenseCategoryDetail {
   id: string;
   name: string;
-  code: string;
-  accountId: string;
-  account: {
-    id: string;
-    name: string;
-    code: string | null;
-  };
+  description?: string | null;
+  code?: string | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -159,8 +154,8 @@ export interface ExpenseCategoryDetail {
 export interface ExpenseCategoryListItem {
   id: string;
   name: string;
-  code: string;
-  glAccountName: string;
+  code?: string;
+  description?: string;
   isActive: boolean;
 }
 
@@ -220,17 +215,15 @@ export interface UpdateExpenseFormData {
 
 export interface CreateExpenseCategoryFormData {
   name: string;
-  code: string;
-  accountId: string;
-  outletId: string;
+  code?: string;
+  description?: string;
 }
 
 // Re-export validation schema types
 export type CreateExpenseCategoryInput = {
   name: string;
-  code: string;
-  accountId: string;
-  outletId: string;
+  code?: string;
+  description?: string;
 };
 
 export type UpdateExpenseCategoryInput = {

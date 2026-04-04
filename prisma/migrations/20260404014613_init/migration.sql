@@ -11,7 +11,16 @@ CREATE TYPE "TxType" AS ENUM ('PURCHASE_ORDER', 'GRN', 'PURCHASE_BILL', 'DEBIT_N
 CREATE TYPE "AccountGroup" AS ENUM ('ASSET', 'LIABILITY', 'EQUITY', 'INCOME', 'EXPENSE');
 
 -- CreateEnum
-CREATE TYPE "BillType" AS ENUM ('NO1', 'NO2');
+CREATE TYPE "BillType" AS ENUM ('NO1', 'NO2', 'OLD');
+
+-- CreateEnum
+CREATE TYPE "AccountType" AS ENUM ('CASH', 'BANK');
+
+-- CreateEnum
+CREATE TYPE "PaymentMode" AS ENUM ('CASH', 'UPI', 'CHEQUE', 'ONLINE_TRANSFER', 'CARD');
+
+-- CreateEnum
+CREATE TYPE "TransactionType" AS ENUM ('IN', 'OUT', 'TRANSFER_IN', 'TRANSFER_OUT');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -171,6 +180,7 @@ CREATE TABLE "Transaction" (
     "totalTaxable" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "totalTax" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "freightCost" DOUBLE PRECISION DEFAULT 0,
+    "globalDiscount" DOUBLE PRECISION DEFAULT 0,
     "grandTotal" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "status" TEXT NOT NULL DEFAULT 'DRAFT',
     "isInformal" BOOLEAN NOT NULL DEFAULT false,
@@ -180,6 +190,7 @@ CREATE TABLE "Transaction" (
     "userId" TEXT NOT NULL,
     "remarks" TEXT,
     "billType" "BillType" NOT NULL DEFAULT 'NO1',
+    "customBillNo" TEXT,
     "paidAt" TIMESTAMP(3),
 
     CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
@@ -189,11 +200,14 @@ CREATE TABLE "Transaction" (
 CREATE TABLE "TransactionItem" (
     "id" TEXT NOT NULL,
     "transactionId" TEXT NOT NULL,
-    "variantId" TEXT NOT NULL,
+    "variantId" TEXT,
+    "itemDescription" TEXT,
     "quantity" DOUBLE PRECISION NOT NULL,
     "unit" TEXT,
     "conversionRatio" DOUBLE PRECISION DEFAULT 1,
     "rate" DOUBLE PRECISION NOT NULL,
+    "discountPercent" DOUBLE PRECISION DEFAULT 0,
+    "discountAmount" DOUBLE PRECISION DEFAULT 0,
     "freightFraction" DOUBLE PRECISION,
     "taxableValue" DOUBLE PRECISION NOT NULL,
     "cgst" DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -204,23 +218,12 @@ CREATE TABLE "TransactionItem" (
 );
 
 -- CreateTable
-CREATE TABLE "Account" (
-    "id" TEXT NOT NULL,
-    "code" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "group" "AccountGroup" NOT NULL,
-    "isSystem" BOOLEAN NOT NULL DEFAULT false,
-    "outletId" TEXT NOT NULL,
-
-    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "LedgerEntry" (
     "id" TEXT NOT NULL,
     "accountId" TEXT NOT NULL,
     "partyId" TEXT,
     "transactionId" TEXT,
+    "journalId" TEXT,
     "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "debit" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "credit" DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -318,7 +321,7 @@ CREATE TABLE "Payment" (
     "amount" DOUBLE PRECISION NOT NULL,
     "paymentDate" TIMESTAMP(3) NOT NULL,
     "paymentMode" TEXT NOT NULL,
-    "bankAccountId" TEXT,
+    "accountId" TEXT NOT NULL,
     "referenceNo" TEXT,
     "notes" TEXT,
     "createdBy" TEXT NOT NULL,
@@ -335,6 +338,131 @@ CREATE TABLE "PriceListEntry" (
     "price" DOUBLE PRECISION NOT NULL,
 
     CONSTRAINT "PriceListEntry_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Account" (
+    "id" TEXT NOT NULL,
+    "code" TEXT,
+    "name" TEXT NOT NULL,
+    "group" "AccountGroup" NOT NULL,
+    "type" "AccountType",
+    "isSystem" BOOLEAN NOT NULL DEFAULT false,
+    "openingBalance" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "currentBalance" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "outletId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AccountPaymentMode" (
+    "id" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
+    "mode" "PaymentMode" NOT NULL,
+
+    CONSTRAINT "AccountPaymentMode_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AccountTransaction" (
+    "id" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
+    "type" "TransactionType" NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "paymentMode" "PaymentMode" NOT NULL,
+    "chequeNumber" TEXT,
+    "chequeDate" TIMESTAMP(3),
+    "upiReferenceId" TEXT,
+    "transactionId" TEXT,
+    "linkedTxnId" TEXT,
+    "linkedTxnType" TEXT,
+    "balanceAfter" DOUBLE PRECISION NOT NULL,
+    "remarks" TEXT,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AccountTransaction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Transfer" (
+    "id" TEXT NOT NULL,
+    "fromAccountId" TEXT NOT NULL,
+    "toAccountId" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "remarks" TEXT,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Transfer_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ExpenseCategory" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "code" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ExpenseCategory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Expense" (
+    "id" TEXT NOT NULL,
+    "outletId" TEXT NOT NULL,
+    "txnNumber" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "description" TEXT NOT NULL,
+    "categoryId" TEXT NOT NULL,
+    "vendorId" TEXT,
+    "taxableAmount" DECIMAL(12,2) NOT NULL,
+    "gstRate" INTEGER,
+    "inputGst" DECIMAL(12,2) NOT NULL DEFAULT 0,
+    "totalAmount" DECIMAL(12,2) NOT NULL,
+    "paymentMode" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'POSTED',
+    "createdBy" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Expense_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Attachment" (
+    "id" TEXT NOT NULL,
+    "moduleType" TEXT NOT NULL,
+    "referenceId" TEXT NOT NULL,
+    "fileName" TEXT NOT NULL,
+    "mimeType" TEXT NOT NULL DEFAULT 'image/webp',
+    "size" INTEGER NOT NULL,
+    "data" BYTEA NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Attachment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "OldBillPayment" (
+    "id" TEXT NOT NULL,
+    "transactionId" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "paymentDate" TIMESTAMP(3) NOT NULL,
+    "note" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "OldBillPayment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -388,7 +516,16 @@ CREATE INDEX "Transaction_outletId_type_date_idx" ON "Transaction"("outletId", "
 CREATE INDEX "Transaction_outletId_type_partyId_idx" ON "Transaction"("outletId", "type", "partyId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Account_code_outletId_key" ON "Account"("code", "outletId");
+CREATE INDEX "LedgerEntry_accountId_idx" ON "LedgerEntry"("accountId");
+
+-- CreateIndex
+CREATE INDEX "LedgerEntry_date_idx" ON "LedgerEntry"("date");
+
+-- CreateIndex
+CREATE INDEX "LedgerEntry_journalId_idx" ON "LedgerEntry"("journalId");
+
+-- CreateIndex
+CREATE INDEX "LedgerEntry_accountId_date_idx" ON "LedgerEntry"("accountId", "date");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "VendorProduct_vendorId_variantId_key" ON "VendorProduct"("vendorId", "variantId");
@@ -416,6 +553,81 @@ CREATE INDEX "Payment_partyId_outletId_idx" ON "Payment"("partyId", "outletId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PriceListEntry_priceListId_variantId_key" ON "PriceListEntry"("priceListId", "variantId");
+
+-- CreateIndex
+CREATE INDEX "Account_outletId_idx" ON "Account"("outletId");
+
+-- CreateIndex
+CREATE INDEX "Account_type_idx" ON "Account"("type");
+
+-- CreateIndex
+CREATE INDEX "Account_outletId_group_idx" ON "Account"("outletId", "group");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Account_code_outletId_key" ON "Account"("code", "outletId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Account_name_outletId_key" ON "Account"("name", "outletId");
+
+-- CreateIndex
+CREATE INDEX "AccountPaymentMode_accountId_idx" ON "AccountPaymentMode"("accountId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AccountPaymentMode_accountId_mode_key" ON "AccountPaymentMode"("accountId", "mode");
+
+-- CreateIndex
+CREATE INDEX "AccountTransaction_accountId_idx" ON "AccountTransaction"("accountId");
+
+-- CreateIndex
+CREATE INDEX "AccountTransaction_type_idx" ON "AccountTransaction"("type");
+
+-- CreateIndex
+CREATE INDEX "AccountTransaction_createdAt_idx" ON "AccountTransaction"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "AccountTransaction_linkedTxnId_idx" ON "AccountTransaction"("linkedTxnId");
+
+-- CreateIndex
+CREATE INDEX "Transfer_fromAccountId_idx" ON "Transfer"("fromAccountId");
+
+-- CreateIndex
+CREATE INDEX "Transfer_toAccountId_idx" ON "Transfer"("toAccountId");
+
+-- CreateIndex
+CREATE INDEX "Transfer_createdAt_idx" ON "Transfer"("createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ExpenseCategory_name_key" ON "ExpenseCategory"("name");
+
+-- CreateIndex
+CREATE INDEX "ExpenseCategory_code_idx" ON "ExpenseCategory"("code");
+
+-- CreateIndex
+CREATE INDEX "Expense_outletId_idx" ON "Expense"("outletId");
+
+-- CreateIndex
+CREATE INDEX "Expense_categoryId_idx" ON "Expense"("categoryId");
+
+-- CreateIndex
+CREATE INDEX "Expense_accountId_idx" ON "Expense"("accountId");
+
+-- CreateIndex
+CREATE INDEX "Expense_date_idx" ON "Expense"("date");
+
+-- CreateIndex
+CREATE INDEX "Expense_status_idx" ON "Expense"("status");
+
+-- CreateIndex
+CREATE INDEX "Attachment_moduleType_referenceId_idx" ON "Attachment"("moduleType", "referenceId");
+
+-- CreateIndex
+CREATE INDEX "Attachment_moduleType_idx" ON "Attachment"("moduleType");
+
+-- CreateIndex
+CREATE INDEX "Attachment_createdAt_idx" ON "Attachment"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "OldBillPayment_transactionId_idx" ON "OldBillPayment"("transactionId");
 
 -- CreateIndex
 CREATE INDEX "_OutletToUser_B_index" ON "_OutletToUser"("B");
@@ -478,10 +690,7 @@ ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY (
 ALTER TABLE "TransactionItem" ADD CONSTRAINT "TransactionItem_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TransactionItem" ADD CONSTRAINT "TransactionItem_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "Variant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Account" ADD CONSTRAINT "Account_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "TransactionItem" ADD CONSTRAINT "TransactionItem_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "Variant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LedgerEntry" ADD CONSTRAINT "LedgerEntry_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -532,7 +741,7 @@ ALTER TABLE "StockLedger" ADD CONSTRAINT "StockLedger_variantId_fkey" FOREIGN KE
 ALTER TABLE "StockLedger" ADD CONSTRAINT "StockLedger_warehouseId_fkey" FOREIGN KEY ("warehouseId") REFERENCES "Warehouse"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Payment" ADD CONSTRAINT "Payment_bankAccountId_fkey" FOREIGN KEY ("bankAccountId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -551,6 +760,39 @@ ALTER TABLE "PriceListEntry" ADD CONSTRAINT "PriceListEntry_priceListId_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "PriceListEntry" ADD CONSTRAINT "PriceListEntry_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "Variant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Account" ADD CONSTRAINT "Account_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AccountPaymentMode" ADD CONSTRAINT "AccountPaymentMode_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AccountTransaction" ADD CONSTRAINT "AccountTransaction_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Transfer" ADD CONSTRAINT "Transfer_fromAccountId_fkey" FOREIGN KEY ("fromAccountId") REFERENCES "Account"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Transfer" ADD CONSTRAINT "Transfer_toAccountId_fkey" FOREIGN KEY ("toAccountId") REFERENCES "Account"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Expense" ADD CONSTRAINT "Expense_outletId_fkey" FOREIGN KEY ("outletId") REFERENCES "Outlet"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Expense" ADD CONSTRAINT "Expense_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "ExpenseCategory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Expense" ADD CONSTRAINT "Expense_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Party"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Expense" ADD CONSTRAINT "Expense_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Expense" ADD CONSTRAINT "Expense_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "OldBillPayment" ADD CONSTRAINT "OldBillPayment_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_OutletToUser" ADD CONSTRAINT "_OutletToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Outlet"("id") ON DELETE CASCADE ON UPDATE CASCADE;
