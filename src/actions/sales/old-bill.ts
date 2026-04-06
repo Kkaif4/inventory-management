@@ -19,7 +19,9 @@ import { OldBillFormValues } from "@/validations/invoice.validation";
  * - NO Stock balance updates — no physical inventory to deduct
  * - NO Tax entries — OLD bills are lump-sum totals
  */
-export async function createOldBill(data: OldBillFormValues & { userId: string }) {
+export async function createOldBill(
+  data: OldBillFormValues & { userId: string },
+) {
   return withErrorHandler(async () => {
     await validateSessionOutletAccess(data.fromOutletId);
 
@@ -29,17 +31,21 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
       const itemsSubtotal = roundToTwo(
         (data.items || []).reduce((sum, item) => {
           return sum + roundToTwo(item.quantity * item.rate);
-        }, 0)
+        }, 0),
       );
 
-      const discountAmount = roundToTwo((itemsSubtotal * (data.headerDiscount || 0)) / 100);
-      const calculatedGrandTotal = roundToTwo(itemsSubtotal - discountAmount + (data.freightCost || 0));
+      const discountAmount = roundToTwo(
+        (itemsSubtotal * (data.headerDiscount || 0)) / 100,
+      );
+      const calculatedGrandTotal = roundToTwo(
+        itemsSubtotal - discountAmount + (data.freightCost || 0),
+      );
 
       // Validate that provided grandTotal matches calculation (within tolerance)
       if (Math.abs(data.grandTotal - calculatedGrandTotal) > 0.01) {
         throw new ValidationError(
           `Total mismatch: Calculated ₹${calculatedGrandTotal} but got ₹${data.grandTotal}. ` +
-          `Total = (Quantity × Rate) - (Discount%) + Freight`
+            `Total = (Quantity × Rate) - (Discount%) + Freight`,
         );
       }
 
@@ -72,15 +78,23 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
           where: { txnNumber },
         });
         if (existing) {
-          throw new ValidationError(`Bill number "${data.customBillNo}" already exists.`);
+          throw new ValidationError(
+            `Bill number "${data.customBillNo}" already exists.`,
+          );
         }
       } else {
         // Auto-generate if blank
-        txnNumber = await NumberingService.getNextNumber(tx, data.fromOutletId, "OLD_BILL");
+        txnNumber = await NumberingService.getNextNumber(
+          tx,
+          data.fromOutletId,
+          "OLD_BILL",
+        );
       }
 
       // 3. Determine Status & Payment Date (Historical)
-      const totalPaid = roundToTwo(data.payments.reduce((s, p) => s + p.amount, 0));
+      const totalPaid = roundToTwo(
+        data.payments.reduce((s, p) => s + p.amount, 0),
+      );
       const balance = roundToTwo(calculatedGrandTotal - totalPaid);
       let status = "POSTED";
       let paidAt: Date | null = null;
@@ -88,7 +102,14 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
       if (totalPaid >= calculatedGrandTotal - 0.005) {
         status = "PAID";
         if (data.payments.length > 0) {
-          paidAt = new Date(Math.max(...data.payments.map(p => new Date(p.paymentDate).getTime())));
+          const paymentTimes = data.payments
+            .map((p) => (p.paymentDate ? new Date(p.paymentDate).getTime() : 0))
+            .filter((t) => t > 0);
+          if (paymentTimes.length > 0) {
+            paidAt = new Date(Math.max(...paymentTimes));
+          } else {
+            paidAt = data.date;
+          }
         } else {
           paidAt = data.date;
         }
@@ -96,23 +117,60 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
         status = "PARTIALLY_PAID";
       }
 
-      // 4. Fetch GL Accounts for ledger entries
-      const [salesAcc, debtorAcc, cashAcc] = await Promise.all([
-        tx.account.findUnique({
-          where: { code_outletId: { code: "3001", outletId: data.fromOutletId } },
-        }),
-        tx.account.findUnique({
-          where: { code_outletId: { code: "1003", outletId: data.fromOutletId } },
-        }),
-        tx.account.findUnique({
-          where: { code_outletId: { code: "1001", outletId: data.fromOutletId } },
-        }),
-      ]);
+      // 4. Fetch or auto-create GL Accounts for ledger entries
+      let salesAcc = await tx.account.findUnique({
+        where: {
+          code_outletId: { code: "3001", outletId: data.fromOutletId },
+        },
+      });
 
-      if (!salesAcc || !debtorAcc || !cashAcc) {
-        throw new ValidationError(
-          "Core accounting accounts (Sales/Debtors/Cash) missing. Please initialize Chart of Accounts first."
-        );
+      let debtorAcc = await tx.account.findUnique({
+        where: {
+          code_outletId: { code: "1003", outletId: data.fromOutletId },
+        },
+      });
+
+      let cashAcc = await tx.account.findUnique({
+        where: {
+          code_outletId: { code: "1001", outletId: data.fromOutletId },
+        },
+      });
+
+      // Auto-create missing accounts
+      if (!salesAcc) {
+        salesAcc = await tx.account.create({
+          data: {
+            code: "3001",
+            name: "Sales Account",
+            group: "INCOME",
+            outletId: data.fromOutletId,
+            isSystem: true,
+          },
+        });
+      }
+
+      if (!debtorAcc) {
+        debtorAcc = await tx.account.create({
+          data: {
+            code: "1003",
+            name: "Sundry Debtors",
+            group: "ASSET",
+            outletId: data.fromOutletId,
+            isSystem: true,
+          },
+        });
+      }
+
+      if (!cashAcc) {
+        cashAcc = await tx.account.create({
+          data: {
+            code: "1001",
+            name: "Cash in Hand",
+            group: "ASSET",
+            outletId: data.fromOutletId,
+            isSystem: true,
+          },
+        });
       }
 
       // 5. Create Transaction
@@ -138,20 +196,21 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
           buyerName: data.buyerName,
           buyerPhone: data.buyerPhone,
           items: {
-            create: data.items?.map(item => ({
-              itemDescription: item.itemDescription,
-              quantity: item.quantity,
-              rate: item.rate,
-              taxableValue: roundToTwo(item.quantity * item.rate),
-              cgst: 0,
-              sgst: 0,
-              igst: 0,
-            })) || [],
+            create:
+              data.items?.map((item) => ({
+                itemDescription: item.itemDescription,
+                quantity: item.quantity,
+                rate: item.rate,
+                taxableValue: roundToTwo(item.quantity * item.rate),
+                cgst: 0,
+                sgst: 0,
+                igst: 0,
+              })) || [],
           },
           oldBillPayments: {
-            create: data.payments.map(p => ({
+            create: data.payments.map((p) => ({
               amount: p.amount,
-              paymentDate: p.paymentDate,
+              paymentDate: p.paymentDate || new Date(),
               note: p.note,
             })),
           },
@@ -170,12 +229,12 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
           {
             accountId: debtorAcc.id,
             debit: calculatedGrandTotal,
-            reference: `Historical bill ${txnNumber}`
+            reference: `Historical bill ${txnNumber}`,
           },
           {
             accountId: salesAcc.id,
             credit: calculatedGrandTotal,
-            reference: `Historical bill ${txnNumber}`
+            reference: `Historical bill ${txnNumber}`,
           },
         ],
       });
@@ -186,20 +245,23 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
       //    Credit Sundry Debtors (1003)   → payment.amount
       //    Date = historical payment date from the physical book
       for (const payment of data.payments) {
+        // Ensure paymentDate exists (should be guaranteed by form submission filter)
+        const paymentDate = payment.paymentDate || new Date();
+
         await AccountingService.postJournalEntry(tx, {
           transactionId: transaction.id,
           partyId,
-          date: new Date(payment.paymentDate), // Historical payment date, NOT today
+          date: new Date(paymentDate), // Historical payment date, NOT today
           entries: [
             {
               accountId: cashAcc.id,
               debit: roundToTwo(payment.amount),
-              reference: `Payment for historical bill ${txnNumber}`
+              reference: `Payment for historical bill ${txnNumber}`,
             },
             {
               accountId: debtorAcc.id,
               credit: roundToTwo(payment.amount),
-              reference: `Payment for historical bill ${txnNumber}`
+              reference: `Payment for historical bill ${txnNumber}`,
             },
           ],
         });
@@ -221,9 +283,13 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
       // 9. Migrate Attachments
       const tempRefBasic = `TEMP:${txnNumber}`;
       await migrateAttachments("INVOICE", tempRefBasic, transaction.id);
-      
+
       if (data.customBillNo) {
-         await migrateAttachments("INVOICE", `TEMP:${data.customBillNo}`, transaction.id);
+        await migrateAttachments(
+          "INVOICE",
+          `TEMP:${data.customBillNo}`,
+          transaction.id,
+        );
       }
 
       // Revalidate all affected pages
@@ -237,4 +303,3 @@ export async function createOldBill(data: OldBillFormValues & { userId: string }
     });
   });
 }
-

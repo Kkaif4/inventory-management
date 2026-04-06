@@ -15,7 +15,6 @@ import { POSInvoiceTable } from "@/components/sales/pos-invoice-table";
 import { POSInvoiceFooter } from "@/components/sales/pos-invoice-footer";
 import { peekNextInvoiceNumber } from "@/actions/sales/invoice-form-handler";
 import { handleCreateOldBill } from "@/actions/sales/old-bill-form-handler";
-import { Button } from "@/components/ui/button";
 
 interface POSInvoiceFormProps {
   mode: "create" | "edit";
@@ -65,7 +64,10 @@ export function POSInvoiceForm({
           headerDiscount: invoice.headerDiscount || 0,
           freightCost: invoice.freightCost || 0,
           remarks: invoice.remarks || "",
-          ...(invoice.billType === "OLD" && { grandTotal: invoice.grandTotal || 0, payments: invoice.payments || [] }),
+          ...(invoice.billType === "OLD" && {
+            grandTotal: invoice.grandTotal || 0,
+            payments: invoice.payments || [],
+          }),
         }
       : {
           billType: "NO1",
@@ -227,12 +229,27 @@ export function POSInvoiceForm({
     };
   }, [items, headerDiscount, freightCost, isGlobalDiscount, billType]);
 
-  // Update form grandTotal for OLD bills when totals change
+  // Update form grandTotal for OLD bills whenever any calculation input changes
   React.useEffect(() => {
     if (billType === "OLD") {
-      form.setValue("grandTotal", totals.grandTotal);
+      // Recalculate directly to ensure form is always in sync with calculation
+      const itemsTotal = (items || []).reduce(
+        (sum, item) => sum + (item?.quantity || 0) * (item?.rate || 0),
+        0,
+      );
+      const discountAmount = isGlobalDiscount
+        ? (itemsTotal * (headerDiscount || 0)) / 100
+        : 0;
+      const subtotal = itemsTotal - discountAmount || 0;
+      const calculated = subtotal + (freightCost || 0);
+
+      form.setValue("grandTotal", calculated, {
+        shouldDirty: false,
+        shouldValidate: false,
+        shouldTouch: false,
+      });
     }
-  }, [billType, totals.grandTotal, form]);
+  }, [billType, items, headerDiscount, freightCost, isGlobalDiscount]);
 
   // Count items with products
   const filledItemsCount = (items || []).filter(
@@ -267,7 +284,9 @@ export function POSInvoiceForm({
             rate: item.rate || 0,
           })),
           headerDiscount: data.headerDiscount || 0,
-          payments: (data as any).payments || [],
+          payments: ((data as any).payments || []).filter(
+            (p: any) => p && p.amount && p.amount > 0,
+          ),
         };
         const res = await handleCreateOldBill(oldBillData as any);
         if (res.success) {

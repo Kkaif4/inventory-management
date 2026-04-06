@@ -200,289 +200,297 @@ export async function processProductImport(
     const productName = groupRows[0].productGroupName.trim();
 
     try {
-      await prisma.$transaction(async (tx) => {
-        // 1. Validate product-level consistency across variants in the group
-        const firstRow = groupRows[0];
-        const inconsistent = groupRows.find((row) => {
-          return PRODUCT_LEVEL_FIELDS.some(
-            (field) => row[field] !== firstRow[field],
-          );
-        });
+      await prisma.$transaction(
+        async (tx) => {
+          // 1. Validate product-level consistency across variants in the group
+          const firstRow = groupRows[0];
+          const inconsistent = groupRows.find((row) => {
+            return PRODUCT_LEVEL_FIELDS.some(
+              (field) => row[field] !== firstRow[field],
+            );
+          });
 
-        if (inconsistent) {
-          // ISSUE #2: Show all row numbers for group
-          const rowNumbers = groupRows.map((r) => r._sheetRow).join(", ");
-          throw new Error(
-            `Rows ${rowNumbers}: Inconsistent product-level details found for product "${productName}". All variants must share identical product-level attributes (brand, hsnCode, gstRate, category, etc.).`,
-          );
-        }
+          if (inconsistent) {
+            // ISSUE #2: Show all row numbers for group
+            const rowNumbers = groupRows.map((r) => r._sheetRow).join(", ");
+            throw new Error(
+              `Rows ${rowNumbers}: Inconsistent product-level details found for product "${productName}". All variants must share identical product-level attributes (brand, hsnCode, gstRate, category, etc.).`,
+            );
+          }
 
-        // 2. Category Resolution (3-level)
-        let parentId: string | null = null;
-        let finalCategoryId: string | null = null;
+          // 2. Category Resolution (3-level)
+          let parentId: string | null = null;
+          let finalCategoryId: string | null = null;
 
-        const catLevels = [
-          firstRow.categoryL1,
-          firstRow.categoryL2,
-          firstRow.categoryL3,
-        ].filter(Boolean) as string[];
-        let currentPath = "";
+          const catLevels = [
+            firstRow.categoryL1,
+            firstRow.categoryL2,
+            firstRow.categoryL3,
+          ].filter(Boolean) as string[];
+          let currentPath = "";
 
-        for (const catName of catLevels) {
-          currentPath += (currentPath ? " > " : "") + catName.toLowerCase();
-          if (categoryCache.has(currentPath)) {
-            parentId = categoryCache.get(currentPath)!;
-          } else {
-            let cat: { id: string } | null = await tx.category.findFirst({
-              where: {
-                name: { equals: catName, mode: "insensitive" },
-                parentId,
-                outletId,
-              },
-            });
-
-            if (!cat) {
-              cat = await tx.category.create({
-                data: {
-                  name: catName,
+          for (const catName of catLevels) {
+            currentPath += (currentPath ? " > " : "") + catName.toLowerCase();
+            if (categoryCache.has(currentPath)) {
+              parentId = categoryCache.get(currentPath)!;
+            } else {
+              let cat: { id: string } | null = await tx.category.findFirst({
+                where: {
+                  name: { equals: catName, mode: "insensitive" },
                   parentId,
                   outletId,
                 },
               });
-            }
-            parentId = cat.id;
-            categoryCache.set(currentPath, cat.id);
-          }
-          finalCategoryId = parentId;
-        }
 
-        // 3. Brand is handled directly in productData creation since it is a String field.
-
-        // 4. Product Upsert
-        let product = await tx.product.findFirst({
-          where: {
-            name: { equals: productName, mode: "insensitive" },
-            outletId,
-          },
-        });
-
-        const productData = {
-          name: productName,
-          brand: firstRow.brand ?? null,
-          hsnCode: firstRow.hsnCode ?? null,
-          gstRate: firstRow.gstRate,
-          baseUnit: firstRow.baseUnit,
-          purchaseUnit: firstRow.purchaseUnit ?? null,
-          conversionRatio: firstRow.conversionRatio ?? 1,
-          categoryId: finalCategoryId!,
-          outletId,
-        };
-
-        if (product) {
-          product = await tx.product.update({
-            where: { id: product.id },
-            data: productData,
-          });
-          progress.updated++;
-        } else {
-          product = await tx.product.create({
-            data: productData,
-          });
-          progress.created++;
-        }
-
-        // 5. Variant Upsert
-        for (const row of groupRows) {
-          // Dynamic validation for batchDate
-          if (
-            row.currentStock > 0 &&
-            outlet.batchTrackingEnabled &&
-            !row.batchDate
-          ) {
-            throw new Error(
-              `batchDate is required for SKU ${row.variantSku} when batch tracking is enabled and initial stock is provided.`,
-            );
-          }
-
-          let variant = await tx.variant.findFirst({
-            where: { sku: row.variantSku },
-          });
-
-          // Idempotency check: if variant exists, it MUST belong to the current product!
-          if (variant && variant.productId !== product!.id) {
-            throw new Error(
-              `SKU '${row.variantSku}' already exists under a different product. SKUs cannot be reassigned across products.`,
-            );
-          }
-
-          const sellingPrice =
-            row.pricingMethod === "MARKUP"
-              ? Math.round(
-                  row.purchasePrice * (1 + row.markupPercent! / 100) * 100,
-                ) / 100
-              : row.sellingPrice!; // guaranteed by schema validation
-
-          const variantData = {
-            sku: row.variantSku,
-            purchasePrice: row.purchasePrice,
-            sellingPrice,
-            pricingMethod: row.pricingMethod,
-            markupPercent: row.markupPercent,
-            minStockLevel: row.minStockLevel,
-            specifications: row.variantSpec ? { detail: row.variantSpec } : {},
-            productId: product!.id,
-          };
-
-          if (variant) {
-            variant = await tx.variant.update({
-              where: { id: variant.id },
-              data: variantData,
-            });
-            progress.variantsUpdated++;
-          } else {
-            variant = await tx.variant.create({
-              data: variantData,
-            });
-            progress.variantsCreated++;
-          }
-
-          // 6. Initial Stock Management
-          if (row.currentStock > 0) {
-            // Warehouse Resolution
-            if (!row.warehouseName) {
-              throw new Error(
-                `Warehouse name is required for SKU ${row.variantSku} with initial stock.`,
-              );
-            }
-
-            let warehouseId = warehouseCache.get(
-              row.warehouseName.toLowerCase(),
-            );
-            if (!warehouseId) {
-              let warehouse = await tx.warehouse.findFirst({
-                where: {
-                  name: { equals: row.warehouseName, mode: "insensitive" },
-                  outletId,
-                },
-              });
-
-              if (!warehouse) {
-                warehouse = await tx.warehouse.create({
+              if (!cat) {
+                cat = await tx.category.create({
                   data: {
-                    name: row.warehouseName,
+                    name: catName,
+                    parentId,
                     outletId,
                   },
                 });
               }
-              warehouseId = warehouse.id;
-              warehouseCache.set(row.warehouseName.toLowerCase(), warehouseId);
+              parentId = cat.id;
+              categoryCache.set(currentPath, cat.id);
             }
+            finalCategoryId = parentId;
+          }
 
-            // Check if opening stock already exists
-            const existingAdjustment = await tx.transaction.findFirst({
-              where: {
-                type: "STOCK_ADJUSTMENT",
-                outletId,
-                remarks: "OPENING_IMPORT",
-                items: { some: { variantId: variant.id } },
-                fromLocationId: warehouseId,
-              },
-            });
+          // 3. Brand is handled directly in productData creation since it is a String field.
 
-            if (existingAdjustment) {
-              progress.errors.push({
-                row: 0, // Need to handle row index correctly if possible
-                sku: row.variantSku,
-                field: "currentStock",
-                message: `Opening stock already exists for ${row.variantSku} at ${row.warehouseName}. Stock not updated.`,
-              });
-              console.warn(
-                `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Opening stock already exists for SKU: ${row.variantSku}. Skipping stock adjustment.`,
-              );
-              continue;
-            }
-
-            // Generate adjustment record
-            const txnNumber = await NumberingService.getNextNumber(
-              tx,
+          // 4. Product Upsert
+          let product = await tx.product.findFirst({
+            where: {
+              name: { equals: productName, mode: "insensitive" },
               outletId,
-              "STOCK_ADJUSTMENT",
-            );
-            const transaction = await tx.transaction.create({
-              data: {
-                type: "STOCK_ADJUSTMENT",
-                txnNumber,
-                outletId,
-                fromLocationId: warehouseId,
-                userId,
-                status: "COMPLETED",
-                remarks: "OPENING_IMPORT",
-              },
+            },
+          });
+
+          const productData = {
+            name: productName,
+            brand: firstRow.brand ?? null,
+            hsnCode: firstRow.hsnCode ?? null,
+            gstRate: firstRow.gstRate,
+            baseUnit: firstRow.baseUnit,
+            purchaseUnit: firstRow.purchaseUnit ?? null,
+            conversionRatio: firstRow.conversionRatio ?? 1,
+            categoryId: finalCategoryId!,
+            outletId,
+          };
+
+          if (product) {
+            product = await tx.product.update({
+              where: { id: product.id },
+              data: productData,
+            });
+            progress.updated++;
+          } else {
+            product = await tx.product.create({
+              data: productData,
+            });
+            progress.created++;
+          }
+
+          // 5. Variant Upsert
+          for (const row of groupRows) {
+            // Dynamic validation for batchDate
+            if (
+              row.currentStock > 0 &&
+              outlet.batchTrackingEnabled &&
+              !row.batchDate
+            ) {
+              throw new Error(
+                `batchDate is required for SKU ${row.variantSku} when batch tracking is enabled and initial stock is provided.`,
+              );
+            }
+
+            let variant = await tx.variant.findFirst({
+              where: { sku: row.variantSku },
             });
 
-            await tx.transactionItem.create({
-              data: {
-                transactionId: transaction.id,
-                variantId: variant.id,
-                quantity: row.currentStock,
-                rate: row.purchasePrice,
-                taxableValue: row.purchasePrice * row.currentStock,
-              },
-            });
+            // Idempotency check: if variant exists, it MUST belong to the current product!
+            if (variant && variant.productId !== product!.id) {
+              throw new Error(
+                `SKU '${row.variantSku}' already exists under a different product. SKUs cannot be reassigned across products.`,
+              );
+            }
 
-            // Specific Batch creation if enabled
-            let batchNumber: string | undefined = undefined;
-            let batchDate: Date | undefined = undefined;
+            const sellingPrice =
+              row.pricingMethod === "MARKUP"
+                ? Math.round(
+                    row.purchasePrice * (1 + row.markupPercent! / 100) * 100,
+                  ) / 100
+                : row.sellingPrice!; // guaranteed by schema validation
 
-            if (outlet.batchTrackingEnabled) {
-              // ISSUE #3: Use parseBatchDate for validation
-              // ISSUE #4: Use deterministic sequence instead of random suffix
-              if (!row.batchDate) {
+            const variantData = {
+              sku: row.variantSku,
+              purchasePrice: row.purchasePrice,
+              sellingPrice,
+              pricingMethod: row.pricingMethod,
+              markupPercent: row.markupPercent,
+              minStockLevel: row.minStockLevel,
+              specifications: row.variantSpec
+                ? { detail: row.variantSpec }
+                : {},
+              productId: product!.id,
+            };
+
+            if (variant) {
+              variant = await tx.variant.update({
+                where: { id: variant.id },
+                data: variantData,
+              });
+              progress.variantsUpdated++;
+            } else {
+              variant = await tx.variant.create({
+                data: variantData,
+              });
+              progress.variantsCreated++;
+            }
+
+            // 6. Initial Stock Management
+            if (row.currentStock > 0) {
+              // Warehouse Resolution
+              if (!row.warehouseName) {
                 throw new Error(
-                  `Row ${row._sheetRow}: Batch Date is required but missing. This is a validation bug — report it.`,
+                  `Warehouse name is required for SKU ${row.variantSku} with initial stock.`,
                 );
               }
-              batchDate = parseBatchDate(row.batchDate, row._sheetRow);
 
-              // ISSUE #4: Deterministic batch number using local date components
-              const datePart = [
-                batchDate.getFullYear(),
-                String(batchDate.getMonth() + 1).padStart(2, "0"),
-                String(batchDate.getDate()).padStart(2, "0"),
-              ].join("");
-              const seqKey = `${row.variantSku}-${datePart}`;
-              const seq = (batchSeqMap.get(seqKey) ?? 0) + 1;
-              batchSeqMap.set(seqKey, seq);
-              batchNumber = `${row.variantSku}-${datePart}-${String(seq).padStart(3, "0")}`;
-              progress.batches++;
+              let warehouseId = warehouseCache.get(
+                row.warehouseName.toLowerCase(),
+              );
+              if (!warehouseId) {
+                let warehouse = await tx.warehouse.findFirst({
+                  where: {
+                    name: { equals: row.warehouseName, mode: "insensitive" },
+                    outletId,
+                  },
+                });
+
+                if (!warehouse) {
+                  warehouse = await tx.warehouse.create({
+                    data: {
+                      name: row.warehouseName,
+                      outletId,
+                    },
+                  });
+                }
+                warehouseId = warehouse.id;
+                warehouseCache.set(
+                  row.warehouseName.toLowerCase(),
+                  warehouseId,
+                );
+              }
+
+              // Check if opening stock already exists
+              const existingAdjustment = await tx.transaction.findFirst({
+                where: {
+                  type: "STOCK_ADJUSTMENT",
+                  outletId,
+                  remarks: "OPENING_IMPORT",
+                  items: { some: { variantId: variant.id } },
+                  fromLocationId: warehouseId,
+                },
+              });
+
+              if (existingAdjustment) {
+                progress.errors.push({
+                  row: 0, // Need to handle row index correctly if possible
+                  sku: row.variantSku,
+                  field: "currentStock",
+                  message: `Opening stock already exists for ${row.variantSku} at ${row.warehouseName}. Stock not updated.`,
+                });
+                console.warn(
+                  `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Opening stock already exists for SKU: ${row.variantSku}. Skipping stock adjustment.`,
+                );
+                continue;
+              }
+
+              // Generate adjustment record
+              const txnNumber = await NumberingService.getNextNumber(
+                tx,
+                outletId,
+                "STOCK_ADJUSTMENT",
+              );
+              const transaction = await tx.transaction.create({
+                data: {
+                  type: "STOCK_ADJUSTMENT",
+                  txnNumber,
+                  outletId,
+                  fromLocationId: warehouseId,
+                  userId,
+                  status: "COMPLETED",
+                  remarks: "OPENING_IMPORT",
+                },
+              });
+
+              await tx.transactionItem.create({
+                data: {
+                  transactionId: transaction.id,
+                  variantId: variant.id,
+                  quantity: row.currentStock,
+                  rate: row.purchasePrice,
+                  taxableValue: row.purchasePrice * row.currentStock,
+                },
+              });
+
+              // Specific Batch creation if enabled
+              let batchNumber: string | undefined = undefined;
+              let batchDate: Date | undefined = undefined;
+
+              if (outlet.batchTrackingEnabled) {
+                // ISSUE #3: Use parseBatchDate for validation
+                // ISSUE #4: Use deterministic sequence instead of random suffix
+                if (!row.batchDate) {
+                  throw new Error(
+                    `Row ${row._sheetRow}: Batch Date is required but missing. This is a validation bug — report it.`,
+                  );
+                }
+                batchDate = parseBatchDate(row.batchDate, row._sheetRow);
+
+                // ISSUE #4: Deterministic batch number using local date components
+                const datePart = [
+                  batchDate.getFullYear(),
+                  String(batchDate.getMonth() + 1).padStart(2, "0"),
+                  String(batchDate.getDate()).padStart(2, "0"),
+                ].join("");
+                const seqKey = `${row.variantSku}-${datePart}`;
+                const seq = (batchSeqMap.get(seqKey) ?? 0) + 1;
+                batchSeqMap.set(seqKey, seq);
+                batchNumber = `${row.variantSku}-${datePart}-${String(seq).padStart(3, "0")}`;
+                progress.batches++;
+              }
+
+              // Use StockService to handle Ledger and Stock records
+              await StockService.moveStock(tx, {
+                variantId: variant.id,
+                warehouseId,
+                outletId,
+                transactionId: transaction.id,
+                quantity: row.currentStock,
+                type: "ADJUSTMENT_INC",
+                userId,
+                costPerUnit: row.batchCostPerUnit || row.purchasePrice,
+                batchNumber,
+                batchDate,
+              });
+
+              progress.stockEntries++;
             }
-
-            // Use StockService to handle Ledger and Stock records
-            await StockService.moveStock(tx, {
-              variantId: variant.id,
-              warehouseId,
-              outletId,
-              transactionId: transaction.id,
-              quantity: row.currentStock,
-              type: "ADJUSTMENT_INC",
-              userId,
-              costPerUnit: row.batchCostPerUnit || row.purchasePrice,
-              batchNumber,
-              batchDate,
-            });
-
-            progress.stockEntries++;
           }
-        }
 
-        await AuditService.log({
-          action: product ? "UPDATE" : "CREATE",
-          entity: "IMPORT",
-          entityId: productName,
-          userId,
-          newValues: { productName, variants: groupRows.length },
-        });
-      });
+          await AuditService.log({
+            action: product ? "UPDATE" : "CREATE",
+            entity: "IMPORT",
+            entityId: productName,
+            userId,
+            newValues: { productName, variants: groupRows.length },
+          });
+        },
+        { timeout: 60000 },
+      );
     } catch (error: any) {
       console.error(
         `[Import Debug] [Outlet: ${outletId}] [Product: "${productName}"] Failed to process: ${error.message}`,

@@ -60,6 +60,30 @@ export function POSInvoiceFooter({
   const t = useTranslations("billing");
   const isNO1 = billType === "NO1";
 
+  // For OLD bills, recalculate all totals from form state to ensure instant updates when items change
+  let displaySubtotal = subtotal;
+  let displayTotalDiscount = totalDiscount;
+  let displayFreight = freightCost;
+  let displayGrandTotal = grandTotal;
+
+  if (billType === "OLD") {
+    const items = form.watch("items") || [];
+    const headerDiscount = form.watch("headerDiscount") || 0;
+    const freight = form.watch("freightCost") || 0;
+    const formGrandTotal = form.watch("grandTotal");
+
+    const itemsTotal = items.reduce(
+      (sum: number, item: any) =>
+        sum + (item?.quantity || 0) * (item?.rate || 0),
+      0,
+    );
+    const discountAmount = (itemsTotal * headerDiscount) / 100;
+    displaySubtotal = itemsTotal - discountAmount;
+    displayTotalDiscount = discountAmount;
+    displayFreight = freight;
+    displayGrandTotal = displaySubtotal + displayFreight;
+  }
+
   return (
     <TooltipProvider>
       <div className="shrink-0 border-t border-slate-200 bg-white">
@@ -105,7 +129,7 @@ export function POSInvoiceFooter({
                   step="0.01"
                   min="0"
                   max="100"
-                  value={form.watch("headerDiscount") || ""}
+                  value={form.watch("headerDiscount") ?? ""}
                   onChange={(e) =>
                     form.setValue(
                       "headerDiscount",
@@ -129,12 +153,9 @@ export function POSInvoiceFooter({
                 type="number"
                 step="0.01"
                 min="0"
-                value={form.watch("freightCost") || ""}
+                value={form.watch("freightCost") ?? ""}
                 onChange={(e) =>
-                  form.setValue(
-                    "freightCost",
-                    parseFloat(e.target.value) || 0,
-                  )
+                  form.setValue("freightCost", parseFloat(e.target.value) || 0)
                 }
                 className="h-9 w-28 text-sm font-mono focus:ring-2 focus:ring-blue-500"
               />
@@ -173,55 +194,107 @@ export function POSInvoiceFooter({
                 variant="outline"
                 size="sm"
                 className="h-7 text-[10px] font-bold uppercase border-indigo-200 text-indigo-700 bg-white hover:bg-indigo-50"
-                onClick={() => paymentFieldArray?.append({ amount: 0, paymentDate: new Date().toISOString().split("T")[0], note: "" })}
+                onClick={() =>
+                  paymentFieldArray?.append({
+                    amount: "",
+                    paymentDate: new Date().toISOString().split("T")[0],
+                    note: "",
+                  })
+                }
               >
                 + Add Payment Row
               </Button>
             </div>
-            
+
             <div className="space-y-2">
-              {paymentFieldArray?.fields.map((field: any, index: number) => (
-                <div key={field.id} className="flex items-center gap-3 animate-in fade-in slide-in-from-left-1">
-                  <div className="flex-1 max-w-[150px]">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Amount"
-                      value={form.watch(`payments.${index}.amount`) || ""}
-                      onChange={(e) => form.setValue(`payments.${index}.amount`, parseFloat(e.target.value) || 0)}
-                      className="h-8 text-xs font-mono bg-white border-indigo-100"
-                    />
+              {paymentFieldArray?.fields.map((field: any, index: number) => {
+                const paymentsErrors = form.formState.errors.payments as any;
+                const amountError = paymentsErrors?.[index]?.amount?.message;
+                const dateError = paymentsErrors?.[index]?.paymentDate?.message;
+
+                return (
+                  <div key={field.id} className="space-y-1">
+                    <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-1">
+                      <div className="flex-1 max-w-[150px]">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Amount"
+                          value={form.watch(`payments.${index}.amount`) || ""}
+                          onChange={(e) =>
+                            form.setValue(
+                              `payments.${index}.amount`,
+                              parseFloat(e.target.value) || 0,
+                            )
+                          }
+                          className={cn(
+                            "h-8 text-xs font-mono bg-white border-indigo-100",
+                            amountError && "border-red-300 bg-red-50",
+                          )}
+                        />
+                      </div>
+                      <div className="flex-1 max-w-[150px]">
+                        <Input
+                          type="date"
+                          value={
+                            form.watch(
+                              `payments.${index}.paymentDate`,
+                            ) instanceof Date
+                              ? form
+                                  .watch(`payments.${index}.paymentDate`)
+                                  .toISOString()
+                                  .split("T")[0]
+                              : form.watch(`payments.${index}.paymentDate`) ||
+                                ""
+                          }
+                          onChange={(e) =>
+                            form.setValue(
+                              `payments.${index}.paymentDate`,
+                              e.target.value,
+                            )
+                          }
+                          className={cn(
+                            "h-8 text-xs bg-white border-indigo-100",
+                            dateError && "border-red-300 bg-red-50",
+                          )}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          placeholder="Note (e.g. Cash, Check #...)"
+                          value={form.watch(`payments.${index}.note`) || ""}
+                          onChange={(e) =>
+                            form.setValue(
+                              `payments.${index}.note`,
+                              e.target.value,
+                            )
+                          }
+                          className="h-8 text-xs bg-white border-indigo-100"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => paymentFieldArray?.remove(index)}
+                        className="text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                    {/* Error messages */}
+                    {(amountError || dateError) && (
+                      <div className="text-xs text-red-600 ml-1 space-y-0.5">
+                        {amountError && <p>{amountError}</p>}
+                        {dateError && <p>{dateError}</p>}
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1 max-w-[150px]">
-                    <Input
-                      type="date"
-                      value={form.watch(`payments.${index}.paymentDate`) instanceof Date 
-                                ? form.watch(`payments.${index}.paymentDate`).toISOString().split("T")[0]
-                                : form.watch(`payments.${index}.paymentDate`) || ""}
-                      onChange={(e) => form.setValue(`payments.${index}.paymentDate`, e.target.value)}
-                      className="h-8 text-xs bg-white border-indigo-100"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <Input
-                      placeholder="Note (e.g. Cash, Check #...)"
-                      value={form.watch(`payments.${index}.note`) || ""}
-                      onChange={(e) => form.setValue(`payments.${index}.note`, e.target.value)}
-                      className="h-8 text-xs bg-white border-indigo-100"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => paymentFieldArray?.remove(index)}
-                    className="text-slate-400 hover:text-red-500 transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-              
+                );
+              })}
+
               {paymentFieldArray?.fields.length === 0 && (
-                <p className="text-xs text-slate-500 italic py-2">No payments recorded. Bill will be marked as UNPAID.</p>
+                <p className="text-xs text-slate-500 italic py-2">
+                  No payments recorded. Bill will be marked as UNPAID.
+                </p>
               )}
             </div>
           </div>
@@ -255,9 +328,7 @@ export function POSInvoiceFooter({
                   : "bg-slate-100 text-slate-500",
               )}
             >
-              {isGlobalDiscount
-                ? t("footer.globalDisc")
-                : t("footer.rowDisc")}
+              {isGlobalDiscount ? t("footer.globalDisc") : t("footer.rowDisc")}
             </span>
           </div>
 
@@ -266,19 +337,19 @@ export function POSInvoiceFooter({
 
           {/* Summary values */}
           <div className="flex items-center gap-4 shrink-0">
-            <SummaryItem label={t("footer.subtotal")} value={subtotal} />
-            {totalDiscount > 0 && (
+            <SummaryItem label={t("footer.subtotal")} value={displaySubtotal} />
+            {displayTotalDiscount > 0 && (
               <SummaryItem
                 label={t("footer.discount")}
-                value={-totalDiscount}
+                value={-displayTotalDiscount}
                 negative
               />
             )}
             {isNO1 && totalTax > 0 && (
               <SummaryItem label={t("footer.tax")} value={totalTax} />
             )}
-            {freightCost > 0 && (
-              <SummaryItem label={t("footer.freight")} value={freightCost} />
+            {displayFreight > 0 && (
+              <SummaryItem label={t("footer.freight")} value={displayFreight} />
             )}
           </div>
 
@@ -289,16 +360,13 @@ export function POSInvoiceFooter({
               {t("footer.total")}
             </span>
             {billType === "OLD" ? (
-              <div className="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded px-2 py-1 focus-within:ring-2 focus-within:ring-indigo-500">
-                <span className="text-xl font-black font-mono text-indigo-700">₹</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={form.watch("grandTotal") ?? grandTotal.toFixed(2)}
-                  onChange={(e) => form.setValue("grandTotal", parseFloat(e.target.value) || 0)}
-                  disabled={isPosted}
-                  className="w-28 text-xl font-black font-mono bg-transparent outline-none text-indigo-900 border-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
+              <div className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 rounded px-2 py-1">
+                <span className="text-xl font-black font-mono text-indigo-700">
+                  ₹
+                </span>
+                <span className="w-28 text-xl font-black font-mono text-indigo-900 text-right">
+                  {displayGrandTotal.toFixed(2)}
+                </span>
               </div>
             ) : (
               <span className="text-2xl font-black font-mono text-slate-900">
