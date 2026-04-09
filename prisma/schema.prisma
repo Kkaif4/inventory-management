@@ -255,7 +255,6 @@ model LedgerEntry {
   accountId     String
   partyId       String?
   transactionId String?
-  journalId     String?
   date          DateTime     @default(now())
   debit         Float        @default(0)
   credit        Float        @default(0)
@@ -267,7 +266,6 @@ model LedgerEntry {
 
   @@index([accountId])
   @@index([date])
-  @@index([journalId])
   @@index([accountId, date])
 }
 
@@ -364,12 +362,12 @@ model Payment {
   amount          Float
   paymentDate     DateTime
   paymentMode     String
-  accountId       String
+  accountId       String?
   referenceNo     String?
   notes           String?
   createdBy       String
   createdAt       DateTime    @default(now())
-  account         Account     @relation(fields: [accountId], references: [id])
+  account         Account?    @relation(fields: [accountId], references: [id])
   creator         User        @relation(fields: [createdBy], references: [id])
   invoice         Transaction @relation(fields: [invoiceId], references: [id])
   outlet          Outlet      @relation(fields: [outletId], references: [id])

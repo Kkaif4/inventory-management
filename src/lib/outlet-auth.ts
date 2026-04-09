@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 export async function validateOutletAccess(userId: string, outletId: string) {
   if (!userId || !outletId) {
@@ -125,13 +126,21 @@ export async function getCurrentSessionOutlet(outletId?: string) {
 
   let activeOutletId = outletId;
 
-  // If no outlet specified, use first available
+  // If no outlet specified, read from the client-set cookie first
   if (!activeOutletId) {
-    const outlets = (session.user as any).availableOutlets as any[];
-    if (!outlets || outlets.length === 0) {
-      throw new Error("No outlets available for user");
+    const cookieStore = await cookies();
+    const cookieOutletId = cookieStore.get("selected_outlet_id")?.value;
+
+    if (cookieOutletId && cookieOutletId !== "ALL") {
+      activeOutletId = cookieOutletId;
+    } else {
+      // Fall back to first available outlet from session
+      const outlets = (session.user as any).availableOutlets as any[];
+      if (!outlets || outlets.length === 0) {
+        throw new Error("No outlets available for user");
+      }
+      activeOutletId = outlets[0].id as string;
     }
-    activeOutletId = outlets[0].id as string;
   }
 
   // Validate user has access to this outlet

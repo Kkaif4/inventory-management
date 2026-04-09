@@ -73,7 +73,7 @@ export function POSInvoiceForm({
           billType: "NO1",
           txnNumber: "",
           date: new Date(),
-          fromOutletId: currentOutletId || "",
+          fromOutletId: (currentOutletId && currentOutletId !== "ALL") ? currentOutletId : "",
           partyId: "",
           buyerName: "",
           buyerPhone: "",

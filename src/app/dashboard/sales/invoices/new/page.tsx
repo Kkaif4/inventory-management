@@ -56,14 +56,14 @@ function InvoicePageContent() {
     loadOutlets();
   }, [currentOutletId]);
 
-  if (!currentOutletId) {
+  if (!currentOutletId || currentOutletId === "ALL") {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm max-w-md">
           <Warehouse className="w-12 h-12 text-slate-300 mx-auto" />
-          <h2 className="text-xl font-bold text-slate-800">Assign Outlet</h2>
+          <h2 className="text-xl font-bold text-slate-800">Select a Specific Outlet</h2>
           <p className="text-slate-500 text-sm">
-            Please select an active outlet from the navigation bar.
+            Please select a specific outlet from the navigation bar to create an invoice.
           </p>
           <Button
             onClick={() => router.push("/dashboard/sales")}

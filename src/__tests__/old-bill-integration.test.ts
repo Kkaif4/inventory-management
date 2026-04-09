@@ -100,7 +100,7 @@ describe("Old Bill Mode Integration Tests", () => {
     await prisma.variant.deleteMany({ where: { product: { outletId: testOutletId } } });
     await prisma.product.deleteMany({ where: { outletId: testOutletId } });
     await prisma.category.deleteMany({ where: { outletId: testOutletId } });
-    
+    await prisma.documentSeries.deleteMany({ where: { outletId: testOutletId } });
     await prisma.outlet.delete({ where: { id: testOutletId } });
     await prisma.user.delete({ where: { id: testUserId } });
   });
@@ -210,6 +210,13 @@ describe("Old Bill Mode Integration Tests", () => {
       date: historicalBillDate,
       buyerName: "Report Test Customer",
       grandTotal: 500,
+      items: [
+        {
+          itemDescription: "Historic Report Item",
+          quantity: 5,
+          rate: 100,
+        },
+      ],
       payments: [],
       userId: testUserId,
     });
@@ -227,27 +234,17 @@ describe("Old Bill Mode Integration Tests", () => {
 
     const reportItems = reportResult.data?.data || [];
 
-    // We SHOULD see our OLD bill in the report (Digitized History)
+    // OLD bills are stored as type=SALES_INVOICE with billType=OLD
+    // so they MUST appear in the sales register for historical accuracy
     const foundOldBill = reportItems.some(item => item.invoiceNumber === res.data?.transaction.txnNumber);
     expect(foundOldBill).toBe(true);
-    expect(reportItems.length).toBe(1);
 
-    // Let's create a regular invoice to ensure the report naturally works
-    const billReportWithoutOldBills = await prisma.transaction.count({
-      where: {
-        outletId: testOutletId,
-        date: { gte: fromDate, lte: toDate },
-        type: "SALES_INVOICE",
-      }
-    });
+    // The bill from this test should appear
+    expect(reportItems.length).toBeGreaterThanOrEqual(1);
 
-    // The raw count includes it because Prisma isn't filtering unless explicitly told to
-    expect(billReportWithoutOldBills).toBeGreaterThanOrEqual(1);
-
-    // BUT the actual report function MUST filter it out
-    // Ensuring the previous test's "OLD" bill is not returned by getSalesRegisterReport
-    const itemInReport = reportItems.find(r => r.invoiceNumber.startsWith('OLD/'));
-    expect(itemInReport).toBeUndefined();
+    // Verify the OLD bill entry has the OLD/ prefix in its invoice number
+    const oldBillItem = reportItems.find(r => r.invoiceNumber === res.data?.transaction.txnNumber);
+    expect(oldBillItem?.invoiceNumber).toMatch(/^OLD\//);
   });
 
   it("Test 3: OLD bills are INCLUDED in Party Ledger, Account Statement, and Outstanding Balance", async () => {

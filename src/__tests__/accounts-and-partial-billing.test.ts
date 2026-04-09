@@ -1,4 +1,18 @@
-import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+
+vi.mock("@/lib/outlet-auth", () => ({
+  validateSessionOutletAccess: vi.fn().mockResolvedValue(undefined),
+  requireAdminSession: vi.fn().mockResolvedValue("test-user"),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
+vi.mock("next/headers", () => ({
+  cookies: vi.fn().mockResolvedValue({ get: vi.fn().mockReturnValue(undefined) }),
+}));
+
 import { prisma } from "@/lib/prisma";
 import { createAccount, getOutletAccounts, getAccountDetail } from "@/actions/accounts/index";
 import { transferBetweenAccounts } from "@/actions/accounts/transfers";
@@ -155,8 +169,22 @@ describe("Accounts & Partial Billing", () => {
   });
 
   afterAll(async () => {
-    // Cleanup
-    await prisma.party.deleteMany({ where: { id: customerId } });
+    await prisma.oldBillPayment.deleteMany({ where: { transaction: { outletId: testOutletId } } });
+    await prisma.payment.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.batchMovement.deleteMany({ where: { transaction: { outletId: testOutletId } } });
+    await prisma.stockLedger.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.ledgerEntry.deleteMany({ where: { account: { outletId: testOutletId } } });
+    await prisma.transactionItem.deleteMany({ where: { transaction: { outletId: testOutletId } } });
+    await prisma.transaction.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.accountTransaction.deleteMany({ where: { account: { outletId: testOutletId } } });
+    await prisma.party.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.account.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.stock.deleteMany({ where: { warehouse: { outletId: testOutletId } } });
+    await prisma.variant.deleteMany({ where: { product: { outletId: testOutletId } } });
+    await prisma.product.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.category.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.warehouse.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.documentSeries.deleteMany({ where: { outletId: testOutletId } });
     await prisma.outlet.delete({ where: { id: testOutletId } });
     await prisma.user.delete({ where: { id: testUserId } });
   });
@@ -168,7 +196,9 @@ describe("Accounts & Partial Billing", () => {
   it("Test 1: Account creation with opening balance", async () => {
     const accounts = await getOutletAccounts(testOutletId);
     expect(accounts.success).toBe(true);
-    expect(accounts.data).toHaveLength(2); // Cash + Bank
+    // Filter to operational accounts (those with a type: CASH or BANK)
+    const operationalAccounts = accounts.data?.filter(a => a.type !== null) ?? [];
+    expect(operationalAccounts).toHaveLength(2); // Cash + Bank
 
     const cashAcc = accounts.data?.find(a => a.type === "CASH");
     expect(cashAcc?.currentBalance).toBe(5000);
@@ -293,8 +323,8 @@ describe("Accounts & Partial Billing", () => {
       partyId: customerId,
       amount: 1180,
       paymentDate: new Date().toISOString().split("T")[0],
-      paymentMode: "Cash",
-      accountId: cashAccountId,
+      paymentMode: "CASH",
+      bankAccountId: cashAccountId,
       userId: testUserId,
     });
 
@@ -341,7 +371,7 @@ describe("Accounts & Partial Billing", () => {
       partyId: customerId,
       amount: 500,
       paymentDate: new Date().toISOString().split("T")[0],
-      paymentMode: "Cash",
+      paymentMode: "CASH",
       userId: testUserId,
     });
 

@@ -12,10 +12,11 @@ import { ValidationError, NotFoundError } from "@/lib/exceptions";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import { parsePaginationParams, calculatePagination } from "@/lib/pagination";
 import { PaginatedResult, BasePaginationParams } from "@/types/pagination";
+import { NumberingService } from "@/domains/foundation/numbering-service";
 
 export async function createSalesInvoice(data: {
   billType: "NO1" | "NO2";
-  txnNumber: string;
+  txnNumber?: string;
   partyId?: string;
   fromOutletId: string;
   items: {
@@ -87,20 +88,24 @@ export async function createSalesInvoice(data: {
       outlet.warehouses[0]?.id;
 
     return await prisma.$transaction(async (tx) => {
-      // 1. Validate and use provided Transaction Number
-      // Check for uniqueness within the outlet
-      const existing = await tx.transaction.findFirst({
-        where: {
-          txnNumber: data.txnNumber,
-          outletId: data.fromOutletId,
-        },
-      });
-      if (existing) {
-        throw new ValidationError(
-          `Invoice number "${data.txnNumber}" already exists for this outlet`,
-        );
+      // 1. Resolve Transaction Number (auto-generate if not provided)
+      let txnNumber: string;
+      if (data.txnNumber) {
+        const existing = await tx.transaction.findFirst({
+          where: {
+            txnNumber: data.txnNumber,
+            outletId: data.fromOutletId,
+          },
+        });
+        if (existing) {
+          throw new ValidationError(
+            `Invoice number "${data.txnNumber}" already exists for this outlet`,
+          );
+        }
+        txnNumber = data.txnNumber;
+      } else {
+        txnNumber = await NumberingService.getNextNumber(tx, data.fromOutletId, "SALES_INVOICE");
       }
-      const txnNumber = data.txnNumber;
 
       // 1.5. FIFO Pricing Pre-calculation (if enabled)
       const fifoEnabled =
@@ -284,12 +289,20 @@ export async function createSalesInvoice(data: {
         await tx.ledgerEntry.createMany({ data: ledgerEntries });
       }
 
+      // 4. Update party outstanding balance (for NO1 invoices with a party)
+      if (!isNo2 && data.partyId) {
+        await tx.party.update({
+          where: { id: data.partyId },
+          data: { outstandingBalance: { increment: grandTotal } },
+        });
+      }
+
       revalidatePath("/dashboard/sales/invoices");
       revalidatePath("/dashboard/sales/transactions");
       revalidatePath("/dashboard/sales");
       revalidatePath("/dashboard/financials/ledger");
 
-      // 4. Return invoice with FIFO breakdown if applicable
+      // 5. Return invoice with FIFO breakdown if applicable
       return {
         invoice,
         fifoBreakdown: fifoEnabled
