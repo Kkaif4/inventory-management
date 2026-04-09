@@ -262,13 +262,18 @@ export async function getOutletFIFOSettings(outletId: string) {
  */
 export async function peekNextInvoiceNumber(
   outletId: string,
-  billType: "NO1" | "NO2",
+  billType: "NO1" | "NO2" | "OLD",
 ) {
   return withErrorHandler(async () => {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) throw new ValidationError("Not authenticated");
 
-    const type = billType === "NO2" ? "CASH_MEMO" : "SALES_INVOICE";
+    const typeMap = {
+      "NO1": "SALES_INVOICE",
+      "NO2": "CASH_MEMO",
+      "OLD": "OLD_BILL",
+    } as const;
+    const type = typeMap[billType];
     const nextNumber = await NumberingService.peekNextNumber(
       prisma,
       outletId,

@@ -132,7 +132,7 @@ async function calculatePnLPeriod(
     where: {
       type: "SALES_INVOICE",
       date: { gte: startDate, lte: endDate },
-      status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
+      status: { in: ["PAID"] },
       ...(outletId && { outletId }),
     },
     _sum: { grandTotal: true },
@@ -145,23 +145,25 @@ async function calculatePnLPeriod(
     salesInvoices.find((s) => s.billType === "NO2")?._sum.grandTotal ?? 0,
   );
 
-  const salesNo1Item: PnLLineItem | null = salesNo1Amount > 0
-    ? {
-        accountId: "sales-no1-synthetic",
-        accountCode: "3001",
-        accountName: "Sales (NO1 - GST)",
-        amount: salesNo1Amount,
-      }
-    : null;
+  const salesNo1Item: PnLLineItem | null =
+    salesNo1Amount > 0
+      ? {
+          accountId: "sales-no1-synthetic",
+          accountCode: "3001",
+          accountName: "Sales (NO1 - GST)",
+          amount: salesNo1Amount,
+        }
+      : null;
 
-  const salesNo2Item: PnLLineItem | null = salesNo2Amount > 0
-    ? {
-        accountId: "sales-no2-synthetic",
-        accountCode: "3002",
-        accountName: "Cash Sales (NO2)",
-        amount: salesNo2Amount,
-      }
-    : null;
+  const salesNo2Item: PnLLineItem | null =
+    salesNo2Amount > 0
+      ? {
+          accountId: "sales-no2-synthetic",
+          accountCode: "3002",
+          accountName: "Cash Sales (NO2)",
+          amount: salesNo2Amount,
+        }
+      : null;
 
   const grossRevenue = roundToTwo(salesNo1Amount + salesNo2Amount);
 
@@ -179,14 +181,15 @@ async function calculatePnLPeriod(
 
   const purchasesAmount = roundToTwo(purchaseBills._sum.grandTotal ?? 0);
 
-  const purchasesItem: PnLLineItem | null = purchasesAmount > 0
-    ? {
-        accountId: "purchases-synthetic",
-        accountCode: "4001",
-        accountName: "Purchases",
-        amount: purchasesAmount,
-      }
-    : null;
+  const purchasesItem: PnLLineItem | null =
+    purchasesAmount > 0
+      ? {
+          accountId: "purchases-synthetic",
+          accountCode: "4001",
+          accountName: "Purchases",
+          amount: purchasesAmount,
+        }
+      : null;
 
   // Freight: Sum of freightCost from all invoices/bills
   const freightTotal = await prisma.transaction.aggregate({
@@ -201,14 +204,15 @@ async function calculatePnLPeriod(
 
   const freightAmount = roundToTwo(freightTotal._sum.freightCost ?? 0);
 
-  const freightInwardItem: PnLLineItem | null = freightAmount > 0
-    ? {
-        accountId: "freight-synthetic",
-        accountCode: "4002",
-        accountName: "Freight Inward",
-        amount: freightAmount,
-      }
-    : null;
+  const freightInwardItem: PnLLineItem | null =
+    freightAmount > 0
+      ? {
+          accountId: "freight-synthetic",
+          accountCode: "4002",
+          accountName: "Freight Inward",
+          amount: freightAmount,
+        }
+      : null;
 
   const totalCOGS = roundToTwo(purchasesAmount + freightAmount);
 
@@ -235,9 +239,7 @@ async function calculatePnLPeriod(
     select: { id: true, name: true },
   });
 
-  const categoryMap = Object.fromEntries(
-    categories.map((c) => [c.id, c.name]),
-  );
+  const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c.name]));
 
   const operatingExpenseItems: PnLLineItem[] = expenses
     .map((exp) => {

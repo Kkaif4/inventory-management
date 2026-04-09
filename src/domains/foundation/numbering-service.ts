@@ -85,7 +85,7 @@ export const NumberingService = {
         financialYear,
         outletId,
         prefix,
-        nextNumber: 2, // First one will be 1
+        nextNumber: 2, // First call will return 1
       },
     });
 

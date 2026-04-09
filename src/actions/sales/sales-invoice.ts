@@ -104,7 +104,8 @@ export async function createSalesInvoice(data: {
         }
         txnNumber = data.txnNumber;
       } else {
-        txnNumber = await NumberingService.getNextNumber(tx, data.fromOutletId, "SALES_INVOICE");
+        const docType = isNo2 ? "CASH_MEMO" : "SALES_INVOICE";
+        txnNumber = await NumberingService.getNextNumber(tx, data.fromOutletId, docType);
       }
 
       // 1.5. FIFO Pricing Pre-calculation (if enabled)

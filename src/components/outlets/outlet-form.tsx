@@ -28,7 +28,6 @@ import { ToggleWithBanner } from "@/components/form/toggle-with-banner";
 import { InvoicePreview } from "@/components/form/invoice-preview";
 import { ReadOnlyBadge } from "@/components/form/read-only-badge";
 import { INDIAN_STATES } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 
 interface OutletFormProps {
   outlet?: {
@@ -46,7 +45,7 @@ interface OutletFormProps {
     allowRawCashBills?: boolean;
   };
   onSubmit: (
-    data: OutletFormValues
+    data: OutletFormValues,
   ) => Promise<{ success: boolean; error?: any }>;
   redirectUrl?: string;
 }
@@ -61,7 +60,7 @@ export function OutletForm({
   const [hasPostedInvoices, setHasPostedInvoices] = React.useState(false);
   const [hasExistingBatches, setHasExistingBatches] = React.useState(false);
   const [batchTrackingEnabled, setBatchTrackingEnabled] = React.useState(
-    outlet?.batchTrackingEnabled ?? false
+    outlet?.batchTrackingEnabled ?? false,
   );
   const [batchDisableAcknowledged, setBatchDisableAcknowledged] =
     React.useState(false);
@@ -112,11 +111,7 @@ export function OutletForm({
 
   const handleCancel = () => {
     if (isDirty) {
-      if (
-        window.confirm(
-          "You have unsaved changes. Discard and leave?"
-        )
-      ) {
+      if (window.confirm("You have unsaved changes. Discard and leave?")) {
         router.back();
       }
     } else {
@@ -143,7 +138,7 @@ export function OutletForm({
         toast.success(
           outlet
             ? "Outlet details updated successfully"
-            : "Sales outlet created successfully"
+            : "Sales outlet created successfully",
         );
         router.push(redirectUrl);
       } else {
@@ -285,7 +280,9 @@ export function OutletForm({
                       className="font-mono uppercase"
                     />
                   </FormControl>
-                  <FormDescription>Max 8 chars. Alphanumeric only.</FormDescription>
+                  <FormDescription>
+                    Max 8 chars. Alphanumeric only.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -297,7 +294,7 @@ export function OutletForm({
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center justify-between gap-2">
-                    <FormLabel>Starting Number</FormLabel>
+                    <FormLabel>(Default / Running) Invoice Number</FormLabel>
                     {hasPostedInvoices && (
                       <ReadOnlyBadge reason="Cannot change after invoices posted" />
                     )}
@@ -500,7 +497,6 @@ Use this for walk-in cash buyers where a legal invoice is not required.`
           </FormGrid>
         </FormSection>
 
-
         {/* Form Footer */}
         <div className="flex justify-between gap-4 pt-8 border-t border-slate-100">
           <Button
@@ -511,11 +507,7 @@ Use this for walk-in cash buyers where a legal invoice is not required.`
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="gap-2"
-          >
+          <Button type="submit" disabled={isSubmitting} className="gap-2">
             {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
             {outlet ? "Update Outlet" : "Create Outlet"}
           </Button>

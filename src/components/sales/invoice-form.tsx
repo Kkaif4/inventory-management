@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Trash2, Plus, ArrowUp, ArrowDown } from "lucide-react";
 import { z } from "zod";
+import { peekNextInvoiceNumber } from "@/actions/sales/invoice-form-handler";
 import {
   Form,
   FormControl,
@@ -55,6 +56,7 @@ export function InvoiceForm({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isDirty, setIsDirty] = React.useState(false);
   const [selectedCustomer, setSelectedCustomer] = React.useState<any>(null);
+  const [invoiceNumber, setInvoiceNumber] = React.useState("");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(invoiceSchema) as any,
@@ -96,6 +98,25 @@ export function InvoiceForm({
   const headerDiscount = form.watch("headerDiscount");
   const freightCost = form.watch("freightCost");
 
+  // Load next invoice number when outlet or bill type changes
+  React.useEffect(() => {
+    if (!fromOutletId) return;
+
+    const loadNextNumber = async () => {
+      const res = await peekNextInvoiceNumber(
+        fromOutletId,
+        billType as "NO1" | "NO2",
+      );
+      console.log("Peek next invoice number response:", res);
+      if (res.success && res.data) {
+        setInvoiceNumber(res.data);
+      }
+    };
+
+    loadNextNumber();
+  }, [fromOutletId, billType]);
+
+  console.log("Next invoice number:", invoiceNumber);
   // Calculate totals
   const itemsTotal = items.reduce(
     (sum, item) => sum + (item?.quantity || 0) * (item?.rate || 0),
@@ -247,6 +268,18 @@ export function InvoiceForm({
           {billType === "NO2" && (
             <div className="px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
               ℹ This creates an informal cash memo. No GST, no customer ledger.
+            </div>
+          )}
+
+          {/* Invoice Number Display */}
+          {invoiceNumber && (
+            <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <p className="text-xs font-medium text-slate-600 mb-1">
+                Next Invoice Number
+              </p>
+              <p className="text-lg font-bold text-slate-900 font-mono">
+                {invoiceNumber}
+              </p>
             </div>
           )}
         </div>
