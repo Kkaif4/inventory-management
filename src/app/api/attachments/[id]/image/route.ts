@@ -29,9 +29,6 @@ export async function GET(
         { status: 400 }
       );
     }
-
-    console.log(`[API] Image request: ${attachmentId}`);
-
     // Get attachment with data
     const response = await getAttachment(attachmentId);
 
@@ -61,8 +58,6 @@ export async function GET(
     headers.set("Cache-Control", "public, max-age=86400"); // 24 hours
     headers.set("X-File-Name", encodeURIComponent(attachment.fileName));
     headers.set("X-File-Size", attachment.size.toString());
-
-    console.log(`[API] Serving image: ${attachment.fileName} (${attachment.size} bytes)`);
 
     return new NextResponse(attachment.data, {
       status: 200,

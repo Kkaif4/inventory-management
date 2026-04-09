@@ -8,15 +8,11 @@ export async function debugTransactionsForOutlet(outletId: string) {
     // Validate access
     await validateSessionOutletAccess(outletId);
 
-    console.log(`\n🔍 [DEBUG] Transactions for outlet: ${outletId}\n`);
-
     // Get outlet info
     const outlet = await prisma.outlet.findUnique({
       where: { id: outletId },
       select: { id: true, name: true },
     });
-
-    console.log(`Outlet:`, outlet);
 
     // Get ALL transactions for this outlet (no type filter)
     const allTransactions = await prisma.transaction.findMany({

@@ -73,9 +73,6 @@ export async function DELETE(
         { status: 400 }
       );
     }
-
-    console.log(`[API] Delete request: ${attachmentId}`);
-
     // Call server action
     const result = await deleteAttachment(attachmentId, moduleType, referenceId);
 
@@ -91,8 +88,6 @@ export async function DELETE(
         { status: 500 }
       );
     }
-
-    console.log(`[API] Delete successful: ${attachmentId}`);
 
     return NextResponse.json(
       {

@@ -542,7 +542,7 @@ model Expense {
 model Attachment {
   id String @id @default(cuid())
 
-  moduleType  String // "EXPENSE" | "INVOICE"
+  moduleType  String // "EXPENESE" | "INVOICE"
   referenceId String
 
   fileName String

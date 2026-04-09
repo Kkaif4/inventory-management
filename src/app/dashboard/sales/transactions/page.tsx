@@ -60,9 +60,7 @@ export default async function SalesTransactionsPage({
       search: search || undefined,
       status: status || "ALL",
     });
-    console.log(
-      `[Transactions] Returns fetch - Success: ${res.success}, Data count: ${res.data?.data?.length || 0}`,
-    );
+
     if (res.success && res.data) {
       tabData = res.data;
     } else {
@@ -72,10 +70,6 @@ export default async function SalesTransactionsPage({
   } else {
     tabData = { data: [], pagination: defaultPagination };
   }
-
-  console.log(
-    `[Transactions] Final tabData for tab="${tab}": ${tabData.data.length} records`,
-  );
 
   return (
     <Suspense fallback={<SalesTransactionsSkeleton />}>

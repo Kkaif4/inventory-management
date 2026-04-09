@@ -87,236 +87,304 @@ export async function createSalesInvoice(data: {
       outlet.warehouses.find((w) => w.isDefault)?.id ||
       outlet.warehouses[0]?.id;
 
-    return await prisma.$transaction(async (tx) => {
-      // 1. Resolve Transaction Number (auto-generate if not provided)
-      let txnNumber: string;
-      if (data.txnNumber) {
-        const existing = await tx.transaction.findFirst({
-          where: {
-            txnNumber: data.txnNumber,
-            outletId: data.fromOutletId,
-          },
-        });
-        if (existing) {
-          throw new ValidationError(
-            `Invoice number "${data.txnNumber}" already exists for this outlet`,
-          );
-        }
-        txnNumber = data.txnNumber;
-      } else {
-        const docType = isNo2 ? "CASH_MEMO" : "SALES_INVOICE";
-        txnNumber = await NumberingService.getNextNumber(tx, data.fromOutletId, docType);
-      }
-
-      // 1.5. FIFO Pricing Pre-calculation (if enabled)
-      const fifoEnabled =
-        outlet.batchTrackingEnabled ||
-        outlet.inventoryValuationMethod === "FIFO";
-      let fifoBreakdowns: FIFOAllocationResult[] = [];
-      if (fifoEnabled && warehouseId) {
-        // Pre-calculate FIFO allocation for each item (read-only)
-        fifoBreakdowns = await Promise.all(
-          data.items.map((item) =>
-            StockService.peekFIFOAllocation(tx, {
-              variantId: item.variantId,
-              warehouseId,
+    const result = await prisma
+      .$transaction(async (tx) => {
+        // 1. Resolve Transaction Number (auto-generate if not provided)
+        let txnNumber: string;
+        if (data.txnNumber) {
+          const existing = await tx.transaction.findFirst({
+            where: {
+              txnNumber: data.txnNumber,
               outletId: data.fromOutletId,
-              quantity: item.quantity,
-            }),
-          ),
-        );
+            },
+          });
+          if (existing) {
+            throw new ValidationError(
+              `Invoice number "${data.txnNumber}" already exists for this outlet`,
+            );
+          }
+          txnNumber = data.txnNumber;
+        } else {
+          const docType = isNo2 ? "CASH_MEMO" : "SALES_INVOICE";
 
-        // Validate sufficient stock in batches before committing
-        const insufficient = fifoBreakdowns.findIndex((r) => r.shortfall > 0);
-        if (insufficient !== -1 && !allowNegative) {
-          const item = data.items[insufficient];
-          throw new ValidationError(
-            `Insufficient batch stock for variant ${item.variantId}. Shortfall: ${fifoBreakdowns[insufficient].shortfall} units`,
+          txnNumber = await NumberingService.getNextNumber(
+            prisma, // ← USE GLOBAL PRISMA, NOT TRANSACTION CLIENT
+            data.fromOutletId,
+            docType,
           );
         }
-      }
 
-      // 2. Create Header & Items
-      const invoice = await tx.transaction.create({
-        data: {
-          type: "SALES_INVOICE",
-          billType: data.billType,
-          txnNumber,
-          date: data.date,
-          partyId: isNo2 ? null : data.partyId,
-          isInformal: isNo2,
-          buyerName: data.buyerName,
-          buyerPhone: data.buyerPhone,
-          outletId: data.fromOutletId,
-          fromLocationId: warehouseId || data.fromOutletId,
-          totalTaxable,
-          totalTax,
-          freightCost,
-          grandTotal,
-          status: "POSTED",
-          userId: data.userId,
-          remarks: data.remarks,
-          items: {
-            create: data.items.map((item, idx) => ({
-              variantId: item.variantId,
-              quantity: item.quantity,
-              rate:
-                fifoEnabled && fifoBreakdowns[idx]
-                  ? fifoBreakdowns[idx].weightedAvgCost // FIFO-derived rate
-                  : item.rate, // fallback to user rate
-              conversionRatio:
-                variants.find((v) => v.id === item.variantId)?.product
-                  .conversionRatio || 1,
-              taxableValue: item.taxableValue,
-              cgst: item.cgst || 0,
-              sgst: item.sgst || 0,
-              igst: item.igst || 0,
-            })),
+        // 1.5. FIFO Pricing Pre-calculation (if enabled)
+        const fifoEnabled =
+          outlet.batchTrackingEnabled ||
+          outlet.inventoryValuationMethod === "FIFO";
+        let fifoBreakdowns: FIFOAllocationResult[] = [];
+        if (fifoEnabled && warehouseId) {
+          // Pre-calculate FIFO allocation for each item (read-only)
+          fifoBreakdowns = await Promise.all(
+            data.items.map((item) =>
+              StockService.peekFIFOAllocation(tx, {
+                variantId: item.variantId,
+                warehouseId,
+                outletId: data.fromOutletId,
+                quantity: item.quantity,
+              }),
+            ),
+          );
+
+          // Validate sufficient stock in batches before committing
+          const insufficient = fifoBreakdowns.findIndex((r) => r.shortfall > 0);
+          if (insufficient !== -1 && !allowNegative) {
+            const item = data.items[insufficient];
+            throw new ValidationError(
+              `Insufficient batch stock for variant ${item.variantId}. Shortfall: ${fifoBreakdowns[insufficient].shortfall} units`,
+            );
+          }
+        }
+
+        // 2. Create Header & Items
+        const invoice = await tx.transaction.create({
+          data: {
+            type: "SALES_INVOICE",
+            billType: data.billType,
+            txnNumber,
+            date: data.date,
+            partyId: isNo2 ? null : data.partyId,
+            isInformal: isNo2,
+            buyerName: data.buyerName,
+            buyerPhone: data.buyerPhone,
+            outletId: data.fromOutletId,
+            fromLocationId: warehouseId || data.fromOutletId,
+            totalTaxable,
+            totalTax,
+            freightCost,
+            grandTotal,
+            status: "POSTED",
+            userId: data.userId,
+            remarks: data.remarks,
+            items: {
+              create: data.items.map((item, idx) => ({
+                variantId: item.variantId,
+                quantity: item.quantity,
+                rate:
+                  fifoEnabled && fifoBreakdowns[idx]
+                    ? fifoBreakdowns[idx].weightedAvgCost // FIFO-derived rate
+                    : item.rate, // fallback to user rate
+                conversionRatio:
+                  variants.find((v) => v.id === item.variantId)?.product
+                    .conversionRatio || 1,
+                taxableValue: item.taxableValue,
+                cgst: item.cgst || 0,
+                sgst: item.sgst || 0,
+                igst: item.igst || 0,
+              })),
+            },
           },
+        });
+
+        try {
+          await StockService.batchUpdateStock(tx, {
+            transactionId: invoice.id,
+            userId: data.userId,
+            outletId: data.fromOutletId,
+            type: "SALE",
+            items: data.items.map((item) => {
+              return {
+                variantId: item.variantId,
+                locationId: warehouseId || data.fromOutletId,
+                locationType: warehouseId ? "WAREHOUSE" : "OUTLET",
+                quantityChange: -item.quantity,
+                allowNegative,
+              };
+            }),
+          });
+        } catch (stockError) {
+          throw stockError;
+        }
+
+        // 3b. Create Ledger Entries for Sales Invoice
+        // Get standard GL accounts for this outlet
+        const debtorAcc = await tx.account.findUnique({
+          where: {
+            code_outletId: { code: "1003", outletId: data.fromOutletId },
+          },
+        });
+        const salesAcc = await tx.account.findUnique({
+          where: {
+            code_outletId: { code: "3001", outletId: data.fromOutletId },
+          },
+        });
+        const cgstAcc = await tx.account.findUnique({
+          where: {
+            code_outletId: { code: "2002", outletId: data.fromOutletId },
+          },
+        });
+        const sgstAcc = await tx.account.findUnique({
+          where: {
+            code_outletId: { code: "2003", outletId: data.fromOutletId },
+          },
+        });
+        const igstAcc = await tx.account.findUnique({
+          where: {
+            code_outletId: { code: "2004", outletId: data.fromOutletId },
+          },
+        });
+
+        const ledgerEntries: {
+          accountId: string;
+          partyId: string | null;
+          transactionId: string;
+          date: Date;
+          debit: number;
+          credit: number;
+          reference: string;
+        }[] = [];
+
+        // Dr. Sundry Debtors (Customer) - total amount payable by customer
+        if (debtorAcc) {
+          ledgerEntries.push({
+            accountId: debtorAcc.id,
+            partyId: data.partyId || null,
+            transactionId: invoice.id,
+            date: data.date,
+            debit: grandTotal,
+            credit: 0,
+            reference: `Invoice ${txnNumber}`,
+          });
+        }
+
+        // Cr. Sales Account - taxable amount
+        if (salesAcc) {
+          ledgerEntries.push({
+            accountId: salesAcc.id,
+            partyId: null,
+            transactionId: invoice.id,
+            date: data.date,
+            debit: 0,
+            credit: totalTaxable,
+            reference: `Invoice ${txnNumber}`,
+          });
+        }
+
+        // Cr. Output CGST
+        if (cgstAcc && totalCgst > 0) {
+          ledgerEntries.push({
+            accountId: cgstAcc.id,
+            partyId: null,
+            transactionId: invoice.id,
+            date: data.date,
+            debit: 0,
+            credit: totalCgst,
+            reference: `CGST on Invoice ${txnNumber}`,
+          });
+        }
+
+        // Cr. Output SGST
+        if (sgstAcc && totalSgst > 0) {
+          ledgerEntries.push({
+            accountId: sgstAcc.id,
+            partyId: null,
+            transactionId: invoice.id,
+            date: data.date,
+            debit: 0,
+            credit: totalSgst,
+            reference: `SGST on Invoice ${txnNumber}`,
+          });
+        }
+
+        // Cr. Output IGST
+        if (igstAcc && totalIgst > 0) {
+          ledgerEntries.push({
+            accountId: igstAcc.id,
+            partyId: null,
+            transactionId: invoice.id,
+            date: data.date,
+            debit: 0,
+            credit: totalIgst,
+            reference: `IGST on Invoice ${txnNumber}`,
+          });
+        }
+
+        if (ledgerEntries.length > 0) {
+          try {
+            await tx.ledgerEntry.createMany({ data: ledgerEntries });
+          } catch (ledgerError) {
+            throw ledgerError;
+          }
+        }
+
+        // 4. Update party outstanding balance (for NO1 invoices with a party)
+        if (!isNo2 && data.partyId) {
+          try {
+            await tx.party.update({
+              where: { id: data.partyId },
+              data: { outstandingBalance: { increment: grandTotal } },
+            });
+          } catch (partyError) {
+            throw partyError;
+          }
+        }
+
+        revalidatePath("/dashboard/sales/invoices");
+        revalidatePath("/dashboard/sales/transactions");
+        revalidatePath("/dashboard/sales");
+        revalidatePath("/dashboard/financials/ledger");
+
+        // 5. Return invoice with FIFO breakdown if applicable
+
+        return {
+          invoice,
+          fifoBreakdown: fifoEnabled
+            ? fifoBreakdowns.map((r, i) => ({
+                variantId: data.items[i].variantId,
+                userRate: data.items[i].rate,
+                fifoRate: r.weightedAvgCost,
+                quantity: r.totalQty,
+                batchesUsed: r.batchesUsed,
+              }))
+            : null,
+        };
+      })
+      .catch((txError) => {
+        throw txError;
+      });
+
+    const docType = data.billType === "NO2" ? "CASH_MEMO" : "SALES_INVOICE";
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const financialYear =
+      month >= 3
+        ? `${year}-${(year + 1).toString().slice(-2)}`
+        : `${year - 1}-${year.toString().slice(-2)}`;
+
+    const docSeries = await prisma.documentSeries.findUnique({
+      where: {
+        type_financialYear_outletId: {
+          type: docType,
+          financialYear,
+          outletId: data.fromOutletId,
         },
-      });
-
-      // 3. Stock Update
-      await StockService.batchUpdateStock(tx, {
-        transactionId: invoice.id,
-        userId: data.userId,
-        outletId: data.fromOutletId,
-        type: "SALE",
-        items: data.items.map((item) => {
-          return {
-            variantId: item.variantId,
-            locationId: warehouseId || data.fromOutletId,
-            locationType: warehouseId ? "WAREHOUSE" : "OUTLET",
-            quantityChange: -item.quantity,
-            allowNegative,
-          };
-        }),
-      });
-
-      // 3b. Create Ledger Entries for Sales Invoice
-      // Get standard GL accounts for this outlet
-      const debtorAcc = await tx.account.findUnique({
-        where: { code_outletId: { code: "1003", outletId: data.fromOutletId } },
-      });
-      const salesAcc = await tx.account.findUnique({
-        where: { code_outletId: { code: "3001", outletId: data.fromOutletId } },
-      });
-      const cgstAcc = await tx.account.findUnique({
-        where: { code_outletId: { code: "2002", outletId: data.fromOutletId } },
-      });
-      const sgstAcc = await tx.account.findUnique({
-        where: { code_outletId: { code: "2003", outletId: data.fromOutletId } },
-      });
-      const igstAcc = await tx.account.findUnique({
-        where: { code_outletId: { code: "2004", outletId: data.fromOutletId } },
-      });
-
-      const ledgerEntries: {
-        accountId: string;
-        partyId: string | null;
-        transactionId: string;
-        date: Date;
-        debit: number;
-        credit: number;
-        reference: string;
-      }[] = [];
-
-      // Dr. Sundry Debtors (Customer) - total amount payable by customer
-      if (debtorAcc) {
-        ledgerEntries.push({
-          accountId: debtorAcc.id,
-          partyId: data.partyId || null,
-          transactionId: invoice.id,
-          date: data.date,
-          debit: grandTotal,
-          credit: 0,
-          reference: `Invoice ${txnNumber}`,
-        });
-      }
-
-      // Cr. Sales Account - taxable amount
-      if (salesAcc) {
-        ledgerEntries.push({
-          accountId: salesAcc.id,
-          partyId: null,
-          transactionId: invoice.id,
-          date: data.date,
-          debit: 0,
-          credit: totalTaxable,
-          reference: `Invoice ${txnNumber}`,
-        });
-      }
-
-      // Cr. Output CGST
-      if (cgstAcc && totalCgst > 0) {
-        ledgerEntries.push({
-          accountId: cgstAcc.id,
-          partyId: null,
-          transactionId: invoice.id,
-          date: data.date,
-          debit: 0,
-          credit: totalCgst,
-          reference: `CGST on Invoice ${txnNumber}`,
-        });
-      }
-
-      // Cr. Output SGST
-      if (sgstAcc && totalSgst > 0) {
-        ledgerEntries.push({
-          accountId: sgstAcc.id,
-          partyId: null,
-          transactionId: invoice.id,
-          date: data.date,
-          debit: 0,
-          credit: totalSgst,
-          reference: `SGST on Invoice ${txnNumber}`,
-        });
-      }
-
-      // Cr. Output IGST
-      if (igstAcc && totalIgst > 0) {
-        ledgerEntries.push({
-          accountId: igstAcc.id,
-          partyId: null,
-          transactionId: invoice.id,
-          date: data.date,
-          debit: 0,
-          credit: totalIgst,
-          reference: `IGST on Invoice ${txnNumber}`,
-        });
-      }
-
-      if (ledgerEntries.length > 0) {
-        await tx.ledgerEntry.createMany({ data: ledgerEntries });
-      }
-
-      // 4. Update party outstanding balance (for NO1 invoices with a party)
-      if (!isNo2 && data.partyId) {
-        await tx.party.update({
-          where: { id: data.partyId },
-          data: { outstandingBalance: { increment: grandTotal } },
-        });
-      }
-
-      revalidatePath("/dashboard/sales/invoices");
-      revalidatePath("/dashboard/sales/transactions");
-      revalidatePath("/dashboard/sales");
-      revalidatePath("/dashboard/financials/ledger");
-
-      // 5. Return invoice with FIFO breakdown if applicable
-      return {
-        invoice,
-        fifoBreakdown: fifoEnabled
-          ? fifoBreakdowns.map((r, i) => ({
-              variantId: data.items[i].variantId,
-              userRate: data.items[i].rate,
-              fifoRate: r.weightedAvgCost,
-              quantity: r.totalQty,
-              batchesUsed: r.batchesUsed,
-            }))
-          : null,
-      };
+      },
     });
+
+    if (!docSeries) {
+      console.error(
+        `❌ [CREATE-SALES-INVOICE] CRITICAL: DocumentSeries NOT FOUND in DB after invoice creation!`,
+        {
+          type: docType,
+          financialYear,
+          outletId: data.fromOutletId,
+        },
+      );
+    } else {
+      const parts = result.invoice.txnNumber.split("/");
+      const invoiceNumberUsed = parseInt(parts[2], 10);
+      const currentDbNumber = docSeries.nextNumber;
+      const expectedNextNumber = invoiceNumberUsed + 1;
+
+      return result;
+    }
   });
 }
 

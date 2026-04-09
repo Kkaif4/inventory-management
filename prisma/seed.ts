@@ -50,8 +50,93 @@ async function main() {
         },
       });
       log(`Outlet created: ${outletName}`);
+
+      // Initialize DocumentSeries for invoice numbering
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const financialYear =
+        month >= 3
+          ? `${year}-${(year + 1).toString().slice(-2)}`
+          : `${year - 1}-${year.toString().slice(-2)}`;
+
+      const documentTypes = [
+        { type: "SALES_INVOICE", prefix: "INV" },
+        { type: "CASH_MEMO", prefix: "CM" },
+        { type: "OLD_BILL", prefix: "OLD" },
+        { type: "EXPENSE", prefix: "EXP" },
+      ];
+
+      await Promise.all(
+        documentTypes.map((doc) =>
+          prisma.documentSeries.create({
+            data: {
+              type: doc.type,
+              prefix: doc.prefix,
+              financialYear,
+              outletId: outlet!.id,
+              nextNumber: 1,
+            },
+          }),
+        ),
+      );
+
+      log(
+        `DocumentSeries initialized for ${outletName} (FY: ${financialYear}): ${documentTypes.map(d => d.type).join(", ")}`,
+      );
     } else {
       log(`Outlet already exists: ${outletName}`);
+
+      // Ensure DocumentSeries entries exist for existing outlet
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const financialYear =
+        month >= 3
+          ? `${year}-${(year + 1).toString().slice(-2)}`
+          : `${year - 1}-${year.toString().slice(-2)}`;
+
+      const documentTypes = [
+        { type: "SALES_INVOICE", prefix: "INV" },
+        { type: "CASH_MEMO", prefix: "CM" },
+        { type: "OLD_BILL", prefix: "OLD" },
+        { type: "EXPENSE", prefix: "EXP" },
+      ];
+
+      const missingTypes: string[] = [];
+      for (const doc of documentTypes) {
+        const existing = await prisma.documentSeries.findUnique({
+          where: {
+            type_financialYear_outletId: {
+              type: doc.type,
+              financialYear,
+              outletId: outlet.id,
+            },
+          },
+        });
+
+        if (!existing) {
+          await prisma.documentSeries.create({
+            data: {
+              type: doc.type,
+              prefix: doc.prefix,
+              financialYear,
+              outletId: outlet.id,
+              nextNumber: 1,
+            },
+          });
+          missingTypes.push(doc.type);
+        }
+      }
+
+      if (missingTypes.length > 0) {
+        log(`DocumentSeries created for missing types: ${missingTypes.join(", ")}`);
+      }
+    }
+
+    // Ensure outlet is defined
+    if (!outlet) {
+      throw new Error("Failed to create or retrieve outlet");
     }
 
     // 2. Create Warehouse linked to Outlet
@@ -68,7 +153,7 @@ async function main() {
           state: "Maharashtra",
           contactName: "Mangesh",
           contactPhone: "9876543210",
-          outletId: outlet.id,
+          outletId: outlet!.id,
           isDefault: true,
         },
       });

@@ -23,10 +23,11 @@ export async function GET(request: NextRequest) {
           success: false,
           error: {
             code: "MISSING_MODULE_TYPE",
-            message: "Module type query parameter is required (EXPENSE or INVOICE)",
+            message:
+              "Module type query parameter is required (EXPENSE or INVOICE)",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -39,11 +40,9 @@ export async function GET(request: NextRequest) {
             message: "Reference ID query parameter is required",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
-
-    console.log(`[API] List attachments: ${moduleType}/${referenceId}`);
 
     // Get attachments
     const response = await getAttachmentsByReference(moduleType, referenceId);
@@ -57,13 +56,11 @@ export async function GET(request: NextRequest) {
             message: "Failed to retrieve attachments",
           },
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     const attachments = response.data;
-
-    console.log(`[API] Found ${attachments.length} attachments`);
 
     return NextResponse.json(
       {
@@ -76,11 +73,11 @@ export async function GET(request: NextRequest) {
           createdAt: a.createdAt,
         })),
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error(`[API] List error: ${errorMessage}`);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
     return NextResponse.json(
       {
@@ -90,7 +87,7 @@ export async function GET(request: NextRequest) {
           message: errorMessage,
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

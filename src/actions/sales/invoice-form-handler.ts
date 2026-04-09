@@ -121,7 +121,6 @@ export async function handleCreateSalesInvoice(
 
   const result = await createSalesInvoice({
     billType: formData.billType,
-    txnNumber: formData.txnNumber,
     partyId: formData.billType === "NO1" ? formData.partyId : undefined,
     fromOutletId: formData.fromOutletId,
     items,
@@ -266,14 +265,17 @@ export async function peekNextInvoiceNumber(
 ) {
   return withErrorHandler(async () => {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) throw new ValidationError("Not authenticated");
+    if (!session?.user?.id) {
+      throw new ValidationError("Not authenticated");
+    }
 
     const typeMap = {
-      "NO1": "SALES_INVOICE",
-      "NO2": "CASH_MEMO",
-      "OLD": "OLD_BILL",
+      NO1: "SALES_INVOICE",
+      NO2: "CASH_MEMO",
+      OLD: "OLD_BILL",
     } as const;
     const type = typeMap[billType];
+
     const nextNumber = await NumberingService.peekNextNumber(
       prisma,
       outletId,
