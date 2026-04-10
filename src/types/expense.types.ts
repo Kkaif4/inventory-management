@@ -10,7 +10,7 @@ export type CreateExpenseInput = {
   categoryId: string;
   description: string;
   vendorId?: string;
-  paymentMode: "CASH" | "BANK_TRANSFER" | "UPI" | "CHEQUE";
+  paymentMode: "CASH" | "UPI" | "CHEQUE" | "ONLINE_TRANSFER" | "CARD";
   accountId: string;
   taxableAmount: number;
   gstRate?: number;
@@ -200,7 +200,7 @@ export interface CreateExpenseFormData {
   categoryId: string;
   description: string;
   vendorId?: string;
-  paymentMode: "CASH" | "BANK_TRANSFER" | "UPI" | "CHEQUE";
+  paymentMode: "CASH" | "UPI" | "CHEQUE" | "ONLINE_TRANSFER" | "CARD";
   accountId: string;
   taxableAmount: number;
   gstRate?: number;

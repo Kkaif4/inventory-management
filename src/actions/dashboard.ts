@@ -57,15 +57,17 @@ export async function getDashboardStats(outletId: string) {
       },
     });
 
-    // 3. Low Stock Items
-    // Compare stock quantity with variant's minStockLevel manually since Prisma doesn't support relation field comparison yet
-    const allStock = await prisma.stock.findMany({
-      where: { outletId }, // Add outlet filter
-      include: { variant: true },
-    });
-    const lowStockCount = allStock.filter(
-      (s) => s.quantity <= s.variant.minStockLevel,
-    ).length;
+    // 3. Low Stock Items — use raw SQL to compare stock.quantity with variant.minStockLevel
+    // (Prisma does not support cross-model field comparisons in where clauses)
+    const lowStockResult = await prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*) AS count
+      FROM "Stock" s
+      JOIN "Variant" v ON s."variantId" = v.id
+      WHERE s."outletId" = ${outletId}
+        AND v."minStockLevel" > 0
+        AND s.quantity <= v."minStockLevel"
+    `;
+    const lowStockCount = Number(lowStockResult[0].count);
 
     // 4. Outstanding Receivables (Customers who owe us)
     const outstandingReceivables = await prisma.party.aggregate({

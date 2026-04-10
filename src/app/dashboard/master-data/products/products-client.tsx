@@ -50,6 +50,11 @@ export function ProductsClient({
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState(
+    typeof searchParams.get("search") === "string"
+      ? (searchParams.get("search") ?? "")
+      : "",
+  );
 
   // Sync data state with props when products or pagination changes
   useEffect(() => {
@@ -84,6 +89,23 @@ export function ProductsClient({
         params.set("limit", String(limit));
       } else {
         params.delete("limit");
+      }
+      startTransition(() => {
+        router.push(`?${params.toString()}`);
+      });
+    },
+    [router, startTransition, searchParams],
+  );
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchValue(value);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", "1");
+      if (value) {
+        params.set("search", value);
+      } else {
+        params.delete("search");
       }
       startTransition(() => {
         router.push(`?${params.toString()}`);
@@ -256,8 +278,8 @@ export function ProductsClient({
 
       <TableToolbar
         searchPlaceholder={t("searchPlaceholder")}
-        searchValue=""
-        onSearchChange={() => {}}
+        searchValue={searchValue}
+        onSearchChange={handleSearchChange}
         actions={actions}
       />
 

@@ -32,6 +32,7 @@ export async function getProducts(
         OR: [
           { name: { contains: search, mode: "insensitive" } },
           { brand: { contains: search, mode: "insensitive" } },
+          { hsnCode: { contains: search, mode: "insensitive" } },
           {
             variants: {
               some: {
@@ -92,6 +93,7 @@ export async function getProductsPaginated(
         OR: [
           { name: { contains: search, mode: "insensitive" } },
           { brand: { contains: search, mode: "insensitive" } },
+          { hsnCode: { contains: search, mode: "insensitive" } },
           {
             variants: {
               some: {
@@ -285,7 +287,7 @@ export async function updateProduct(
       minStockLevel: number;
       purchasePrice: number;
       sellingPrice: number;
-      pricingMethod: string;
+      pricingMethod: "MANUAL" | "MARKUP";
       markupPercent?: number | null;
     }[];
   },

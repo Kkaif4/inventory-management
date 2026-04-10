@@ -619,7 +619,7 @@ export default function InvoiceDetailPage() {
                         </td>
                         <td className="px-5 py-3">
                           <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-medium">
-                            {p.paymentMode === "BankTransfer"
+                            {p.paymentMode === "ONLINE_TRANSFER"
                               ? "Bank Transfer"
                               : p.paymentMode}
                             {p.account ? ` · ${p.account.name}` : ""}

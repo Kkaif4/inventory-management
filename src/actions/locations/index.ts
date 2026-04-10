@@ -166,7 +166,7 @@ export async function createOutlet(data: {
   invoiceStartingNumber?: number;
   gstin?: string;
   bankDetails?: string;
-  negativeStockPolicy: string;
+  negativeStockPolicy: "WARN" | "ALLOW" | "BLOCK";
   batchTrackingEnabled: boolean;
 }) {
   return withErrorHandler(async () => {
@@ -226,7 +226,7 @@ export async function updateOutlet(
     invoiceStartingNumber?: number;
     gstin?: string;
     bankDetails?: string;
-    negativeStockPolicy: string;
+    negativeStockPolicy: "WARN" | "ALLOW" | "BLOCK";
     batchTrackingEnabled: boolean;
   },
 ) {

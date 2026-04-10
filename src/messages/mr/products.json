@@ -17,9 +17,12 @@
     "note": "टीप: कोणताही स्टॉक अद्याप उपलब्ध असल्यास हटवणे अयशस्वी होईल.",
     "confirm": "हटवण्याची पुष्टी करा"
   },
+  "editSubtitle": "{name} साठी मूळ तपशील अपडेट करा",
   "form": {
     "basicInfo": "मूळ माहिती",
     "productVariants": "उत्पादन व्हेरियंट",
+    "productInfoSection": "उत्पादन माहिती",
+    "variantSection": "व्हेरियंट तपशील आणि अलर्ट",
     "productNameLabel": "उत्पादनाचे नाव *",
     "productNamePlaceholder": "उदा. 10mm ड्रिल बिट",
     "brandLabel": "ब्रँड",
@@ -38,8 +41,10 @@
     "conversionRatioPlaceholder": "एका खरेदी युनिटमध्ये किती मूळ युनिट्स आहेत?",
     "conversionHelp": "1 {purchase} मध्ये किती {base} आहेत?",
     "conversionNote": "रूपांतरण: इन्व्हेंटरी अपडेट दरम्यान 1 {purchase} = {ratio} {base}.",
+    "landedCostNote": "खर्च आणि इन्व्हेंटरी अपडेट बल्क ({purchase}) आणि बेस ({base}) मधील रूपांतरण वापरतील.",
     "addVariant": "व्हेरियंट जोडा",
     "skuLabel": "SKU / बारकोड *",
+    "skuCodeLabel": "SKU / कोड",
     "skuPlaceholder": "विशिष्ट आयडी",
     "costPriceLabel": "खरेदी किंमत *",
     "pricingLogicLabel": "किंमत निश्चिती तर्क",
@@ -49,9 +54,12 @@
     "sellingPriceLabel": "विक्री किंमत *",
     "autoSellingPrice": "ऑटो विक्री किंमत",
     "minAlertLabel": "स्टॉक यापेक्षा कमी असेल तेव्हा सूचित करा...",
+    "minStockAlert": "किमान स्टॉक अलर्ट *",
     "variantsToggle": "या उत्पादाचे अनेक आकार/रंग आहेत",
     "saveButton": "इन्व्हेंटरीमध्ये जोडा",
     "savingButton": "मास्टर रेकॉर्ड तयार केला जात आहे...",
+    "saveChanges": "बदल जतन करा",
+    "updating": "अपडेट होत आहे...",
     "outletRequiredTitle": "आउटलेट आवश्यक",
     "outletRequiredDescription": "मास्टर कॅटलॉगमध्ये उत्पादने जोडण्यापूर्वी कृपया नेव्हिगेशन बारमधील स्विचरवरून सक्रिय आउटलेट निवडा.",
     "goBack": "परत जा"
@@ -63,7 +71,10 @@
     "loadCategoriesFailed": "श्रेणी लोड करण्यात अयशस्वी",
     "created": "उत्पादन यशस्वीरित्या तयार केले",
     "createFailed": "उत्पादन तयार करण्यात अयशस्वी",
-    "createError": "एक अनपेक्षित त्रुटी आली"
+    "createError": "एक अनपेक्षित त्रुटी आली",
+    "updated": "उत्पादन यशस्वीरित्या अपडेट केले",
+    "updateFailed": "उत्पादन अपडेट करण्यात अयशस्वी",
+    "updateError": "एक अनपेक्षित त्रुटी आली"
   },
   "dashboard": {
     "table": "Table"

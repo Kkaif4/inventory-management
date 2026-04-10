@@ -78,7 +78,7 @@ export function OutletForm({
 
   const form = useForm<OutletFormValues>({
     resolver: zodResolver(outletSchema),
-    defaultValues: outlet
+    defaultValues: (outlet
       ? {
           name: outlet.name,
           address: outlet.address || "",
@@ -87,7 +87,7 @@ export function OutletForm({
           invoicePrefix: outlet.invoicePrefix,
           invoiceStartingNumber: outlet.invoiceStartingNumber || 1,
           bankDetails: outlet.bankDetails || "",
-          negativeStockPolicy: (outlet.negativeStockPolicy as any) || "WARN",
+          negativeStockPolicy: outlet.negativeStockPolicy || "WARN",
           batchTrackingEnabled: outlet.batchTrackingEnabled || false,
           inventoryValuationMethod: outlet.inventoryValuationMethod || "NONE",
           allowRawCashBills: outlet.allowRawCashBills || false,
@@ -104,7 +104,7 @@ export function OutletForm({
           batchTrackingEnabled: false,
           inventoryValuationMethod: "NONE",
           allowRawCashBills: false,
-        },
+        }) as any,
   });
 
   const watchBatchTracking = form.watch("batchTrackingEnabled");

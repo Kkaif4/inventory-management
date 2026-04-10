@@ -111,7 +111,7 @@ export function POSInvoiceForm({
       // OLD bills skip numbering lookup if custom is used, but we can peek for visual
       const res = await peekNextInvoiceNumber(
         fromOutletId,
-        billType === "OLD" ? ("OLD_BILL" as any) : (billType as "NO1" | "NO2"),
+        billType as "NO1" | "NO2" | "OLD",
       );
       if (res.success && res.data) {
         setInvoiceNumber(res.data);

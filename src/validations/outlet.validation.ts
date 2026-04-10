@@ -9,7 +9,7 @@ export const outletSchema = z.object({
   gstin: z.string(),
   negativeStockPolicy: z.enum(["WARN", "BLOCK", "ALLOW"]),
   batchTrackingEnabled: z.boolean(),
-  inventoryValuationMethod: z.string().min(1),
+  inventoryValuationMethod: z.enum(["NONE", "FIFO"]),
   allowRawCashBills: z.boolean(),
   bankDetails: z.string().optional(),
 });
