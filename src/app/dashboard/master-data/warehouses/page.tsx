@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import { getWarehousesPaginated } from "@/actions/warehouses";
+import { getCurrentSessionOutlet } from "@/lib/outlet-auth";
 
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -26,10 +27,13 @@ export default async function WarehousesPage({
   );
   const search = typeof params.search === "string" ? params.search : "";
 
+  const outletId = await getCurrentSessionOutlet();
+
   const res = await getWarehousesPaginated({
     page,
     limit,
     search,
+    outletId,
   });
 
   if (!res.success) {

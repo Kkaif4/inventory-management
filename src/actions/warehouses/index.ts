@@ -10,6 +10,7 @@ interface PaginationParams {
   page?: number;
   limit?: number;
   search?: string;
+  outletId?: string;
 }
 
 interface PaginationMeta {
@@ -31,15 +32,17 @@ export async function getWarehousesPaginated(
     const limit = Math.max(params.limit ?? 10, 1);
     const search = params.search?.trim() || "";
 
-    // Build the where clause for search
-    const whereClause = search
-      ? {
-          OR: [
-            { name: { contains: search, mode: "insensitive" as const } },
-            { address: { contains: search, mode: "insensitive" as const } },
-          ],
-        }
-      : {};
+    // Build the where clause for search and optional outlet filter
+    const whereClause: any = {};
+    if (params.outletId) {
+      whereClause.outletId = params.outletId;
+    }
+    if (search) {
+      whereClause.OR = [
+        { name: { contains: search, mode: "insensitive" as const } },
+        { address: { contains: search, mode: "insensitive" as const } },
+      ];
+    }
 
     // Get total count for pagination
     const total = await prisma.warehouse.count({
