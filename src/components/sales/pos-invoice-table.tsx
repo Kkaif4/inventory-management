@@ -7,7 +7,7 @@ import { X, Search, Package, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { getProducts } from "@/actions/products";
+import { useProductSearch } from "@/hooks/use-product-search";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import {
   Tooltip,
@@ -39,9 +39,8 @@ export function POSInvoiceTable({
   const { fields, append, remove } = fieldArray;
   const isNO1 = billType === "NO1";
 
-  const [search, setSearch] = React.useState("");
-  const [products, setProducts] = React.useState<any[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const { search, setSearch, flatVariants, isLoading, clearResults } =
+    useProductSearch(fromOutletId);
   const [highlightedIndex, setHighlightedIndex] = React.useState(0);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [pendingProduct, setPendingProduct] = React.useState<{
@@ -51,47 +50,14 @@ export function POSInvoiceTable({
   const [pendingQty, setPendingQty] = React.useState("1");
   const qtyInputRef = React.useRef<HTMLInputElement>(null);
 
-  const flatVariants = React.useMemo(() => {
-    const list: { product: any; variant: any }[] = [];
-    for (const p of products) {
-      for (const v of p.variants || []) {
-        list.push({ product: p, variant: v });
-      }
-    }
-    return list;
-  }, [products]);
-
   React.useEffect(() => {
-    if (!fromOutletId || !search) {
-      setProducts([]);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        const res = await getProducts(fromOutletId, {
-          search,
-          limit: search === "" ? 10 : undefined,
-        });
-        if (res.success) {
-          setProducts(res.data || []);
-          setHighlightedIndex(0);
-        }
-      } catch {
-        setProducts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 250);
-
-    return () => clearTimeout(timer);
-  }, [search, fromOutletId]);
+    setHighlightedIndex(0);
+  }, [flatVariants]);
 
   const selectProduct = (product: any, variant: any) => {
     setPendingProduct({ product, variant });
     setPendingQty("1");
-    setSearch("");
+    clearResults();
     setIsSearchOpen(false);
     setTimeout(() => qtyInputRef.current?.focus(), 50);
   };
@@ -160,7 +126,7 @@ export function POSInvoiceTable({
       taxableValue: 0,
       lineTotal: 0,
     });
-    setSearch("");
+    clearResults();
     setIsSearchOpen(false);
   };
 

@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, AlertCircle } from "lucide-react";
-import { searchVariants } from "@/actions/inventory/search";
+import { useVariantSearch } from "@/hooks/use-variant-search";
 import { createAdjustment } from "@/actions/inventory";
 import { toast } from "sonner";
 import { useTransition } from "react";
@@ -44,25 +44,13 @@ export function AdjustmentDialog({
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState<string>("0");
   const [reason, setReason] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const { searchQuery, setSearchQuery, searchResults, clearResults } =
+    useVariantSearch(outletId);
   const [isPending, startTransition] = useTransition();
-
-  const handleSearch = async (val: string) => {
-    setSearchQuery(val);
-    if (val.length > 2) {
-      const res = await searchVariants(outletId, val);
-      if (res.success) setSearchResults(res.data!);
-      else setSearchResults([]);
-    } else {
-      setSearchResults([]);
-    }
-  };
 
   const selectVariant = (variant: any) => {
     setSelectedVariant(variant);
-    setSearchQuery("");
-    setSearchResults([]);
+    clearResults();
   };
 
   const handleAdjustment = () => {
@@ -187,7 +175,7 @@ export function AdjustmentDialog({
                   placeholder="Search SKU or Name..."
                   className="pl-9"
                   value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 {searchResults.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">

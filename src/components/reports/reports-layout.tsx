@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ReportsLayoutProps {
@@ -27,6 +29,16 @@ export function ReportsLayout({
         <div className="relative px-6 py-12 max-w-[1600px] mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2">
+              <nav className="flex items-center gap-1 text-xs text-slate-500 mb-2">
+                <Link
+                  href="/dashboard/reports"
+                  className="hover:text-blue-600 transition-colors font-medium"
+                >
+                  Reports
+                </Link>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-slate-700 font-semibold">{title}</span>
+              </nav>
               <div className="flex items-center space-x-2 text-blue-600 font-bold tracking-tight text-xs uppercase mb-1">
                 <div className="w-8 h-0.5 bg-blue-600 rounded-full" />
                 <span>Reports & Analytics</span>
