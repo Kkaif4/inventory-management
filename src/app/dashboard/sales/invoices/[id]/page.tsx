@@ -150,8 +150,10 @@ export default function InvoiceDetailPage() {
   const outstanding = Math.max(0, invoice.grandTotal - totalPaid);
 
   // Pay button visibility per FRD Section 2 & 10
+  // NO1 always eligible; NO2 eligible only when linked to a party (customer on account)
   const canPay =
-    invoice.billType === "NO1" &&
+    ["NO1", "NO2"].includes(invoice.billType) &&
+    invoice.party !== null &&
     ["POSTED", "PARTIALLY_PAID"].includes(invoice.status) &&
     outstanding > 0.005;
 

@@ -42,9 +42,14 @@ export async function recordInvoicePayment(
       });
 
       if (!invoice) throw new NotFoundError("Invoice not found");
-      if (["NO2", "OLD"].includes(invoice.billType)) {
+      if (invoice.billType === "OLD") {
         throw new ValidationError(
-          `${invoice.billType === "NO2" ? "No.2 (Cash Memo)" : "Historical"} invoices cannot have secondary payments recorded against them.`,
+          "Historical invoices cannot have secondary payments recorded against them.",
+        );
+      }
+      if (invoice.billType === "NO2" && !invoice.partyId) {
+        throw new ValidationError(
+          "Anonymous Cash Memo invoices cannot have payments recorded. Link a customer to this bill to enable payment tracking.",
         );
       }
       if (["PAID", "CANCELLED", "DRAFT"].includes(invoice.status)) {

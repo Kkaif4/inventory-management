@@ -359,7 +359,6 @@ export function POSInvoiceHeader({
                     disabled={hasItems || isPosted}
                     onClick={() => {
                       form.setValue("billType", "NO2");
-                      form.setValue("partyId", "");
                     }}
                     className={cn(
                       "px-4 h-9 text-sm font-bold transition-colors border-l border-slate-200",

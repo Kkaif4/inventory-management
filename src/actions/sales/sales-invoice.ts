@@ -149,7 +149,7 @@ export async function createSalesInvoice(data: {
             billType: data.billType,
             txnNumber,
             date: data.date,
-            partyId: isNo2 ? null : data.partyId,
+            partyId: data.partyId || null,
             isInformal: isNo2,
             buyerName: data.buyerName,
             buyerPhone: data.buyerPhone,
@@ -253,7 +253,7 @@ export async function createSalesInvoice(data: {
           });
         }
 
-        // Cr. Sales Account - taxable amount
+        // Cr. Sales Account - taxable amount + freight (balances the Debtors debit)
         if (salesAcc) {
           ledgerEntries.push({
             accountId: salesAcc.id,
@@ -261,7 +261,7 @@ export async function createSalesInvoice(data: {
             transactionId: invoice.id,
             date: data.date,
             debit: 0,
-            credit: totalTaxable,
+            credit: roundToTwo(totalTaxable + freightCost),
             reference: `Invoice ${txnNumber}`,
           });
         }
@@ -313,8 +313,8 @@ export async function createSalesInvoice(data: {
           }
         }
 
-        // 4. Update party outstanding balance (for NO1 invoices with a party)
-        if (!isNo2 && data.partyId) {
+        // 4. Update party outstanding balance (for any bill type with a party)
+        if (data.partyId) {
           try {
             await tx.party.update({
               where: { id: data.partyId },
@@ -552,7 +552,16 @@ export async function updateSalesInvoiceFreightAndRemarks(
   return withErrorHandler(async () => {
     const invoice = await prisma.transaction.findUnique({
       where: { id: invoiceId },
-      select: { outletId: true, status: true },
+      select: {
+        outletId: true,
+        status: true,
+        partyId: true,
+        grandTotal: true,
+        totalTaxable: true,
+        totalTax: true,
+        freightCost: true,
+        txnNumber: true,
+      },
     });
 
     if (!invoice) throw new NotFoundError("Invoice not found");
@@ -565,19 +574,91 @@ export async function updateSalesInvoiceFreightAndRemarks(
       );
     }
 
-    const updated = await prisma.transaction.update({
-      where: { id: invoiceId },
-      data: {
-        freightCost: data.freightCost ?? undefined,
-        remarks: data.remarks ?? undefined,
-      },
+    const newFreightCost = roundToTwo(data.freightCost ?? invoice.freightCost ?? 0);
+    const newGrandTotal = roundToTwo(
+      (invoice.totalTaxable ?? 0) + (invoice.totalTax ?? 0) + newFreightCost,
+    );
+    const delta = roundToTwo(newGrandTotal - invoice.grandTotal);
+    const isPosted = invoice.status === "POSTED";
+
+    return await prisma.$transaction(async (tx) => {
+      // 1. Update the transaction record with new freight and recalculated grandTotal
+      const updated = await tx.transaction.update({
+        where: { id: invoiceId },
+        data: {
+          freightCost: newFreightCost,
+          grandTotal: newGrandTotal,
+          remarks: data.remarks ?? undefined,
+        },
+      });
+
+      // 2. Update party outstanding only for POSTED invoices with a linked party
+      if (isPosted && invoice.partyId && Math.abs(delta) > 0.005) {
+        await tx.party.update({
+          where: { id: invoice.partyId },
+          data: { outstandingBalance: { increment: delta } },
+        });
+
+        // Guard: ensure outstanding never goes negative
+        const updatedParty = await tx.party.findUnique({
+          where: { id: invoice.partyId },
+          select: { outstandingBalance: true },
+        });
+        if (updatedParty && updatedParty.outstandingBalance < -0.005) {
+          await tx.party.update({
+            where: { id: invoice.partyId },
+            data: { outstandingBalance: 0 },
+          });
+        }
+      }
+
+      // 3. Create adjustment ledger entries for POSTED invoices with a meaningful delta
+      if (isPosted && Math.abs(delta) > 0.005) {
+        const [debtorAcc, salesAcc] = await Promise.all([
+          tx.account.findUnique({
+            where: { code_outletId: { code: "1003", outletId: invoice.outletId } },
+          }),
+          tx.account.findUnique({
+            where: { code_outletId: { code: "3001", outletId: invoice.outletId } },
+          }),
+        ]);
+
+        if (debtorAcc && salesAcc) {
+          const ref = `Freight adjustment on Invoice ${invoice.txnNumber}`;
+          await tx.ledgerEntry.createMany({
+            data: [
+              // Dr. Debtors if freight increased, Cr. Debtors if freight decreased
+              {
+                transactionId: invoiceId,
+                accountId: debtorAcc.id,
+                partyId: invoice.partyId,
+                date: new Date(),
+                debit: delta > 0 ? delta : 0,
+                credit: delta < 0 ? Math.abs(delta) : 0,
+                reference: ref,
+              },
+              // Cr. Sales if freight increased, Dr. Sales if freight decreased
+              {
+                transactionId: invoiceId,
+                accountId: salesAcc.id,
+                partyId: null,
+                date: new Date(),
+                debit: delta < 0 ? Math.abs(delta) : 0,
+                credit: delta > 0 ? delta : 0,
+                reference: ref,
+              },
+            ],
+          });
+        }
+      }
+
+      revalidatePath("/dashboard/sales/invoices");
+      revalidatePath(`/dashboard/sales/invoices/${invoiceId}`);
+      revalidatePath("/dashboard/sales/transactions");
+      revalidatePath("/dashboard/financials/ledger");
+
+      return updated;
     });
-
-    revalidatePath("/dashboard/sales/invoices");
-    revalidatePath(`/dashboard/sales/invoices/${invoiceId}`);
-    revalidatePath("/dashboard/sales/transactions");
-
-    return updated;
   });
 }
 
@@ -648,7 +729,7 @@ export async function saveSalesInvoiceDraft(data: {
           billType: data.billType,
           txnNumber: `DRAFT-${Date.now()}`, // Temporary draft number
           date: data.date,
-          partyId: isNo2 ? null : data.partyId,
+          partyId: data.partyId || null,
           isInformal: isNo2,
           buyerName: data.buyerName,
           buyerPhone: data.buyerPhone,
@@ -765,7 +846,7 @@ export async function editSalesInvoice(
         data: {
           billType: data.billType,
           date: data.date,
-          partyId: isNo2 ? null : data.partyId,
+          partyId: data.partyId || null,
           isInformal: isNo2,
           buyerName: data.buyerName,
           buyerPhone: data.buyerPhone,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition, useEffect } from "react";
+import { useCallback, useMemo, useRef, useState, useTransition, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -77,6 +77,10 @@ export function CustomersClient({
   // Local filter state
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const debouncedSearch = useDebouncedValue(searchTerm, 500);
+
+  // Non-reactive ref to searchParams — avoids making it a dependency of the search effect
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
 
   // Edit/Delete state
   const [editCustomerId, setEditCustomerId] = useState<string | null>(null);
@@ -183,13 +187,24 @@ export function CustomersClient({
     [updateFilters],
   );
 
-  // Update URL when debounced search changes
+  // Update URL when debounced search changes.
+  // Reads searchParams via ref (non-reactive) and pushes directly to avoid
+  // listing updateFilters as a dep (it changes on every filter interaction → loop).
   useEffect(() => {
-    const currentSearch = searchParams.get("search") || "";
-    if (debouncedSearch !== currentSearch) {
-      updateFilters({ search: debouncedSearch });
+    const currentSearch = searchParamsRef.current.get("search") || "";
+    if (debouncedSearch === currentSearch) return;
+
+    const params = new URLSearchParams(searchParamsRef.current.toString());
+    params.set("page", "1");
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
+    } else {
+      params.delete("search");
     }
-  }, [debouncedSearch, updateFilters]);
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
+  }, [debouncedSearch, router, startTransition]);
 
   const handleViewDetails = useCallback(
     (customerId: string) => {

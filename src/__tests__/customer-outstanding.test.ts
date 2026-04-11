@@ -15,7 +15,7 @@ vi.mock("next/headers", () => ({
 
 import { prisma } from "@/lib/prisma";
 import { createCustomer } from "@/actions/sales/customers";
-import { createSalesInvoice } from "@/actions/sales/sales-invoice";
+import { createSalesInvoice, updateSalesInvoiceFreightAndRemarks } from "@/actions/sales/sales-invoice";
 import { recordInvoicePayment } from "@/actions/sales/payment";
 
 /**
@@ -370,5 +370,68 @@ describe("Customer Outstanding and Payment Behavior", () => {
 
     // Cleanup
     await prisma.party.delete({ where: { id: testCustomer2.id } });
+  });
+
+  it("Test 7: Updating freight on a POSTED invoice updates grandTotal and customer outstanding", async () => {
+    const freightCustomer = await prisma.party.create({
+      data: {
+        type: "CUSTOMER",
+        name: "Freight Test Customer",
+        address: "Test Address",
+        state: "TEST",
+        outletId: testOutletId,
+      },
+    });
+
+    // Create invoice: taxable=1000, tax=180, freight=0 → grandTotal=1180
+    const result = await createSalesInvoice({
+      billType: "NO1",
+      partyId: freightCustomer.id,
+      fromOutletId: testOutletId,
+      items: [
+        {
+          variantId: testVariantId,
+          quantity: 5,
+          rate: 200,
+          taxableValue: 1000,
+          cgst: 90,
+          sgst: 90,
+          igst: 0,
+        },
+      ],
+      date: new Date(),
+      userId: testUserId,
+      freightCost: 0,
+    });
+
+    const invoiceId = result.data!.invoice.id;
+
+    const custAfterCreate = await prisma.party.findUnique({ where: { id: freightCustomer.id } });
+    expect(custAfterCreate!.outstandingBalance).toBe(1180);
+
+    // Update freight to ₹200 → new grandTotal = 1380, delta = +200
+    await updateSalesInvoiceFreightAndRemarks(invoiceId, { freightCost: 200 });
+
+    const invoiceAfter = await prisma.transaction.findUnique({ where: { id: invoiceId } });
+    expect(invoiceAfter!.freightCost).toBe(200);
+    expect(invoiceAfter!.grandTotal).toBe(1380);
+
+    const custAfterFreightUp = await prisma.party.findUnique({ where: { id: freightCustomer.id } });
+    expect(custAfterFreightUp!.outstandingBalance).toBe(1380);
+
+    // Reduce freight to ₹50 → new grandTotal = 1230, delta = -150
+    await updateSalesInvoiceFreightAndRemarks(invoiceId, { freightCost: 50 });
+
+    const invoiceAfter2 = await prisma.transaction.findUnique({ where: { id: invoiceId } });
+    expect(invoiceAfter2!.grandTotal).toBe(1230);
+
+    const custAfterFreightDown = await prisma.party.findUnique({ where: { id: freightCustomer.id } });
+    expect(custAfterFreightDown!.outstandingBalance).toBe(1230);
+
+    // Cleanup
+    await prisma.ledgerEntry.deleteMany({ where: { transactionId: invoiceId } });
+    await prisma.transactionItem.deleteMany({ where: { transactionId: invoiceId } });
+    await prisma.transaction.delete({ where: { id: invoiceId } });
+    await prisma.party.delete({ where: { id: freightCustomer.id } });
   });
 });
