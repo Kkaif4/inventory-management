@@ -121,7 +121,7 @@ export async function handleCreateSalesInvoice(
 
   const result = await createSalesInvoice({
     billType: formData.billType,
-    partyId: formData.billType === "NO1" ? formData.partyId : undefined,
+    partyId: formData.partyId || undefined, // pass for both NO1 and NO2 when a customer is linked
     fromOutletId: formData.fromOutletId,
     items,
     date:

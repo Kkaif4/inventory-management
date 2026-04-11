@@ -3,7 +3,7 @@
 import * as React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { Loader2, ToggleLeft, ToggleRight, X } from "lucide-react";
+import { Loader2, ToggleLeft, ToggleRight, X, Banknote, Smartphone, CreditCard, Landmark, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,8 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+
+export type No2PaymentMode = "CASH" | "UPI" | "CARD" | "CHEQUE" | "ONLINE_TRANSFER" | "CREDIT";
 
 interface POSInvoiceFooterProps {
   form: UseFormReturn<any>;
@@ -34,7 +36,18 @@ interface POSInvoiceFooterProps {
   onToggleDiscountMode: () => void;
   notesRef?: React.RefObject<HTMLInputElement | null>;
   paymentFieldArray?: any; // UseFieldArrayReturn
+  no2PaymentMode?: No2PaymentMode;
+  onNo2PaymentModeChange?: (mode: No2PaymentMode) => void;
 }
+
+const NO2_MODES: { mode: No2PaymentMode; label: string; icon: React.ReactNode }[] = [
+  { mode: "CASH", label: "Cash", icon: <Banknote className="w-3.5 h-3.5" /> },
+  { mode: "UPI", label: "UPI", icon: <Smartphone className="w-3.5 h-3.5" /> },
+  { mode: "CARD", label: "Card", icon: <CreditCard className="w-3.5 h-3.5" /> },
+  { mode: "CHEQUE", label: "Cheque", icon: <CreditCard className="w-3.5 h-3.5" /> },
+  { mode: "ONLINE_TRANSFER", label: "Bank", icon: <Landmark className="w-3.5 h-3.5" /> },
+  { mode: "CREDIT", label: "Credit", icon: <Clock className="w-3.5 h-3.5" /> },
+];
 
 export function POSInvoiceFooter({
   form,
@@ -56,6 +69,8 @@ export function POSInvoiceFooter({
   onToggleDiscountMode,
   notesRef,
   paymentFieldArray,
+  no2PaymentMode = "CASH",
+  onNo2PaymentModeChange,
 }: POSInvoiceFooterProps) {
   const t = useTranslations("billing");
   const isNO1 = billType === "NO1";
@@ -178,6 +193,38 @@ export function POSInvoiceFooter({
                 className="h-9 text-sm flex-1 focus:ring-2 focus:ring-blue-500"
               />
             </label>
+          </div>
+        )}
+
+        {/* Payment mode row for NO2 (Cash Memo) bills */}
+        {billType === "NO2" && !isPosted && (
+          <div className="px-4 py-2.5 border-b border-slate-100 bg-amber-50/30 flex items-center gap-3 flex-wrap">
+            <span className="text-xs font-bold text-amber-900 shrink-0">Payment Mode</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {NO2_MODES.map(({ mode, label, icon }) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => onNo2PaymentModeChange?.(mode)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all",
+                    no2PaymentMode === mode
+                      ? mode === "CREDIT"
+                        ? "bg-slate-700 text-white border-slate-700"
+                        : "bg-amber-500 text-white border-amber-500"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-amber-300 hover:bg-amber-50",
+                  )}
+                >
+                  {icon}
+                  {label}
+                </button>
+              ))}
+            </div>
+            {no2PaymentMode === "CREDIT" && (
+              <span className="text-xs text-slate-500 italic">
+                Payment will be recorded later from the invoice detail page.
+              </span>
+            )}
           </div>
         )}
 
