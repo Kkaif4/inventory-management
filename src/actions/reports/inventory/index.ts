@@ -47,7 +47,6 @@ export async function getCurrentStockReport(params: InventoryReportParams) {
     if (params.search) {
       const searchTerm = params.search;
       where.OR = [
-        { variant: { name: { contains: searchTerm, mode: "insensitive" } } },
         { variant: { sku: { contains: searchTerm, mode: "insensitive" } } },
         {
           variant: {
@@ -104,7 +103,7 @@ export async function getCurrentStockReport(params: InventoryReportParams) {
         id: stock.id,
         sku: variant.sku,
         productName: (variant.product as any).name,
-        variantName: variant.name,
+        variantName: variant.sku,
         unitOfMeasure: variant.unit || "units",
         warehouseName: stock.warehouse?.name || "Default",
         quantity,
@@ -178,7 +177,7 @@ export async function getLowStockAlertReport(params: InventoryReportParams) {
           id: stock.id,
           sku: variant.sku,
           productName: (variant.product as any).name,
-          variantName: variant.name,
+          variantName: variant.sku,
           unitOfMeasure: variant.unit || "units",
           minLevel,
           currentStock: quantity,
@@ -247,7 +246,6 @@ export async function getStockLedgerReport(params: InventoryReportParams) {
     if (params.search) {
       const searchTerm = params.search;
       where.OR = [
-        { variant: { name: { contains: searchTerm, mode: "insensitive" } } },
         { variant: { sku: { contains: searchTerm, mode: "insensitive" } } },
         {
           variant: {
@@ -292,7 +290,7 @@ export async function getStockLedgerReport(params: InventoryReportParams) {
         date: ledger.date,
         sku: variant.sku,
         productName: (variant.product as any).name,
-        variantName: variant.name,
+        variantName: variant.sku,
         warehouseName: ledger.warehouse.name,
         transactionType,
         referenceNumber: (ledger.transaction as any)?.number || "N/A",
@@ -352,7 +350,6 @@ export async function getStockValuationReport(params: InventoryReportParams) {
     if (params.search) {
       const searchTerm = params.search;
       where.OR = [
-        { variant: { name: { contains: searchTerm, mode: "insensitive" } } },
         { variant: { sku: { contains: searchTerm, mode: "insensitive" } } },
         {
           variant: {
@@ -400,7 +397,7 @@ export async function getStockValuationReport(params: InventoryReportParams) {
           id: stock.id,
           sku: variant.sku,
           productName: (variant.product as any).name,
-          variantName: variant.name,
+          variantName: variant.sku,
           unitOfMeasure: variant.unit || "units",
           warehouseName: stock.warehouse?.name || "Default",
           quantity: stock.quantity,
@@ -438,7 +435,6 @@ export async function getSlowMovingStockReport(params: InventoryReportParams) {
     if (params.search) {
       const searchTerm = params.search;
       where.OR = [
-        { variant: { name: { contains: searchTerm, mode: "insensitive" } } },
         { variant: { sku: { contains: searchTerm, mode: "insensitive" } } },
         {
           variant: {
@@ -507,7 +503,7 @@ export async function getSlowMovingStockReport(params: InventoryReportParams) {
           id: stock.id,
           sku: variant.sku,
           productName: (variant.product as any).name,
-          variantName: variant.name,
+          variantName: variant.sku,
           unitOfMeasure: variant.unit || "units",
           currentStock: stock.quantity,
           minStockLevel: variant.minStockLevel ?? 0,
