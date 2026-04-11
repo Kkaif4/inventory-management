@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
 import { updateProduct } from "@/actions/products";
 import { getCategories } from "@/actions/categories";
 import { Package, Save, Loader2, Info } from "lucide-react";
@@ -31,13 +30,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useSession } from "next-auth/react";
-import { useOutletStore } from "@/store/use-outlet-store";
 import { PRODUCT_UNITS } from "@/lib/constants";
 import { getGstRateByHsn } from "@/lib/hsn-data";
 import {
   ProductEditFormValues,
   productEditSchema,
-  ProductFormValues,
 } from "@/validations/product.validation";
 
 interface ProductWithVariants {
@@ -68,7 +65,6 @@ export function ProductEditClient({
 }) {
   const router = useRouter();
   const t = useTranslations("products");
-  const { currentOutletId } = useOutletStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
     [],
@@ -88,8 +84,8 @@ export function ProductEditClient({
 
   const getCategoryName = (id?: string | null) =>
     id ? categories.find((c) => c.id === id)?.name : undefined;
-  const getUnitLabel = (val?: string | null) =>
-    val ? PRODUCT_UNITS.find((u) => u.value === val)?.label : undefined;
+  const getUnitLabel = (val?: string | null): string =>
+    val ? (PRODUCT_UNITS.find((u) => u.value === val)?.label ?? "") : "";
   const getGstLabel = (val: any) => {
     const s = String(val);
     if (s === "0") return "0% (Exempt)";
@@ -123,7 +119,6 @@ export function ProductEditClient({
     handleSubmit,
     control,
     watch,
-    formState: { errors },
   } = form;
 
   const { fields } = useFieldArray({

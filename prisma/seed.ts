@@ -6,10 +6,9 @@ import {
   PrismaClient,
   Role,
   AccountType,
-  NegativeStockPolicy,
-  ValuationMethod,
   PaymentMode,
 } from "@/generated/prisma";
+import { NegativeStockPolicy, ValuationMethod } from "@/generated/prisma/index";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
 const adapter = new PrismaPg(pool);
@@ -90,26 +89,68 @@ const WAREHOUSE_NAMES = [
 
 const USER_ROLES = [
   { email: "admin@admin.com", name: "System Administrator", role: Role.ADMIN },
-  { email: "manager@enterprise.com", name: "Store Manager", role: Role.INVENTORY_MANAGER },
+  {
+    email: "manager@enterprise.com",
+    name: "Store Manager",
+    role: Role.INVENTORY_MANAGER,
+  },
   { email: "arjun@enterprise.com", name: "Arjun Sales", role: Role.SALES },
-  { email: "priya@enterprise.com", name: "Priya Accounts", role: Role.ACCOUNTANT },
-  { email: "rajesh@enterprise.com", name: "Rajesh Inventory", role: Role.INVENTORY_MANAGER },
+  {
+    email: "priya@enterprise.com",
+    name: "Priya Accounts",
+    role: Role.ACCOUNTANT,
+  },
+  {
+    email: "rajesh@enterprise.com",
+    name: "Rajesh Inventory",
+    role: Role.INVENTORY_MANAGER,
+  },
 ];
 
 const VENDOR_NAMES = [
-  "Niharika Suppliers", "Apex Trading Co.", "Prime Imports Ltd.", "Global Logistics",
-  "Best Quality Goods", "Express Distributors", "Eco Supplies", "Precision Industries",
-  "Value Chain Ltd.", "Direct Import Co.", "Bulk Traders", "Premium Wholesalers",
-  "Standard Enterprises", "Star Suppliers", "Union Trading", "Metro Distributors",
-  "Alliance Imports", "Integrated Logistics", "Trusted Partners", "Central Supplies",
+  "Niharika Suppliers",
+  "Apex Trading Co.",
+  "Prime Imports Ltd.",
+  "Global Logistics",
+  "Best Quality Goods",
+  "Express Distributors",
+  "Eco Supplies",
+  "Precision Industries",
+  "Value Chain Ltd.",
+  "Direct Import Co.",
+  "Bulk Traders",
+  "Premium Wholesalers",
+  "Standard Enterprises",
+  "Star Suppliers",
+  "Union Trading",
+  "Metro Distributors",
+  "Alliance Imports",
+  "Integrated Logistics",
+  "Trusted Partners",
+  "Central Supplies",
 ];
 
 const CUSTOMER_NAMES = [
-  "Retail Hardware Traders", "BuildRight Solutions", "Home Pro Stores", "DIY Masters",
-  "Construction Hub", "Mega Mart Retail", "Quality Fix Stores", "Modern Hardware",
-  "Smart Retailers", "Plus Building Supplies", "Precision Tools Co.", "Master Trade",
-  "HomeWorks Ltd.", "BuildCare Systems", "Advance Hardware", "Professional Traders",
-  "Eco Build Stores", "Standard Supply Chain", "Unity Enterprises", "Peak Retailers",
+  "Retail Hardware Traders",
+  "BuildRight Solutions",
+  "Home Pro Stores",
+  "DIY Masters",
+  "Construction Hub",
+  "Mega Mart Retail",
+  "Quality Fix Stores",
+  "Modern Hardware",
+  "Smart Retailers",
+  "Plus Building Supplies",
+  "Precision Tools Co.",
+  "Master Trade",
+  "HomeWorks Ltd.",
+  "BuildCare Systems",
+  "Advance Hardware",
+  "Professional Traders",
+  "Eco Build Stores",
+  "Standard Supply Chain",
+  "Unity Enterprises",
+  "Peak Retailers",
 ];
 
 const PRODUCT_CATEGORIES = [
@@ -203,13 +244,19 @@ async function main() {
             invoicePrefix: outletData.prefix,
             gstin: outletData.gstin,
             bankDetails: "HDFC Bank, AC: 987654321, IFSC: HDFC0001",
-            negativeStockPolicy: pickRandom([NegativeStockPolicy.WARN, NegativeStockPolicy.ALLOW]),
+            negativeStockPolicy: pickRandom([
+              NegativeStockPolicy.WARN,
+              NegativeStockPolicy.ALLOW,
+            ]),
             allowRawCashBills: true,
             address: outletData.address,
             state: outletData.state,
             invoiceStartingNumber: 1,
             batchTrackingEnabled: true,
-            inventoryValuationMethod: pickRandom([ValuationMethod.NONE, ValuationMethod.FIFO]),
+            inventoryValuationMethod: pickRandom([
+              ValuationMethod.NONE,
+              ValuationMethod.FIFO,
+            ]),
           },
         });
         log(`Created outlet: ${outletData.name}`);
@@ -328,7 +375,10 @@ async function main() {
               email: `sales@${vendorName.toLowerCase().replace(/\s+/g, "")}.com`,
               bankName: "State Bank of India",
               bankAccountName: `${vendorName} Account`,
-              bankAccountNumber: randomBetween(1000000000000, 9999999999999).toString(),
+              bankAccountNumber: randomBetween(
+                1000000000000,
+                9999999999999,
+              ).toString(),
               bankIfsc: "SBIN0001234",
               openingBalance: randomBetween(0, 100000),
               outletId: outlet.id,
@@ -415,7 +465,8 @@ async function main() {
             type: "IN",
             amount: randomBetween(2000, 10000),
             paymentMode: PaymentMode.CASH,
-            balanceAfter: cashAccount.currentBalance + randomBetween(2000, 10000),
+            balanceAfter:
+              cashAccount.currentBalance + randomBetween(2000, 10000),
             remarks: "Opening cash deposit",
             userId: adminUser.id,
           },
@@ -511,15 +562,51 @@ async function main() {
     // Global expense categories
     const expenseCategories = [
       { name: "Rent", description: "Rent and lease payments", code: "EXP-001" },
-      { name: "Salaries & Wages", description: "Employee salaries and wages", code: "EXP-002" },
-      { name: "Utilities", description: "Electricity, water, and other utilities", code: "EXP-003" },
-      { name: "Fuel & Transportation", description: "Fuel, vehicle maintenance, and transport costs", code: "EXP-004" },
-      { name: "Office Supplies", description: "Office supplies and consumables", code: "EXP-005" },
-      { name: "Marketing & Advertising", description: "Marketing, advertising, and promotional expenses", code: "EXP-006" },
-      { name: "Repairs & Maintenance", description: "Building and equipment repairs", code: "EXP-007" },
-      { name: "Professional Services", description: "Accounting, legal, and consulting fees", code: "EXP-008" },
-      { name: "Insurance", description: "Business insurance premiums", code: "EXP-009" },
-      { name: "Miscellaneous", description: "Other miscellaneous expenses", code: "EXP-010" },
+      {
+        name: "Salaries & Wages",
+        description: "Employee salaries and wages",
+        code: "EXP-002",
+      },
+      {
+        name: "Utilities",
+        description: "Electricity, water, and other utilities",
+        code: "EXP-003",
+      },
+      {
+        name: "Fuel & Transportation",
+        description: "Fuel, vehicle maintenance, and transport costs",
+        code: "EXP-004",
+      },
+      {
+        name: "Office Supplies",
+        description: "Office supplies and consumables",
+        code: "EXP-005",
+      },
+      {
+        name: "Marketing & Advertising",
+        description: "Marketing, advertising, and promotional expenses",
+        code: "EXP-006",
+      },
+      {
+        name: "Repairs & Maintenance",
+        description: "Building and equipment repairs",
+        code: "EXP-007",
+      },
+      {
+        name: "Professional Services",
+        description: "Accounting, legal, and consulting fees",
+        code: "EXP-008",
+      },
+      {
+        name: "Insurance",
+        description: "Business insurance premiums",
+        code: "EXP-009",
+      },
+      {
+        name: "Miscellaneous",
+        description: "Other miscellaneous expenses",
+        code: "EXP-010",
+      },
     ];
 
     let expCount = 0;
@@ -593,7 +680,9 @@ async function main() {
     console.log("📦 Inventory:    rajesh@enterprise.com / password123");
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     console.log(`✅ Created ${outlets.length} outlets with:`);
-    console.log(`   • ${outlets.length * 2}-${outlets.length * 3} warehouses total`);
+    console.log(
+      `   • ${outlets.length * 2}-${outlets.length * 3} warehouses total`,
+    );
     console.log(`   • ${VENDOR_NAMES.length * outlets.length} vendors`);
     console.log(`   • ${CUSTOMER_NAMES.length * outlets.length} customers`);
     console.log(`   • ${totalProducts} products across all outlets`);
