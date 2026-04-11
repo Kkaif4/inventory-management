@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/error-handler";
-import { requireAdminSession } from "@/lib/outlet-auth";
+import { requireAdminSession, getCurrentSessionOutlet } from "@/lib/outlet-auth";
 
 /**
  * 1. Inventory Reports
@@ -37,10 +37,13 @@ export async function getLowStockReport() {
 /**
  * 2. Financial Reports
  */
-export async function getTrialBalance() {
+export async function getTrialBalance(outletId?: string) {
   return withErrorHandler(async () => {
     await requireAdminSession();
+    const targetOutletId = await getCurrentSessionOutlet(outletId);
+
     const accounts = await prisma.account.findMany({
+      where: { outletId: targetOutletId },
       include: {
         entries: true,
       },
@@ -49,7 +52,8 @@ export async function getTrialBalance() {
     return accounts.map((acc) => {
       const totalDebit = acc.entries.reduce((sum, e) => sum + e.debit, 0);
       const totalCredit = acc.entries.reduce((sum, e) => sum + e.credit, 0);
-      const balance = totalDebit - totalCredit;
+      // Include opening balance in the net balance calculation
+      const balance = acc.openingBalance + (totalDebit - totalCredit);
 
       return {
         code: acc.code,
