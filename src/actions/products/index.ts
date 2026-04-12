@@ -23,7 +23,7 @@ export async function getProducts(
 ) {
   return withErrorHandler(async () => {
     await validateSessionOutletAccess(outletId);
-    const { search, categoryId, brand, limit } = filters;
+    const { search, categoryId, brand, limit, partyId } = filters;
 
     const andClauses: any[] = [{ outletId }, { isArchived: false }];
 
@@ -52,7 +52,7 @@ export async function getProducts(
       andClauses.push({ brand: { contains: brand, mode: "insensitive" } });
     }
 
-    return await prisma.product.findMany({
+    const products = await prisma.product.findMany({
       where: { AND: andClauses },
       include: {
         category: true,
@@ -64,6 +64,31 @@ export async function getProducts(
       orderBy: { name: "asc" },
       ...(limit ? { take: limit } : {}),
     });
+
+    if (!partyId) return products;
+
+    // Enrich variants with customer-specific price from their price list
+    const customer = await prisma.party.findUnique({
+      where: { id: partyId },
+      select: { priceListId: true },
+    });
+
+    if (!customer?.priceListId) return products;
+
+    const entries = await prisma.priceListEntry.findMany({
+      where: { priceListId: customer.priceListId },
+      select: { variantId: true, price: true },
+    });
+
+    const priceMap = new Map(entries.map((e) => [e.variantId, e.price]));
+
+    return products.map((product) => ({
+      ...product,
+      variants: product.variants.map((v) => {
+        const customerPrice = priceMap.get(v.id);
+        return customerPrice !== undefined ? { ...v, customerPrice } : v;
+      }),
+    }));
   });
 }
 

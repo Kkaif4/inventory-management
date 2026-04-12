@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { getProducts } from "@/actions/products";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
-export function useProductSearch(outletId: string, debounceMs = 250) {
+export function useProductSearch(outletId: string, debounceMs = 250, partyId?: string) {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,6 +18,7 @@ export function useProductSearch(outletId: string, debounceMs = 250) {
     getProducts(outletId, {
       search: debouncedSearch,
       limit: debouncedSearch === "" ? 10 : undefined,
+      partyId,
     })
       .then((res) => {
         if (res.success && res.data) {
@@ -25,7 +26,7 @@ export function useProductSearch(outletId: string, debounceMs = 250) {
         }
       })
       .finally(() => setIsLoading(false));
-  }, [debouncedSearch, outletId]);
+  }, [debouncedSearch, outletId, partyId]);
 
   const flatVariants = useMemo(() => {
     const list: { product: any; variant: any }[] = [];

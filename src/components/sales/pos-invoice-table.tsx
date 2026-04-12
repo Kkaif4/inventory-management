@@ -24,6 +24,7 @@ interface POSInvoiceTableProps {
   isPosted: boolean;
   isGlobalDiscount: boolean;
   productSearchRef?: React.RefObject<HTMLInputElement | null>;
+  partyId?: string;
 }
 
 export function POSInvoiceTable({
@@ -34,13 +35,14 @@ export function POSInvoiceTable({
   isPosted,
   isGlobalDiscount,
   productSearchRef,
+  partyId,
 }: POSInvoiceTableProps) {
   const t = useTranslations("billing");
   const { fields, append, remove } = fieldArray;
   const isNO1 = billType === "NO1";
 
   const { search, setSearch, flatVariants, isLoading, clearResults } =
-    useProductSearch(fromOutletId);
+    useProductSearch(fromOutletId, 250, partyId);
   const [highlightedIndex, setHighlightedIndex] = React.useState(0);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [pendingProduct, setPendingProduct] = React.useState<{
@@ -73,7 +75,7 @@ export function POSInvoiceTable({
       description: product.name,
       quantity: qty,
       unit: "BASE",
-      rate: variant.sellingPrice || 0,
+      rate: variant.customerPrice ?? variant.sellingPrice ?? 0,
       discountPercent: 0,
       gstRate: isNO1 ? product.gstRate || 0 : 0,
       hsnCode: variant.sku || product.sku || "",

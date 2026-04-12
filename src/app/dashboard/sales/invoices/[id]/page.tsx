@@ -695,6 +695,7 @@ export default function InvoiceDetailPage() {
             outletId: invoice.outletId,
             billType: invoice.billType,
             status: invoice.status,
+            partyId: invoice.partyId,
           }}
           userId={session.user.id}
           onSuccess={loadInvoice}

@@ -102,6 +102,7 @@ export function POSInvoiceForm({
 
   const billType = form.watch("billType");
   const fromOutletId = form.watch("fromOutletId");
+  const partyId = form.watch("partyId") as string | undefined;
   const items = form.watch("items");
   const headerDiscount = form.watch("headerDiscount");
   const freightCost = form.watch("freightCost");
@@ -509,6 +510,7 @@ export function POSInvoiceForm({
             isPosted={isPosted}
             isGlobalDiscount={isGlobalDiscount}
             productSearchRef={productSearchRef}
+            partyId={partyId || undefined}
           />
 
           {/* Bottom: Totals + actions */}

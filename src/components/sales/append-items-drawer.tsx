@@ -26,6 +26,7 @@ interface AppendItemsDrawerProps {
     outletId: string;
     billType: string;
     status: string;
+    partyId?: string | null;
   };
   userId: string;
   onSuccess?: () => void;
@@ -51,7 +52,7 @@ export function AppendItemsDrawer({
   onSuccess,
 }: AppendItemsDrawerProps) {
   const { search, setSearch, flatVariants, isLoading, clearResults } =
-    useProductSearch(invoice.outletId);
+    useProductSearch(invoice.outletId, 250, invoice.partyId ?? undefined);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [pendingProduct, setPendingProduct] = useState<{
@@ -104,7 +105,8 @@ export function AppendItemsDrawer({
     const qty = parseFloat(pendingQty) || 1;
     const { product, variant } = pendingProduct;
     const gstRate = invoice.billType === "NO1" ? product.gstRate || 0 : 0;
-    const taxableValue = qty * (variant.sellingPrice || 0);
+    const effectiveRate = variant.customerPrice ?? variant.sellingPrice ?? 0;
+    const taxableValue = qty * effectiveRate;
     const taxAmount = (taxableValue * gstRate) / 100;
 
     const cgst = gstRate > 0 ? taxAmount / 2 : 0;
@@ -115,7 +117,7 @@ export function AppendItemsDrawer({
       variantId: variant.id,
       productName: product.name,
       quantity: qty,
-      rate: variant.sellingPrice || 0,
+      rate: effectiveRate,
       taxableValue,
       cgst,
       sgst,

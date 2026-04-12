@@ -3,6 +3,7 @@ export type ProductFilter = {
   categoryId?: string;
   brand?: string;
   limit?: number;
+  partyId?: string;
 };
 
 export type VariantPayload = {
