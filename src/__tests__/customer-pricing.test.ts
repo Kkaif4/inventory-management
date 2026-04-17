@@ -37,8 +37,8 @@ describe("Customer-specific pricing in getProducts", () => {
         outletId,
         variants: {
           create: [
-            { sku: `TEST-SKU-${ts}`, sellingPrice: 100, purchasePrice: 60 },
-            { sku: `TEST-SKU2-${ts}`, sellingPrice: 200, purchasePrice: 120 },
+            { sku: `TEST-SKU-${ts}`, outletId, sellingPrice: 100, purchasePrice: 60 },
+            { sku: `TEST-SKU2-${ts}`, outletId, sellingPrice: 200, purchasePrice: 120 },
           ],
         },
       },

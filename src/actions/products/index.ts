@@ -183,27 +183,6 @@ export async function createProduct(data: {
     const { variants, userId, outletId, ...productData } = data;
     await validateSessionOutletAccess(outletId);
 
-    const existingProduct = await prisma.product.findUnique({
-      where: {
-        name_outletId: {
-          name: data.name,
-          outletId,
-        },
-      },
-      select: { id: true, isArchived: true },
-    });
-
-    if (existingProduct) {
-      if (existingProduct.isArchived) {
-        throw new ValidationError(
-          `A product with name "${data.name}" already exists but is currently archived. Please restore it from settings or use a different name.`,
-        );
-      }
-      throw new ValidationError(
-        `A product with name "${data.name}" already exists in this outlet.`,
-      );
-    }
-
     // Pre-validate SKU uniqueness - only check non-empty SKUs
     const nonEmptySkus = variants
       .map((v) => v.sku)
@@ -211,7 +190,7 @@ export async function createProduct(data: {
 
     if (nonEmptySkus.length > 0) {
       const existingVariants = await prisma.variant.findMany({
-        where: { sku: { in: nonEmptySkus } },
+        where: { sku: { in: nonEmptySkus }, outletId },
         select: { sku: true },
       });
 
@@ -232,6 +211,7 @@ export async function createProduct(data: {
             sku:
               v.sku ||
               `AUTO-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+            outletId,
             purchasePrice: v.purchasePrice || 0,
             sellingPrice:
               v.pricingMethod === "MARKUP" && v.markupPercent

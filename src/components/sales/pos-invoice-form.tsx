@@ -318,11 +318,11 @@ export function POSInvoiceForm({
 
       const res = await onSubmitProp(cleanedData as any);
       if (res.success) {
-        // For new NO2 bills with a customer and an immediate payment mode, auto-record payment
+        // For new NO1/NO2 bills with a customer and an immediate payment mode, auto-record payment
         const createdInvoice = (res as any).data?.invoice;
         if (
           mode === "create" &&
-          data.billType === "NO2" &&
+          (data.billType === "NO1" || data.billType === "NO2") &&
           no2PaymentMode !== "CREDIT" &&
           createdInvoice?.id &&
           createdInvoice?.grandTotal > 0 &&
@@ -342,8 +342,9 @@ export function POSInvoiceForm({
           });
           if (!payRes.success) {
             // Invoice was created — show a warning but still navigate
+            const invoiceType = data.billType === "NO1" ? "Invoice" : "Cash memo";
             toast.warning(
-              `Cash memo posted but payment recording failed: ${payRes.error?.message ?? "unknown error"}. Record it manually from the invoice detail page.`,
+              `${invoiceType} posted but payment recording failed: ${payRes.error?.message ?? "unknown error"}. Record it manually from the invoice detail page.`,
             );
           }
         }

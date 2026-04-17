@@ -31,6 +31,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Controller } from "react-hook-form";
 import { useMemo } from "react";
 import { getOutletById } from "@/actions/locations";
+import { PartyComboboxWithCreate } from "@/components/form/party-combobox-with-create";
 
 const itemSchema = z.object({
   variantId: z.string().min(1, "Item is required"),
@@ -380,17 +381,29 @@ export default function NewPurchaseOrderPage() {
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Supplier (Vendor) *
               </label>
-              <select
-                {...register("partyId")}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
-              >
-                <option value="">Select Supplier...</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.state})
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="partyId"
+                control={control}
+                render={({ field }) => (
+                  <PartyComboboxWithCreate
+                    type="VENDOR"
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                    }}
+                    onPartyLoad={(party) => {
+                      // Update suppliers list with newly created vendor
+                      setSuppliers((prev) => {
+                        const exists = prev.some((s) => s.id === party.id);
+                        if (exists) return prev;
+                        return [...prev, party];
+                      });
+                    }}
+                    outletId={currentOutletId || ""}
+                    disabled={!currentOutletId}
+                  />
+                )}
+              />
               {errors.partyId && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.partyId.message}

@@ -340,6 +340,48 @@ export async function getVendorDetails(id: string) {
   });
 }
 
+// ─── Create Minimal Vendor (for inline creation) ──────────────────────────────
+export async function createMinimalVendor(
+  outletId: string,
+  data: { name: string; phone?: string; state?: string; gstin?: string }
+) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+
+    // Check for existing vendor with same name (create-if-not-exists pattern)
+    const existing = await prisma.party.findFirst({
+      where: {
+        outletId,
+        type: "VENDOR",
+        name: { equals: data.name, mode: "insensitive" },
+      },
+    });
+
+    if (existing) {
+      return existing;
+    }
+
+    // Creates Party: type=VENDOR, address="—", state=data.state??"—"
+    const party = await prisma.party.create({
+      data: {
+        type: "VENDOR",
+        outletId,
+        name: data.name,
+        phone: data.phone,
+        gstin: data.gstin || null,
+        state: data.state || "—",
+        address: "—",
+        outstandingBalance: 0,
+        creditPeriod: 0,
+        isActive: true,
+      },
+    });
+
+    revalidatePath("/dashboard/purchase/vendors");
+    return party;
+  });
+}
+
 // ─── Create new Vendor ───────────────────────────────────────────────────────
 export async function createVendor(outletId: string, data: VendorFormValues) {
   return withErrorHandler(async () => {

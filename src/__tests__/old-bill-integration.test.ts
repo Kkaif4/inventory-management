@@ -69,6 +69,7 @@ describe("Old Bill Mode Integration Tests", () => {
     const variant = await prisma.variant.create({
       data: {
         productId: testProductId,
+        outletId: testOutletId,
         sku: `OBSKU-${Date.now()}`,
         purchasePrice: 10,
         sellingPrice: 20,

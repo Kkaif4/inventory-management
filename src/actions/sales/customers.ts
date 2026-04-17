@@ -400,13 +400,26 @@ export async function getCustomerDetails(id: string) {
   });
 }
 
-// ─── Create Minimal Customer (for Old Bill Mode) ──────────────────────────────────
+// ─── Create Minimal Customer (for inline creation) ────────────────────────────────
 export async function createMinimalCustomer(
   outletId: string,
-  data: { name: string; phone?: string; state?: string }
+  data: { name: string; phone?: string; state?: string; gstin?: string }
 ) {
   return withErrorHandler(async () => {
     await validateSessionOutletAccess(outletId);
+
+    // Check for existing customer with same name (create-if-not-exists pattern)
+    const existing = await prisma.party.findFirst({
+      where: {
+        outletId,
+        type: "CUSTOMER",
+        name: { equals: data.name, mode: "insensitive" },
+      },
+    });
+
+    if (existing) {
+      return existing;
+    }
 
     // Creates Party: type=CUSTOMER, address="—", state=data.state??"—"
     const party = await prisma.party.create({
@@ -415,6 +428,7 @@ export async function createMinimalCustomer(
         outletId,
         name: data.name,
         phone: data.phone,
+        gstin: data.gstin || null,
         state: data.state || "—",
         address: "—",
         outstandingBalance: 0,

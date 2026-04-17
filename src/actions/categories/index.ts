@@ -132,6 +132,50 @@ export async function createCategory(data: {
   });
 }
 
+export async function getOrCreateParentCategory(
+  name: string,
+  outletId: string,
+) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+
+    // Try to find existing top-level category with this name
+    const existing = await prisma.category.findFirst({
+      where: {
+        name: { equals: name, mode: "insensitive" },
+        parentId: null,
+        outletId,
+      },
+      select: { id: true, name: true },
+    });
+
+    if (existing) {
+      return { id: existing.id, name: existing.name, isNew: false };
+    }
+
+    // Create new top-level category
+    const created = await prisma.category.create({
+      data: {
+        name,
+        parentId: null,
+        outletId,
+      },
+      select: { id: true, name: true },
+    });
+
+    await AuditService.log({
+      action: "CREATE",
+      entity: "CATEGORY",
+      entityId: created.id,
+      userId: "system", // from parent combobox component context
+      newValues: { name, parentId: null, outletId },
+    });
+
+    revalidatePath("/dashboard/master-data/categories");
+    return { id: created.id, name: created.name, isNew: true };
+  });
+}
+
 export async function updateCategory(data: {
   id: string;
   name: string;

@@ -541,6 +541,7 @@ async function main() {
           await prisma.variant.create({
             data: {
               productId: product.id,
+              outletId: outlet.id,
               sku: `SKU-${(skuCounter++).toString().padStart(6, "0")}`,
               purchasePrice: productData.price * 0.7,
               sellingPrice: productData.price,

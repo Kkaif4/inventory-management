@@ -24,6 +24,7 @@ import {
 import { ReusableConfirmDialog } from "@/components/ui/reusable-confirm-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { ParentCategoryCombobox } from "@/components/form/parent-category-combobox";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -206,11 +207,17 @@ export function CategoriesClient({
     });
   };
 
-  const getParentChain = (cat: any): string => {
+  const getParentChain = (cat: any): React.ReactNode => {
     if (!cat.parent) return "—";
     const parent = cat.parent;
     if (parent.parent) {
-      return `${parent.parent.name} ${ChevronRight.name} ${parent.name}`;
+      return (
+        <span className="flex items-center gap-1">
+          {parent.parent.name}
+          <ChevronRight className="h-3 w-3 shrink-0" />
+          {parent.name}
+        </span>
+      );
     }
     return parent.name;
   };
@@ -470,20 +477,15 @@ export function CategoriesClient({
               placeholder={t("namePlaceholder")}
               className="h-10"
             />
-            <select
+            <ParentCategoryCombobox
+              categories={categories}
               value={newForm.parentId}
-              onChange={(e) =>
-                setNewForm((prev) => ({ ...prev, parentId: e.target.value }))
+              onChange={(id) =>
+                setNewForm((prev) => ({ ...prev, parentId: id }))
               }
-              className="h-10 px-3 rounded-md border border-slate-200 bg-white text-sm"
-            >
-              <option value="">{t("noParent")}</option>
-              {categories.map((cat: any) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
+              outletId={currentOutletId || ""}
+              placeholder={t("noParent")}
+            />
           </div>
           <div className="flex justify-end space-x-2 mt-4">
             <Button

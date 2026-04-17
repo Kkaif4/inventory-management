@@ -196,8 +196,8 @@ export function POSInvoiceFooter({
           </div>
         )}
 
-        {/* Payment mode row for NO2 (Cash Memo) bills */}
-        {billType === "NO2" && !isPosted && (
+        {/* Payment mode row for NO1 (Invoice) and NO2 (Cash Memo) bills */}
+        {(billType === "NO1" || billType === "NO2") && !isPosted && (
           <div className="px-4 py-2.5 border-b border-slate-100 bg-amber-50/30 flex items-center gap-3 flex-wrap">
             <span className="text-xs font-bold text-amber-900 shrink-0">Payment Mode</span>
             <div className="flex items-center gap-1.5 flex-wrap">

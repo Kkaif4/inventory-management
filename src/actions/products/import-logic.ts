@@ -306,7 +306,7 @@ export async function processProductImport(
             }
 
             let variant = await tx.variant.findFirst({
-              where: { sku: row.variantSku },
+              where: { sku: row.variantSku, outletId },
             });
 
             // Idempotency check: if variant exists, it MUST belong to the current product!
@@ -325,6 +325,7 @@ export async function processProductImport(
 
             const variantData = {
               sku: row.variantSku,
+              outletId,
               purchasePrice: row.purchasePrice,
               sellingPrice,
               pricingMethod: row.pricingMethod,

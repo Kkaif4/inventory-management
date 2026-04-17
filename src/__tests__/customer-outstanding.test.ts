@@ -89,6 +89,7 @@ describe("Customer Outstanding and Payment Behavior", () => {
     const variant = await prisma.variant.create({
       data: {
         productId: testProductId,
+        outletId: testOutletId,
         sku: `SKU-${Date.now()}`,
         purchasePrice: 100,
         sellingPrice: 200,
