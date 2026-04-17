@@ -37,7 +37,9 @@ export const NumberingService = {
     });
 
     const nextNumber = series ? series.nextNumber : 1;
-    return `${prefix}/${financialYear}/${nextNumber.toString().padStart(4, "0")}`;
+    const formattedNumber = `${prefix}/${financialYear}/${nextNumber.toString().padStart(4, "0")}`;
+
+    return formattedNumber;
   },
 
   async getNextNumber(
@@ -50,13 +52,6 @@ export const NumberingService = {
     const prefix = this.getPrefix(type);
 
     if (!db || !db.documentSeries) {
-      console.error(
-        "Prisma client or documentSeries model is missing on the client provided to NumberingService.",
-        {
-          hasDb: !!db,
-          hasModel: !!db?.documentSeries,
-        },
-      );
       // Fallback to global prisma if db is not a client with models (might happen in some proxy scenarios)
       const client = db?.documentSeries ? db : prisma;
       if (!client.documentSeries) {
@@ -67,7 +62,7 @@ export const NumberingService = {
       db = client;
     }
 
-    const series = await (db as any).documentSeries.upsert({
+    const beforeUpsert = await (db as any).documentSeries.findUnique({
       where: {
         type_financialYear_outletId: {
           type,
@@ -75,23 +70,51 @@ export const NumberingService = {
           outletId,
         },
       },
-      update: {
-        nextNumber: {
-          increment: 1,
-        },
-      },
-      create: {
-        type,
-        financialYear,
-        outletId,
-        prefix,
-        nextNumber: 2, // First one will be 1
-      },
     });
 
+    const dbClient = db as any;
+
+    // CRITICAL: If we're not using tx client, upsert will use global prisma but might not persist in transaction
+    if (!db?.$transaction && !dbClient.documentSeries) {
+      console.error(
+        `[NUMBERING-SERVICE] ❌ CRITICAL: db is not a transaction client! Upsert might not persist.`,
+      );
+    }
+
+    let series;
+    try {
+      series = await dbClient.documentSeries.upsert({
+        where: {
+          type_financialYear_outletId: {
+            type,
+            financialYear,
+            outletId,
+          },
+        },
+        update: {
+          nextNumber: {
+            increment: 1,
+          },
+        },
+        create: {
+          type,
+          financialYear,
+          outletId,
+          prefix,
+          nextNumber: 2, // First call will return 1
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+
     // If we just created it, the next number for the *current* call is 1
-    const currentNumber = series.nextNumber === 2 ? 1 : series.nextNumber - 1;
-    return `${series.prefix}/${series.financialYear}/${currentNumber.toString().padStart(4, "0")}`;
+    const isNewRecord = !beforeUpsert;
+    const currentNumber = isNewRecord ? 1 : series.nextNumber - 1;
+
+    const formattedNumber = `${series.prefix}/${series.financialYear}/${currentNumber.toString().padStart(4, "0")}`;
+
+    return formattedNumber;
   },
 
   getFinancialYear(date: Date): string {

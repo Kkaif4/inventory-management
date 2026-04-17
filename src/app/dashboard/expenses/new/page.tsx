@@ -280,7 +280,7 @@ export default function NewExpensePage() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="CASH">Cash</SelectItem>
-                        <SelectItem value="BANK_TRANSFER">
+                        <SelectItem value="ONLINE_TRANSFER">
                           Bank Transfer
                         </SelectItem>
                         <SelectItem value="UPI">UPI</SelectItem>

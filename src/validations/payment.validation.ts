@@ -184,17 +184,6 @@ export const recordPaymentSchema = z
       path: ["chequeNumber"],
     },
   )
-  // Validate account required for all payment modes
-  .refine(
-    (data) => {
-      return !!data.bankAccountId;
-    },
-    {
-      message: "Account is required for payment recording",
-      path: ["bankAccountId"],
-    },
-  );
-
 /**
  * Schema for general payment recording (simplified version without invoice)
  */
@@ -295,17 +284,6 @@ export const generalPaymentSchema = z
       path: ["chequeNumber"],
     },
   )
-  // Validate account required for all payment modes
-  .refine(
-    (data) => {
-      return !!data.bankAccountId;
-    },
-    {
-      message: "Account is required for payment recording",
-      path: ["bankAccountId"],
-    },
-  );
-
 // ============================================================================
 // Type Exports
 // ============================================================================

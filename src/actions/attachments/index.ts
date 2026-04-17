@@ -98,10 +98,6 @@ export async function uploadAttachment(
       },
     });
 
-    console.log(
-      `[Attachment] Stored: ${attachment.id} (${processed.fileName})`,
-    );
-
     return formatAttachmentForClient(attachment);
   });
 }
@@ -206,8 +202,6 @@ export async function deleteAttachment(
       where: { id: attachmentId },
     });
 
-    console.log(`[Attachment] Deleted: ${attachmentId}`);
-
     return { success: true };
   });
 }
@@ -251,10 +245,6 @@ export async function migrateAttachments(
         referenceId: finalReferenceId,
       },
     });
-
-    console.log(
-      `[Attachment] Migrated ${updated.count} attachments from ${tempReferenceId} to ${finalReferenceId}`,
-    );
 
     return { success: true, count: updated.count };
   });

@@ -17,9 +17,12 @@
     "note": "नोट: यदि कोई स्टॉक अभी भी उपलब्ध है तो हटाना विफल हो जाएगा।",
     "confirm": "हटाने की पुष्टि करें"
   },
+  "editSubtitle": "{name} के लिए मूल विवरण अपडेट करें",
   "form": {
     "basicInfo": "मूल जानकारी",
     "productVariants": "उत्पाद वेरिएंट",
+    "productInfoSection": "उत्पाद जानकारी",
+    "variantSection": "वेरिएंट विवरण और अलर्ट",
     "productNameLabel": "उत्पाद का नाम *",
     "productNamePlaceholder": "जैसे: 10mm ड्रिल बिट",
     "brandLabel": "ब्रांड",
@@ -38,8 +41,10 @@
     "conversionRatioPlaceholder": "एक खरीद इकाई में कितनी मूल इकाइयां हैं?",
     "conversionHelp": "1 {purchase} में कितने {base} हैं?",
     "conversionNote": "रूपांतरण: इन्वेंट्री अपडेट के दौरान 1 {purchase} = {ratio} {base}।",
+    "landedCostNote": "लागत और इन्वेंट्री अपडेट बल्क ({purchase}) और बेस ({base}) के बीच रूपांतरण का उपयोग करेंगे।",
     "addVariant": "वेरिएंट जोड़ें",
     "skuLabel": "SKU / बारकोड *",
+    "skuCodeLabel": "SKU / कोड",
     "skuPlaceholder": "विशिष्ट आईडी",
     "costPriceLabel": "लागत मूल्य *",
     "pricingLogicLabel": "मूल्य निर्धारण तर्क",
@@ -49,9 +54,12 @@
     "sellingPriceLabel": "विक्रय मूल्य *",
     "autoSellingPrice": "ऑटो विक्रय मूल्य",
     "minAlertLabel": "स्टॉक इससे कम होने पर सूचित करें...",
+    "minStockAlert": "न्यूनतम स्टॉक अलर्ट *",
     "variantsToggle": "इस उत्पाद के कई आकार/रंग हैं",
     "saveButton": "इन्वेंट्री में जोड़ें",
     "savingButton": "मास्टर रिकॉर्ड बनाया जा रहा है...",
+    "saveChanges": "बदलाव सहेजें",
+    "updating": "अपडेट हो रहा है...",
     "outletRequiredTitle": "आउटलेट आवश्यक",
     "outletRequiredDescription": "मास्टर कैटलॉग में उत्पाद जोड़ने से पहले कृपया शीर्ष नेविगेशन बार में स्विचर से एक सक्रिय आउटलेट चुनें।",
     "goBack": "वापस जाएं"
@@ -63,7 +71,10 @@
     "loadCategoriesFailed": "श्रेणियां लोड करने में विफल",
     "created": "उत्पाद सफलतापूर्वक बनाया गया",
     "createFailed": "उत्पाद बनाने में विफल",
-    "createError": "एक अप्रत्याशित त्रुटि हुई"
+    "createError": "एक अप्रत्याशित त्रुटि हुई",
+    "updated": "उत्पाद सफलतापूर्वक अपडेट किया गया",
+    "updateFailed": "उत्पाद अपडेट करने में विफल",
+    "updateError": "एक अप्रत्याशित त्रुटि हुई"
   },
   "dashboard": {
     "table": "Table"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import {
   Drawer,
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X, Plus, Search, Package } from "lucide-react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import { getProducts } from "@/actions/products";
+import { useProductSearch } from "@/hooks/use-product-search";
 import { appendItemsToInvoice } from "@/actions/sales/sales-invoice";
 
 interface AppendItemsDrawerProps {
@@ -26,6 +26,7 @@ interface AppendItemsDrawerProps {
     outletId: string;
     billType: string;
     status: string;
+    partyId?: string | null;
   };
   userId: string;
   onSuccess?: () => void;
@@ -50,9 +51,8 @@ export function AppendItemsDrawer({
   userId,
   onSuccess,
 }: AppendItemsDrawerProps) {
-  const [search, setSearch] = useState("");
-  const [products, setProducts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { search, setSearch, flatVariants, isLoading, clearResults } =
+    useProductSearch(invoice.outletId, 250, invoice.partyId ?? undefined);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [pendingProduct, setPendingProduct] = useState<{
@@ -67,47 +67,14 @@ export function AppendItemsDrawer({
   const qtyInputRef = useRef<HTMLInputElement>(null);
   const popoverContentRef = useRef<HTMLDivElement>(null);
 
-  // Flatten products to variants
-  const flatVariants = useMemo(() => {
-    const list: { product: any; variant: any }[] = [];
-    for (const p of products) {
-      for (const v of p.variants || []) {
-        list.push({ product: p, variant: v });
-      }
-    }
-    return list;
-  }, [products]);
-
-  // Fetch products on search change with debounce
   useEffect(() => {
-    if (!invoice.outletId || !search) {
-      setProducts([]);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        const res = await getProducts(invoice.outletId, { search });
-        if (res.success) {
-          setProducts(res.data || []);
-          setHighlightedIndex(0);
-        }
-      } catch (err) {
-        console.error("[AppendItemsDrawer] Product search error:", err);
-        setProducts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 250);
-
-    return () => clearTimeout(timer);
-  }, [search, invoice.outletId]);
+    setHighlightedIndex(0);
+  }, [flatVariants]);
 
   // Reset when drawer opens/closes
   useEffect(() => {
     if (!open) {
-      setSearch("");
+      clearResults();
       setItems([]);
       setPendingProduct(null);
       setPendingQty("1");
@@ -118,12 +85,13 @@ export function AppendItemsDrawer({
         searchInputRef.current?.focus();
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const selectProduct = useCallback((product: any, variant: any) => {
     setPendingProduct({ product, variant });
     setPendingQty("1");
-    setSearch("");
+    clearResults();
     setIsSearchOpen(false);
     // Wait for render, then focus qty input
     requestAnimationFrame(() => {
@@ -137,7 +105,8 @@ export function AppendItemsDrawer({
     const qty = parseFloat(pendingQty) || 1;
     const { product, variant } = pendingProduct;
     const gstRate = invoice.billType === "NO1" ? product.gstRate || 0 : 0;
-    const taxableValue = qty * (variant.sellingPrice || 0);
+    const effectiveRate = variant.customerPrice ?? variant.sellingPrice ?? 0;
+    const taxableValue = qty * effectiveRate;
     const taxAmount = (taxableValue * gstRate) / 100;
 
     const cgst = gstRate > 0 ? taxAmount / 2 : 0;
@@ -148,7 +117,7 @@ export function AppendItemsDrawer({
       variantId: variant.id,
       productName: product.name,
       quantity: qty,
-      rate: variant.sellingPrice || 0,
+      rate: effectiveRate,
       taxableValue,
       cgst,
       sgst,
@@ -193,11 +162,11 @@ export function AppendItemsDrawer({
           selectProduct(item.product, item.variant);
         }
       } else if (e.key === "Escape") {
-        setSearch("");
+        clearResults();
         setIsSearchOpen(false);
       }
     },
-    [flatVariants, highlightedIndex, selectProduct],
+    [flatVariants, highlightedIndex, selectProduct, clearResults],
   );
 
   const handleQtyKeyDown = useCallback(
@@ -387,6 +356,7 @@ export function AppendItemsDrawer({
                   className="max-h-72 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-xl z-50 focus:outline-none"
                   style={{ width: popoverWidth, pointerEvents: "auto" }}
                   sideOffset={4}
+                  onOpenAutoFocus={(e) => e.preventDefault()}
                 >
                   <div
                     id="product-listbox"

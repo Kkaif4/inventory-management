@@ -27,7 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search, Plus, Trash2, ArrowRight } from "lucide-react";
-import { searchVariants } from "@/actions/inventory/search";
+import { useVariantSearch } from "@/hooks/use-variant-search";
 import { createTransfer } from "@/actions/inventory";
 import { toast } from "sonner";
 import { useTransition } from "react";
@@ -51,20 +51,9 @@ export function TransferDialog({
   const [fromWh, setFromWh] = useState<string>("");
   const [toWh, setToWh] = useState<string>("");
   const [items, setItems] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const { searchQuery, setSearchQuery, searchResults, clearResults } =
+    useVariantSearch(outletId);
   const [isPending, startTransition] = useTransition();
-
-  const handleSearch = async (val: string) => {
-    setSearchQuery(val);
-    if (val.length > 2) {
-      const res = await searchVariants(outletId, val);
-      if (res.success) setSearchResults(res.data!);
-      else setSearchResults([]);
-    } else {
-      setSearchResults([]);
-    }
-  };
 
   const addItem = (variant: any) => {
     if (items.some((i) => i.id === variant.id)) {
@@ -72,8 +61,7 @@ export function TransferDialog({
       return;
     }
     setItems([...items, { ...variant, quantity: 1 }]);
-    setSearchQuery("");
-    setSearchResults([]);
+    clearResults();
   };
 
   const removeItem = (id: string) => {
@@ -185,7 +173,7 @@ export function TransferDialog({
                 placeholder="Search products by SKU or Name..."
                 className="pl-9 h-11"
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
 
               {searchResults.length > 0 && (

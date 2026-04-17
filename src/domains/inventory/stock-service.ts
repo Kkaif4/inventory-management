@@ -127,20 +127,25 @@ export const StockService = {
         let toConsume = Math.abs(quantity);
         const breakdown: Array<{ batchId: string; quantity: number; costPerUnit: number; totalCost: number }> = [];
 
-        // Find active batches (Received Date ASC, then createdAt ASC as fallback)
-        const batches = await tx.customBatch.findMany({
-          where: {
-            variantId,
-            warehouseId: warehouseId as string,
-            outletId,
-          },
-          orderBy: [{ receivedDate: "asc" }, { createdAt: "asc" }],
-        });
-
-        // Manual filter for remaining qty since we can't do column comparison easily in standard findMany where
-        const activeBatches = batches.filter(
-          (b) => b.quantityConsumed < b.quantityReceived,
-        );
+        // Find active batches using DB-level filter (quantityConsumed < quantityReceived)
+        // Ordered FIFO: oldest received date first, then creation order as tiebreaker
+        const activeBatches = await tx.$queryRaw<
+          Array<{
+            id: string;
+            batchNumber: string;
+            quantityReceived: number;
+            quantityConsumed: number;
+            costPerUnit: number;
+          }>
+        >`
+          SELECT id, "batchNumber", "quantityReceived", "quantityConsumed", "costPerUnit"
+          FROM "CustomBatch"
+          WHERE "variantId" = ${variantId}
+            AND "warehouseId" = ${warehouseId as string}
+            AND "outletId" = ${outletId}
+            AND "quantityConsumed" < "quantityReceived"
+          ORDER BY "receivedDate" ASC, "createdAt" ASC
+        `;
 
         for (const batch of activeBatches) {
           const remainingInBatch =
@@ -266,18 +271,23 @@ export const StockService = {
       quantity: number; // base units, positive
     },
   ): Promise<FIFOAllocationResult> {
-    const batches = await tx.customBatch.findMany({
-      where: {
-        variantId: input.variantId,
-        warehouseId: input.warehouseId as string,
-        outletId: input.outletId,
-      },
-      orderBy: [{ receivedDate: "asc" }, { createdAt: "asc" }],
-    });
-
-    const activeBatches = batches.filter(
-      (b) => b.quantityConsumed < b.quantityReceived,
-    );
+    const activeBatches = await tx.$queryRaw<
+      Array<{
+        id: string;
+        batchNumber: string;
+        quantityReceived: number;
+        quantityConsumed: number;
+        costPerUnit: number;
+      }>
+    >`
+      SELECT id, "batchNumber", "quantityReceived", "quantityConsumed", "costPerUnit"
+      FROM "CustomBatch"
+      WHERE "variantId" = ${input.variantId}
+        AND "warehouseId" = ${input.warehouseId as string}
+        AND "outletId" = ${input.outletId}
+        AND "quantityConsumed" < "quantityReceived"
+      ORDER BY "receivedDate" ASC, "createdAt" ASC
+    `;
 
     let remaining = input.quantity;
     let totalCost = 0;

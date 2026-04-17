@@ -42,9 +42,14 @@ export async function recordInvoicePayment(
       });
 
       if (!invoice) throw new NotFoundError("Invoice not found");
-      if (["NO2", "OLD"].includes(invoice.billType)) {
+      if (invoice.billType === "OLD") {
         throw new ValidationError(
-          `${invoice.billType === "NO2" ? "No.2 (Cash Memo)" : "Historical"} invoices cannot have secondary payments recorded against them.`,
+          "Historical invoices cannot have secondary payments recorded against them.",
+        );
+      }
+      if (invoice.billType === "NO2" && !invoice.partyId) {
+        throw new ValidationError(
+          "Anonymous Cash Memo invoices cannot have payments recorded. Link a customer to this bill to enable payment tracking.",
         );
       }
       if (["PAID", "CANCELLED", "DRAFT"].includes(invoice.status)) {
@@ -67,12 +72,7 @@ export async function recordInvoicePayment(
       if (data.amount <= 0) {
         throw new ValidationError("Payment amount must be greater than ₹0.");
       }
-      if (data.amount > outstanding + 0.005) {
-        // 0.5 paise tolerance for floating-point
-        throw new ValidationError(
-          `Payment amount ₹${data.amount} exceeds outstanding balance of ₹${outstanding}.`,
-        );
-      }
+      // Allow overpayment — excess is stored as customer credit balance
 
       // ── 3. Generate Receipt Number ─────────────────────────────────────────
       const txnNumber = await NumberingService.getNextNumber(
@@ -82,11 +82,6 @@ export async function recordInvoicePayment(
       );
 
       // ── 4. Create Payment Record ───────────────────────────────────────────
-      // Validate that accountId is provided (now required in Payment model)
-      if (!data.bankAccountId) {
-        throw new ValidationError("Payment account is required");
-      }
-
       const payment = await tx.payment.create({
         data: {
           txnNumber,
@@ -128,11 +123,13 @@ export async function recordInvoicePayment(
       }
 
       if (debtorAcc && cashBankAcc) {
+        // transactionId must be a FK to Transaction table (not Payment).
+        // Link journal entries to the invoice transaction being paid.
         await tx.ledgerEntry.createMany({
           data: [
             // Dr. Cash/Bank - money received
             {
-              transactionId: payment.id,
+              transactionId: data.invoiceId,
               accountId: cashBankAcc.id,
               partyId: data.partyId,
               date: new Date(data.paymentDate),
@@ -142,7 +139,7 @@ export async function recordInvoicePayment(
             },
             // Cr. Sundry Debtors - customer's outstanding reduced
             {
-              transactionId: payment.id,
+              transactionId: data.invoiceId,
               accountId: debtorAcc.id,
               partyId: data.partyId,
               date: new Date(data.paymentDate),
@@ -204,59 +201,24 @@ export async function recordInvoicePayment(
         },
       });
 
-      // ── 6. Apply Payment Against Customer's Outstanding (FIFO) ──────────────
-      // Get all unpaid invoices for this customer, ordered oldest first
+      // ── 6. Update Customer Outstanding Balance ──────────────────────────────
+      // `outstanding` is pre-computed at top of tx = invoice.grandTotal - totalPaid (before this payment).
+      // The amount applied to this invoice's outstanding is min(payment, outstanding).
+      // Any excess beyond outstanding is stored as credit balance.
       if (invoice.partyId) {
-        const unpaidInvoices = await tx.transaction.findMany({
-          where: {
-            type: "SALES_INVOICE",
-            partyId: invoice.partyId,
-            status: { in: ["POSTED", "PARTIALLY_PAID"] },
-            outletId: data.outletId,
-          },
-          orderBy: { date: "asc" },
-          select: {
-            id: true,
-            grandTotal: true,
-            payments: { select: { amount: true } },
-          },
-        });
+        const amountAppliedToOutstanding = Math.min(data.amount, outstanding);
+        const overpayment = roundToTwo(data.amount - amountAppliedToOutstanding);
 
-        // Calculate total outstanding across ALL invoices
-        let totalOutstanding = 0;
-        for (const inv of unpaidInvoices) {
-          const invTotalPaid = inv.payments.reduce((a, b) => a + b.amount, 0);
-          const invOutstanding = roundToTwo(inv.grandTotal - invTotalPaid);
-          if (invOutstanding > 0.005) {
-            totalOutstanding += invOutstanding;
-          }
-        }
-        totalOutstanding = roundToTwo(totalOutstanding);
-
-        // Check if payment exceeds total outstanding
-        let paymentAmount = data.amount;
-        if (data.amount > totalOutstanding + 0.005) {
-          // Overpayment: store excess as customer credit, process only outstanding
-          const creditAmount = roundToTwo(data.amount - totalOutstanding);
+        if (overpayment > 0.005) {
           await tx.party.update({
             where: { id: invoice.partyId },
-            data: {
-              creditBalance: {
-                increment: creditAmount,
-              },
-            },
+            data: { creditBalance: { increment: overpayment } },
           });
-          paymentAmount = totalOutstanding;
         }
 
-        // Update outstanding balance (denormalized cache)
         await tx.party.update({
           where: { id: invoice.partyId },
-          data: {
-            outstandingBalance: {
-              decrement: paymentAmount,
-            },
-          },
+          data: { outstandingBalance: { decrement: amountAppliedToOutstanding } },
         });
 
         // Guard: Ensure outstanding never goes negative
@@ -265,7 +227,6 @@ export async function recordInvoicePayment(
           select: { outstandingBalance: true },
         });
         if (updatedParty && updatedParty.outstandingBalance < -0.005) {
-          // Reset to 0 if it somehow went negative (should never happen)
           await tx.party.update({
             where: { id: invoice.partyId },
             data: { outstandingBalance: 0 },

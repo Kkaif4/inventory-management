@@ -26,19 +26,15 @@ export default async function SalesTransactionsPage({
   // Await searchParams since it's a Promise in Next.js 15+
   const params = await searchParams;
 
-
   if (!currentOutletId) {
     redirect("/dashboard");
   }
-
-  console.log(`\n[SalesTransactionsPage] Page loaded:`);
 
   // Parse pagination and filter params
   const pagination = parsePaginationParams(params);
   const tab = typeof params.tab === "string" ? params.tab : "invoices";
   const search = typeof params.search === "string" ? params.search : "";
   const status = typeof params.status === "string" ? params.status : "ALL";
-
 
   // Fetch only the active tab's data
   let tabData: { data: any[]; pagination: PaginationMeta };
@@ -50,7 +46,7 @@ export default async function SalesTransactionsPage({
       search: search || undefined,
       status: status || "ALL",
     });
-    console.log(`[Transactions] Invoices fetch - Success: ${res.success}, Data count: ${res.data?.data?.length || 0}`);
+
     if (res.success && res.data) {
       tabData = res.data;
     } else {
@@ -64,7 +60,7 @@ export default async function SalesTransactionsPage({
       search: search || undefined,
       status: status || "ALL",
     });
-    console.log(`[Transactions] Returns fetch - Success: ${res.success}, Data count: ${res.data?.data?.length || 0}`);
+
     if (res.success && res.data) {
       tabData = res.data;
     } else {
@@ -74,8 +70,6 @@ export default async function SalesTransactionsPage({
   } else {
     tabData = { data: [], pagination: defaultPagination };
   }
-
-  console.log(`[Transactions] Final tabData for tab="${tab}": ${tabData.data.length} records`);
 
   return (
     <Suspense fallback={<SalesTransactionsSkeleton />}>

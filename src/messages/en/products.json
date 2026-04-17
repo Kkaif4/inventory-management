@@ -17,9 +17,12 @@
     "note": "Note: Deletion will fail if any stock is still available.",
     "confirm": "Confirm Delete"
   },
+  "editSubtitle": "Update core details for {name}",
   "form": {
     "basicInfo": "Basic Information",
     "productVariants": "Product Variants",
+    "productInfoSection": "Product Information",
+    "variantSection": "Variant Details & Alerts",
     "productNameLabel": "Product Name *",
     "productNamePlaceholder": "e.g. 10mm Drill Bit",
     "brandLabel": "Brand",
@@ -38,8 +41,10 @@
     "conversionRatioPlaceholder": "How many base units in one purchase unit?",
     "conversionHelp": "How many {base} are in 1 {purchase}?",
     "conversionNote": "Conversion: 1 {purchase} = {ratio} {base} during inventory updates.",
+    "landedCostNote": "Landed cost and inventory updates will use the conversion between Bulk ({purchase}) and Base ({base}).",
     "addVariant": "Add Variant",
     "skuLabel": "SKU / Barcode *",
+    "skuCodeLabel": "SKU / Code",
     "skuPlaceholder": "Unique ID",
     "costPriceLabel": "Cost Price *",
     "pricingLogicLabel": "Pricing Logic",
@@ -49,9 +54,12 @@
     "sellingPriceLabel": "Selling Price *",
     "autoSellingPrice": "Auto Selling Price",
     "minAlertLabel": "Notify when stock is lower than...",
+    "minStockAlert": "Min. Stock Alert *",
     "variantsToggle": "This product has multiple sizes/colors",
     "saveButton": "Add to Inventory",
     "savingButton": "Creating Master Record...",
+    "saveChanges": "Save Changes",
+    "updating": "Updating...",
     "outletRequiredTitle": "Outlet Required",
     "outletRequiredDescription": "Please select an active outlet from the switcher in the top navigation bar before adding products to the master catalog.",
     "goBack": "Go Back"
@@ -63,7 +71,10 @@
     "loadCategoriesFailed": "Failed to load categories",
     "created": "Product created successfully",
     "createFailed": "Failed to create product",
-    "createError": "An unexpected error occurred"
+    "createError": "An unexpected error occurred",
+    "updated": "Product updated successfully",
+    "updateFailed": "Failed to update product",
+    "updateError": "An unexpected error occurred"
   },
   "dashboard": {
     "table": "Table"

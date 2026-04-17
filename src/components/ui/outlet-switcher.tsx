@@ -1,6 +1,4 @@
-import { useState } from "react";
-import { ChevronDown, Check, Globe, AlertTriangle } from "lucide-react";
-import { Button } from "./button";
+import { ChevronDown, Check, Globe } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -10,48 +8,24 @@ import {
 } from "./dropdown-menu";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { useSession } from "next-auth/react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useTranslations } from "next-intl";
 
 export function OutletSwitcher() {
   const { data: session } = useSession();
   const { currentOutlet, availableOutlets, setOutlet } = useOutletStore();
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [pendingOutletId, setPendingOutletId] = useState<string | null>(null);
   const t = useTranslations("outletSwitcher");
-  const common = useTranslations("common");
 
   if (!availableOutlets || availableOutlets.length === 0) {
     return null;
   }
 
   const selected = currentOutlet || availableOutlets[0];
-  const isAdmin = session?.user?.role === "ADMIN" || true; // Assuming admin check
+  const isAdmin = session?.user?.role === "ADMIN";
 
   const handleOutletClick = (id: string) => {
     if (id === selected.id) return;
-
-    // In a real app, track unsaved changes via a global hook or state
-    // For now, we always show the warning if there are inputs dirty (logical placeholder)
-    setPendingOutletId(id);
-    setShowConfirm(true);
-  };
-
-  const confirmSwitch = () => {
-    if (pendingOutletId) {
-      setOutlet(pendingOutletId);
-      window.location.reload(); // Hard reload to clear all states as per requirement
-    }
-    setShowConfirm(false);
+    setOutlet(id);
+    window.location.reload();
   };
 
   return (
@@ -157,34 +131,6 @@ export function OutletSwitcher() {
         </DropdownMenu>
       </div>
 
-      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <AlertDialogContent className="rounded-[2rem] border-0 shadow-2xl p-0 overflow-hidden max-w-sm">
-          <div className="bg-amber-50 p-6 flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4 text-amber-600">
-              <AlertTriangle className="w-8 h-8" />
-            </div>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-black text-amber-900 uppercase tracking-tight">
-                {t("switchingWorkspace")}
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-amber-800/70 font-medium text-sm">
-                {t("warning")}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-          </div>
-          <AlertDialogFooter className="p-6 pt-0 bg-white flex items-center justify-center gap-3 sm:justify-center">
-            <AlertDialogCancel className="rounded-2xl border border-slate-100 bg-slate-50 text-slate-500 font-bold text-xs uppercase px-8 hover:bg-slate-100 transition-all hover:text-slate-900">
-              {common("actions.cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmSwitch}
-              className="rounded-2xl bg-amber-600 text-white font-bold text-xs uppercase px-8 hover:bg-amber-700 transition-all shadow-xl shadow-amber-100"
-            >
-              {t("continueSwitch")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

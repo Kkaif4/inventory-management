@@ -150,8 +150,10 @@ export default function InvoiceDetailPage() {
   const outstanding = Math.max(0, invoice.grandTotal - totalPaid);
 
   // Pay button visibility per FRD Section 2 & 10
+  // NO1 always eligible; NO2 eligible only when linked to a party (customer on account)
   const canPay =
-    invoice.billType === "NO1" &&
+    ["NO1", "NO2"].includes(invoice.billType) &&
+    invoice.party !== null &&
     ["POSTED", "PARTIALLY_PAID"].includes(invoice.status) &&
     outstanding > 0.005;
 
@@ -619,7 +621,7 @@ export default function InvoiceDetailPage() {
                         </td>
                         <td className="px-5 py-3">
                           <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-medium">
-                            {p.paymentMode === "BankTransfer"
+                            {p.paymentMode === "ONLINE_TRANSFER"
                               ? "Bank Transfer"
                               : p.paymentMode}
                             {p.account ? ` · ${p.account.name}` : ""}
@@ -693,6 +695,7 @@ export default function InvoiceDetailPage() {
             outletId: invoice.outletId,
             billType: invoice.billType,
             status: invoice.status,
+            partyId: invoice.partyId,
           }}
           userId={session.user.id}
           onSuccess={loadInvoice}

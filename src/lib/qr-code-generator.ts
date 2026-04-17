@@ -70,8 +70,6 @@ export async function generateUPIQRCode(
       transactionRef,
     });
 
-    console.log(`[QRCodeGenerator] UPI String: ${upiString}`);
-
     // Dynamic import of QRCode library
     // Note: Requires 'npm install qrcode' to be installed
     let QRCode: any;
@@ -99,8 +97,6 @@ export async function generateUPIQRCode(
     // Typical QR for UPI string: 2-3KB binary
     const estimatedSize = Math.ceil(3000 * 1.33); // ~4KB with Base64 overhead
 
-    console.log(`[QRCodeGenerator] QR Code generated (estimated: ${estimatedSize} bytes)`);
-
     return {
       dataUrl: qrDataUrl,
       size: estimatedSize,
@@ -108,7 +104,6 @@ export async function generateUPIQRCode(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error(`[QRCodeGenerator] Generation failed: ${errorMessage}`);
     throw new Error(
       `Failed to generate QR code: ${errorMessage}. ` +
       `Install qrcode package: npm install qrcode`
@@ -172,12 +167,9 @@ export function encodeQRCodeForPDF(qrDataUrl: string): Buffer {
     // Decode Base64 to binary Buffer
     const buffer = Buffer.from(base64Content, "base64");
 
-    console.log(`[QRCodeGenerator] QR encoded for PDF (${buffer.length} bytes)`);
-
     return buffer;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error(`[QRCodeGenerator] PDF encoding failed: ${errorMessage}`);
     throw new Error(`Failed to encode QR for PDF: ${errorMessage}`);
   }
 }

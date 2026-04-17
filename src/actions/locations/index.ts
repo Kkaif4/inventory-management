@@ -105,7 +105,11 @@ export async function updateWarehouse(
     // If setting as default, unset other defaults for this outlet
     if (data.isDefault) {
       await prisma.warehouse.updateMany({
-        where: { outletId: currentWarehouse.outletId, isDefault: true, NOT: { id } },
+        where: {
+          outletId: currentWarehouse.outletId,
+          isDefault: true,
+          NOT: { id },
+        },
         data: { isDefault: false },
       });
     }
@@ -162,14 +166,48 @@ export async function createOutlet(data: {
   invoiceStartingNumber?: number;
   gstin?: string;
   bankDetails?: string;
-  negativeStockPolicy: string;
+  negativeStockPolicy: "WARN" | "ALLOW" | "BLOCK";
   batchTrackingEnabled: boolean;
 }) {
   return withErrorHandler(async () => {
     await requireAdminSession();
 
-    const outlet = await prisma.outlet.create({
-      data,
+    const outlet = await prisma.$transaction(async (tx) => {
+      // Create outlet
+      const newOutlet = await tx.outlet.create({
+        data,
+      });
+
+      // Initialize DocumentSeries for all invoice types
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const financialYear =
+        month >= 3
+          ? `${year}-${(year + 1).toString().slice(-2)}`
+          : `${year - 1}-${year.toString().slice(-2)}`;
+
+      const documentTypes = [
+        { type: "SALES_INVOICE", prefix: "INV" },
+        { type: "CASH_MEMO", prefix: "CM" },
+        { type: "OLD_BILL", prefix: "OLD" },
+      ];
+
+      await Promise.all(
+        documentTypes.map((doc) =>
+          tx.documentSeries.create({
+            data: {
+              type: doc.type,
+              prefix: doc.prefix,
+              financialYear,
+              outletId: newOutlet.id,
+              nextNumber: 1,
+            },
+          }),
+        ),
+      );
+
+      return newOutlet;
     });
 
     revalidatePath("/dashboard/admin/outlets");
@@ -188,7 +226,7 @@ export async function updateOutlet(
     invoiceStartingNumber?: number;
     gstin?: string;
     bankDetails?: string;
-    negativeStockPolicy: string;
+    negativeStockPolicy: "WARN" | "ALLOW" | "BLOCK";
     batchTrackingEnabled: boolean;
   },
 ) {

@@ -19,6 +19,7 @@ const MODULE_NAMES = [
   "outletSwitcher",
   "billing",
   "reports",
+  "warehouses",
 ] as const;
 
 async function loadMessages(locale: string) {

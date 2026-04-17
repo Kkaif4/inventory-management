@@ -5,13 +5,14 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { useOutletStore } from "@/store/use-outlet-store";
+import { getCurrentSessionOutlet } from "@/lib/outlet-auth";
+import { redirect } from "next/navigation";
 
 export default async function UsersPage() {
   const session = await getServerSession(authOptions);
-  const { currentOutlet } = useOutletStore();
-  if (!currentOutlet) {
-    return;
+  const currentOutletId = await getCurrentSessionOutlet();
+  if (!currentOutletId) {
+    redirect("/dashboard");
   }
   if (session?.user?.role !== "ADMIN") {
     return (
@@ -22,7 +23,7 @@ export default async function UsersPage() {
     );
   }
 
-  const users = await getUsers(currentOutlet.id);
+  const users = await getUsers(currentOutletId);
 
   return (
     <div className="space-y-8">

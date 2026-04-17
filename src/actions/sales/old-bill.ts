@@ -96,7 +96,7 @@ export async function createOldBill(
         data.payments.reduce((s, p) => s + p.amount, 0),
       );
       const balance = roundToTwo(calculatedGrandTotal - totalPaid);
-      let status = "POSTED";
+      let status: "POSTED" | "PAID" | "PARTIALLY_PAID" = "POSTED";
       let paidAt: Date | null = null;
 
       if (totalPaid >= calculatedGrandTotal - 0.005) {

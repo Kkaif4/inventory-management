@@ -5,8 +5,9 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Trash2, Plus, ArrowUp, ArrowDown } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { z } from "zod";
+import { peekNextInvoiceNumber } from "@/actions/sales/invoice-form-handler";
 import {
   Form,
   FormControl,
@@ -26,13 +27,6 @@ import { ProductSelect } from "@/components/form/product-select";
 import { CustomerSelect } from "@/components/form/customer-select";
 import { DiscountInput } from "@/components/form/discount-input";
 import { useOutletStore } from "@/store/use-outlet-store";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface InvoiceFormProps {
   mode: "create" | "edit";
@@ -55,6 +49,7 @@ export function InvoiceForm({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isDirty, setIsDirty] = React.useState(false);
   const [selectedCustomer, setSelectedCustomer] = React.useState<any>(null);
+  const [invoiceNumber, setInvoiceNumber] = React.useState("");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(invoiceSchema) as any,
@@ -95,6 +90,47 @@ export function InvoiceForm({
   const items = form.watch("items") || [];
   const headerDiscount = form.watch("headerDiscount");
   const freightCost = form.watch("freightCost");
+
+  // Load next invoice number when outlet or bill type changes
+  React.useEffect(() => {
+    if (!fromOutletId) {
+      console.debug(`[INVOICE-FORM] Outlet ID not set, skipping peek`);
+      return;
+    }
+
+    const loadNextNumber = async () => {
+      try {
+        const res = await peekNextInvoiceNumber(
+          fromOutletId,
+          billType as "NO1" | "NO2",
+        );
+
+        // Handle both direct string response and wrapped response
+        let invoiceNum: string | null = null;
+
+        if (typeof res === "string") {
+          // Direct string response
+          invoiceNum = res;
+        } else if (res?.success && res?.data) {
+          // Wrapped response format
+          invoiceNum = res.data;
+        } else if (res?.data && typeof res.data === "string") {
+          // Data is string in wrapped response
+          invoiceNum = res.data;
+        } else {
+          console.warn(
+            `[INVOICE-FORM] Unexpected response format from peekNextInvoiceNumber:`,
+            res,
+          );
+        }
+        if (invoiceNum) {
+          setInvoiceNumber(invoiceNum);
+        }
+      } catch (error) {}
+    };
+
+    loadNextNumber();
+  }, [fromOutletId, billType]);
 
   // Calculate totals
   const itemsTotal = items.reduce(
@@ -141,7 +177,6 @@ export function InvoiceForm({
       const errorMessages = Object.entries(errors)
         .map(([field, error]) => `${field}: ${error?.message}`)
         .join(", ");
-      console.error("❌ Validation errors:", errorMessages);
       toast.error("Please fix validation errors before submitting");
     } else {
       form.handleSubmit(handleFormSubmit)();
@@ -163,11 +198,9 @@ export function InvoiceForm({
         );
         router.push("/dashboard/sales/invoices");
       } else {
-        console.error("❌ Invoice submission failed:", res.error);
         toast.error("Failed: " + res.error?.message);
       }
     } catch (error) {
-      console.error("❌ Form submission error:", error);
       toast.error("An error occurred while saving");
     } finally {
       setIsSubmitting(false);
@@ -247,6 +280,18 @@ export function InvoiceForm({
           {billType === "NO2" && (
             <div className="px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
               ℹ This creates an informal cash memo. No GST, no customer ledger.
+            </div>
+          )}
+
+          {/* Invoice Number Display */}
+          {invoiceNumber && (
+            <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <p className="text-xs font-medium text-slate-600 mb-1">
+                Next Invoice Number
+              </p>
+              <p className="text-lg font-bold text-slate-900 font-mono">
+                {invoiceNumber}
+              </p>
             </div>
           )}
         </div>

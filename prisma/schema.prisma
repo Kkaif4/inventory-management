@@ -34,6 +34,9 @@ model AuditLog {
   newValues Json?
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entity, entityId])
 }
 
 model Warehouse {
@@ -45,12 +48,16 @@ model Warehouse {
   contactPhone      String?
   isDefault         Boolean       @default(false)
   outletId          String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
   outlet            Outlet        @relation(fields: [outletId], references: [id], onDelete: Cascade)
   batches           CustomBatch[]
   stocks            Stock[]
   stockLedger       StockLedger[]
   outboundTransfers Transaction[] @relation("FromWarehouse")
   inboundTransfers  Transaction[] @relation("ToWarehouse")
+
+  @@index([outletId])
 }
 
 model Outlet {
@@ -62,10 +69,12 @@ model Outlet {
   invoiceStartingNumber    Int               @default(1)
   gstin                    String?
   bankDetails              String?
-  negativeStockPolicy      String            @default("WARN")
-  batchTrackingEnabled     Boolean           @default(false)
-  allowRawCashBills        Boolean           @default(false)
-  inventoryValuationMethod String            @default("NONE")
+  negativeStockPolicy      NegativeStockPolicy @default(WARN)
+  batchTrackingEnabled     Boolean             @default(false)
+  allowRawCashBills        Boolean             @default(false)
+  inventoryValuationMethod ValuationMethod     @default(NONE)
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
   accounts                 Account[]
   categories               Category[]
   batches                  CustomBatch[]
@@ -88,6 +97,8 @@ model Category {
   description String?
   isActive    Boolean    @default(true)
   outletId    String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   outlet      Outlet     @relation(fields: [outletId], references: [id])
   parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
@@ -108,6 +119,8 @@ model Product {
   categoryId      String
   isArchived      Boolean   @default(false)
   outletId        String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   category        Category  @relation(fields: [categoryId], references: [id])
   outlet          Outlet    @relation(fields: [outletId], references: [id])
   variants        Variant[]
@@ -115,6 +128,7 @@ model Product {
   @@unique([name, outletId])
   @@index([outletId, isArchived])
   @@index([outletId, categoryId, isArchived])
+  @@index([categoryId])
 }
 
 model Variant {
@@ -124,9 +138,11 @@ model Variant {
   specifications   Json?
   purchasePrice    Float
   sellingPrice     Float
-  pricingMethod    String            @default("MANUAL")
+  pricingMethod    PricingMethod     @default(MANUAL)
   markupPercent    Float?
   minStockLevel    Float             @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   batches          CustomBatch[]
   priceListEntries PriceListEntry[]
   stocks           Stock[]
@@ -134,6 +150,8 @@ model Variant {
   txnItems         TransactionItem[]
   product          Product           @relation(fields: [productId], references: [id])
   suppliers        VendorProduct[]
+
+  @@index([productId])
 }
 
 model Stock {
@@ -143,11 +161,13 @@ model Stock {
   outletId     String?
   quantity     Float      @default(0)
   inTransitQty Float      @default(0)
+  updatedAt    DateTime   @updatedAt
   outlet       Outlet?    @relation(fields: [outletId], references: [id])
   variant      Variant    @relation(fields: [variantId], references: [id])
   warehouse    Warehouse? @relation(fields: [warehouseId], references: [id])
 
   @@unique([variantId, warehouseId, outletId])
+  @@index([outletId, quantity])
 }
 
 model Party {
@@ -174,6 +194,8 @@ model Party {
   openingBalanceLocked Boolean         @default(false)
   phone                String?
   creditBalance        Float           @default(0)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
   ledgerEntries        LedgerEntry[]
   outlet               Outlet          @relation(fields: [outletId], references: [id])
   priceList            PriceList?      @relation(fields: [priceListId], references: [id])
@@ -192,6 +214,8 @@ model Transaction {
   type            TxType
   txnNumber       String            @unique
   date            DateTime          @default(now())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
   partyId         String?
   outletId        String
   fromLocationId  String?
@@ -201,7 +225,7 @@ model Transaction {
   freightCost     Float?            @default(0)
   globalDiscount  Float?            @default(0)
   grandTotal      Float             @default(0)
-  status          String            @default("DRAFT")
+  status          TxStatus          @default(DRAFT)
   isInformal      Boolean           @default(false)
   buyerName       String?
   buyerPhone      String?
@@ -228,6 +252,7 @@ model Transaction {
   @@index([outletId, type, status])
   @@index([outletId, type, date])
   @@index([outletId, type, partyId])
+  @@index([parentId])
 }
 
 model TransactionItem {
@@ -248,6 +273,9 @@ model TransactionItem {
   igst            Float       @default(0)
   transaction     Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
   variant         Variant?    @relation(fields: [variantId], references: [id])
+
+  @@index([transactionId])
+  @@index([variantId])
 }
 
 model LedgerEntry {
@@ -255,8 +283,8 @@ model LedgerEntry {
   accountId     String
   partyId       String?
   transactionId String?
-  journalId     String?
   date          DateTime     @default(now())
+  createdAt     DateTime     @default(now())
   debit         Float        @default(0)
   credit        Float        @default(0)
   reference     String?
@@ -267,18 +295,21 @@ model LedgerEntry {
 
   @@index([accountId])
   @@index([date])
-  @@index([journalId])
   @@index([accountId, date])
+  @@index([partyId, date])
+  @@index([transactionId])
 }
 
 model VendorProduct {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   vendorId  String
   variantId String
   lastPrice Float?
   leadTime  Int?
-  variant   Variant @relation(fields: [variantId], references: [id])
-  vendor    Party   @relation(fields: [vendorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  variant   Variant  @relation(fields: [variantId], references: [id])
+  vendor    Party    @relation(fields: [vendorId], references: [id])
 
   @@unique([vendorId, variantId])
 }
@@ -288,6 +319,8 @@ model PriceList {
   name        String
   description String?
   isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   parties     Party[]
   entries     PriceListEntry[]
 }
@@ -299,6 +332,7 @@ model DocumentSeries {
   nextNumber    Int      @default(1)
   financialYear String
   outletId      String
+  createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   outlet        Outlet   @relation(fields: [outletId], references: [id])
 
@@ -322,6 +356,7 @@ model CustomBatch {
   warehouse        Warehouse       @relation(fields: [warehouseId], references: [id])
 
   @@index([variantId, warehouseId, receivedDate])
+  @@index([outletId, variantId, warehouseId, receivedDate])
 }
 
 model BatchMovement {
@@ -332,6 +367,9 @@ model BatchMovement {
   date          DateTime    @default(now())
   batch         CustomBatch @relation(fields: [batchId], references: [id])
   transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  @@index([batchId])
+  @@index([transactionId])
 }
 
 model StockLedger {
@@ -343,7 +381,7 @@ model StockLedger {
   date          DateTime    @default(now())
   quantity      Float
   balance       Float
-  type          String
+  type          StockLedgerType
   userId        String
   costPerUnit   Float?
   outlet        Outlet      @relation(fields: [outletId], references: [id])
@@ -353,6 +391,8 @@ model StockLedger {
   warehouse     Warehouse   @relation(fields: [warehouseId], references: [id])
 
   @@index([variantId, warehouseId, date])
+  @@index([transactionId])
+  @@index([outletId, variantId])
 }
 
 model Payment {
@@ -363,13 +403,13 @@ model Payment {
   partyId         String
   amount          Float
   paymentDate     DateTime
-  paymentMode     String
-  accountId       String
+  paymentMode     PaymentMode
+  accountId       String?
   referenceNo     String?
   notes           String?
   createdBy       String
   createdAt       DateTime    @default(now())
-  account         Account     @relation(fields: [accountId], references: [id])
+  account         Account?    @relation(fields: [accountId], references: [id])
   creator         User        @relation(fields: [createdBy], references: [id])
   invoice         Transaction @relation(fields: [invoiceId], references: [id])
   outlet          Outlet      @relation(fields: [outletId], references: [id])
@@ -522,11 +562,11 @@ model Expense {
   inputGst      Decimal @default(0) @db.Decimal(12, 2)
   totalAmount   Decimal @db.Decimal(12, 2)
 
-  paymentMode String // "CASH", "BANK_TRANSFER", "UPI", "CHEQUE"
+  paymentMode PaymentMode
   accountId   String
   account     Account @relation(fields: [accountId], references: [id])
 
-  status String @default("POSTED") // DRAFT, POSTED, CANCELLED
+  status ExpenseStatus @default(POSTED)
 
   createdBy String
   user      User   @relation(fields: [createdBy], references: [id])
@@ -565,6 +605,56 @@ enum Role {
   ACCOUNTANT
   SALES
   INVENTORY_MANAGER
+}
+
+enum TxStatus {
+  DRAFT
+  PENDING
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  PARTIAL
+  PARTIALLY_PAID
+  CONFIRMED
+  POSTED
+  PAID
+  SHIPPED
+  RECEIVED
+  ACCEPTED
+  CONVERTED
+  CANCELLED
+  COMPLETED
+}
+
+enum StockLedgerType {
+  PURCHASE
+  SALE
+  TRANSFER_OUT
+  TRANSFER_IN
+  ADJUSTMENT_INC
+  ADJUSTMENT_DEC
+}
+
+enum NegativeStockPolicy {
+  WARN
+  ALLOW
+  BLOCK
+}
+
+enum ValuationMethod {
+  NONE
+  FIFO
+}
+
+enum PricingMethod {
+  MANUAL
+  MARKUP
+}
+
+enum ExpenseStatus {
+  DRAFT
+  POSTED
+  CANCELLED
 }
 
 enum PartyType {

@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -82,6 +83,10 @@ export function VendorsClient({
 
   // Debounced search for URL updates
   const debouncedSearch = useDebouncedValue(searchTerm, 500);
+
+  // Non-reactive ref to searchParams — avoids making it a dependency of the search effect
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
 
   // Edit Drawer State
   const [editVendorId, setEditVendorId] = useState<string | null>(null);
@@ -192,12 +197,24 @@ export function VendorsClient({
     [updateFilters],
   );
 
-  // Update URL when debounced search changes
+  // Update URL when debounced search changes.
+  // Reads searchParams via ref (non-reactive) and pushes directly to avoid
+  // recreating updateFilters or listing searchParams as a dep (both cause loops).
   useEffect(() => {
-    if (debouncedSearch !== searchParams.get("search")) {
-      updateFilters({ search: debouncedSearch });
+    const currentSearch = searchParamsRef.current.get("search") || "";
+    if (debouncedSearch === currentSearch) return;
+
+    const params = new URLSearchParams(searchParamsRef.current.toString());
+    params.set("page", "1");
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
+    } else {
+      params.delete("search");
     }
-  }, [debouncedSearch, searchParams, updateFilters]);
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
+  }, [debouncedSearch, router, startTransition]);
 
   // Navigation handlers
   const handleViewDetails = useCallback(

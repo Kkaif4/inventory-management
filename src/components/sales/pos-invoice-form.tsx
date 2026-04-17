@@ -12,9 +12,11 @@ import { invoiceSchema } from "@/validations/invoice.validation";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { POSInvoiceHeader } from "@/components/sales/pos-invoice-header";
 import { POSInvoiceTable } from "@/components/sales/pos-invoice-table";
-import { POSInvoiceFooter } from "@/components/sales/pos-invoice-footer";
+import { POSInvoiceFooter, type No2PaymentMode } from "@/components/sales/pos-invoice-footer";
 import { peekNextInvoiceNumber } from "@/actions/sales/invoice-form-handler";
 import { handleCreateOldBill } from "@/actions/sales/old-bill-form-handler";
+import { recordInvoicePayment } from "@/actions/sales/payment";
+import { useSession } from "next-auth/react";
 
 interface POSInvoiceFormProps {
   mode: "create" | "edit";
@@ -36,12 +38,14 @@ export function POSInvoiceForm({
   const t = useTranslations("billing");
   const router = useRouter();
   const { currentOutletId } = useOutletStore();
+  const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isDirty, setIsDirty] = React.useState(false);
   const [selectedCustomer, setSelectedCustomer] = React.useState<any>(null);
   const [isGlobalDiscount, setIsGlobalDiscount] = React.useState(true);
   const [invoiceNumber, setInvoiceNumber] = React.useState("");
   const [attachmentCount, setAttachmentCount] = React.useState(0);
+  const [no2PaymentMode, setNo2PaymentMode] = React.useState<No2PaymentMode>("CASH");
 
   // Refs for keyboard shortcut targets
   const formContainerRef = React.useRef<HTMLDivElement>(null);
@@ -73,7 +77,7 @@ export function POSInvoiceForm({
           billType: "NO1",
           txnNumber: "",
           date: new Date(),
-          fromOutletId: currentOutletId || "",
+          fromOutletId: (currentOutletId && currentOutletId !== "ALL") ? currentOutletId : "",
           partyId: "",
           buyerName: "",
           buyerPhone: "",
@@ -98,6 +102,7 @@ export function POSInvoiceForm({
 
   const billType = form.watch("billType");
   const fromOutletId = form.watch("fromOutletId");
+  const partyId = form.watch("partyId") as string | undefined;
   const items = form.watch("items");
   const headerDiscount = form.watch("headerDiscount");
   const freightCost = form.watch("freightCost");
@@ -111,7 +116,7 @@ export function POSInvoiceForm({
       // OLD bills skip numbering lookup if custom is used, but we can peek for visual
       const res = await peekNextInvoiceNumber(
         fromOutletId,
-        billType === "OLD" ? ("OLD_BILL" as any) : (billType as "NO1" | "NO2"),
+        billType as "NO1" | "NO2" | "OLD",
       );
       if (res.success && res.data) {
         setInvoiceNumber(res.data);
@@ -313,6 +318,36 @@ export function POSInvoiceForm({
 
       const res = await onSubmitProp(cleanedData as any);
       if (res.success) {
+        // For new NO2 bills with a customer and an immediate payment mode, auto-record payment
+        const createdInvoice = (res as any).data?.invoice;
+        if (
+          mode === "create" &&
+          data.billType === "NO2" &&
+          no2PaymentMode !== "CREDIT" &&
+          createdInvoice?.id &&
+          createdInvoice?.grandTotal > 0 &&
+          cleanedData.partyId &&
+          session?.user?.id
+        ) {
+          const payRes = await recordInvoicePayment({
+            invoiceId: createdInvoice.id,
+            outletId: cleanedData.fromOutletId,
+            partyId: cleanedData.partyId,
+            amount: createdInvoice.grandTotal,
+            paymentDate: (data.date instanceof Date ? data.date : new Date(data.date as any))
+              .toISOString()
+              .split("T")[0],
+            paymentMode: no2PaymentMode as any,
+            userId: session.user.id,
+          });
+          if (!payRes.success) {
+            // Invoice was created — show a warning but still navigate
+            toast.warning(
+              `Cash memo posted but payment recording failed: ${payRes.error?.message ?? "unknown error"}. Record it manually from the invoice detail page.`,
+            );
+          }
+        }
+
         // Reset state before navigation
         setAttachmentCount(0);
         toast.success(
@@ -475,6 +510,7 @@ export function POSInvoiceForm({
             isPosted={isPosted}
             isGlobalDiscount={isGlobalDiscount}
             productSearchRef={productSearchRef}
+            partyId={partyId || undefined}
           />
 
           {/* Bottom: Totals + actions */}
@@ -497,6 +533,8 @@ export function POSInvoiceForm({
             onToggleDiscountMode={toggleDiscountMode}
             notesRef={notesRef}
             paymentFieldArray={paymentFieldArray}
+            no2PaymentMode={no2PaymentMode}
+            onNo2PaymentModeChange={setNo2PaymentMode}
           />
         </div>
       </form>

@@ -40,6 +40,7 @@ export const createNo2InvoiceSchema = z.object({
   txnNumber: z.string().optional(),
   fromOutletId: z.string().min(1, "Outlet is required"),
   date: z.coerce.date(),
+  partyId: z.string().optional(),
   buyerName: z.string().default(""),
   buyerPhone: z.string().default(""),
   items: z

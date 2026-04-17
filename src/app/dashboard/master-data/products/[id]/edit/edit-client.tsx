@@ -4,7 +4,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
+import { useTranslations } from "next-intl";
 import { updateProduct } from "@/actions/products";
 import { getCategories } from "@/actions/categories";
 import { Package, Save, Loader2, Info } from "lucide-react";
@@ -30,13 +30,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useSession } from "next-auth/react";
-import { useOutletStore } from "@/store/use-outlet-store";
 import { PRODUCT_UNITS } from "@/lib/constants";
 import { getGstRateByHsn } from "@/lib/hsn-data";
 import {
   ProductEditFormValues,
   productEditSchema,
-  ProductFormValues,
 } from "@/validations/product.validation";
 
 interface ProductWithVariants {
@@ -66,7 +64,7 @@ export function ProductEditClient({
   product: ProductWithVariants;
 }) {
   const router = useRouter();
-  const { currentOutletId } = useOutletStore();
+  const t = useTranslations("products");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
     [],
@@ -79,15 +77,15 @@ export function ProductEditClient({
       if (res.success) {
         setCategories(res.data!);
       } else {
-        toast.error("Failed to load categories: " + res.error?.message);
+        toast.error(t("toasts.loadCategoriesFailed") + ": " + res.error?.message);
       }
     });
   }, []);
 
   const getCategoryName = (id?: string | null) =>
     id ? categories.find((c) => c.id === id)?.name : undefined;
-  const getUnitLabel = (val?: string | null) =>
-    val ? PRODUCT_UNITS.find((u) => u.value === val)?.label : undefined;
+  const getUnitLabel = (val?: string | null): string =>
+    val ? (PRODUCT_UNITS.find((u) => u.value === val)?.label ?? "") : "";
   const getGstLabel = (val: any) => {
     const s = String(val);
     if (s === "0") return "0% (Exempt)";
@@ -121,7 +119,6 @@ export function ProductEditClient({
     handleSubmit,
     control,
     watch,
-    formState: { errors },
   } = form;
 
   const { fields } = useFieldArray({
@@ -157,14 +154,14 @@ export function ProductEditClient({
       });
 
       if (res.success) {
-        toast.success("Product updated successfully");
+        toast.success(t("toasts.updated"));
         router.push("/dashboard/master-data/products");
       } else {
-        toast.error("Failed to update product: " + res.error?.message);
+        toast.error(t("toasts.updateFailed") + ": " + res.error?.message);
       }
     } catch (error) {
       console.error(error);
-      toast.error("An unexpected error occurred");
+      toast.error(t("toasts.updateError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -179,16 +176,16 @@ export function ProductEditClient({
           </div>
           <div>
             <h2 className="text-2xl font-bold text-text-primary tracking-tight">
-              Edit Product
+              {t("editProduct")}
             </h2>
             <p className="text-sm text-text-muted">
-              Update core details for {product.name}
+              {t("editSubtitle", { name: product.name })}
             </p>
           </div>
         </div>
         <Link href="/dashboard/master-data/products">
           <Button variant="secondary" className="hover:bg-surface-hover">
-            Cancel
+            {t("form.goBack")}
           </Button>
         </Link>
       </div>
@@ -198,7 +195,7 @@ export function ProductEditClient({
           <Card className="bg-surface border-border/50 shadow-none">
             <CardHeader className="border-b border-border/50 pb-4 bg-surface-elevated/20">
               <CardTitle className="text-sm font-semibold text-text-primary uppercase tracking-wider">
-                Product Information
+                {t("form.productInfoSection")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -208,9 +205,9 @@ export function ProductEditClient({
                   name="name"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Product Name *</FormLabel>
+                      <FormLabel>{t("form.productNameLabel")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. 10mm Drill Bit" {...field} />
+                        <Input placeholder={t("form.productNamePlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -222,10 +219,10 @@ export function ProductEditClient({
                   name="brand"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Brand</FormLabel>
+                      <FormLabel>{t("form.brandLabel")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g. Bosch"
+                          placeholder={t("form.brandPlaceholder")}
                           {...field}
                           value={field.value || ""}
                         />
@@ -240,14 +237,14 @@ export function ProductEditClient({
                   name="categoryId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category *</FormLabel>
+                      <FormLabel>{t("form.categoryLabel")}</FormLabel>
                       <Select
                         onValueChange={(val) => field.onChange(val)}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select Category...">
+                            <SelectValue placeholder={t("form.categoryPlaceholder")}>
                               {getCategoryName(field.value)}
                             </SelectValue>
                           </SelectTrigger>
@@ -270,10 +267,10 @@ export function ProductEditClient({
                   name="hsnCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>HSN Code *</FormLabel>
+                      <FormLabel>{t("form.hsnLabel")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g. 8467"
+                          placeholder={t("form.hsnPlaceholder")}
                           {...field}
                           value={field.value || ""}
                           onBlur={(e) => {
@@ -297,7 +294,7 @@ export function ProductEditClient({
                   name="gstRate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>GST Rate (%) *</FormLabel>
+                      <FormLabel>{t("form.gstRateLabel")}</FormLabel>
                       <Select
                         onValueChange={(val) => field.onChange(Number(val))}
                         value={
@@ -306,7 +303,7 @@ export function ProductEditClient({
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select GST Rate">
+                            <SelectValue placeholder={t("form.gstRatePlaceholder")}>
                               {getGstLabel(field.value)}
                             </SelectValue>
                           </SelectTrigger>
@@ -329,14 +326,14 @@ export function ProductEditClient({
                   name="baseUnit"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Base Unit *</FormLabel>
+                      <FormLabel>{t("form.baseUnitLabel")}</FormLabel>
                       <Select
                         onValueChange={(val) => field.onChange(val)}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select Unit">
+                            <SelectValue placeholder={t("form.baseUnitPlaceholder")}>
                               {getUnitLabel(field.value)}
                             </SelectValue>
                           </SelectTrigger>
@@ -359,14 +356,14 @@ export function ProductEditClient({
                   name="purchaseUnit"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Purchase Unit (Bulk e.g. BOX)</FormLabel>
+                      <FormLabel>{t("form.purchaseUnitLabel")}</FormLabel>
                       <Select
                         onValueChange={(val) => field.onChange(val)}
                         value={field.value || ""}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select Purchase Unit">
+                            <SelectValue placeholder={t("form.purchaseUnitPlaceholder")}>
                               {getUnitLabel(field.value)}
                             </SelectValue>
                           </SelectTrigger>
@@ -388,9 +385,10 @@ export function ProductEditClient({
                   <div className="md:col-span-2 flex items-center p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
                     <Info className="w-5 h-5 text-indigo-400 mr-3" />
                     <p className="text-xs font-medium text-indigo-300 italic">
-                      Landed cost and inventory updates will use the conversion
-                      between Bulk ({getUnitLabel(watch("purchaseUnit"))}) and
-                      Base ({getUnitLabel(watch("baseUnit"))}).
+                      {t("form.landedCostNote", {
+                        purchase: getUnitLabel(watch("purchaseUnit")),
+                        base: getUnitLabel(watch("baseUnit")),
+                      })}
                     </p>
                   </div>
                 )}
@@ -402,7 +400,7 @@ export function ProductEditClient({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-brand font-bold">
-                          Conversion Ratio *
+                          {t("form.conversionRatioLabel", { unit: getUnitLabel(watch("purchaseUnit")) })}
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -415,8 +413,10 @@ export function ProductEditClient({
                           />
                         </FormControl>
                         <p className="text-[10px] text-text-muted italic">
-                          How many {getUnitLabel(watch("baseUnit"))} are in 1{" "}
-                          {getUnitLabel(watch("purchaseUnit"))}?
+                          {t("form.conversionHelp", {
+                            base: getUnitLabel(watch("baseUnit")),
+                            purchase: getUnitLabel(watch("purchaseUnit")),
+                          })}
                         </p>
                         <FormMessage />
                       </FormItem>
@@ -430,7 +430,7 @@ export function ProductEditClient({
           <Card className="bg-surface border-border/50 shadow-none">
             <CardHeader className="border-b border-border/50 pb-4 bg-surface-elevated/20">
               <CardTitle className="text-sm font-semibold text-text-primary uppercase tracking-wider">
-                Variant Details & Alerts
+                {t("form.variantSection")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -446,7 +446,7 @@ export function ProductEditClient({
                       render={({ field }) => (
                         <FormItem className="md:col-span-1">
                           <FormLabel className="text-xs font-bold uppercase text-text-muted">
-                            SKU / Code
+                            {t("form.skuCodeLabel")}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -464,7 +464,7 @@ export function ProductEditClient({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs font-bold uppercase text-brand">
-                            Min. Stock Alert *
+                            {t("form.minStockAlert")}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -486,7 +486,7 @@ export function ProductEditClient({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs font-bold uppercase text-text-muted">
-                            Cost Price *
+                            {t("form.costPriceLabel")}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -525,7 +525,7 @@ export function ProductEditClient({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs font-bold uppercase text-text-muted">
-                            Pricing Logic
+                            {t("form.pricingLogicLabel")}
                           </FormLabel>
                           <Select
                             onValueChange={(
@@ -554,16 +554,16 @@ export function ProductEditClient({
                               <SelectTrigger className="h-9">
                                 <SelectValue>
                                   {field.value === "MARKUP"
-                                    ? "% Markup"
-                                    : "Manual Entry"}
+                                    ? t("form.markup")
+                                    : t("form.manualEntry")}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                               <SelectItem value="MANUAL">
-                                Manual Entry
+                                {t("form.manualEntry")}
                               </SelectItem>
-                              <SelectItem value="MARKUP">% Markup</SelectItem>
+                              <SelectItem value="MARKUP">{t("form.markup")}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -578,7 +578,7 @@ export function ProductEditClient({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-bold uppercase text-brand">
-                              Margin % *
+                              {t("form.marginLabel")}
                             </FormLabel>
                             <FormControl>
                               <Input
@@ -619,7 +619,7 @@ export function ProductEditClient({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-bold uppercase text-text-muted">
-                              Selling Price *
+                              {t("form.sellingPriceLabel")}
                             </FormLabel>
                             <FormControl>
                               <Input
@@ -640,7 +640,7 @@ export function ProductEditClient({
                     {watch(`variants.${index}.pricingMethod`) === "MARKUP" && (
                       <div className="flex flex-col justify-center bg-emerald-50/50 p-2 rounded-lg border border-emerald-100 md:col-span-1">
                         <label className="text-[10px] font-bold text-slate-500 uppercase">
-                          Auto Selling Price
+                          {t("form.autoSellingPrice")}
                         </label>
                         <p className="text-sm font-black text-emerald-600">
                           ₹{" "}
@@ -659,7 +659,7 @@ export function ProductEditClient({
           <div className="flex justify-end gap-3">
             <Link href="/dashboard/master-data/products">
               <Button type="button" variant="outline">
-                Cancel
+                {t("form.goBack")}
               </Button>
             </Link>
             <Button
@@ -670,12 +670,12 @@ export function ProductEditClient({
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Updating...
+                  {t("form.updating")}
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Save Changes
+                  {t("form.saveChanges")}
                 </>
               )}
             </Button>

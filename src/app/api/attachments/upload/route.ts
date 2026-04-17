@@ -58,9 +58,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[API] Upload request: ${moduleType}/${referenceId}`);
-    console.log(`[API] File: ${file.name} (${file.size} bytes)`);
-
     // Call server action
     const result = await uploadAttachment(moduleType, referenceId, file);
 
@@ -83,7 +80,6 @@ export async function POST(request: NextRequest) {
     }
 
     const attachment = result.data;
-    console.log(`[API] Upload successful: ${attachment?.id}`);
 
     return NextResponse.json(
       {

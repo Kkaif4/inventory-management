@@ -121,8 +121,7 @@ export async function handleCreateSalesInvoice(
 
   const result = await createSalesInvoice({
     billType: formData.billType,
-    txnNumber: formData.txnNumber,
-    partyId: formData.billType === "NO1" ? formData.partyId : undefined,
+    partyId: formData.partyId || undefined, // pass for both NO1 and NO2 when a customer is linked
     fromOutletId: formData.fromOutletId,
     items,
     date:
@@ -262,13 +261,21 @@ export async function getOutletFIFOSettings(outletId: string) {
  */
 export async function peekNextInvoiceNumber(
   outletId: string,
-  billType: "NO1" | "NO2",
+  billType: "NO1" | "NO2" | "OLD",
 ) {
   return withErrorHandler(async () => {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) throw new ValidationError("Not authenticated");
+    if (!session?.user?.id) {
+      throw new ValidationError("Not authenticated");
+    }
 
-    const type = billType === "NO2" ? "CASH_MEMO" : "SALES_INVOICE";
+    const typeMap = {
+      NO1: "SALES_INVOICE",
+      NO2: "CASH_MEMO",
+      OLD: "OLD_BILL",
+    } as const;
+    const type = typeMap[billType];
+
     const nextNumber = await NumberingService.peekNextNumber(
       prisma,
       outletId,

@@ -149,7 +149,8 @@ export async function transferBetweenAccounts(data: {
       // Dr Destination account (receiving funds)
       // Cr Source account (sending funds)
       await AccountingService.postJournalEntry(tx, {
-        transactionId: txf.id,
+        // transactionId is a FK to Transaction table; Transfer is a separate table.
+        // Leave it null and use reference field to identify the transfer.
         date: data.date,
         entries: [
           {

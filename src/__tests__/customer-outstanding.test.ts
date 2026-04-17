@@ -1,9 +1,22 @@
-import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+
+vi.mock("@/lib/outlet-auth", () => ({
+  validateSessionOutletAccess: vi.fn().mockResolvedValue(undefined),
+  requireAdminSession: vi.fn().mockResolvedValue("test-user"),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
+vi.mock("next/headers", () => ({
+  cookies: vi.fn().mockResolvedValue({ get: vi.fn().mockReturnValue(undefined) }),
+}));
+
 import { prisma } from "@/lib/prisma";
 import { createCustomer } from "@/actions/sales/customers";
-import { createSalesInvoice } from "@/actions/sales/sales-invoice";
+import { createSalesInvoice, updateSalesInvoiceFreightAndRemarks } from "@/actions/sales/sales-invoice";
 import { recordInvoicePayment } from "@/actions/sales/payment";
-import { roundToTwo } from "@/lib/utils";
 
 /**
  * Test Suite: Customer Outstanding and Payment Behavior
@@ -84,17 +97,12 @@ describe("Customer Outstanding and Payment Behavior", () => {
     testVariantId = variant.id;
 
     // Create warehouse
-    const warehouse = await prisma.warehouse.create({
+    await prisma.warehouse.create({
       data: {
         name: "Test Warehouse",
         address: "Test Address",
+        outletId: testOutletId,
       },
-    });
-
-    // Link warehouse to outlet
-    await prisma.outlet.update({
-      where: { id: testOutletId },
-      data: { warehouses: { connect: { id: warehouse.id } } },
     });
 
     // Initialize chart of accounts
@@ -134,8 +142,20 @@ describe("Customer Outstanding and Payment Behavior", () => {
   });
 
   afterAll(async () => {
-    // Cleanup
-    await prisma.party.deleteMany({ where: { id: customerId } });
+    await prisma.payment.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.batchMovement.deleteMany({ where: { transaction: { outletId: testOutletId } } });
+    await prisma.stockLedger.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.ledgerEntry.deleteMany({ where: { account: { outletId: testOutletId } } });
+    await prisma.transactionItem.deleteMany({ where: { transaction: { outletId: testOutletId } } });
+    await prisma.transaction.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.party.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.account.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.stock.deleteMany({ where: { warehouse: { outletId: testOutletId } } });
+    await prisma.variant.deleteMany({ where: { product: { outletId: testOutletId } } });
+    await prisma.product.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.category.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.warehouse.deleteMany({ where: { outletId: testOutletId } });
+    await prisma.documentSeries.deleteMany({ where: { outletId: testOutletId } });
     await prisma.outlet.delete({ where: { id: testOutletId } });
     await prisma.user.delete({ where: { id: testUserId } });
   });
@@ -147,7 +167,7 @@ describe("Customer Outstanding and Payment Behavior", () => {
     expect(customerBefore!.outstandingBalance).toBe(0);
 
     // Create invoice for ₹1000
-    const invoiceResult = await createSalesInvoice({
+    await createSalesInvoice({
       billType: "NO1",
       partyId: customerId,
       fromOutletId: testOutletId,
@@ -184,7 +204,7 @@ describe("Customer Outstanding and Payment Behavior", () => {
       partyId: customerId,
       amount: 1180,
       paymentDate: new Date().toString(),
-      paymentMode: "Cash",
+      paymentMode: "CASH",
       userId: testUserId,
     });
 
@@ -233,7 +253,7 @@ describe("Customer Outstanding and Payment Behavior", () => {
       partyId: customerId,
       amount: 600,
       paymentDate: new Date().toString(),
-      paymentMode: "Cash",
+      paymentMode: "CASH",
       userId: testUserId,
     });
 
@@ -265,7 +285,7 @@ describe("Customer Outstanding and Payment Behavior", () => {
       partyId: customerId,
       amount: 800,
       paymentDate: new Date().toString(),
-      paymentMode: "Cash",
+      paymentMode: "CASH",
       userId: testUserId,
     });
 
@@ -298,7 +318,7 @@ describe("Customer Outstanding and Payment Behavior", () => {
     });
 
     // Create first invoice: ₹1000
-    const inv1 = await createSalesInvoice({
+    await createSalesInvoice({
       billType: "NO1",
       partyId: testCustomer2.id,
       fromOutletId: testOutletId,
@@ -323,7 +343,7 @@ describe("Customer Outstanding and Payment Behavior", () => {
     expect(cust1!.outstandingBalance).toBe(1180);
 
     // Create second invoice: ₹500
-    const inv2 = await createSalesInvoice({
+    await createSalesInvoice({
       billType: "NO1",
       partyId: testCustomer2.id,
       fromOutletId: testOutletId,
@@ -350,5 +370,68 @@ describe("Customer Outstanding and Payment Behavior", () => {
 
     // Cleanup
     await prisma.party.delete({ where: { id: testCustomer2.id } });
+  });
+
+  it("Test 7: Updating freight on a POSTED invoice updates grandTotal and customer outstanding", async () => {
+    const freightCustomer = await prisma.party.create({
+      data: {
+        type: "CUSTOMER",
+        name: "Freight Test Customer",
+        address: "Test Address",
+        state: "TEST",
+        outletId: testOutletId,
+      },
+    });
+
+    // Create invoice: taxable=1000, tax=180, freight=0 → grandTotal=1180
+    const result = await createSalesInvoice({
+      billType: "NO1",
+      partyId: freightCustomer.id,
+      fromOutletId: testOutletId,
+      items: [
+        {
+          variantId: testVariantId,
+          quantity: 5,
+          rate: 200,
+          taxableValue: 1000,
+          cgst: 90,
+          sgst: 90,
+          igst: 0,
+        },
+      ],
+      date: new Date(),
+      userId: testUserId,
+      freightCost: 0,
+    });
+
+    const invoiceId = result.data!.invoice.id;
+
+    const custAfterCreate = await prisma.party.findUnique({ where: { id: freightCustomer.id } });
+    expect(custAfterCreate!.outstandingBalance).toBe(1180);
+
+    // Update freight to ₹200 → new grandTotal = 1380, delta = +200
+    await updateSalesInvoiceFreightAndRemarks(invoiceId, { freightCost: 200 });
+
+    const invoiceAfter = await prisma.transaction.findUnique({ where: { id: invoiceId } });
+    expect(invoiceAfter!.freightCost).toBe(200);
+    expect(invoiceAfter!.grandTotal).toBe(1380);
+
+    const custAfterFreightUp = await prisma.party.findUnique({ where: { id: freightCustomer.id } });
+    expect(custAfterFreightUp!.outstandingBalance).toBe(1380);
+
+    // Reduce freight to ₹50 → new grandTotal = 1230, delta = -150
+    await updateSalesInvoiceFreightAndRemarks(invoiceId, { freightCost: 50 });
+
+    const invoiceAfter2 = await prisma.transaction.findUnique({ where: { id: invoiceId } });
+    expect(invoiceAfter2!.grandTotal).toBe(1230);
+
+    const custAfterFreightDown = await prisma.party.findUnique({ where: { id: freightCustomer.id } });
+    expect(custAfterFreightDown!.outstandingBalance).toBe(1230);
+
+    // Cleanup
+    await prisma.ledgerEntry.deleteMany({ where: { transactionId: invoiceId } });
+    await prisma.transactionItem.deleteMany({ where: { transactionId: invoiceId } });
+    await prisma.transaction.delete({ where: { id: invoiceId } });
+    await prisma.party.delete({ where: { id: freightCustomer.id } });
   });
 });
