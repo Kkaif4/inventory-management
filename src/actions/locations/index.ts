@@ -172,30 +172,31 @@ export async function createOutlet(data: {
   return withErrorHandler(async () => {
     await requireAdminSession();
 
-    const outlet = await prisma.$transaction(async (tx) => {
-      // Create outlet
-      const newOutlet = await tx.outlet.create({
-        data,
-      });
+    const outlet = await prisma.$transaction(
+      async (tx) => {
+        // Create outlet
+        const newOutlet = await tx.outlet.create({
+          data,
+        });
 
-      // Initialize DocumentSeries for all invoice types
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth();
-      const financialYear =
-        month >= 3
-          ? `${year}-${(year + 1).toString().slice(-2)}`
-          : `${year - 1}-${year.toString().slice(-2)}`;
+        // Initialize DocumentSeries for all invoice types
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const financialYear =
+          month >= 3
+            ? `${year}-${(year + 1).toString().slice(-2)}`
+            : `${year - 1}-${year.toString().slice(-2)}`;
 
-      const documentTypes = [
-        { type: "SALES_INVOICE", prefix: "INV" },
-        { type: "CASH_MEMO", prefix: "CM" },
-        { type: "OLD_BILL", prefix: "OLD" },
-      ];
+        const documentTypes = [
+          { type: "SALES_INVOICE", prefix: "INV" },
+          { type: "CASH_MEMO", prefix: "CM" },
+          { type: "OLD_BILL", prefix: "OLD" },
+        ];
 
-      await Promise.all(
-        documentTypes.map((doc) =>
-          tx.documentSeries.create({
+        // Create DocumentSeries sequentially to avoid transaction overload
+        for (const doc of documentTypes) {
+          await tx.documentSeries.create({
             data: {
               type: doc.type,
               prefix: doc.prefix,
@@ -203,12 +204,16 @@ export async function createOutlet(data: {
               outletId: newOutlet.id,
               nextNumber: 1,
             },
-          }),
-        ),
-      );
+          });
+        }
 
-      return newOutlet;
-    });
+        return newOutlet;
+      },
+      {
+        timeout: 30000,
+        maxWait: 10000,
+      },
+    );
 
     revalidatePath("/dashboard/admin/outlets");
     revalidatePath("/dashboard/master-data/locations");
