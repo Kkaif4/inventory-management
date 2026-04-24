@@ -168,6 +168,9 @@ export async function createOutlet(data: {
   bankDetails?: string;
   negativeStockPolicy: "WARN" | "ALLOW" | "BLOCK";
   batchTrackingEnabled: boolean;
+  inventoryValuationMethod?: "NONE" | "FIFO";
+  batchPricingMode?: "STRICT" | "LATEST_BATCH";
+  allowRawCashBills?: boolean;
 }) {
   return withErrorHandler(async () => {
     await requireAdminSession();
@@ -233,6 +236,9 @@ export async function updateOutlet(
     bankDetails?: string;
     negativeStockPolicy: "WARN" | "ALLOW" | "BLOCK";
     batchTrackingEnabled: boolean;
+    inventoryValuationMethod?: "NONE" | "FIFO";
+    batchPricingMode?: "STRICT" | "LATEST_BATCH";
+    allowRawCashBills?: boolean;
   },
 ) {
   return withErrorHandler(async () => {

@@ -167,9 +167,13 @@ export function POSInvoiceForm({
     }
   }, [invoice?.id, invoiceNumber]);
 
-  // ─── Calculations (useMemo) ───────────────────────────────────────────────
-  const totals = React.useMemo(() => {
-    const itemsTotal = (items || []).reduce(
+  // ─── Calculations (with live update on form changes) ─────────────────────
+  const calculateTotals = () => {
+    const currentItems = form.watch("items") || [];
+    const currentHeaderDiscount = form.watch("headerDiscount") || 0;
+    const currentFreightCost = form.watch("freightCost") || 0;
+
+    const itemsTotal = currentItems.reduce(
       (sum: number, item: any) =>
         sum + (item?.quantity || 0) * (item?.rate || 0),
       0,
@@ -178,10 +182,10 @@ export function POSInvoiceForm({
     // OLD bills: calculation with discount support (quantity * rate) - discount% + freight
     if (billType === "OLD") {
       const discountAmount = isGlobalDiscount
-        ? (itemsTotal * (headerDiscount || 0)) / 100
+        ? (itemsTotal * currentHeaderDiscount) / 100
         : 0;
       const subtotal = itemsTotal - discountAmount;
-      const grandTotal = subtotal + (freightCost || 0);
+      const grandTotal = subtotal + currentFreightCost;
       return {
         itemsTotal,
         lineDiscounts: 0,
@@ -193,7 +197,7 @@ export function POSInvoiceForm({
     }
 
     // Standard invoices (NO1, NO2): include discounts and tax
-    const lineDiscounts = (items || []).reduce(
+    const lineDiscounts = currentItems.reduce(
       (sum: number, item: any) =>
         sum +
         ((item?.quantity || 0) *
@@ -207,13 +211,13 @@ export function POSInvoiceForm({
 
     // Global discount applies to subtotal after line discounts
     const globalDiscountAmount = isGlobalDiscount
-      ? (subtotalAfterLineDisc * (headerDiscount || 0)) / 100
+      ? (subtotalAfterLineDisc * currentHeaderDiscount) / 100
       : 0;
 
     const subtotal = subtotalAfterLineDisc - globalDiscountAmount;
     const totalDiscount = lineDiscounts + globalDiscountAmount;
 
-    const totalTax = (items || []).reduce((sum: number, item: any) => {
+    const totalTax = currentItems.reduce((sum: number, item: any) => {
       const lineBase =
         (item?.quantity || 0) *
         (item?.rate || 0) *
@@ -222,7 +226,7 @@ export function POSInvoiceForm({
       return sum + tax;
     }, 0);
 
-    const grandTotal = subtotal + totalTax + (freightCost || 0);
+    const grandTotal = subtotal + totalTax + currentFreightCost;
 
     return {
       itemsTotal,
@@ -232,7 +236,9 @@ export function POSInvoiceForm({
       totalTax,
       grandTotal,
     };
-  }, [items, headerDiscount, freightCost, isGlobalDiscount, billType]);
+  };
+
+  const totals = calculateTotals();
 
   // Update form grandTotal for OLD bills whenever any calculation input changes
   React.useEffect(() => {

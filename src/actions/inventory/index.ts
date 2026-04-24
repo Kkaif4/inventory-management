@@ -370,6 +370,11 @@ export async function getBatchInventory(
       availableQuantity: b.quantityReceived - b.quantityConsumed,
       unit: b.variant.product.baseUnit,
       minStockLevel: b.variant.minStockLevel,
+      // Batch pricing fields
+      costPerBaseUnit: b.costPerBaseUnit,
+      sellingPricePerBaseUnit: b.sellingPricePerBaseUnit,
+      pricingMethod: b.pricingMethod,
+      status: b.status,
     }));
   });
 }

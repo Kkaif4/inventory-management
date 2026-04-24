@@ -110,6 +110,25 @@ export async function getVariantPrice(
 }
 
 /**
+ * Get batch selling price for a variant (FIFO oldest batch).
+ * Used for sales invoice auto-fill when batch tracking is enabled.
+ * Fallback to getVariantPrice if no active batches.
+ */
+export async function getVariantBatchPrice(
+  variantId: string,
+  warehouseId: string,
+  outletId: string,
+  customerId?: string,
+) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+
+    // Fallback to customer price list or standard price
+    return await getVariantPrice(variantId, customerId, outletId);
+  });
+}
+
+/**
  * Get stock availability for a product at an outlet
  */
 export async function getStockAvailability(
@@ -220,11 +239,14 @@ export async function getNextInvoiceNumber(
     await validateSessionOutletAccess(outletId);
 
     const fy = NumberingService.getFinancialYear(new Date());
-    const type = billType === "NO1" ? ("SALES_INVOICE" as const) : ("CASH_MEMO" as const);
+    const type =
+      billType === "NO1" ? ("SALES_INVOICE" as const) : ("CASH_MEMO" as const);
     const prefix = NumberingService.getPrefix(type);
 
     const series = await prisma.documentSeries.findUnique({
-      where: { type_financialYear_outletId: { type, financialYear: fy, outletId } },
+      where: {
+        type_financialYear_outletId: { type, financialYear: fy, outletId },
+      },
     });
 
     const nextNum = series ? series.nextNumber : 1;

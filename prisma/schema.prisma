@@ -73,6 +73,7 @@ model Outlet {
   batchTrackingEnabled     Boolean             @default(false)
   allowRawCashBills        Boolean             @default(false)
   inventoryValuationMethod ValuationMethod     @default(NONE)
+  batchPricingMode         BatchPricingMode    @default(STRICT)
   createdAt                DateTime          @default(now())
   updatedAt                DateTime          @updatedAt
   accounts                 Account[]
@@ -341,20 +342,29 @@ model DocumentSeries {
 }
 
 model CustomBatch {
-  id               String          @id @default(cuid())
-  batchNumber      String          @unique
-  variantId        String
-  warehouseId      String
-  outletId         String
-  receivedDate     DateTime        @default(now())
-  quantityReceived Float
-  quantityConsumed Float           @default(0)
-  costPerUnit      Float
-  createdAt        DateTime        @default(now())
-  movements        BatchMovement[]
-  outlet           Outlet          @relation(fields: [outletId], references: [id])
-  variant          Variant         @relation(fields: [variantId], references: [id])
-  warehouse        Warehouse       @relation(fields: [warehouseId], references: [id])
+  id                      String          @id @default(cuid())
+  batchNumber             String          @unique
+  variantId               String
+  warehouseId             String
+  outletId                String
+  grnId                   String?                  // FK to Transaction (GRN)
+  purchaseOrderId         String?                  // FK to Transaction (PURCHASE_ORDER)
+  purchaseBillId          String?                  // FK to Transaction (PURCHASE_BILL)
+  receivedDate            DateTime        @default(now())
+  quantityReceived        Float
+  quantityConsumed        Float           @default(0)
+
+  // Purchase cost tracking (for COGS/FIFO valuation)
+  purchaseUnitRate        Float           @default(0)       // ₹100/Box — original bill rate
+  costPerBaseUnit         Float           @default(0)       // ₹10/Piece = purchaseUnitRate / conversionRatio
+
+  status                  String          @default("ACTIVE")  // "ACTIVE" / "EXHAUSTED"
+  createdAt               DateTime        @default(now())
+
+  movements               BatchMovement[]
+  outlet                  Outlet          @relation(fields: [outletId], references: [id])
+  variant                 Variant         @relation(fields: [variantId], references: [id])
+  warehouse               Warehouse       @relation(fields: [warehouseId], references: [id])
 
   @@index([variantId, warehouseId, receivedDate])
   @@index([outletId, variantId, warehouseId, receivedDate])
@@ -650,6 +660,11 @@ enum ValuationMethod {
 enum PricingMethod {
   MANUAL
   MARKUP
+}
+
+enum BatchPricingMode {
+  STRICT
+  LATEST_BATCH
 }
 
 enum ExpenseStatus {

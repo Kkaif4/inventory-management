@@ -15,6 +15,8 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { getVariantBatchPrice } from "@/actions/sales/invoice-helpers";
+import { toast } from "sonner";
 
 interface POSInvoiceTableProps {
   form: UseFormReturn<any>;
@@ -64,10 +66,27 @@ export function POSInvoiceTable({
     setTimeout(() => qtyInputRef.current?.focus(), 50);
   };
 
-  const confirmAddItem = () => {
-    if (!pendingProduct) return;
+  const confirmAddItem = async () => {
+    if (!pendingProduct || !fromOutletId) return;
     const qty = parseInt(pendingQty, 10) || 1;
     const { product, variant } = pendingProduct;
+
+    // Get batch price if FIFO is enabled, fallback to customer/standard price
+    let rate = variant.customerPrice ?? variant.sellingPrice ?? 0;
+    try {
+      const priceResult = await getVariantBatchPrice(
+        variant.id,
+        product.warehouseId || fromOutletId,
+        fromOutletId,
+        partyId,
+      );
+      if (priceResult.success && priceResult.data) {
+        rate = (priceResult.data as any).price || rate;
+      }
+    } catch (error) {
+      // Fallback to standard price on error
+      console.warn("Failed to fetch batch price, using standard price:", error);
+    }
 
     append({
       variantId: variant.id,
@@ -75,7 +94,7 @@ export function POSInvoiceTable({
       description: product.name,
       quantity: qty,
       unit: "BASE",
-      rate: variant.customerPrice ?? variant.sellingPrice ?? 0,
+      rate,
       discountPercent: 0,
       gstRate: isNO1 ? product.gstRate || 0 : 0,
       hsnCode: variant.sku || product.sku || "",
@@ -293,9 +312,16 @@ export function POSInvoiceTable({
                                 <span className="font-mono text-xs text-slate-400 w-24 shrink-0 truncate">
                                   {item.variant.sku}
                                 </span>
-                                <span className="font-medium truncate flex-1">
-                                  {item.product.name}
-                                </span>
+                                <div className="truncate flex-1">
+                                  <div className="font-medium truncate">
+                                    {item.product.name}
+                                  </div>
+                                  {item.product.brand && (
+                                    <div className="text-xs text-slate-400 truncate">
+                                      {item.product.brand}
+                                    </div>
+                                  )}
+                                </div>
                                 <span className="text-sm text-slate-500 font-mono shrink-0">
                                   ₹{item.variant.sellingPrice}
                                 </span>

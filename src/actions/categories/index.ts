@@ -180,6 +180,7 @@ export async function updateCategory(data: {
   id: string;
   name: string;
   description?: string;
+  parentId?: string | null;
   userId: string;
 }) {
   return withErrorHandler(async () => {
@@ -188,11 +189,18 @@ export async function updateCategory(data: {
       select: { outletId: true },
     });
     if (cat?.outletId) await validateSessionOutletAccess(cat.outletId);
+
+    // Validate parentId is not the same as current id (circular reference)
+    if (data.parentId === data.id) {
+      throw new ValidationError("A category cannot be its own parent");
+    }
+
     const category = await prisma.category.update({
       where: { id: data.id },
       data: {
         name: data.name,
         description: data.description,
+        parentId: data.parentId || null,
       },
     });
 
@@ -201,7 +209,11 @@ export async function updateCategory(data: {
       entity: "CATEGORY",
       entityId: category.id,
       userId: data.userId,
-      newValues: { name: data.name, description: data.description },
+      newValues: {
+        name: data.name,
+        description: data.description,
+        parentId: data.parentId,
+      },
     });
 
     revalidatePath("/dashboard/master-data/categories");

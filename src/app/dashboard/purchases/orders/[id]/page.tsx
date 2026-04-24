@@ -131,7 +131,7 @@ export default function PurchaseOrderDetailPage() {
       <div className="max-w-5xl mx-auto text-center py-20">
         <p className="text-slate-500">Purchase Order not found.</p>
         <Link
-          href="/dashboard/purchases/orders"
+          href="/dashboard/purchases"
           className="text-blue-600 text-sm mt-4 inline-block"
         >
           ← Back to Purchase Orders
@@ -162,7 +162,7 @@ export default function PurchaseOrderDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href="/dashboard/purchases/orders"
+            href="/dashboard/purchases"
             className="text-slate-500 hover:text-slate-900 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />

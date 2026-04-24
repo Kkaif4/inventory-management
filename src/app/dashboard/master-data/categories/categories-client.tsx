@@ -58,7 +58,7 @@ export function CategoriesClient({
   const [isPending, startTransition] = useTransition();
   const [categories, setCategories] = useState(initialCategories);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", description: "" });
+  const [editForm, setEditForm] = useState({ name: "", description: "", parentId: "" });
   const [isAdding, setIsAdding] = useState(false);
   const [newForm, setNewForm] = useState({ name: "", parentId: "" });
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -138,6 +138,7 @@ export function CategoriesClient({
         id,
         name: editForm.name,
         description: editForm.description,
+        parentId: editForm.parentId || null,
         userId: session.user.id,
       });
 
@@ -204,6 +205,7 @@ export function CategoriesClient({
     setEditForm({
       name: cat.name,
       description: cat.description || "",
+      parentId: cat.parentId || "",
     });
   };
 
@@ -250,6 +252,36 @@ export function CategoriesClient({
               {getParentChain(cat)}
             </span>
           </div>
+        );
+      },
+    },
+    {
+      id: "parent",
+      header: () => <div className="min-w-[180px]">{t("parentCategory")}</div>,
+      cell: ({ row }) => {
+        const cat = row.original;
+        const isEditing = editingId === cat.id;
+
+        if (isEditing) {
+          // Filter out the current category to prevent self-parent
+          const availableCategories = categories.filter((c) => c.id !== cat.id);
+          return (
+            <ParentCategoryCombobox
+              categories={availableCategories}
+              value={editForm.parentId}
+              onChange={(id) =>
+                setEditForm((prev) => ({ ...prev, parentId: id }))
+              }
+              outletId={currentOutletId || ""}
+              placeholder={t("noParent")}
+            />
+          );
+        }
+
+        return (
+          <span className="text-slate-500 text-sm">
+            {getParentChain(cat)}
+          </span>
         );
       },
     },

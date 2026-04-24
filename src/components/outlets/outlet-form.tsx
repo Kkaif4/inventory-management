@@ -42,6 +42,7 @@ interface OutletFormProps {
     negativeStockPolicy: string;
     batchTrackingEnabled: boolean;
     inventoryValuationMethod: string;
+    batchPricingMode?: string;
     allowRawCashBills?: boolean;
   };
   onSubmit: (
@@ -90,6 +91,7 @@ export function OutletForm({
           negativeStockPolicy: outlet.negativeStockPolicy || "WARN",
           batchTrackingEnabled: outlet.batchTrackingEnabled || false,
           inventoryValuationMethod: outlet.inventoryValuationMethod || "NONE",
+          batchPricingMode: outlet.batchPricingMode || "STRICT",
           allowRawCashBills: outlet.allowRawCashBills || false,
         }
       : {
@@ -103,6 +105,7 @@ export function OutletForm({
           negativeStockPolicy: "WARN",
           batchTrackingEnabled: false,
           inventoryValuationMethod: "NONE",
+          batchPricingMode: "STRICT",
           allowRawCashBills: false,
         }) as any,
   });
@@ -452,6 +455,33 @@ New transactions will not use batch tracking.`,
                       Enable batch tracking to use FIFO valuation
                     </FormDescription>
                   )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="batchPricingMode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Batch Pricing Mode</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="w-full h-14 px-6 rounded-lg border border-input bg-slate-50 text-base appearance-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-emerald-500/20 disabled:opacity-50 cursor-pointer"
+                    >
+                      <option value="STRICT">
+                        Strict - Single Batch (fail if none has enough qty)
+                      </option>
+                      <option value="LATEST_BATCH">
+                        Latest Batch - FIFO Consumption (use last batch cost)
+                      </option>
+                    </select>
+                  </FormControl>
+                  <FormDescription>
+                    STRICT: Allocate from a single batch with sufficient quantity. LATEST_BATCH: Consume from multiple batches in FIFO order, using the cost of the last batch consumed.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

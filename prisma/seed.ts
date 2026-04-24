@@ -77,6 +77,20 @@ const OUTLET_DATA = [
     address: "Thane Railway Station Area, Mumbai",
     state: "Maharashtra",
   },
+  {
+    name: "North Branch",
+    prefix: "INV/NB/",
+    gstin: "27ABCDE1234F1Z8",
+    address: "Northern Highway, Mumbai",
+    state: "Maharashtra",
+  },
+  {
+    name: "Central Mall",
+    prefix: "INV/CM/",
+    gstin: "27ABCDE1234F1Z9",
+    address: "Central Avenue, Mumbai",
+    state: "Maharashtra",
+  },
 ];
 
 const WAREHOUSE_NAMES = [

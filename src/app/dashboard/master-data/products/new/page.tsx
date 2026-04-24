@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectContent,
 } from "@/components/ui/select";
+import { CategoryComboboxWithCreate } from "@/components/form/category-combobox-with-create";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSession } from "next-auth/react";
 import { useOutletStore } from "@/store/use-outlet-store";
@@ -277,48 +278,45 @@ export default function NewProductPage() {
                   )}
                 />
 
-                {/* Feature 2: Category ghost-fills HSN + GST */}
+                {/* Feature 2: Category ghost-fills HSN + GST + inline create */}
                 <FormField
                   control={control}
                   name="categoryId"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("form.categoryLabel")}</FormLabel>
-                      <Select
-                        onValueChange={(val) => {
-                          field.onChange(val);
-                          // Feature 2: Smart Tax & HSN Mapping
-                          const catName =
-                            categories.find((c) => c.id === val)?.name ?? "";
-                          const taxInfo = getTaxInfoByCategory(catName);
-                          form.setValue("hsnCode", taxInfo.hsnCode);
-                          form.setValue("gstRate", taxInfo.gstRate);
-                          if (taxInfo.hsnCode) {
-                            toast.info(
-                              `Tax auto-set: HSN ${taxInfo.hsnCode} @ ${taxInfo.gstRate}%`,
-                            );
-                          }
-                        }}
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={t("form.categoryPlaceholder")}
-                            >
-                              {getCategoryName(field.value)}
-                            </SelectValue>
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {categories.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>
-                              {c.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <CategoryComboboxWithCreate
+                          categories={categories}
+                          value={field.value}
+                          onChange={(val) => {
+                            field.onChange(val);
+                            // Feature 2: Smart Tax & HSN Mapping
+                            const catName =
+                              categories.find((c) => c.id === val)?.name ?? "";
+                            const taxInfo = getTaxInfoByCategory(catName);
+                            form.setValue("hsnCode", taxInfo.hsnCode);
+                            form.setValue("gstRate", taxInfo.gstRate);
+                            if (taxInfo.hsnCode) {
+                              toast.info(
+                                `Tax auto-set: HSN ${taxInfo.hsnCode} @ ${taxInfo.gstRate}%`,
+                              );
+                            }
+                          }}
+                          outletId={currentOutletId || ""}
+                          userId={session?.user?.id || "system"}
+                          placeholder={t("form.categoryPlaceholder")}
+                          onCategoryCreated={(category) => {
+                            // Add newly created category to list
+                            setCategories((prev) => [...prev, category]);
+                            // Auto-select it
+                            field.onChange(category.id);
+                            const taxInfo = getTaxInfoByCategory(category.name);
+                            form.setValue("hsnCode", taxInfo.hsnCode);
+                            form.setValue("gstRate", taxInfo.gstRate);
+                          }}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

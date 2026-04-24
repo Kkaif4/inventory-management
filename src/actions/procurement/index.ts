@@ -12,6 +12,7 @@ import { withErrorHandler } from "@/lib/error-handler";
 import { ForbiddenError, NotFoundError } from "@/lib/exceptions";
 import { parsePaginationParams, calculatePagination } from "@/lib/pagination";
 import { PaginatedResult, BasePaginationParams } from "@/types/pagination";
+import { calculateBatchPricing } from "@/domains/inventory/batch-pricing";
 
 import { PurchaseItemPayload } from "./types";
 // DO NOT export types from "use server" files.
@@ -92,6 +93,14 @@ export async function createGRN(data: {
 
     if (!po) throw new NotFoundError("Purchase Order not found");
 
+    // Fetch variant pricing info upfront
+    const variantIds = data.items.map((i) => i.variantId);
+    const variants = await prisma.variant.findMany({
+      where: { id: { in: variantIds } },
+      include: { product: true },
+    });
+    const variantMap = new Map(variants.map((v) => [v.id, v]));
+
     const result = await prisma.$transaction(async (tx) => {
       // 1. Build the item payloads for transaction creation
       const itemsData = data.items.map((item) => {
@@ -123,13 +132,27 @@ export async function createGRN(data: {
         },
       });
 
-      // 3. Update physical stock for each item (Convert to Base Unit)
+      // 3. Update physical stock for each item (Convert to Base Unit) with batch pricing
+      const variantUpdates: { variantId: string; newSellingPrice: number }[] = [];
+
       for (const item of itemsData) {
         const baseQuantity = normalizeToStockQty({
           quantity: item.quantity,
           isPurchase: true,
           conversionRatio: item.conversionRatio,
         });
+
+        const variant = variantMap.get(item.variantId);
+        if (!variant) continue;
+
+        // Calculate batch pricing if pricing method is available
+        let purchaseUnitRate = item.rate;
+        let conversionRatio = item.conversionRatio;
+        let pricingMethod: "MARKUP" | "MANUAL" = variant.pricingMethod as any;
+        let markupPercent = variant.markupPercent;
+        let variantSellingPrice = variant.sellingPrice;
+
+        // Call StockService with batch pricing fields
         await StockService.moveStock(tx, {
           variantId: item.variantId,
           warehouseId: po.toLocationId!,
@@ -138,6 +161,39 @@ export async function createGRN(data: {
           quantity: baseQuantity,
           type: "PURCHASE",
           userId: data.userId,
+          purchaseUnitRate,
+          conversionRatio,
+          pricingMethod,
+          markupPercent: markupPercent ?? undefined,
+          variantSellingPrice,
+          grnId: grn.id,
+          purchaseOrderId: data.poId,
+        });
+
+        // If MARKUP: update variant selling price to new batch's selling price
+        if (pricingMethod === "MARKUP" && markupPercent !== null && markupPercent !== undefined) {
+          const { sellingPricePerBaseUnit } = calculateBatchPricing(
+            purchaseUnitRate,
+            conversionRatio || 1,
+            "MARKUP",
+            markupPercent,
+            variantSellingPrice,
+          );
+          variantUpdates.push({
+            variantId: item.variantId,
+            newSellingPrice: sellingPricePerBaseUnit,
+          });
+        }
+      }
+
+      // 4. Update variant master prices for MARKUP batches
+      for (const update of variantUpdates) {
+        await tx.variant.update({
+          where: { id: update.variantId },
+          data: {
+            sellingPrice: update.newSellingPrice,
+            purchasePrice: itemsData.find((i) => i.variantId === update.variantId)?.rate || 0,
+          },
         });
       }
 
@@ -291,6 +347,16 @@ export async function createPurchaseBill(data: {
 
     if (!source) throw new NotFoundError("Source transaction not found");
 
+    // Fetch variant pricing info upfront for rate discrepancy handling
+    const variantIds = source.items
+      .filter((i) => i.variantId)
+      .map((i) => i.variantId as string);
+    const variants = await prisma.variant.findMany({
+      where: { id: { in: variantIds } },
+      include: { product: true },
+    });
+    const variantMap = new Map(variants.map((v) => [v.id, v]));
+
     const result = await prisma.$transaction(async (tx) => {
       const totalTaxable = roundToTwo(
         source.items.reduce((a, b) => a + b.taxableValue, 0),
@@ -397,7 +463,76 @@ export async function createPurchaseBill(data: {
         entries,
       });
 
-      // 4. Update parent transaction status to COMPLETED
+      // 4. Link batches to this purchase bill (update purchaseBillId)
+      if (source.type === "GRN" || source.type === "PURCHASE_ORDER") {
+        const variantIds = source.items
+          .filter((i) => i.variantId)
+          .map((i) => i.variantId as string);
+
+        // Update matching batches to link to this purchase bill
+        if (source.type === "GRN") {
+          // GRN: Link via grnId
+          await tx.customBatch.updateMany({
+            where: {
+              variantId: { in: variantIds },
+              outletId: source.outletId,
+              grnId: source.id,
+            },
+            data: {
+              purchaseBillId: bill.id,
+            },
+          });
+        } else if (source.type === "PURCHASE_ORDER") {
+          // PO: Link via purchaseOrderId (batches created during PO acceptance)
+          await tx.customBatch.updateMany({
+            where: {
+              variantId: { in: variantIds },
+              outletId: source.outletId,
+              purchaseOrderId: source.id,
+            },
+            data: {
+              purchaseBillId: bill.id,
+            },
+          });
+        }
+
+        // If source is GRN, check for rate discrepancies (FRD §13.6)
+        if (source.type === "GRN") {
+          for (const billItem of source.items) {
+            if (!billItem.variantId) continue;
+            const sourceItem = source.items.find(
+              (i) => i.variantId === billItem.variantId,
+            );
+            // If bill rate differs from GRN rate, update batch costs
+            if (sourceItem && sourceItem.rate !== billItem.rate) {
+              const variant = variantMap.get(billItem.variantId);
+              if (variant) {
+                const { costPerBaseUnit, sellingPricePerBaseUnit } =
+                  calculateBatchPricing(
+                    billItem.rate,
+                    sourceItem.conversionRatio || 1,
+                    (variant.pricingMethod as any) || "MANUAL",
+                    variant.markupPercent,
+                    variant.sellingPrice,
+                  );
+                await tx.customBatch.updateMany({
+                  where: {
+                    variantId: billItem.variantId,
+                    grnId: source.id,
+                    outletId: source.outletId,
+                  },
+                  data: {
+                    purchaseUnitRate: billItem.rate,
+                    costPerBaseUnit,
+                  },
+                });
+              }
+            }
+          }
+        }
+      }
+
+      // 5. Update parent transaction status to COMPLETED
       await tx.transaction.update({
         where: { id: data.sourceId },
         data: { status: "COMPLETED" },
@@ -528,49 +663,104 @@ export async function acceptPurchaseOrder(
     // Validate outlet access
     await validateSessionOutletAccess(outletId);
 
+    // Fetch variant pricing info upfront (outside transaction)
+    const po = await prisma.transaction.findUnique({
+      where: { id: poId },
+      include: { items: true },
+    });
+    if (!po) throw new NotFoundError("Purchase Order not found");
+
+    const variantIds = po.items
+      .filter((i) => i.variantId)
+      .map((i) => i.variantId as string);
+    const variants = await prisma.variant.findMany({
+      where: { id: { in: variantIds } },
+      include: { product: true },
+    });
+    const variantMap = new Map(variants.map((v) => [v.id, v]));
+
     const result = await prisma.$transaction(async (tx) => {
       // 1. Fetch PO and items
-      const po = await tx.transaction.findUnique({
+      const poTx = await tx.transaction.findUnique({
         where: { id: poId },
         include: { items: true },
       });
 
-      if (!po) throw new NotFoundError("Purchase Order not found");
-      if (po.outletId !== outletId)
+      if (!poTx) throw new NotFoundError("Purchase Order not found");
+      if (poTx.outletId !== outletId)
         throw new ForbiddenError(
           "Unauthorized: PO does not belong to this outlet",
         );
-      if (po.status === "ACCEPTED" || po.status === "COMPLETED") {
+      if (poTx.status === "ACCEPTED" || poTx.status === "COMPLETED") {
         throw new Error("Order has already been processed");
       }
 
-      // 2. Update Stock for each item (Convert to Base Unit)
-      for (const item of po.items) {
+      const variantUpdates: { variantId: string; newSellingPrice: number }[] = [];
+
+      // 2. Update Stock for each item (Convert to Base Unit) with batch pricing
+      for (const item of poTx.items) {
         if (!item.variantId) continue;
+
         const baseQuantity = normalizeToStockQty({
           quantity: item.quantity,
           isPurchase: true,
           conversionRatio: item.conversionRatio,
         });
+
+        const variant = variantMap.get(item.variantId);
+        const pricingMethod: "MARKUP" | "MANUAL" = (variant?.pricingMethod as any) || "MANUAL";
+        const markupPercent = variant?.markupPercent;
+        const variantSellingPrice = variant?.sellingPrice || 0;
+
         await StockService.moveStock(tx, {
           variantId: item.variantId,
-          warehouseId: po.toLocationId!, // POs have a destination warehouse
+          warehouseId: poTx.toLocationId!, // POs have a destination warehouse
           outletId,
-          transactionId: po.id,
+          transactionId: poTx.id,
           quantity: baseQuantity,
           type: "PURCHASE",
           userId,
-          costPerUnit: item.rate, // Used for batch logic if enabled
+          purchaseUnitRate: item.rate,
+          conversionRatio: item.conversionRatio || 1,
+          pricingMethod,
+          markupPercent: markupPercent ?? undefined,
+          variantSellingPrice,
+          purchaseOrderId: poTx.id,
+        });
+
+        // If MARKUP: update variant selling price to new batch's selling price
+        if (pricingMethod === "MARKUP" && markupPercent !== null && markupPercent !== undefined) {
+          const { sellingPricePerBaseUnit } = calculateBatchPricing(
+            item.rate,
+            item.conversionRatio || 1,
+            "MARKUP",
+            markupPercent,
+            variantSellingPrice,
+          );
+          variantUpdates.push({
+            variantId: item.variantId,
+            newSellingPrice: sellingPricePerBaseUnit,
+          });
+        }
+      }
+
+      // 3. Update variant master prices for MARKUP batches
+      for (const update of variantUpdates) {
+        await tx.variant.update({
+          where: { id: update.variantId },
+          data: {
+            sellingPrice: update.newSellingPrice,
+          },
         });
       }
 
-      // 3. Update PO status
+      // 4. Update PO status
       const updatedPo = await tx.transaction.update({
         where: { id: poId },
         data: { status: "ACCEPTED" },
       });
 
-      // 4. Log in Audit Trail
+      // 5. Log in Audit Trail
       await AuditService.log({
         action: "UPDATE",
         entity: "PURCHASE_ORDER",
