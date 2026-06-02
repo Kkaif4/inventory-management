@@ -430,6 +430,8 @@ describe("Customer Outstanding and Payment Behavior", () => {
     expect(custAfterFreightDown!.outstandingBalance).toBe(1230);
 
     // Cleanup
+    await prisma.batchMovement.deleteMany({ where: { transactionId: invoiceId } });
+    await prisma.stockLedger.deleteMany({ where: { transactionId: invoiceId } });
     await prisma.ledgerEntry.deleteMany({ where: { transactionId: invoiceId } });
     await prisma.transactionItem.deleteMany({ where: { transactionId: invoiceId } });
     await prisma.transaction.delete({ where: { id: invoiceId } });

@@ -38,6 +38,15 @@ export async function createSalesInvoice(data: {
   remarks?: string;
   buyerName?: string;
   buyerPhone?: string;
+  payments?: {
+    paymentMode: any;
+    bankAccountId?: string | null;
+    amount: number;
+    referenceNo?: string | null;
+    notes?: string | null;
+    chequeNumber?: string | null;
+    chequeDate?: string | null;
+  }[];
 }) {
   return withErrorHandler(async () => {
     await validateSessionOutletAccess(data.fromOutletId);
@@ -142,6 +151,17 @@ export async function createSalesInvoice(data: {
           }
         }
 
+        // 1.8 Calculate payments status
+        const totalPaidAmount = data.payments
+          ? roundToTwo(data.payments.reduce((sum, p) => sum + (p.amount || 0), 0))
+          : 0;
+        const initialStatus = totalPaidAmount >= grandTotal - 0.005
+          ? "PAID"
+          : totalPaidAmount > 0
+            ? "PARTIALLY_PAID"
+            : "POSTED";
+        const paidAt = totalPaidAmount >= grandTotal - 0.005 ? data.date : null;
+
         // 2. Create Header & Items
         const invoice = await tx.transaction.create({
           data: {
@@ -159,7 +179,8 @@ export async function createSalesInvoice(data: {
             totalTax,
             freightCost,
             grandTotal,
-            status: "POSTED",
+            status: initialStatus,
+            paidAt,
             userId: data.userId,
             remarks: data.remarks,
             items: {
@@ -320,8 +341,146 @@ export async function createSalesInvoice(data: {
               where: { id: data.partyId },
               data: { outstandingBalance: { increment: grandTotal } },
             });
+
+            if (totalPaidAmount > 0) {
+              const amountAppliedToOutstanding = Math.min(totalPaidAmount, grandTotal);
+              const overpayment = roundToTwo(totalPaidAmount - amountAppliedToOutstanding);
+
+              if (overpayment > 0.005) {
+                await tx.party.update({
+                  where: { id: data.partyId },
+                  data: { creditBalance: { increment: overpayment } },
+                });
+              }
+
+              await tx.party.update({
+                where: { id: data.partyId },
+                data: { outstandingBalance: { decrement: amountAppliedToOutstanding } },
+              });
+
+              // Guard: Ensure outstanding never goes negative
+              const updatedParty = await tx.party.findUnique({
+                where: { id: data.partyId },
+                select: { outstandingBalance: true },
+              });
+              if (updatedParty && updatedParty.outstandingBalance < -0.005) {
+                await tx.party.update({
+                  where: { id: data.partyId },
+                  data: { outstandingBalance: 0 },
+                });
+              }
+            }
           } catch (partyError) {
             throw partyError;
+          }
+        }
+
+        // 4.5 Record any payments, ledger entries, and update account balances
+        if (data.payments && data.payments.length > 0 && data.partyId) {
+          for (const p of data.payments) {
+            if (p.amount <= 0) continue;
+
+            const payTxnNumber = await NumberingService.getNextNumber(
+              tx,
+              data.fromOutletId,
+              "RECEIPT",
+            );
+
+            // Create Payment Record
+            await tx.payment.create({
+              data: {
+                txnNumber: payTxnNumber,
+                invoiceId: invoice.id,
+                outletId: data.fromOutletId,
+                partyId: data.partyId,
+                amount: p.amount,
+                paymentDate: data.date,
+                paymentMode: p.paymentMode,
+                accountId: p.bankAccountId || null,
+                referenceNo: p.referenceNo || null,
+                notes: p.notes || null,
+                createdBy: data.userId,
+              },
+            });
+
+            // Ledger Entries: Dr. Cash/Bank, Cr. Sundry Debtors
+            const debtorGL = await tx.account.findUnique({
+              where: { code_outletId: { code: "1003", outletId: data.fromOutletId } },
+            });
+
+            let cashBankGL = await tx.account.findUnique({
+              where: { code_outletId: { code: "1001", outletId: data.fromOutletId } }, // Cash default
+            });
+
+            if (p.bankAccountId) {
+              const account = await tx.account.findUnique({
+                where: { id: p.bankAccountId },
+              });
+              if (account) {
+                cashBankGL = await tx.account.findUnique({
+                  where: { code_outletId: { code: "1002", outletId: data.fromOutletId } }, // Bank default
+                });
+              }
+            }
+
+            if (debtorGL && cashBankGL) {
+              await tx.ledgerEntry.createMany({
+                data: [
+                  {
+                    transactionId: invoice.id,
+                    accountId: cashBankGL.id,
+                    partyId: data.partyId,
+                    date: data.date,
+                    debit: p.amount,
+                    credit: 0,
+                    reference: `Receipt ${payTxnNumber} for Invoice ${txnNumber}`,
+                  },
+                  {
+                    transactionId: invoice.id,
+                    accountId: debtorGL.id,
+                    partyId: data.partyId,
+                    date: data.date,
+                    debit: 0,
+                    credit: p.amount,
+                    reference: `Receipt ${payTxnNumber} for Invoice ${txnNumber}`,
+                  },
+                ],
+              });
+            }
+
+            // Update Account balance if bankAccountId is provided
+            if (p.bankAccountId) {
+              const account = await tx.account.findUnique({
+                where: { id: p.bankAccountId },
+                select: { currentBalance: true },
+              });
+
+              if (account) {
+                const newBalance = roundToTwo(account.currentBalance + p.amount);
+
+                await tx.accountTransaction.create({
+                  data: {
+                    accountId: p.bankAccountId,
+                    type: "IN",
+                    amount: p.amount,
+                    paymentMode: p.paymentMode as any,
+                    chequeNumber: p.chequeNumber || null,
+                    chequeDate: p.chequeDate ? new Date(p.chequeDate) : null,
+                    upiReferenceId: p.referenceNo || null,
+                    balanceAfter: newBalance,
+                    linkedTxnId: invoice.id,
+                    linkedTxnType: "INVOICE_PAYMENT",
+                    remarks: `Payment for invoice ${txnNumber}`,
+                    userId: data.userId,
+                  },
+                });
+
+                await tx.account.update({
+                  where: { id: p.bankAccountId },
+                  data: { currentBalance: newBalance },
+                });
+              }
+            }
           }
         }
 
@@ -382,9 +541,9 @@ export async function createSalesInvoice(data: {
       const invoiceNumberUsed = parseInt(parts[2], 10);
       const currentDbNumber = docSeries.nextNumber;
       const expectedNextNumber = invoiceNumberUsed + 1;
-
-      return result;
     }
+
+    return result;
   });
 }
 

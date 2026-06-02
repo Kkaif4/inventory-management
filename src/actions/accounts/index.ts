@@ -6,6 +6,7 @@ import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError, ForbiddenError } from "@/lib/exceptions";
 import { revalidatePath } from "next/cache";
 import { AccountType } from "@/generated/prisma";
+import { AccountingService } from "@/domains/accounting/ledger-service";
 
 /**
  * Create a new cash or bank account
@@ -37,20 +38,37 @@ export async function createAccount(data: {
 
     const openingBalance = data.openingBalance || 0;
 
-    const account = await prisma.account.create({
-      data: {
-        name: data.name,
-        type: data.type,
-        group: "ASSET", // CASH and BANK accounts are always ASSET (overdraft logic handles reclassification)
-        isSystem: false, // User-created account
-        openingBalance,
-        currentBalance: openingBalance,
-        outletId: data.outletId,
-      },
-    });
+    const account = await prisma.$transaction(async (tx) => {
+      const acc = await tx.account.create({
+        data: {
+          name: data.name,
+          type: data.type,
+          group: "ASSET", // CASH and BANK accounts are always ASSET (overdraft logic handles reclassification)
+          isSystem: false, // User-created account
+          openingBalance,
+          currentBalance: openingBalance,
+          outletId: data.outletId,
+        },
+      });
 
-    // TODO: Post opening balance journal entry if openingBalance > 0
-    // Dr: this account, Cr: 5001 (Opening Balance Offset / Equity)
+      if (openingBalance > 0) {
+        const offsetAcc = await tx.account.findUnique({
+          where: { code_outletId: { code: "5001", outletId: data.outletId } },
+        });
+
+        if (offsetAcc) {
+          await AccountingService.postJournalEntry(tx, {
+            transactionId: `OPB-${acc.id}`,
+            entries: [
+              { accountId: acc.id, debit: openingBalance },
+              { accountId: offsetAcc.id, credit: openingBalance },
+            ],
+          });
+        }
+      }
+
+      return acc;
+    });
 
     revalidatePath("/dashboard/financials/accounts");
     return account;

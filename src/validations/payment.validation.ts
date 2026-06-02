@@ -291,6 +291,32 @@ export const generalPaymentSchema = z
 export type RecordPaymentFormValues = z.infer<typeof recordPaymentSchema>;
 export type GeneralPaymentFormValues = z.infer<typeof generalPaymentSchema>;
 
+// Schema for recording multiple payments in drawers
+export const recordMultiplePaymentsSchema = z.object({
+  invoiceId: z.string().min(1, "Invoice ID is required"),
+  outletId: z.string().min(1, "Outlet ID is required"),
+  partyId: z.string().min(1, "Party ID is required"),
+  paymentDate: z.string().min(1, "Payment date is required"),
+  payments: z
+    .array(
+      z.object({
+        paymentMode: z.enum(PAYMENT_MODES),
+        bankAccountId: z.string().min(1, "Account is required").optional().nullable(),
+        amount: z.number().positive("Amount must be greater than ₹0").finite(),
+        referenceNo: z.string().max(60).optional().nullable(),
+        notes: z.string().max(200).optional().nullable(),
+        chequeNumber: z.string().min(6).max(20).optional().nullable(),
+        chequeDate: z.string().optional().nullable(),
+        utrReferenceId: z.string().max(50).optional().nullable(),
+        transactionId: z.string().max(50).optional().nullable(),
+        cardReference: z.string().max(50).optional().nullable(),
+      })
+    )
+    .min(1, "At least one payment is required"),
+});
+
+export type RecordMultiplePaymentsFormValues = z.infer<typeof recordMultiplePaymentsSchema>;
+
 // Legacy aliases for backward compatibility
 export const paymentSchema = recordPaymentSchema;
 export type PaymentFormValues = RecordPaymentFormValues;
