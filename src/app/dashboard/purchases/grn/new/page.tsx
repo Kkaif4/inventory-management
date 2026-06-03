@@ -24,6 +24,8 @@ const grnSchema = z.object({
         productName: z.string(),
         orderedQty: z.number(),
         quantityReceived: z.coerce.number().min(0, "Invalid qty"),
+        hasSerialNumbers: z.boolean().optional(),
+        serialNumbersText: z.string().optional(),
       }),
     )
     .min(1),
@@ -39,7 +41,7 @@ export default function NewGRNPage() {
   const [selectedPO, setSelectedPO] = useState<any>(null);
   const { currentOutlet } = useOutletStore();
   if (!currentOutlet) {
-    return;
+    return null;
   }
 
   useEffect(() => {
@@ -82,6 +84,8 @@ export default function NewGRNPage() {
       productName: item.variant.product.name,
       orderedQty: item.quantity,
       quantityReceived: item.quantity, // Default to full receipt
+      hasSerialNumbers: item.variant.product.hasSerialNumbers,
+      serialNumbersText: "",
     }));
 
     replace(grnItems);
@@ -114,13 +118,26 @@ export default function NewGRNPage() {
       id: "receivedQty",
       header: () => <div className="text-right">Received Qty</div>,
       cell: ({ row }) => (
-        <div className="text-right">
+        <div className="text-right space-y-2">
           <input
             type="number"
             step="0.01"
             {...register(`items.${row.index}.quantityReceived` as const)}
             className="w-32 px-3 py-1.5 text-sm border border-slate-300 rounded-md text-right focus:ring-2 focus:ring-emerald-500 outline-none"
           />
+          {row.original.hasSerialNumbers && (
+            <div className="text-left mt-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase block">
+                Serial Numbers (one per line)
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Enter serial numbers..."
+                {...register(`items.${row.index}.serialNumbersText` as const)}
+                className="w-full text-xs font-mono border border-slate-300 rounded-md p-1.5 focus:ring-2 focus:ring-emerald-500 outline-none mt-1"
+              />
+            </div>
+          )}
         </div>
       ),
     },
@@ -128,12 +145,36 @@ export default function NewGRNPage() {
 
   const onSubmit = async (data: GRNFormValues) => {
     try {
+      // Validate serial numbers count match quantityReceived
+      for (const item of data.items) {
+        if (item.hasSerialNumbers) {
+          const sns = item.serialNumbersText
+            ? item.serialNumbersText
+                .split("\n")
+                .map((s) => s.trim())
+                .filter((s) => s.length > 0)
+            : [];
+          if (sns.length !== Number(item.quantityReceived)) {
+            toast.error(
+              `Item "${item.productName}" requires exactly ${item.quantityReceived} serial numbers. You entered ${sns.length}.`
+            );
+            return;
+          }
+        }
+      }
+
       setIsSubmitting(true);
       const res = await createGRN({
         poId: data.poId,
         items: data.items.map((i) => ({
           variantId: i.variantId,
           quantityReceived: i.quantityReceived,
+          serialNumbers: i.hasSerialNumbers && i.serialNumbersText
+            ? i.serialNumbersText
+                .split("\n")
+                .map((s) => s.trim())
+                .filter((s) => s.length > 0)
+            : undefined,
         })),
         userId: session?.user?.id!,
       });

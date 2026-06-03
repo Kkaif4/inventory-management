@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { getProducts } from "@/actions/products";
+import { getProducts, getVariantBySerialNumber } from "@/actions/products";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 export function useProductSearch(outletId: string, debounceMs = 250, partyId?: string) {
@@ -15,15 +15,54 @@ export function useProductSearch(outletId: string, debounceMs = 250, partyId?: s
     if (!outletId) return;
 
     setIsLoading(true);
-    getProducts(outletId, {
+
+    const searchPromise = getProducts(outletId, {
       search: debouncedSearch,
       limit: debouncedSearch === "" ? 10 : undefined,
       partyId,
-    })
-      .then((res) => {
-        if (res.success && res.data) {
-          setProducts(res.data);
+    });
+
+    const serialPromise = debouncedSearch.trim().length >= 3
+      ? getVariantBySerialNumber(outletId, debouncedSearch.trim())
+      : Promise.resolve({ success: true, data: null });
+
+    Promise.all([searchPromise, serialPromise])
+      .then(([prodRes, serialRes]) => {
+        let finalProducts = prodRes.success && prodRes.data ? prodRes.data : [];
+
+        if (serialRes.success && serialRes.data) {
+          const serialData = serialRes.data as any;
+          const exists = finalProducts.some(p =>
+            p.variants.some((v: any) => v.id === serialData.variant.id)
+          );
+
+          if (!exists) {
+            const newProduct = {
+              ...serialData.product,
+              variants: [
+                {
+                  ...serialData.variant,
+                  matchedSerialNumber: serialData.serialNumber,
+                }
+              ]
+            };
+            finalProducts = [newProduct, ...finalProducts];
+          } else {
+            finalProducts = finalProducts.map(p => ({
+              ...p,
+              variants: p.variants.map((v: any) =>
+                v.id === serialData.variant.id
+                  ? { ...v, matchedSerialNumber: serialData.serialNumber }
+                  : v
+              )
+            }));
+          }
         }
+
+        setProducts(finalProducts);
+      })
+      .catch((err) => {
+        console.error("Product search failed:", err);
       })
       .finally(() => setIsLoading(false));
   }, [debouncedSearch, outletId, partyId]);

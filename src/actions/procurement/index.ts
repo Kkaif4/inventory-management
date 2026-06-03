@@ -9,7 +9,7 @@ import { roundToTwo } from "@/lib/utils";
 import { normalizeToStockQty } from "@/lib/unit-conversion";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import { withErrorHandler } from "@/lib/error-handler";
-import { ForbiddenError, NotFoundError } from "@/lib/exceptions";
+import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/exceptions";
 import { parsePaginationParams, calculatePagination } from "@/lib/pagination";
 import { PaginatedResult, BasePaginationParams } from "@/types/pagination";
 import { calculateBatchPricing } from "@/domains/inventory/batch-pricing";
@@ -82,7 +82,7 @@ export async function createPurchaseOrder(data: {
 
 export async function createGRN(data: {
   poId: string;
-  items: { variantId: string; quantityReceived: number }[];
+  items: { variantId: string; quantityReceived: number; serialNumbers?: string[] }[];
   userId: string;
 }) {
   return withErrorHandler(async () => {
@@ -130,7 +130,40 @@ export async function createGRN(data: {
             create: itemsData,
           },
         },
+        include: {
+          items: true,
+        },
       });
+
+      // 2.5 Create Serial Numbers if provided
+      for (const item of data.items) {
+        if (item.serialNumbers && item.serialNumbers.length > 0) {
+          const grnItem = grn.items.find((gi) => gi.variantId === item.variantId);
+          if (grnItem) {
+            // Check duplicates in outlet
+            const existing = await tx.serialNumber.findMany({
+              where: {
+                serialNumber: { in: item.serialNumbers },
+                outletId: po.outletId,
+              },
+            });
+            if (existing.length > 0) {
+              const duplicates = existing.map((sn) => sn.serialNumber).join(", ");
+              throw new ValidationError(`Serial numbers already exist in database: ${duplicates}`);
+            }
+
+            await tx.serialNumber.createMany({
+              data: item.serialNumbers.map((sn) => ({
+                serialNumber: sn.trim(),
+                variantId: item.variantId,
+                outletId: po.outletId,
+                purchaseItemId: grnItem.id,
+                status: "AVAILABLE",
+              })),
+            });
+          }
+        }
+      }
 
       // 3. Update physical stock for each item (Convert to Base Unit) with batch pricing
       const variantUpdates: { variantId: string; newSellingPrice: number }[] = [];
@@ -658,6 +691,7 @@ export async function acceptPurchaseOrder(
   poId: string,
   outletId: string,
   userId: string,
+  serialNumbers?: Record<string, string[]>,
 ) {
   return withErrorHandler(async () => {
     // Validate outlet access
@@ -693,6 +727,38 @@ export async function acceptPurchaseOrder(
         );
       if (poTx.status === "ACCEPTED" || poTx.status === "COMPLETED") {
         throw new Error("Order has already been processed");
+      }
+
+      // 1.5 Create Serial Numbers if provided
+      if (serialNumbers) {
+        for (const [variantId, sns] of Object.entries(serialNumbers)) {
+          if (sns && sns.length > 0) {
+            const poItem = poTx.items.find((i) => i.variantId === variantId);
+            if (poItem) {
+              // Check duplicates in outlet
+              const existing = await tx.serialNumber.findMany({
+                where: {
+                  serialNumber: { in: sns },
+                  outletId,
+                },
+              });
+              if (existing.length > 0) {
+                const duplicates = existing.map((sn) => sn.serialNumber).join(", ");
+                throw new ValidationError(`Serial numbers already exist in database: ${duplicates}`);
+              }
+
+              await tx.serialNumber.createMany({
+                data: sns.map((sn) => ({
+                  serialNumber: sn.trim(),
+                  variantId,
+                  outletId,
+                  purchaseItemId: poItem.id,
+                  status: "AVAILABLE",
+                })),
+              });
+            }
+          }
+        }
       }
 
       const variantUpdates: { variantId: string; newSellingPrice: number }[] = [];

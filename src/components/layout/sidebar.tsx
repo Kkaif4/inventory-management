@@ -51,6 +51,11 @@ const navigation = [
         href: "/dashboard/sales/quotations-and-delivery",
         icon: Quote,
       },
+      {
+        name: "Warranty Lookup",
+        href: "/dashboard/sales/warranty",
+        icon: Shield,
+      },
     ],
   },
   {
@@ -222,6 +227,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                   Dashboard: "dashboard",
                   "Sales Transactions": "salesTransactions",
                   "Quotations & Delivery": "quotations",
+                  "Warranty Lookup": "warrantyLookup",
                   Categories: "categories",
                   Products: "products",
                   "Price Lists": "priceLists",

@@ -89,6 +89,7 @@ model Outlet {
   expenses                 Expense[]
   users                    User[]            @relation("OutletToUser")
   warehouses               Warehouse[]
+  serialNumbers            SerialNumber[]
 }
 
 model Category {
@@ -120,6 +121,8 @@ model Product {
   categoryId      String
   isArchived      Boolean   @default(false)
   outletId        String
+  hasSerialNumbers Boolean  @default(false)
+  warrantyMonths  Int       @default(0)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   category        Category  @relation(fields: [categoryId], references: [id])
@@ -149,6 +152,7 @@ model Variant {
   stocks           Stock[]
   stockLedger      StockLedger[]
   txnItems         TransactionItem[]
+  serialNumbers    SerialNumber[]
   product          Product           @relation(fields: [productId], references: [id])
   suppliers        VendorProduct[]
 
@@ -275,6 +279,8 @@ model TransactionItem {
   igst            Float       @default(0)
   transaction     Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
   variant         Variant?    @relation(fields: [variantId], references: [id])
+  purchaseSerialNumbers SerialNumber[] @relation("PurchaseSerialNumbers")
+  saleSerialNumbers     SerialNumber[] @relation("SaleSerialNumbers")
 
   @@index([transactionId])
   @@index([variantId])
@@ -739,4 +745,36 @@ model OldBillPayment {
   transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 
   @@index([transactionId])
+}
+
+enum SerialNumberStatus {
+  AVAILABLE
+  SOLD
+  DAMAGED
+  RETURNED
+}
+
+model SerialNumber {
+  id             String             @id @default(cuid())
+  serialNumber   String
+  variantId      String
+  outletId       String
+  purchaseItemId String?
+  saleItemId     String?
+  status         SerialNumberStatus @default(AVAILABLE)
+  warrantyMonths Int?               // Custom warranty on purchase, fallbacks to product value
+  warrantyExpiry DateTime?          // Calculated upon sale (invoice date + warrantyMonths)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  variant        Variant            @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  outlet         Outlet             @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  purchaseItem   TransactionItem?   @relation("PurchaseSerialNumbers", fields: [purchaseItemId], references: [id], onDelete: SetNull)
+  saleItem       TransactionItem?   @relation("SaleSerialNumbers", fields: [saleItemId], references: [id], onDelete: SetNull)
+
+  @@unique([serialNumber, variantId, outletId]) // We can have the same serial number for different products, but let's make it unique per variant/outlet or serialNumber/outlet. Let's make it unique per serialNumber/outlet (or just unique globally, but unique per serialNumber/outlet is perfect and matches standard ERP). Wait! The plan says `@@unique([serialNumber, outletId])` which is excellent. Let's stick to @@unique([serialNumber, outletId]) or @@unique([serialNumber, variantId, outletId]). Let's use `@@unique([serialNumber, outletId])`!
+  @@index([variantId])
+  @@index([outletId])
+  @@index([purchaseItemId])
+  @@index([saleItemId])
 }

@@ -30,6 +30,7 @@ export async function createSalesInvoice(data: {
     igst: number;
     hsnCode?: string;
     gstRate?: number;
+    serialNumbers?: string[];
   }[];
   date: Date;
   userId: string;
@@ -98,6 +99,35 @@ export async function createSalesInvoice(data: {
 
     const result = await prisma
       .$transaction(async (tx) => {
+        // 0.5 Validate Serial Numbers before anything else
+        for (const item of data.items) {
+          const variant = variants.find((v) => v.id === item.variantId);
+          if (variant?.product.hasSerialNumbers) {
+            const sns = item.serialNumbers || [];
+            if (sns.length !== item.quantity) {
+              throw new ValidationError(
+                `Product "${variant.product.name}" requires exactly ${item.quantity} serial number(s). Provided: ${sns.length}.`
+              );
+            }
+
+            for (const sn of sns) {
+              const dbSn = await tx.serialNumber.findFirst({
+                where: {
+                  serialNumber: { equals: sn.trim(), mode: "insensitive" },
+                  variantId: item.variantId,
+                  outletId: data.fromOutletId,
+                  status: "AVAILABLE",
+                },
+              });
+              if (!dbSn) {
+                throw new ValidationError(
+                  `Serial number "${sn}" is not available for product "${variant.product.name}" in this outlet.`
+                );
+              }
+            }
+          }
+        }
+
         // 1. Resolve Transaction Number (auto-generate if not provided)
         let txnNumber: string;
         if (data.txnNumber) {
@@ -202,6 +232,47 @@ export async function createSalesInvoice(data: {
             },
           },
         });
+
+        // 2.5 Link Sold Serial Numbers to Transaction Items
+        const createdItems = await tx.transactionItem.findMany({
+          where: { transactionId: invoice.id },
+        });
+
+        for (const item of data.items) {
+          const variant = variants.find((v) => v.id === item.variantId);
+          if (variant?.product.hasSerialNumbers && item.serialNumbers && item.serialNumbers.length > 0) {
+            const grnItem = createdItems.find((ci) => ci.variantId === item.variantId);
+            if (grnItem) {
+              const months = variant.product.warrantyMonths || 0;
+              let expiry = null;
+              if (months > 0) {
+                expiry = new Date(data.date);
+                expiry.setMonth(expiry.getMonth() + months);
+              }
+
+              for (const sn of item.serialNumbers) {
+                const dbSn = await tx.serialNumber.findFirst({
+                  where: {
+                    serialNumber: { equals: sn.trim(), mode: "insensitive" },
+                    variantId: item.variantId,
+                    outletId: data.fromOutletId,
+                    status: "AVAILABLE",
+                  },
+                });
+                if (dbSn) {
+                  await tx.serialNumber.update({
+                    where: { id: dbSn.id },
+                    data: {
+                      status: "SOLD",
+                      saleItemId: grnItem.id,
+                      warrantyExpiry: expiry,
+                    },
+                  });
+                }
+              }
+            }
+          }
+        }
 
         try {
           await StockService.batchUpdateStock(tx, {
