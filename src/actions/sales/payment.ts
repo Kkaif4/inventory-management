@@ -6,7 +6,7 @@ import { withErrorHandler } from "@/lib/error-handler";
 import { ValidationError, NotFoundError } from "@/lib/exceptions";
 import { roundToTwo } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
-import type { RecordPaymentFormValues } from "@/validations/payment.validation";
+import type { RecordPaymentFormValues, RecordMultiplePaymentsFormValues, PaymentMode } from "@/validations/payment.validation";
 import { validateSessionOutletAccess } from "@/lib/outlet-auth";
 import type { AccountType } from "@/generated/prisma";
 
@@ -287,5 +287,231 @@ export async function getOutletAccounts(outletId: string, type?: AccountType) {
       orderBy: { name: "asc" },
     });
     return accounts;
+  });
+}
+
+// ─── Record multiple payments against a posted invoice ────────────────────────
+export async function recordInvoiceMultiplePayments(
+  data: RecordMultiplePaymentsFormValues & { userId: string },
+) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(data.outletId);
+
+    const [outlet] = await Promise.all([
+      prisma.outlet.findUnique({ where: { id: data.outletId } }),
+    ]);
+    if (!outlet) throw new NotFoundError("Outlet not found");
+
+    return await prisma.$transaction(async (tx) => {
+      // 1. Lock and verify the invoice
+      const invoice = await tx.transaction.findUnique({
+        where: { id: data.invoiceId },
+        select: {
+          id: true,
+          txnNumber: true,
+          date: true,
+          grandTotal: true,
+          status: true,
+          billType: true,
+          partyId: true,
+          outletId: true,
+        },
+      });
+
+      if (!invoice) throw new NotFoundError("Invoice not found");
+      if (invoice.billType === "OLD") {
+        throw new ValidationError(
+          "Historical invoices cannot have secondary payments recorded against them.",
+        );
+      }
+      if (invoice.billType === "NO2" && !invoice.partyId) {
+        throw new ValidationError(
+          "Anonymous Cash Memo invoices cannot have payments recorded. Link a customer to this bill to enable payment tracking.",
+        );
+      }
+      if (["PAID", "CANCELLED", "DRAFT"].includes(invoice.status)) {
+        throw new ValidationError(
+          `Cannot record a payment against an invoice with status: ${invoice.status}`,
+        );
+      }
+      if (invoice.outletId !== data.outletId) {
+        throw new ValidationError("Invoice does not belong to this outlet.");
+      }
+
+      // 2. Compute outstanding from sum-of-payments
+      const alreadyPaid = await tx.payment.aggregate({
+        where: { invoiceId: data.invoiceId },
+        _sum: { amount: true },
+      });
+      const totalPaidPrior = roundToTwo(alreadyPaid._sum.amount ?? 0);
+      const outstandingPrior = roundToTwo(invoice.grandTotal - totalPaidPrior);
+
+      const totalNewPaymentAmount = roundToTwo(
+        data.payments.reduce((sum, p) => sum + p.amount, 0)
+      );
+
+      if (totalNewPaymentAmount <= 0) {
+        throw new ValidationError("Total payment amount must be greater than ₹0.");
+      }
+
+      // 3. Process each payment record
+      const debtorAcc = await tx.account.findUnique({
+        where: { code_outletId: { code: "1003", outletId: data.outletId } },
+      });
+
+      for (const p of data.payments) {
+        if (p.amount <= 0) continue;
+
+        // Generate receipt number
+        const txnNumber = await NumberingService.getNextNumber(
+          tx,
+          data.outletId,
+          "RECEIPT",
+        );
+
+        // Create Payment record
+        await tx.payment.create({
+          data: {
+            txnNumber,
+            invoiceId: data.invoiceId,
+            outletId: data.outletId,
+            partyId: data.partyId,
+            amount: p.amount,
+            paymentDate: new Date(data.paymentDate),
+            paymentMode: p.paymentMode,
+            accountId: p.bankAccountId || null,
+            referenceNo: p.referenceNo || null,
+            notes: p.notes || null,
+            createdBy: data.userId,
+          },
+        });
+
+        // Ledger Entries
+        let cashBankAcc = await tx.account.findUnique({
+          where: { code_outletId: { code: "1001", outletId: data.outletId } }, // Cash default
+        });
+
+        if (p.bankAccountId) {
+          const account = await tx.account.findUnique({
+            where: { id: p.bankAccountId },
+          });
+          if (account) {
+            cashBankAcc = await tx.account.findUnique({
+              where: { code_outletId: { code: "1002", outletId: data.outletId } }, // Bank default
+            });
+          }
+        }
+
+        if (debtorAcc && cashBankAcc) {
+          await tx.ledgerEntry.createMany({
+            data: [
+              {
+                transactionId: data.invoiceId,
+                accountId: cashBankAcc.id,
+                partyId: data.partyId,
+                date: new Date(data.paymentDate),
+                debit: p.amount,
+                credit: 0,
+                reference: `Receipt ${txnNumber} for Invoice ${invoice.txnNumber}`,
+              },
+              {
+                transactionId: data.invoiceId,
+                accountId: debtorAcc.id,
+                partyId: data.partyId,
+                date: new Date(data.paymentDate),
+                debit: 0,
+                credit: p.amount,
+                reference: `Receipt ${txnNumber} for Invoice ${invoice.txnNumber}`,
+              },
+            ],
+          });
+        }
+
+        // Account balances
+        if (p.bankAccountId) {
+          const account = await tx.account.findUnique({
+            where: { id: p.bankAccountId },
+            select: { currentBalance: true },
+          });
+
+          if (account) {
+            const newBalance = roundToTwo(account.currentBalance + p.amount);
+
+            await tx.accountTransaction.create({
+              data: {
+                accountId: p.bankAccountId,
+                type: "IN",
+                amount: p.amount,
+                paymentMode: p.paymentMode as any,
+                chequeNumber: p.chequeNumber || null,
+                chequeDate: p.chequeDate ? new Date(p.chequeDate) : null,
+                upiReferenceId: p.utrReferenceId || null,
+                transactionId: p.transactionId || null,
+                balanceAfter: newBalance,
+                linkedTxnId: data.invoiceId,
+                linkedTxnType: "INVOICE_PAYMENT",
+                remarks: `Payment for invoice ${invoice.txnNumber}`,
+                userId: data.userId,
+              },
+            });
+
+            await tx.account.update({
+              where: { id: p.bankAccountId },
+              data: { currentBalance: newBalance },
+            });
+          }
+        }
+      }
+
+      // Update Invoice Status
+      const totalPaidNew = roundToTwo(totalPaidPrior + totalNewPaymentAmount);
+      const isFullyPaid = totalPaidNew >= invoice.grandTotal - 0.005;
+
+      await tx.transaction.update({
+        where: { id: data.invoiceId },
+        data: {
+          status: isFullyPaid ? "PAID" : "PARTIALLY_PAID",
+          paidAt: isFullyPaid ? new Date(data.paymentDate) : null,
+        },
+      });
+
+      // Update customer outstanding
+      if (invoice.partyId) {
+        const amountAppliedToOutstanding = Math.min(totalNewPaymentAmount, outstandingPrior);
+        const overpayment = roundToTwo(totalNewPaymentAmount - amountAppliedToOutstanding);
+
+        if (overpayment > 0.005) {
+          await tx.party.update({
+            where: { id: invoice.partyId },
+            data: { creditBalance: { increment: overpayment } },
+          });
+        }
+
+        await tx.party.update({
+          where: { id: invoice.partyId },
+          data: { outstandingBalance: { decrement: amountAppliedToOutstanding } },
+        });
+
+        const updatedParty = await tx.party.findUnique({
+          where: { id: invoice.partyId },
+          select: { outstandingBalance: true },
+        });
+        if (updatedParty && updatedParty.outstandingBalance < -0.005) {
+          await tx.party.update({
+            where: { id: invoice.partyId },
+            data: { outstandingBalance: 0 },
+          });
+        }
+      }
+
+      revalidatePath(`/dashboard/sales/invoices/${data.invoiceId}`);
+      revalidatePath("/dashboard/sales/invoices");
+      revalidatePath("/dashboard/financials/ledger");
+
+      return {
+        invoiceStatus: isFullyPaid ? "PAID" : "PARTIALLY_PAID",
+        remaining: roundToTwo(invoice.grandTotal - totalPaidNew),
+      };
+    });
   });
 }

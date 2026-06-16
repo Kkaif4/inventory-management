@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PAYMENT_MODES } from "./payment.validation";
 
 const invoiceItemSchema = z.object({
   variantId: z.string().min(1, "Product is required"),
@@ -15,6 +16,7 @@ const invoiceItemSchema = z.object({
   sgst: z.number().optional(),
   igst: z.number().optional(),
   lineTotal: z.number().default(0),
+  serialNumbers: z.array(z.string()).optional(),
 });
 
 // No.1 Legal Invoice Schema
@@ -32,6 +34,20 @@ export const createNo1InvoiceSchema = z.object({
   remarks: z.string().optional(),
   buyerName: z.string().optional(),
   buyerPhone: z.string().optional(),
+  payments: z
+    .array(
+      z.object({
+        paymentMode: z.enum(PAYMENT_MODES),
+        bankAccountId: z.string().optional().nullable(),
+        amount: z.number().min(0.01, "Amount must be > 0"),
+        referenceNo: z.string().optional().nullable(),
+        notes: z.string().optional().nullable(),
+        chequeNumber: z.string().optional().nullable(),
+        chequeDate: z.string().optional().nullable(),
+      })
+    )
+    .optional()
+    .default([]),
 });
 
 // No.2 Raw Cash Memo Schema
@@ -48,6 +64,20 @@ export const createNo2InvoiceSchema = z.object({
     .min(1, "At least one item required"),
   freightCost: z.number().min(0, "Freight >= 0").default(0),
   remarks: z.string().optional(),
+  payments: z
+    .array(
+      z.object({
+        paymentMode: z.enum(PAYMENT_MODES),
+        bankAccountId: z.string().optional().nullable(),
+        amount: z.number().min(0.01, "Amount must be > 0"),
+        referenceNo: z.string().optional().nullable(),
+        notes: z.string().optional().nullable(),
+        chequeNumber: z.string().optional().nullable(),
+        chequeDate: z.string().optional().nullable(),
+      })
+    )
+    .optional()
+    .default([]),
 });
 
 const oldBillPaymentSchema = z.object({

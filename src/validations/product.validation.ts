@@ -25,6 +25,8 @@ export const productCreateSchema = z
     categoryId: z.string().min(1, "Category is required"),
     parentCategoryId: z.string().optional().nullable(),
     variants: z.array(variantSchema).min(1, "At least one variant is required"),
+    hasSerialNumbers: z.boolean().default(false),
+    warrantyMonths: z.coerce.number().min(0).default(0),
   })
   .refine(
     (data) => {
@@ -51,6 +53,8 @@ export const productEditSchema = z
     conversionRatio: z.coerce.number().min(1).default(1),
     categoryId: z.string().min(1, "Category is required"),
     variants: z.array(variantSchema).min(1, "At least one variant is required"),
+    hasSerialNumbers: z.boolean().default(false),
+    warrantyMonths: z.coerce.number().min(0).default(0),
   })
   .refine(
     (data) => {

@@ -178,6 +178,8 @@ export async function createProduct(data: {
   outletId: string;
   variants: VariantPayload[];
   userId: string;
+  hasSerialNumbers?: boolean;
+  warrantyMonths?: number;
 }) {
   return withErrorHandler(async () => {
     const { variants, userId, outletId, ...productData } = data;
@@ -205,6 +207,8 @@ export async function createProduct(data: {
     const product = await prisma.product.create({
       data: {
         ...productData,
+        hasSerialNumbers: data.hasSerialNumbers ?? false,
+        warrantyMonths: data.warrantyMonths ?? 0,
         outletId,
         variants: {
           create: variants.map((v) => ({
@@ -286,6 +290,8 @@ export async function updateProduct(
     categoryId: string;
     userId: string;
     isArchived?: boolean;
+    hasSerialNumbers?: boolean;
+    warrantyMonths?: number;
     variants?: {
       id: string;
       sku: string;
@@ -473,5 +479,51 @@ export async function getNextSkuNumber(prefix: string, outletId: string) {
       return parseInt(parts[parts.length - 1]) || 0;
     });
     return String(Math.max(...nums) + 1).padStart(3, "0");
+  });
+}
+
+export async function getVariantBySerialNumber(outletId: string, serialNumber: string) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+    const sn = await prisma.serialNumber.findFirst({
+      where: {
+        serialNumber: { equals: serialNumber.trim(), mode: "insensitive" },
+        outletId,
+        status: "AVAILABLE",
+      },
+      include: {
+        variant: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+    if (!sn) return null;
+    return {
+      serialNumber: sn.serialNumber,
+      variant: sn.variant,
+      product: sn.variant.product,
+    };
+  });
+}
+
+export async function getAvailableSerialNumbers(outletId: string, variantId: string) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+    const sns = await prisma.serialNumber.findMany({
+      where: {
+        outletId,
+        variantId,
+        status: "AVAILABLE",
+      },
+      select: {
+        serialNumber: true,
+      },
+      orderBy: {
+        serialNumber: "asc",
+      },
+    });
+    return sns.map((s) => s.serialNumber);
   });
 }

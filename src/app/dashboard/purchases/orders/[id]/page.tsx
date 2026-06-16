@@ -48,6 +48,8 @@ export default function PurchaseOrderDetailPage() {
   const [billDate, setBillDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [freightCost, setFreightCost] = useState("0");
   const [itemsExpanded, setItemsExpanded] = useState(true);
+  const [acceptDialogOpen, setAcceptDialogOpen] = useState(false);
+  const [serialNumbersText, setSerialNumbersText] = useState<Record<string, string>>({});
 
   const loadPO = useCallback(async () => {
     if (!id || !currentOutletId) return;
@@ -70,18 +72,59 @@ export default function PurchaseOrderDetailPage() {
     loadPO();
   }, [loadPO]);
 
+  const handleAcceptClick = () => {
+    if (!po) return;
+    const hasSerial = po.items.some((item: any) => item.variant?.product?.hasSerialNumbers);
+    if (hasSerial) {
+      const init: Record<string, string> = {};
+      po.items.forEach((item: any) => {
+        if (item.variant?.product?.hasSerialNumbers) {
+          init[item.variantId] = "";
+        }
+      });
+      setSerialNumbersText(init);
+      setAcceptDialogOpen(true);
+    } else {
+      handleAccept();
+    }
+  };
+
   const handleAccept = async () => {
     if (!po || !currentOutletId || !session?.user?.id) {
       toast.error("Missing required information");
       return;
     }
 
+    const serialNumbersPayload: Record<string, string[]> = {};
+    const hasSerial = po.items.some((item: any) => item.variant?.product?.hasSerialNumbers);
+    
+    if (hasSerial) {
+      for (const item of po.items) {
+        if (item.variant?.product?.hasSerialNumbers) {
+          const text = serialNumbersText[item.variantId] || "";
+          const sns = text.split("\n").map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+          if (sns.length !== item.quantity) {
+            toast.error(
+              `Product "${item.variant.product.name}" requires exactly ${item.quantity} serial number(s). You entered ${sns.length}.`
+            );
+            return;
+          }
+          serialNumbersPayload[item.variantId] = sns;
+        }
+      }
+    }
+
     try {
       setIsAccepting(true);
-      await acceptPurchaseOrder(po.id, currentOutletId, session.user.id);
-      toast.success("Purchase Order accepted and stock updated");
-      await loadPO();
-      router.refresh();
+      const res = await acceptPurchaseOrder(po.id, currentOutletId, session.user.id, serialNumbersPayload);
+      if (res.success) {
+        toast.success("Purchase Order accepted and stock updated");
+        setAcceptDialogOpen(false);
+        await loadPO();
+        router.refresh();
+      } else {
+        toast.error(res.error?.message || "Failed to accept order");
+      }
     } catch (error: any) {
       toast.error(error.message || "Failed to accept order");
     } finally {
@@ -185,7 +228,7 @@ export default function PurchaseOrderDetailPage() {
         <div className="flex items-center gap-2">
           {canAccept && (
             <Button
-              onClick={handleAccept}
+              onClick={handleAcceptClick}
               disabled={isAccepting}
               className="gap-2 bg-blue-600 hover:bg-blue-700 h-9 text-sm font-bold shadow shadow-blue-100"
             >
@@ -397,6 +440,60 @@ export default function PurchaseOrderDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Accept PO Serial Number Dialog */}
+      <Dialog open={acceptDialogOpen} onOpenChange={setAcceptDialogOpen}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <Check className="w-5 h-5 text-blue-600" />
+              Enter Serial Numbers
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-5 py-4 max-h-[350px] overflow-y-auto pr-1">
+            {po.items
+              .filter((item: any) => item.variant?.product?.hasSerialNumbers)
+              .map((item: any) => (
+                <div key={item.id} className="space-y-2 border-b pb-4 last:border-b-0 last:pb-0">
+                  <Label className="text-xs font-bold uppercase text-slate-700 block">
+                    {item.variant.product.name} (SKU: {item.variant.sku}) - Enter {item.quantity} Serial(s)
+                  </Label>
+                  <textarea
+                    rows={3}
+                    placeholder="Enter serial numbers, one per line..."
+                    value={serialNumbersText[item.variantId] || ""}
+                    onChange={(e) =>
+                      setSerialNumbersText((prev) => ({
+                        ...prev,
+                        [item.variantId]: e.target.value,
+                      }))
+                    }
+                    className="w-full text-xs font-mono border border-slate-300 rounded-md p-1.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                  <p className="text-[10px] text-slate-400 italic">
+                    * Make sure to enter exactly {item.quantity} lines.
+                  </p>
+                </div>
+              ))}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setAcceptDialogOpen(false)}
+              className="rounded-lg"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAccept}
+              disabled={isAccepting}
+              className="bg-blue-600 hover:bg-blue-700 rounded-lg"
+            >
+              {isAccepting ? "Accepting..." : "Accept & Update Stock"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Bill Dialog */}
       <Dialog open={billDialogOpen} onOpenChange={setBillDialogOpen}>

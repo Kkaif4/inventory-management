@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
 import { useSession } from "next-auth/react";
 import { PRODUCT_UNITS } from "@/lib/constants";
@@ -47,6 +48,8 @@ interface ProductWithVariants {
   purchaseUnit: string | null;
   conversionRatio: number;
   categoryId: string;
+  hasSerialNumbers?: boolean;
+  warrantyMonths?: number;
   variants: {
     id: string;
     sku: string;
@@ -103,6 +106,8 @@ export function ProductEditClient({
       purchaseUnit: product.purchaseUnit || "",
       conversionRatio: product.conversionRatio || 1,
       categoryId: product.categoryId,
+      hasSerialNumbers: product.hasSerialNumbers || false,
+      warrantyMonths: product.warrantyMonths || 0,
       variants: product.variants.map((v: any) => ({
         id: v.id,
         sku: v.sku,
@@ -142,6 +147,8 @@ export function ProductEditClient({
         conversionRatio: data.conversionRatio || 1,
         categoryId: data.categoryId,
         userId: session.user.id,
+        hasSerialNumbers: data.hasSerialNumbers,
+        warrantyMonths: data.warrantyMonths,
         variants: data.variants.map((v: any) => ({
           id: v.id,
           sku: v.sku,
@@ -423,6 +430,49 @@ export function ProductEditClient({
                     )}
                   />
                 )}
+
+                <div className="md:col-span-2 border-t border-border/50 my-2 pt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={control}
+                    name="hasSerialNumbers"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border/50 p-3 shadow-sm bg-surface-elevated/20">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-sm font-semibold">{t("form.hasSerialNumbersLabel")}</FormLabel>
+                          <p className="text-[10px] text-text-muted">
+                            {t("form.hasSerialNumbersHelp")}
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={control}
+                    name="warrantyMonths"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold">{t("form.warrantyMonthsLabel")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            placeholder={t("form.warrantyMonthsPlaceholder")}
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

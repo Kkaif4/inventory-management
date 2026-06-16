@@ -320,41 +320,36 @@ export function POSInvoiceForm({
       const cleanedData = {
         ...data,
         items: (data.items || []).filter((item: any) => item.variantId),
-      };
+      } as any;
+
+      if (data.billType === "NO1" || data.billType === "NO2") {
+        if (no2PaymentMode === "CREDIT") {
+          cleanedData.payments = [];
+        } else if (no2PaymentMode === "SPLIT") {
+          cleanedData.payments = (data.payments || [])
+            .filter((p: any) => p && p.amount && p.amount > 0)
+            .map((p: any) => ({
+              paymentMode: p.paymentMode,
+              bankAccountId: p.bankAccountId || null,
+              amount: p.amount,
+              referenceNo: p.referenceNo || null,
+              notes: p.notes || null,
+              chequeNumber: p.chequeNumber || null,
+              chequeDate: p.chequeDate || null,
+            }));
+        } else {
+          cleanedData.payments = [
+            {
+              paymentMode: no2PaymentMode,
+              amount: totals.grandTotal,
+              bankAccountId: null,
+            },
+          ];
+        }
+      }
 
       const res = await onSubmitProp(cleanedData as any);
       if (res.success) {
-        // For new NO1/NO2 bills with a customer and an immediate payment mode, auto-record payment
-        const createdInvoice = (res as any).data?.invoice;
-        if (
-          mode === "create" &&
-          (data.billType === "NO1" || data.billType === "NO2") &&
-          no2PaymentMode !== "CREDIT" &&
-          createdInvoice?.id &&
-          createdInvoice?.grandTotal > 0 &&
-          cleanedData.partyId &&
-          session?.user?.id
-        ) {
-          const payRes = await recordInvoicePayment({
-            invoiceId: createdInvoice.id,
-            outletId: cleanedData.fromOutletId,
-            partyId: cleanedData.partyId,
-            amount: createdInvoice.grandTotal,
-            paymentDate: (data.date instanceof Date ? data.date : new Date(data.date as any))
-              .toISOString()
-              .split("T")[0],
-            paymentMode: no2PaymentMode as any,
-            userId: session.user.id,
-          });
-          if (!payRes.success) {
-            // Invoice was created — show a warning but still navigate
-            const invoiceType = data.billType === "NO1" ? "Invoice" : "Cash memo";
-            toast.warning(
-              `${invoiceType} posted but payment recording failed: ${payRes.error?.message ?? "unknown error"}. Record it manually from the invoice detail page.`,
-            );
-          }
-        }
-
         // Reset state before navigation
         setAttachmentCount(0);
         toast.success(
@@ -541,7 +536,20 @@ export function POSInvoiceForm({
             notesRef={notesRef}
             paymentFieldArray={paymentFieldArray}
             no2PaymentMode={no2PaymentMode}
-            onNo2PaymentModeChange={setNo2PaymentMode}
+            onNo2PaymentModeChange={(mode) => {
+              setNo2PaymentMode(mode);
+              if (mode === "SPLIT") {
+                if (paymentFieldArray.fields.length === 0) {
+                  paymentFieldArray.append({
+                    paymentMode: "CASH",
+                    bankAccountId: "",
+                    amount: totals.grandTotal,
+                    referenceNo: "",
+                    notes: "",
+                  } as any);
+                }
+              }
+            }}
           />
         </div>
       </form>
