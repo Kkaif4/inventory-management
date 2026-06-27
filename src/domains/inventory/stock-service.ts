@@ -189,57 +189,102 @@ export const StockService = {
             quantityConsumed: 0,
             purchaseUnitRate,
             costPerBaseUnit,
+            sellingPricePerBaseUnit,
             status: "ACTIVE",
           },
         });
       } else if (quantity < 0) {
-        // OUTGOING: Consume batches using allocation service
+        // OUTGOING: Consume batches
         const requiredQty = Math.abs(quantity);
-        const batchPricingMode = outlet.batchPricingMode || "STRICT";
 
-        try {
-          // Call batch allocation service with outlet's pricing mode
-          const allocation: BatchAllocationResult = await allocateBatches(tx, {
-            variantId,
-            warehouseId: warehouseId as string,
-            outletId,
-            requiredQty,
-            mode: batchPricingMode,
+        if (input.batchNumber) {
+          // Consume from a specific batch chosen by user
+          const customBatch = await tx.customBatch.findFirst({
+            where: {
+              batchNumber: input.batchNumber,
+              variantId,
+              warehouseId: warehouseId as string,
+              outletId,
+            },
           });
 
-          // Update batches and create BatchMovement records
-          for (const batch of allocation.batchesConsumed) {
-            await tx.customBatch.update({
-              where: { id: batch.batchId },
-              data: {
-                quantityConsumed: { increment: batch.quantity },
-              },
-            });
-
-            await tx.batchMovement.create({
-              data: {
-                batchId: batch.batchId,
-                transactionId,
-                quantity: -batch.quantity,
-              },
-            });
+          if (!customBatch) {
+            throw new Error(`Batch number ${input.batchNumber} not found for this product in the selected warehouse.`);
           }
 
-          // Update ledger entry with allocated cost
+          const availableQty = customBatch.quantityReceived - customBatch.quantityConsumed;
+          if (availableQty < requiredQty && !effectiveAllowNegative) {
+            throw new Error(`Insufficient stock in batch ${input.batchNumber}. Required: ${requiredQty}, Available: ${availableQty}`);
+          }
+
+          // Consume from specific batch
+          await tx.customBatch.update({
+            where: { id: customBatch.id },
+            data: {
+              quantityConsumed: { increment: requiredQty },
+            },
+          });
+
+          await tx.batchMovement.create({
+            data: {
+              batchId: customBatch.id,
+              transactionId,
+              quantity: -requiredQty,
+            },
+          });
+
           await tx.stockLedger.update({
             where: { id: ledgerEntry.id },
-            data: { costPerUnit: allocation.costPerUnit },
+            data: { costPerUnit: customBatch.costPerBaseUnit },
           });
-        } catch (error) {
-          // Batch allocation failed (insufficient stock, etc.)
-          if (error instanceof Error && error.message.includes("Insufficient")) {
-            if (!effectiveAllowNegative) {
+        } else {
+          // Consume batches using allocation service
+          const batchPricingMode = outlet.batchPricingMode || "STRICT";
+
+          try {
+            // Call batch allocation service with outlet's pricing mode
+            const allocation: BatchAllocationResult = await allocateBatches(tx, {
+              variantId,
+              warehouseId: warehouseId as string,
+              outletId,
+              requiredQty,
+              mode: batchPricingMode,
+            });
+
+            // Update batches and create BatchMovement records
+            for (const batch of allocation.batchesConsumed) {
+              await tx.customBatch.update({
+                where: { id: batch.batchId },
+                data: {
+                  quantityConsumed: { increment: batch.quantity },
+                },
+              });
+
+              await tx.batchMovement.create({
+                data: {
+                  batchId: batch.batchId,
+                  transactionId,
+                  quantity: -batch.quantity,
+                },
+              });
+            }
+
+            // Update ledger entry with allocated cost
+            await tx.stockLedger.update({
+              where: { id: ledgerEntry.id },
+              data: { costPerUnit: allocation.costPerUnit },
+            });
+          } catch (error) {
+            // Batch allocation failed (insufficient stock, etc.)
+            if (error instanceof Error && error.message.includes("Insufficient")) {
+              if (!effectiveAllowNegative) {
+                throw error;
+              }
+              // If negative stock is allowed, continue without batch allocation
+              // (this shouldn't happen in normal operation but covers edge cases)
+            } else {
               throw error;
             }
-            // If negative stock is allowed, continue without batch allocation
-            // (this shouldn't happen in normal operation but covers edge cases)
-          } else {
-            throw error;
           }
         }
       }
@@ -285,6 +330,7 @@ export const StockService = {
         quantityChange: number;
         allowNegative?: boolean;
         costPerUnit?: number;
+        batchNumber?: string | null;
       }[];
     },
   ) {
@@ -299,6 +345,7 @@ export const StockService = {
         userId: input.userId,
         allowNegative: item.allowNegative,
         costPerUnit: item.costPerUnit,
+        batchNumber: item.batchNumber || undefined,
       });
     }
   },
@@ -325,6 +372,20 @@ export const StockService = {
 
     const batchPricingMode = outlet?.batchPricingMode || "STRICT";
 
+    // Find oldest active batch for the variant
+    const oldestActiveBatch = await tx.customBatch.findFirst({
+      where: {
+        variantId: input.variantId,
+        warehouseId: input.warehouseId as string,
+        outletId: input.outletId,
+        status: "ACTIVE",
+      },
+      orderBy: { receivedDate: "asc" },
+      select: { sellingPricePerBaseUnit: true },
+    });
+
+    const oldestBatchSellingPrice = oldestActiveBatch?.sellingPricePerBaseUnit ?? null;
+
     try {
       // Use batch allocation service for allocation logic
       const allocation = await allocateBatches(tx, {
@@ -346,7 +407,7 @@ export const StockService = {
         totalCost: roundToTwo(totalCost),
         totalQty: input.quantity,
         shortfall: 0, // Allocation succeeded
-        oldestBatchSellingPrice: null, // No longer tracked on batches
+        oldestBatchSellingPrice,
         batchesUsed: allocation.batchesConsumed.map((batch) => ({
           batchId: batch.batchId,
           batchNumber: batch.batchNumber,
@@ -363,7 +424,7 @@ export const StockService = {
           totalCost: 0,
           totalQty: 0,
           shortfall: input.quantity,
-          oldestBatchSellingPrice: null,
+          oldestBatchSellingPrice,
           batchesUsed: [],
         };
       }

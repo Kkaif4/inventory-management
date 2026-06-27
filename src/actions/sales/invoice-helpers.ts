@@ -123,8 +123,73 @@ export async function getVariantBatchPrice(
   return withErrorHandler(async () => {
     await validateSessionOutletAccess(outletId);
 
+    const outlet = await prisma.outlet.findUnique({
+      where: { id: outletId },
+      select: { batchTrackingEnabled: true },
+    });
+
+    if (outlet?.batchTrackingEnabled) {
+      // Find oldest active batch with available stock
+      const oldestBatch = await prisma.customBatch.findFirst({
+        where: {
+          variantId,
+          warehouseId,
+          outletId,
+          status: "ACTIVE",
+        },
+        orderBy: { receivedDate: "asc" },
+      });
+
+      if (oldestBatch && oldestBatch.sellingPricePerBaseUnit !== null) {
+        const available = oldestBatch.quantityReceived - oldestBatch.quantityConsumed;
+        if (available > 0) {
+          return {
+            price: oldestBatch.sellingPricePerBaseUnit,
+            source: "batch_price",
+            batchNumber: oldestBatch.batchNumber,
+          };
+        }
+      }
+    }
+
     // Fallback to customer price list or standard price
     return await getVariantPrice(variantId, customerId, outletId);
+  });
+}
+
+/**
+ * Get all active batches with positive stock for a variant in a warehouse
+ */
+export async function getVariantBatches(
+  variantId: string,
+  warehouseId: string,
+  outletId: string,
+) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+
+    const batches = await prisma.customBatch.findMany({
+      where: {
+        variantId,
+        warehouseId,
+        outletId,
+        status: "ACTIVE",
+      },
+      orderBy: { receivedDate: "asc" },
+    });
+
+    return batches
+      .map((b) => ({
+        id: b.id,
+        batchNumber: b.batchNumber,
+        sellingPrice: b.sellingPricePerBaseUnit,
+        costPrice: b.costPerBaseUnit,
+        quantityReceived: b.quantityReceived,
+        quantityConsumed: b.quantityConsumed,
+        availableQty: Math.max(0, b.quantityReceived - b.quantityConsumed),
+        receivedDate: b.receivedDate,
+      }))
+      .filter((b) => b.availableQty > 0);
   });
 }
 

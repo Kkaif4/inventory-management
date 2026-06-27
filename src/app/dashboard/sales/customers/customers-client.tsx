@@ -45,6 +45,14 @@ import { CustomerEditDrawer } from "@/components/sales/customer-edit-drawer";
 import { deleteCustomer } from "@/actions/sales/customers";
 import { ReusableConfirmDialog } from "@/components/ui/reusable-confirm-dialog";
 import { PaginationMeta } from "@/types/pagination";
+import { getWhatsAppReminderUrl, WhatsAppIcon } from "@/lib/whatsapp";
+import { useOutlet } from "@/hooks/use-outlet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Customer {
   id: string;
@@ -71,6 +79,8 @@ export function CustomersClient({
   outletId,
 }: CustomersClientProps) {
   const router = useRouter();
+  const { currentOutlet } = useOutlet();
+  const outletName = currentOutlet?.name || undefined;
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
@@ -285,13 +295,37 @@ export function CustomersClient({
         cell: ({ row }) => {
           const val = row.original.outstandingBalance;
           const hasOverdue = row.original.overdue > 0;
+          const phone = row.original.phone;
           return (
-            <div
-              className={`text-right font-semibold ${
-                val > 0 ? (hasOverdue ? "text-red-600" : "text-slate-900") : "text-emerald-600"
-              }`}
-            >
-              ₹{val.toLocaleString()}
+            <div className="flex items-center justify-end gap-2">
+              <span
+                className={`font-semibold ${
+                  val > 0 ? (hasOverdue ? "text-red-600" : "text-slate-900") : "text-emerald-600"
+                }`}
+              >
+                ₹{val.toLocaleString()}
+              </span>
+              {val > 0 && phone && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <a
+                          href={getWhatsAppReminderUrl(phone, row.original.name, val, outletName)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-all active:scale-90"
+                        >
+                          <WhatsAppIcon className="w-4 h-4" />
+                        </a>
+                      }
+                    />
+                    <TooltipContent>
+                      <p>Send WhatsApp reminder</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           );
         },
@@ -336,6 +370,25 @@ export function CustomersClient({
                   >
                     <BookOpen className="mr-2 h-4 w-4 text-slate-500" /> Statement
                   </DropdownMenuItem>
+                  {row.original.phone && row.original.outstandingBalance > 0 && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        window.open(
+                          getWhatsAppReminderUrl(
+                            row.original.phone!,
+                            row.original.name,
+                            row.original.outstandingBalance,
+                            outletName
+                          ),
+                          "_blank",
+                          "noopener,noreferrer"
+                        )
+                      }
+                      className="cursor-pointer flex items-center text-emerald-600 focus:text-emerald-700 focus:bg-emerald-50"
+                    >
+                      <WhatsAppIcon className="mr-2 h-4 w-4" /> Send Reminder
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() =>

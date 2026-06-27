@@ -31,6 +31,7 @@ export async function createSalesInvoice(data: {
     hsnCode?: string;
     gstRate?: number;
     serialNumbers?: string[];
+    batchNumber?: string | null;
   }[];
   date: Date;
   userId: string;
@@ -217,10 +218,7 @@ export async function createSalesInvoice(data: {
               create: data.items.map((item, idx) => ({
                 variantId: item.variantId,
                 quantity: item.quantity,
-                rate:
-                  fifoEnabled && fifoBreakdowns[idx]
-                    ? fifoBreakdowns[idx].weightedAvgCost // FIFO-derived rate
-                    : item.rate, // fallback to user rate
+                rate: item.rate,
                 conversionRatio:
                   variants.find((v) => v.id === item.variantId)?.product
                     .conversionRatio || 1,
@@ -287,6 +285,7 @@ export async function createSalesInvoice(data: {
                 locationType: warehouseId ? "WAREHOUSE" : "OUTLET",
                 quantityChange: -item.quantity,
                 allowNegative,
+                batchNumber: item.batchNumber,
               };
             }),
           });

@@ -13,6 +13,14 @@ import {
 } from "@/components/reports";
 import type { CustomerOutstandingItem } from "@/types/reports/outstanding";
 import type { PaginationMeta } from "@/types/pagination";
+import { getWhatsAppReminderUrl, WhatsAppIcon } from "@/lib/whatsapp";
+import { useOutlet } from "@/hooks/use-outlet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CustomerOutstandingClientProps {
   initialData: CustomerOutstandingItem[];
@@ -24,6 +32,8 @@ export function CustomerOutstandingClient({
   initialData,
 }: CustomerOutstandingClientProps) {
   const router = useRouter();
+  const { currentOutlet } = useOutlet();
+  const outletName = currentOutlet?.name || undefined;
   const searchParams = useSearchParams();
   const t = useTranslations("reports");
   const [isLoading, setIsLoading] = useState(false);
@@ -103,8 +113,31 @@ export function CustomerOutstandingClient({
       header: t("columns.outstanding"),
       align: "right",
       sortable: true,
-      format: (val: number) => (
-        <span className="text-red-600 font-bold">₹{val.toFixed(2)}</span>
+      format: (val: number, row?: CustomerOutstandingItem) => (
+        <div className="flex items-center justify-end gap-2">
+          <span className="text-red-600 font-bold">₹{val.toFixed(2)}</span>
+          {val > 0 && row?.customerPhone && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <a
+                      href={getWhatsAppReminderUrl(row.customerPhone, row.customerName, val, outletName)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-all active:scale-90"
+                    >
+                      <WhatsAppIcon className="w-4.5 h-4.5" />
+                    </a>
+                  }
+                />
+                <TooltipContent>
+                  <p>Send WhatsApp reminder</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
       ),
     },
     {

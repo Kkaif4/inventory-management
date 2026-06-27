@@ -69,6 +69,8 @@ function transformItems(
         igst: 0,
         hsnCode: item.hsnCode,
         gstRate: 0,
+        batchNumber: item.batchNumber || null,
+        serialNumbers: item.serialNumbers || [],
       };
     } else {
       // Legal invoice - calculate GST
@@ -94,6 +96,8 @@ function transformItems(
         igst: tax.igst,
         hsnCode: item.hsnCode,
         gstRate,
+        batchNumber: item.batchNumber || null,
+        serialNumbers: item.serialNumbers || [],
       };
     }
   });
