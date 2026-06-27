@@ -363,6 +363,7 @@ model CustomBatch {
   // Purchase cost tracking (for COGS/FIFO valuation)
   purchaseUnitRate        Float           @default(0)       // ₹100/Box — original bill rate
   costPerBaseUnit         Float           @default(0)       // ₹10/Piece = purchaseUnitRate / conversionRatio
+  sellingPricePerBaseUnit Float           @default(0)
 
   status                  String          @default("ACTIVE")  // "ACTIVE" / "EXHAUSTED"
   createdAt               DateTime        @default(now())

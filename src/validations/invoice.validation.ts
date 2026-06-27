@@ -17,6 +17,7 @@ const invoiceItemSchema = z.object({
   igst: z.number().optional(),
   lineTotal: z.number().default(0),
   serialNumbers: z.array(z.string()).optional(),
+  batchNumber: z.string().optional().nullable(),
 });
 
 // No.1 Legal Invoice Schema

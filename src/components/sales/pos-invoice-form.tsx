@@ -12,7 +12,10 @@ import { invoiceSchema } from "@/validations/invoice.validation";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { POSInvoiceHeader } from "@/components/sales/pos-invoice-header";
 import { POSInvoiceTable } from "@/components/sales/pos-invoice-table";
-import { POSInvoiceFooter, type No2PaymentMode } from "@/components/sales/pos-invoice-footer";
+import {
+  POSInvoiceFooter,
+  type No2PaymentMode,
+} from "@/components/sales/pos-invoice-footer";
 import { peekNextInvoiceNumber } from "@/actions/sales/invoice-form-handler";
 import { handleCreateOldBill } from "@/actions/sales/old-bill-form-handler";
 import { recordInvoicePayment } from "@/actions/sales/payment";
@@ -45,7 +48,8 @@ export function POSInvoiceForm({
   const [isGlobalDiscount, setIsGlobalDiscount] = React.useState(true);
   const [invoiceNumber, setInvoiceNumber] = React.useState("");
   const [attachmentCount, setAttachmentCount] = React.useState(0);
-  const [no2PaymentMode, setNo2PaymentMode] = React.useState<No2PaymentMode>("CASH");
+  const [no2PaymentMode, setNo2PaymentMode] =
+    React.useState<No2PaymentMode>("CREDIT");
 
   // Refs for keyboard shortcut targets
   const formContainerRef = React.useRef<HTMLDivElement>(null);
@@ -77,7 +81,8 @@ export function POSInvoiceForm({
           billType: "NO1",
           txnNumber: "",
           date: new Date(),
-          fromOutletId: (currentOutletId && currentOutletId !== "ALL") ? currentOutletId : "",
+          fromOutletId:
+            currentOutletId && currentOutletId !== "ALL" ? currentOutletId : "",
           partyId: "",
           buyerName: "",
           buyerPhone: "",
@@ -541,7 +546,7 @@ export function POSInvoiceForm({
               if (mode === "SPLIT") {
                 if (paymentFieldArray.fields.length === 0) {
                   paymentFieldArray.append({
-                    paymentMode: "CASH",
+                    paymentMode: "CREDIT",
                     bankAccountId: "",
                     amount: totals.grandTotal,
                     referenceNo: "",

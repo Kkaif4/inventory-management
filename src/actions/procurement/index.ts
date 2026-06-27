@@ -166,7 +166,7 @@ export async function createGRN(data: {
       }
 
       // 3. Update physical stock for each item (Convert to Base Unit) with batch pricing
-      const variantUpdates: { variantId: string; newSellingPrice: number }[] = [];
+      const variantUpdates: { variantId: string; purchasePrice: number; sellingPrice?: number }[] = [];
 
       for (const item of itemsData) {
         const baseQuantity = normalizeToStockQty({
@@ -203,6 +203,9 @@ export async function createGRN(data: {
           purchaseOrderId: data.poId,
         });
 
+        const costPricePerBaseUnit = purchaseUnitRate / (conversionRatio || 1);
+        let newSellingPrice: number | undefined;
+
         // If MARKUP: update variant selling price to new batch's selling price
         if (pricingMethod === "MARKUP" && markupPercent !== null && markupPercent !== undefined) {
           const { sellingPricePerBaseUnit } = calculateBatchPricing(
@@ -212,20 +215,23 @@ export async function createGRN(data: {
             markupPercent,
             variantSellingPrice,
           );
-          variantUpdates.push({
-            variantId: item.variantId,
-            newSellingPrice: sellingPricePerBaseUnit,
-          });
+          newSellingPrice = sellingPricePerBaseUnit;
         }
+
+        variantUpdates.push({
+          variantId: item.variantId,
+          purchasePrice: costPricePerBaseUnit,
+          sellingPrice: newSellingPrice,
+        });
       }
 
-      // 4. Update variant master prices for MARKUP batches
+      // 4. Update variant master prices (purchasePrice and sellingPrice if MARKUP)
       for (const update of variantUpdates) {
         await tx.variant.update({
           where: { id: update.variantId },
           data: {
-            sellingPrice: update.newSellingPrice,
-            purchasePrice: itemsData.find((i) => i.variantId === update.variantId)?.rate || 0,
+            purchasePrice: update.purchasePrice,
+            ...(update.sellingPrice !== undefined ? { sellingPrice: update.sellingPrice } : {}),
           },
         });
       }
@@ -557,6 +563,7 @@ export async function createPurchaseBill(data: {
                   data: {
                     purchaseUnitRate: billItem.rate,
                     costPerBaseUnit,
+                    sellingPricePerBaseUnit,
                   },
                 });
               }
@@ -761,7 +768,7 @@ export async function acceptPurchaseOrder(
         }
       }
 
-      const variantUpdates: { variantId: string; newSellingPrice: number }[] = [];
+      const variantUpdates: { variantId: string; purchasePrice: number; sellingPrice?: number }[] = [];
 
       // 2. Update Stock for each item (Convert to Base Unit) with batch pricing
       for (const item of poTx.items) {
@@ -794,6 +801,9 @@ export async function acceptPurchaseOrder(
           purchaseOrderId: poTx.id,
         });
 
+        const costPricePerBaseUnit = item.rate / (item.conversionRatio || 1);
+        let newSellingPrice: number | undefined;
+
         // If MARKUP: update variant selling price to new batch's selling price
         if (pricingMethod === "MARKUP" && markupPercent !== null && markupPercent !== undefined) {
           const { sellingPricePerBaseUnit } = calculateBatchPricing(
@@ -803,19 +813,23 @@ export async function acceptPurchaseOrder(
             markupPercent,
             variantSellingPrice,
           );
-          variantUpdates.push({
-            variantId: item.variantId,
-            newSellingPrice: sellingPricePerBaseUnit,
-          });
+          newSellingPrice = sellingPricePerBaseUnit;
         }
+
+        variantUpdates.push({
+          variantId: item.variantId,
+          purchasePrice: costPricePerBaseUnit,
+          sellingPrice: newSellingPrice,
+        });
       }
 
-      // 3. Update variant master prices for MARKUP batches
+      // 3. Update variant master prices (purchasePrice and sellingPrice if MARKUP)
       for (const update of variantUpdates) {
         await tx.variant.update({
           where: { id: update.variantId },
           data: {
-            sellingPrice: update.newSellingPrice,
+            purchasePrice: update.purchasePrice,
+            ...(update.sellingPrice !== undefined ? { sellingPrice: update.sellingPrice } : {}),
           },
         });
       }

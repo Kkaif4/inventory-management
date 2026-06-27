@@ -15,6 +15,8 @@ import { CustomerActions } from "@/components/sales/customer-actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaymentDrawer } from "@/components/sales/payment-drawer";
 import { ColumnDef } from "@tanstack/react-table";
+import { getWhatsAppReminderUrl, WhatsAppIcon } from "@/lib/whatsapp";
+import { useOutlet } from "@/hooks/use-outlet";
 
 type Invoice = {
   id: string;
@@ -41,6 +43,8 @@ type PaymentRecord = {
 
 export default function CustomerDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { currentOutlet } = useOutlet();
+  const outletName = currentOutlet?.name || undefined;
   const { data: session } = useSession();
 
   const [customerData, setCustomerData] = useState<{
@@ -187,10 +191,21 @@ export default function CustomerDetailPage() {
               : ""
           }
         >
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium text-slate-500">
               Outstanding
             </CardTitle>
+            {summary.outstandingBalance > 0 && party.phone && (
+              <a
+                href={getWhatsAppReminderUrl(party.phone, party.name, summary.outstandingBalance, outletName)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition-all hover:shadow-md active:scale-95"
+              >
+                <WhatsAppIcon className="w-3.5 h-3.5" />
+                Remind
+              </a>
+            )}
           </CardHeader>
           <CardContent>
             <div

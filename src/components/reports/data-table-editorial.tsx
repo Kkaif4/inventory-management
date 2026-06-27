@@ -6,7 +6,7 @@ import { ChevronUp, ChevronDown } from "lucide-react";
 export interface Column<T> {
   key: keyof T;
   header: string;
-  format?: (value: any) => React.ReactNode;
+  format?: (value: any, row?: T) => React.ReactNode;
   align?: "left" | "center" | "right";
   sortable?: boolean;
 }
@@ -118,7 +118,7 @@ export function DataTableEditorial<T extends Record<string, any>>({
                   key={String(col.key)}
                   className={`col-${String(col.key)} align-${col.align || "left"}`}
                 >
-                  {col.format ? col.format(row[col.key]) : row[col.key]}
+                  {col.format ? col.format(row[col.key], row) : row[col.key]}
                 </td>
               ))}
             </tr>
@@ -134,7 +134,7 @@ export function DataTableEditorial<T extends Record<string, any>>({
                   className={`col-${String(col.key)} align-${col.align || "left"}`}
                 >
                   {col.format
-                    ? col.format(footerRow[String(col.key)])
+                    ? col.format(footerRow[String(col.key)], footerRow as any)
                     : footerRow[String(col.key)]}
                 </td>
               ))}

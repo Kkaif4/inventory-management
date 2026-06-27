@@ -527,3 +527,57 @@ export async function getAvailableSerialNumbers(outletId: string, variantId: str
     return sns.map((s) => s.serialNumber);
   });
 }
+
+export async function registerNewSerialNumber(data: {
+  outletId: string;
+  variantId: string;
+  serialNumber: string;
+  warrantyMonths?: number;
+}) {
+  return withErrorHandler(async () => {
+    const { outletId, variantId, serialNumber, warrantyMonths } = data;
+    await validateSessionOutletAccess(outletId);
+
+    const trimmedSn = serialNumber.trim();
+    if (!trimmedSn) {
+      throw new ValidationError("Serial number cannot be empty.");
+    }
+
+    // Check if the serial number already exists for this variant and outlet
+    const existing = await prisma.serialNumber.findFirst({
+      where: {
+        serialNumber: { equals: trimmedSn, mode: "insensitive" },
+        variantId,
+        outletId,
+      },
+    });
+
+    if (existing) {
+      if (existing.status !== "AVAILABLE") {
+        throw new ValidationError(
+          `Serial number "${trimmedSn}" already exists in this outlet with status "${existing.status}".`
+        );
+      }
+      return existing;
+    }
+
+    // Find the product related to this variant to get its default warrantyMonths
+    const variant = await prisma.variant.findUnique({
+      where: { id: variantId },
+      include: { product: true },
+    });
+    const defaultWarrantyMonths = variant?.product?.warrantyMonths ?? null;
+
+    const created = await prisma.serialNumber.create({
+      data: {
+        serialNumber: trimmedSn,
+        variantId,
+        outletId,
+        status: "AVAILABLE",
+        warrantyMonths: warrantyMonths !== undefined ? warrantyMonths : defaultWarrantyMonths,
+      },
+    });
+
+    return created;
+  });
+}

@@ -15,9 +15,9 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { getVariantBatchPrice } from "@/actions/sales/invoice-helpers";
+import { getVariantBatchPrice, getVariantBatches } from "@/actions/sales/invoice-helpers";
 import { toast } from "sonner";
-import { getAvailableSerialNumbers } from "@/actions/products";
+import { getAvailableSerialNumbers, registerNewSerialNumber } from "@/actions/products";
 import {
   Dialog,
   DialogContent,
@@ -63,10 +63,37 @@ export function POSInvoiceTable({
   const [pendingQty, setPendingQty] = React.useState("1");
   const qtyInputRef = React.useRef<HTMLInputElement>(null);
 
+  const [variantBatches, setVariantBatches] = React.useState<{ [variantId: string]: any[] }>({});
+  const [loadingBatches, setLoadingBatches] = React.useState<{ [variantId: string]: boolean }>({});
+
+  const fetchBatchesForVariant = async (variantId: string) => {
+    if (!variantId || variantId === "manual" || variantBatches[variantId] || loadingBatches[variantId]) return;
+    setLoadingBatches(prev => ({ ...prev, [variantId]: true }));
+    try {
+      const res = await getVariantBatches(variantId, fromOutletId, fromOutletId);
+      if (res.success && res.data) {
+        setVariantBatches(prev => ({ ...prev, [variantId]: res.data as any[] }));
+      }
+    } catch (err) {
+      console.error("Failed to load batches for variant", variantId, err);
+    } finally {
+      setLoadingBatches(prev => ({ ...prev, [variantId]: false }));
+    }
+  };
+
+  React.useEffect(() => {
+    fields.forEach((field: any) => {
+      if (field.variantId) {
+        fetchBatchesForVariant(field.variantId);
+      }
+    });
+  }, [fields]);
+
   const [serialPickerIndex, setSerialPickerIndex] = React.useState<number | null>(null);
   const [availableSerials, setAvailableSerials] = React.useState<string[]>([]);
   const [loadingSerials, setLoadingSerials] = React.useState(false);
   const [serialSearch, setSerialSearch] = React.useState("");
+  const [registeringSerial, setRegisteringSerial] = React.useState(false);
 
   const openSerialPicker = async (index: number) => {
     const item = form.getValues(`items.${index}`);
@@ -86,6 +113,42 @@ export function POSInvoiceTable({
       console.error(err);
     } finally {
       setLoadingSerials(false);
+    }
+  };
+
+  const handleRegisterNewSerial = async () => {
+    if (serialPickerIndex === null) return;
+    const item = form.getValues(`items.${serialPickerIndex}`);
+    if (!item.variantId) return;
+
+    const trimmedSn = serialSearch.trim();
+    if (!trimmedSn) {
+      toast.error("Please type a serial number to register.");
+      return;
+    }
+
+    setRegisteringSerial(true);
+    try {
+      const res = await registerNewSerialNumber({
+        outletId: fromOutletId,
+        variantId: item.variantId,
+        serialNumber: trimmedSn,
+      });
+
+      if (res.success && res.data) {
+        toast.success(`Registered and added serial number "${trimmedSn}".`);
+        setAvailableSerials((prev) => [...prev, trimmedSn]);
+        addSerial(trimmedSn);
+        setSerialSearch("");
+      } else {
+        const errMsg = typeof res.error === "object" && res.error ? (res.error as any).message : String(res.error || "Failed to register serial number");
+        toast.error(errMsg);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "An error occurred while registering serial number.");
+    } finally {
+      setRegisteringSerial(false);
     }
   };
 
@@ -134,6 +197,7 @@ export function POSInvoiceTable({
   const selectProduct = async (product: any, variant: any) => {
     if (variant.matchedSerialNumber) {
       let rate = variant.customerPrice ?? variant.sellingPrice ?? 0;
+      let batchNumber = null;
       try {
         const priceResult = await getVariantBatchPrice(
           variant.id,
@@ -143,6 +207,7 @@ export function POSInvoiceTable({
         );
         if (priceResult.success && priceResult.data) {
           rate = (priceResult.data as any).price || rate;
+          batchNumber = (priceResult.data as any).batchNumber || null;
         }
       } catch (error) {
         console.warn("Failed to fetch batch price, using standard price:", error);
@@ -176,6 +241,7 @@ export function POSInvoiceTable({
           lineTotal: 0,
           hasSerialNumbers: product.hasSerialNumbers,
           serialNumbers: [variant.matchedSerialNumber],
+          batchNumber,
         });
         toast.success(`Scanned & added serial number: ${variant.matchedSerialNumber}`);
       }
@@ -199,6 +265,7 @@ export function POSInvoiceTable({
 
     // Get batch price if FIFO is enabled, fallback to customer/standard price
     let rate = variant.customerPrice ?? variant.sellingPrice ?? 0;
+    let batchNumber = null;
     try {
       const priceResult = await getVariantBatchPrice(
         variant.id,
@@ -208,6 +275,7 @@ export function POSInvoiceTable({
       );
       if (priceResult.success && priceResult.data) {
         rate = (priceResult.data as any).price || rate;
+        batchNumber = (priceResult.data as any).batchNumber || null;
       }
     } catch (error) {
       // Fallback to standard price on error
@@ -228,6 +296,7 @@ export function POSInvoiceTable({
       lineTotal: 0,
       hasSerialNumbers: product.hasSerialNumbers,
       serialNumbers: [],
+      batchNumber,
     });
 
     setPendingProduct(null);
@@ -593,6 +662,33 @@ export function POSInvoiceTable({
                             )}
                           </div>
                         )}
+                        {variantBatches[form.watch(`items.${index}.variantId`)]?.length > 0 && (
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase">Batch:</span>
+                            <select
+                              value={form.watch(`items.${index}.batchNumber`) || ""}
+                              disabled={isPosted}
+                              onChange={(e) => {
+                                const val = e.target.value || null;
+                                form.setValue(`items.${index}.batchNumber`, val);
+                                const batches = variantBatches[form.watch(`items.${index}.variantId`)] || [];
+                                const selected = batches.find((b) => b.batchNumber === val);
+                                if (selected && selected.sellingPrice !== null) {
+                                  form.setValue(`items.${index}.rate`, selected.sellingPrice);
+                                  toast.success(`Updated rate to batch selling price: ₹${selected.sellingPrice}`);
+                                }
+                              }}
+                              className="h-6 text-[10px] font-semibold bg-white border border-slate-200 rounded px-1 outline-none focus:ring-1 focus:ring-blue-500 text-slate-700"
+                            >
+                              <option value="">-- Select Batch --</option>
+                              {(variantBatches[form.watch(`items.${index}.variantId`)] || []).map((b) => (
+                                <option key={b.id} value={b.batchNumber}>
+                                  {b.batchNumber} (Stock: {b.availableQty}) {b.sellingPrice !== null ? ` - ₹${b.sellingPrice}` : ""}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-2">
@@ -729,7 +825,14 @@ export function POSInvoiceTable({
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        handleSerialScan(serialSearch);
+                        const trimmed = serialSearch.trim();
+                        if (trimmed) {
+                          if (availableSerials.some((s) => s.toLowerCase() === trimmed.toLowerCase())) {
+                            handleSerialScan(serialSearch);
+                          } else {
+                            handleRegisterNewSerial();
+                          }
+                        }
                       }
                     }}
                     className="h-9"
@@ -738,11 +841,32 @@ export function POSInvoiceTable({
                     type="button"
                     onClick={() => handleSerialScan(serialSearch)}
                     size="sm"
-                    className="bg-indigo-600 hover:bg-indigo-700 h-9 font-bold"
+                    className="bg-indigo-600 hover:bg-indigo-700 h-9 font-bold text-white"
                   >
                     Add
                   </Button>
                 </div>
+
+                {serialSearch.trim() && !availableSerials.some((s) => s.toLowerCase() === serialSearch.trim().toLowerCase()) && (
+                  <div className="bg-emerald-50/60 border border-emerald-100/80 rounded-xl p-3 flex items-center justify-between mt-2 animate-in fade-in duration-200">
+                    <div className="flex-1 mr-3">
+                      <span className="text-xs font-semibold text-slate-700 block">
+                        "{serialSearch.trim()}" is not in stock.
+                      </span>
+                      <span className="text-[10px] text-slate-500 block">
+                        Add as new serial number with product's default warranty?
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={handleRegisterNewSerial}
+                      disabled={registeringSerial}
+                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 font-bold shrink-0 text-white"
+                    >
+                      {registeringSerial ? "Registering..." : "Register & Add"}
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Selected List */}

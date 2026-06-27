@@ -3,10 +3,25 @@
 import * as React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { Loader2, ToggleLeft, ToggleRight, X, Banknote, Smartphone, CreditCard, Landmark, Clock, Wallet } from "lucide-react";
+import {
+  Loader2,
+  ToggleLeft,
+  ToggleRight,
+  X,
+  Banknote,
+  Smartphone,
+  CreditCard,
+  Landmark,
+  Clock,
+  Wallet,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getOutletAccounts } from "@/actions/sales/payment";
-import { ACCOUNT_TYPE_FOR_MODE, PAYMENT_MODES, type PaymentMode } from "@/validations/payment.validation";
+import {
+  ACCOUNT_TYPE_FOR_MODE,
+  PAYMENT_MODES,
+  type PaymentMode,
+} from "@/validations/payment.validation";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
@@ -16,7 +31,14 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 
-export type No2PaymentMode = "CASH" | "UPI" | "CARD" | "CHEQUE" | "ONLINE_TRANSFER" | "CREDIT" | "SPLIT";
+export type No2PaymentMode =
+  | "CREDIT"
+  | "CASH"
+  | "UPI"
+  | "CARD"
+  | "CHEQUE"
+  | "ONLINE_TRANSFER"
+  | "SPLIT";
 
 interface POSInvoiceFooterProps {
   form: UseFormReturn<any>;
@@ -42,14 +64,30 @@ interface POSInvoiceFooterProps {
   onNo2PaymentModeChange?: (mode: No2PaymentMode) => void;
 }
 
-const NO2_MODES: { mode: No2PaymentMode; label: string; icon: React.ReactNode }[] = [
+const NO2_MODES: {
+  mode: No2PaymentMode;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  { mode: "CREDIT", label: "Credit", icon: <Clock className="w-3.5 h-3.5" /> },
   { mode: "CASH", label: "Cash", icon: <Banknote className="w-3.5 h-3.5" /> },
   { mode: "UPI", label: "UPI", icon: <Smartphone className="w-3.5 h-3.5" /> },
   { mode: "CARD", label: "Card", icon: <CreditCard className="w-3.5 h-3.5" /> },
-  { mode: "CHEQUE", label: "Cheque", icon: <CreditCard className="w-3.5 h-3.5" /> },
-  { mode: "ONLINE_TRANSFER", label: "Bank", icon: <Landmark className="w-3.5 h-3.5" /> },
-  { mode: "CREDIT", label: "Credit", icon: <Clock className="w-3.5 h-3.5" /> },
-  { mode: "SPLIT", label: "Split/Multi", icon: <Wallet className="w-3.5 h-3.5" /> },
+  {
+    mode: "CHEQUE",
+    label: "Cheque",
+    icon: <CreditCard className="w-3.5 h-3.5" />,
+  },
+  {
+    mode: "ONLINE_TRANSFER",
+    label: "Bank",
+    icon: <Landmark className="w-3.5 h-3.5" />,
+  },
+  {
+    mode: "SPLIT",
+    label: "Split/Multi",
+    icon: <Wallet className="w-3.5 h-3.5" />,
+  },
 ];
 
 export function POSInvoiceFooter({
@@ -72,7 +110,7 @@ export function POSInvoiceFooter({
   onToggleDiscountMode,
   notesRef,
   paymentFieldArray,
-  no2PaymentMode = "CASH",
+  no2PaymentMode = "CREDIT",
   onNo2PaymentModeChange,
 }: POSInvoiceFooterProps) {
   const t = useTranslations("billing");
@@ -202,7 +240,9 @@ export function POSInvoiceFooter({
         {/* Payment mode row for NO1 (Invoice) and NO2 (Cash Memo) bills */}
         {(billType === "NO1" || billType === "NO2") && !isPosted && (
           <div className="px-4 py-2.5 border-b border-slate-100 bg-amber-50/30 flex items-center gap-3 flex-wrap">
-            <span className="text-xs font-bold text-amber-900 shrink-0">Payment Mode</span>
+            <span className="text-xs font-bold text-amber-900 shrink-0">
+              Payment Mode
+            </span>
             <div className="flex items-center gap-1.5 flex-wrap">
               {NO2_MODES.map(({ mode, label, icon }) => (
                 <button
@@ -247,7 +287,7 @@ export function POSInvoiceFooter({
                 onClick={() =>
                   paymentFieldArray?.append({
                     amount: 0,
-                    paymentMode: "CASH",
+                    paymentMode: "CREDIT",
                     bankAccountId: "",
                     referenceNo: "",
                     notes: "",
@@ -262,20 +302,30 @@ export function POSInvoiceFooter({
               {paymentFieldArray?.fields.map((field: any, index: number) => {
                 const paymentsErrors = form.formState.errors.payments as any;
                 const amountError = paymentsErrors?.[index]?.amount?.message;
-                const accountError = paymentsErrors?.[index]?.bankAccountId?.message;
+                const accountError =
+                  paymentsErrors?.[index]?.bankAccountId?.message;
 
                 const rowMode = form.watch(`payments.${index}.paymentMode`);
 
                 return (
-                  <div key={field.id} className="p-3 border border-slate-200 rounded-xl bg-white space-y-2.5 shadow-sm transition-all hover:shadow-md animate-in fade-in slide-in-from-left-1">
+                  <div
+                    key={field.id}
+                    className="p-3 border border-slate-200 rounded-xl bg-white space-y-2.5 shadow-sm transition-all hover:shadow-md animate-in fade-in slide-in-from-left-1"
+                  >
                     <div className="flex items-center gap-3">
                       {/* Payment Mode Selector */}
                       <div className="w-[150px]">
                         <select
                           value={rowMode}
                           onChange={(e) => {
-                            form.setValue(`payments.${index}.paymentMode`, e.target.value);
-                            form.setValue(`payments.${index}.bankAccountId`, ""); // reset account
+                            form.setValue(
+                              `payments.${index}.paymentMode`,
+                              e.target.value,
+                            );
+                            form.setValue(
+                              `payments.${index}.bankAccountId`,
+                              "",
+                            ); // reset account
                           }}
                           className="w-full h-9 text-xs border border-slate-200 rounded-lg px-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-slate-50 font-medium transition-all"
                         >
@@ -293,8 +343,16 @@ export function POSInvoiceFooter({
                           paymentMode={rowMode}
                           outletId={form.watch("fromOutletId")}
                           value={form.watch(`payments.${index}.bankAccountId`)}
-                          onChange={(accountId) => form.setValue(`payments.${index}.bankAccountId`, accountId)}
-                          className={cn("h-9 text-xs rounded-lg bg-slate-50", accountError && "border-red-300")}
+                          onChange={(accountId) =>
+                            form.setValue(
+                              `payments.${index}.bankAccountId`,
+                              accountId,
+                            )
+                          }
+                          className={cn(
+                            "h-9 text-xs rounded-lg bg-slate-50",
+                            accountError && "border-red-300",
+                          )}
                         />
                       </div>
 
@@ -322,7 +380,9 @@ export function POSInvoiceFooter({
                       <div className="flex-1">
                         <Input
                           placeholder="Ref No. (UPI ID / Cheque #)"
-                          value={form.watch(`payments.${index}.referenceNo`) || ""}
+                          value={
+                            form.watch(`payments.${index}.referenceNo`) || ""
+                          }
                           onChange={(e) =>
                             form.setValue(
                               `payments.${index}.referenceNo`,
@@ -349,8 +409,15 @@ export function POSInvoiceFooter({
                         <div>
                           <Input
                             placeholder="Cheque Number"
-                            value={form.watch(`payments.${index}.chequeNumber`) || ""}
-                            onChange={(e) => form.setValue(`payments.${index}.chequeNumber`, e.target.value)}
+                            value={
+                              form.watch(`payments.${index}.chequeNumber`) || ""
+                            }
+                            onChange={(e) =>
+                              form.setValue(
+                                `payments.${index}.chequeNumber`,
+                                e.target.value,
+                              )
+                            }
                             className="h-9 text-xs border-slate-200 rounded-lg"
                           />
                         </div>
@@ -358,8 +425,15 @@ export function POSInvoiceFooter({
                           <Input
                             type="date"
                             placeholder="Cheque Date"
-                            value={form.watch(`payments.${index}.chequeDate`) || ""}
-                            onChange={(e) => form.setValue(`payments.${index}.chequeDate`, e.target.value)}
+                            value={
+                              form.watch(`payments.${index}.chequeDate`) || ""
+                            }
+                            onChange={(e) =>
+                              form.setValue(
+                                `payments.${index}.chequeDate`,
+                                e.target.value,
+                              )
+                            }
                             className="h-9 text-xs border-slate-200 rounded-lg"
                           />
                         </div>
@@ -370,7 +444,9 @@ export function POSInvoiceFooter({
                     {(amountError || accountError) && (
                       <div className="text-[10px] text-red-600 pl-[162px] space-y-0.5 font-semibold">
                         {amountError && <p>{amountError}</p>}
-                        {accountError && <p>Account is required for payment mode</p>}
+                        {accountError && (
+                          <p>Account is required for payment mode</p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -384,19 +460,32 @@ export function POSInvoiceFooter({
               )}
 
               {/* Total indicator */}
-              {paymentFieldArray?.fields.length > 0 && (() => {
-                const totalEntered = (form.watch("payments") || []).reduce((sum: number, p: any) => sum + (p?.amount || 0), 0);
-                const isMatch = Math.abs(totalEntered - grandTotal) < 0.01;
-                return (
-                  <div className="flex justify-between items-center text-xs font-semibold px-3 py-2 rounded-xl bg-slate-50 border border-slate-100">
-                    <span className="text-slate-500">Total Split Payments Entered:</span>
-                    <span className={cn(isMatch ? "text-emerald-600 font-bold" : "text-amber-600")}>
-                      ₹{totalEntered.toFixed(2)} / ₹{grandTotal.toFixed(2)}
-                      {!isMatch && ` (Remaining: ₹${(grandTotal - totalEntered).toFixed(2)})`}
-                    </span>
-                  </div>
-                );
-              })()}
+              {paymentFieldArray?.fields.length > 0 &&
+                (() => {
+                  const totalEntered = (form.watch("payments") || []).reduce(
+                    (sum: number, p: any) => sum + (p?.amount || 0),
+                    0,
+                  );
+                  const isMatch = Math.abs(totalEntered - grandTotal) < 0.01;
+                  return (
+                    <div className="flex justify-between items-center text-xs font-semibold px-3 py-2 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="text-slate-500">
+                        Total Split Payments Entered:
+                      </span>
+                      <span
+                        className={cn(
+                          isMatch
+                            ? "text-emerald-600 font-bold"
+                            : "text-amber-600",
+                        )}
+                      >
+                        ₹{totalEntered.toFixed(2)} / ₹{grandTotal.toFixed(2)}
+                        {!isMatch &&
+                          ` (Remaining: ₹${(grandTotal - totalEntered).toFixed(2)})`}
+                      </span>
+                    </div>
+                  );
+                })()}
             </div>
           </div>
         )}
@@ -709,9 +798,10 @@ function InlineAccountSelector({
     if (!outletId) return;
     const load = async () => {
       setLoading(true);
-      const reqType = (paymentMode in ACCOUNT_TYPE_FOR_MODE)
-        ? ACCOUNT_TYPE_FOR_MODE[paymentMode as PaymentMode]
-        : undefined;
+      const reqType =
+        paymentMode in ACCOUNT_TYPE_FOR_MODE
+          ? ACCOUNT_TYPE_FOR_MODE[paymentMode as PaymentMode]
+          : undefined;
       if (!reqType) {
         setAccounts([]);
         setLoading(false);
@@ -735,7 +825,7 @@ function InlineAccountSelector({
       disabled={loading}
       className={cn(
         "w-full h-8 text-xs border border-slate-200 rounded-md px-2 focus:ring-1 focus:ring-amber-500 outline-none bg-white",
-        className
+        className,
       )}
     >
       <option value="">Select Account</option>
