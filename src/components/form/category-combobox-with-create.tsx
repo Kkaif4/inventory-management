@@ -1,18 +1,11 @@
+"use client";
+
 import * as React from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import { Plus, X, Pencil } from "lucide-react";
+import { Plus, X, Pencil, Check } from "lucide-react";
 import { createCategory, updateCategory } from "@/actions/categories";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 interface CategoryComboboxWithCreateProps {
   categories: { id: string; name: string }[];
@@ -42,9 +35,11 @@ export function CategoryComboboxWithCreate({
   const [isCreating, setIsCreating] = React.useState(false);
   const [localCategories, setLocalCategories] = React.useState(initialCategories);
   const [highlightedIndex, setHighlightedIndex] = React.useState(0);
-  const [editingCategory, setEditingCategory] = React.useState<{ id: string; name: string } | null>(null);
-  const [editCategoryName, setEditCategoryName] = React.useState("");
+  const [editingCategoryId, setEditingCategoryId] = React.useState<string | null>(null);
+  const [editingCategoryName, setEditingCategoryName] = React.useState("");
   const [isUpdating, setIsUpdating] = React.useState(false);
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   // Sync local categories with props
@@ -114,17 +109,15 @@ export function CategoryComboboxWithCreate({
     }
   }, [search, outletId, userId, handleSelect, onCategoryCreated]);
 
-  const handleOpenEdit = (e: React.MouseEvent, cat: { id: string; name: string }) => {
+  const handleStartEdit = (e: React.MouseEvent, cat: { id: string; name: string }) => {
     e.stopPropagation();
     e.preventDefault();
-    setEditingCategory(cat);
-    setEditCategoryName(cat.name);
+    setEditingCategoryId(cat.id);
+    setEditingCategoryName(cat.name);
   };
 
-  const handleUpdate = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!editingCategory) return;
-    const trimmed = editCategoryName.trim();
+  const handleSaveEdit = async (categoryId: string) => {
+    const trimmed = editingCategoryName.trim();
     if (!trimmed) {
       toast.error("Category name cannot be empty");
       return;
@@ -132,7 +125,7 @@ export function CategoryComboboxWithCreate({
     setIsUpdating(true);
     try {
       const res = await updateCategory({
-        id: editingCategory.id,
+        id: categoryId,
         name: trimmed,
         userId,
       });
@@ -145,7 +138,7 @@ export function CategoryComboboxWithCreate({
         if (onCategoryUpdated) {
           onCategoryUpdated(updated);
         }
-        setEditingCategory(null);
+        setEditingCategoryId(null);
       } else {
         toast.error(res.error?.message || "Failed to update category");
       }
@@ -154,13 +147,6 @@ export function CategoryComboboxWithCreate({
       console.error(error);
     } finally {
       setIsUpdating(false);
-    }
-  };
-
-  const handleFocus = () => {
-    if (!disabled) {
-      setIsOpen(true);
-      setHighlightedIndex(0);
     }
   };
 
@@ -174,7 +160,7 @@ export function CategoryComboboxWithCreate({
       setHighlightedIndex((prev) => Math.max(prev - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (highlightedIndex < filtered.length) {
+      if (highlightedIndex < filtered.length && filtered[highlightedIndex]) {
         handleSelect(filtered[highlightedIndex].id);
       } else if (showCreateOption) {
         handleCreate();
@@ -194,132 +180,183 @@ export function CategoryComboboxWithCreate({
   };
 
   return (
-    <PopoverPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverPrimitive.Anchor asChild>
-        <div className="relative">
-          <input
-            ref={inputRef}
-            type="text"
-            value={isOpen ? search : selectedCategory?.name || ""}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              if (!isOpen) setIsOpen(true);
-              setHighlightedIndex(0);
-            }}
-            onFocus={handleFocus}
-            onKeyDown={handleInputKeyDown}
-            disabled={disabled}
-            placeholder={placeholder}
-            className={cn(
-              "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring",
-              disabled && "bg-slate-100 cursor-not-allowed opacity-60"
-            )}
-            autoComplete="off"
-          />
-          {value && !isOpen && (
-            <button
-              type="button"
-              onClick={handleClear}
+    <div ref={containerRef} className="relative w-full">
+      <PopoverPrimitive.Root open={isOpen} onOpenChange={setIsOpen} modal={false}>
+        <PopoverPrimitive.Anchor asChild>
+          <div className="relative w-full">
+            <input
+              ref={inputRef}
+              type="text"
+              value={isOpen ? search : selectedCategory?.name || ""}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                if (!isOpen) setIsOpen(true);
+                setHighlightedIndex(0);
+              }}
+              onFocus={() => {
+                if (!disabled) {
+                  setIsOpen(true);
+                  setHighlightedIndex(0);
+                }
+              }}
+              onClick={() => {
+                if (!disabled && !isOpen) {
+                  setIsOpen(true);
+                }
+              }}
+              onKeyDown={handleInputKeyDown}
               disabled={disabled}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
-            >
-              <X className="h-4 w-4 text-slate-400" />
-            </button>
-          )}
-        </div>
-      </PopoverPrimitive.Anchor>
-      <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content
-          className="w-[var(--radix-popover-trigger-width)] min-w-[300px] z-50 bg-white rounded-lg shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in-0 zoom-in-95"
-          align="start"
-          sideOffset={2}
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
-          <div className="max-h-[240px] overflow-y-auto">
-            {filtered.length === 0 && !showCreateOption ? (
-              <div className="text-center py-3 text-xs text-slate-500">
-                No categories found
-              </div>
-            ) : (
-              <>
-                {filtered.map((category, idx) => (
-                  <div
-                    key={category.id}
-                    onClick={() => handleSelect(category.id)}
-                    onMouseEnter={() => setHighlightedIndex(idx)}
-                    className={cn(
-                      "w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer group select-none",
-                      value === category.id && "bg-slate-50 font-semibold",
-                      highlightedIndex === idx && "bg-slate-100"
-                    )}
-                  >
-                    <span className="truncate flex-1">{category.name}</span>
-                    <button
-                      type="button"
-                      title="Edit category"
-                      onClick={(e) => handleOpenEdit(e, category)}
-                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 rounded text-slate-500 hover:text-slate-800 transition-opacity ml-2 shrink-0"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
-                {showCreateOption && (
-                  <button
-                    type="button"
-                    onClick={handleCreate}
-                    disabled={isCreating}
-                    onMouseEnter={() => setHighlightedIndex(filtered.length)}
-                    className={cn(
-                      "w-full text-left px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer border-t border-slate-200 flex items-center gap-2",
-                      highlightedIndex === filtered.length && "bg-slate-100"
-                    )}
-                  >
-                    <Plus className="h-4 w-4 text-emerald-600" />
-                    <span className="text-emerald-600 font-medium">
-                      {isCreating
-                        ? "Creating..."
-                        : `Create "${search.trim()}"`}
-                    </span>
-                  </button>
-                )}
-              </>
+              placeholder={placeholder}
+              className={cn(
+                "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring",
+                disabled && "bg-slate-100 cursor-not-allowed opacity-60"
+              )}
+              autoComplete="off"
+            />
+            {value && !isOpen && (
+              <button
+                type="button"
+                onClick={handleClear}
+                disabled={disabled}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded cursor-pointer"
+              >
+                <X className="h-4 w-4 text-slate-400" />
+              </button>
             )}
           </div>
-        </PopoverPrimitive.Content>
-      </PopoverPrimitive.Portal>
+        </PopoverPrimitive.Anchor>
 
-      <Dialog open={!!editingCategory} onOpenChange={(open) => !open && setEditingCategory(null)}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleUpdate} className="space-y-4 pt-2">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-700">Category Name</label>
-              <Input
-                value={editCategoryName}
-                onChange={(e) => setEditCategoryName(e.target.value)}
-                placeholder="Enter category name"
-                autoFocus
-              />
+        <PopoverPrimitive.Portal>
+          <PopoverPrimitive.Content
+            className="w-[var(--radix-popover-anchor-width,var(--radix-popover-trigger-width,300px))] min-w-[280px] z-[9999] bg-white rounded-lg shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in-0 zoom-in-95"
+            align="start"
+            sideOffset={4}
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            onPointerDownOutside={(e) => {
+              if (
+                inputRef.current?.contains(e.target as Node) ||
+                containerRef.current?.contains(e.target as Node)
+              ) {
+                e.preventDefault();
+              }
+            }}
+            onFocusOutside={(e) => {
+              if (
+                inputRef.current?.contains(e.target as Node) ||
+                containerRef.current?.contains(e.target as Node)
+              ) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <div className="max-h-[240px] overflow-y-auto divide-y divide-slate-100">
+              {filtered.length === 0 && !showCreateOption ? (
+                <div className="text-center py-4 text-xs text-slate-500">
+                  No categories found
+                </div>
+              ) : (
+                <>
+                  {filtered.map((category, idx) => {
+                    const isEditing = editingCategoryId === category.id;
+
+                    if (isEditing) {
+                      return (
+                        <div
+                          key={category.id}
+                          className="p-1.5 bg-blue-50/80 flex items-center gap-1.5"
+                          onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="text"
+                            value={editingCategoryName}
+                            onChange={(e) => setEditingCategoryName(e.target.value)}
+                            onKeyDown={(e) => {
+                              e.stopPropagation();
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleSaveEdit(category.id);
+                              } else if (e.key === "Escape") {
+                                e.preventDefault();
+                                setEditingCategoryId(null);
+                              }
+                            }}
+                            className="flex-1 h-7 px-2 text-xs bg-white border border-blue-400 rounded outline-none font-medium focus:ring-1 focus:ring-blue-500"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleSaveEdit(category.id)}
+                            disabled={isUpdating}
+                            className="p-1 text-emerald-600 hover:bg-emerald-100 rounded cursor-pointer"
+                            title="Save"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingCategoryId(null)}
+                            className="p-1 text-slate-400 hover:bg-slate-200 rounded cursor-pointer"
+                            title="Cancel"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={category.id}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleSelect(category.id)}
+                        onMouseEnter={() => setHighlightedIndex(idx)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer group select-none transition-colors",
+                          value === category.id && "bg-blue-50/50 font-semibold text-blue-900",
+                          highlightedIndex === idx && "bg-slate-100"
+                        )}
+                      >
+                        <span className="truncate flex-1">{category.name}</span>
+                        <button
+                          type="button"
+                          title="Rename category"
+                          onClick={(e) => handleStartEdit(e, category)}
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-700 transition-opacity ml-2 shrink-0 cursor-pointer"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+
+                  {showCreateOption && (
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={handleCreate}
+                      disabled={isCreating}
+                      onMouseEnter={() => setHighlightedIndex(filtered.length)}
+                      className={cn(
+                        "w-full text-left px-3 py-2.5 text-sm hover:bg-slate-100 cursor-pointer flex items-center gap-2 transition-colors",
+                        highlightedIndex === filtered.length && "bg-slate-100"
+                      )}
+                    >
+                      <Plus className="h-4 w-4 text-emerald-600" />
+                      <span className="text-emerald-600 font-medium">
+                        {isCreating
+                          ? "Creating..."
+                          : `Create "${search.trim()}"`}
+                      </span>
+                    </button>
+                  )}
+                </>
+              )}
             </div>
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setEditingCategory(null)}
-                disabled={isUpdating}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isUpdating || !editCategoryName.trim()}>
-                {isUpdating ? "Saving..." : "Save Changes"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </PopoverPrimitive.Root>
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
+    </div>
   );
 }

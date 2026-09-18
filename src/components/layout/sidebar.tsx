@@ -46,11 +46,11 @@ const navigation = [
         href: "/dashboard/sales/transactions",
         icon: ReceiptIndianRupee,
       },
-      {
-        name: "Quotations & Delivery",
-        href: "/dashboard/sales/quotations-and-delivery",
-        icon: Quote,
-      },
+      //   {
+      //     name: "Quotations & Delivery",
+      //     href: "/dashboard/sales/quotations-and-delivery",
+      //     icon: Quote,
+      //   },
       {
         name: "Warranty Lookup",
         href: "/dashboard/sales/warranty",
