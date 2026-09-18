@@ -58,6 +58,9 @@ interface POSInvoiceFooterProps {
   creditLimitExceeded?: boolean;
   isGlobalDiscount: boolean;
   onToggleDiscountMode: () => void;
+  isRoundOff?: boolean;
+  onToggleRoundOff?: () => void;
+  roundOff?: number;
   notesRef?: React.RefObject<HTMLInputElement | null>;
   paymentFieldArray?: any; // UseFieldArrayReturn
   no2PaymentMode?: No2PaymentMode;
@@ -108,6 +111,9 @@ export function POSInvoiceFooter({
   creditLimitExceeded = false,
   isGlobalDiscount,
   onToggleDiscountMode,
+  isRoundOff = false,
+  onToggleRoundOff,
+  roundOff = 0,
   notesRef,
   paymentFieldArray,
   no2PaymentMode = "CREDIT",
@@ -633,6 +639,24 @@ export function POSInvoiceFooter({
             >
               {isGlobalDiscount ? t("footer.globalDisc") : t("footer.rowDisc")}
             </span>
+
+            {/* Round Off toggle */}
+            {onToggleRoundOff && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onToggleRoundOff}
+                className={cn(
+                  "h-7 text-xs font-semibold px-2.5 rounded-lg border transition-all",
+                  isRoundOff
+                    ? "bg-slate-900 text-white border-slate-900 hover:bg-slate-800"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                )}
+              >
+                Round Off {isRoundOff ? "ON" : "OFF"}
+              </Button>
+            )}
           </div>
 
           {/* Spacer */}
@@ -653,6 +677,13 @@ export function POSInvoiceFooter({
             )}
             {displayFreight > 0 && (
               <SummaryItem label={t("footer.freight")} value={displayFreight} />
+            )}
+            {isRoundOff && roundOff !== 0 && (
+              <SummaryItem
+                label="Round Off"
+                value={roundOff}
+                negative={roundOff < 0}
+              />
             )}
           </div>
 

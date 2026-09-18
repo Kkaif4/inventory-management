@@ -23,6 +23,8 @@ interface InvoiceSummaryPanelProps {
   totalTax: number;
   freightCost: number;
   roundOff: number;
+  isRoundOff?: boolean;
+  onToggleRoundOff?: () => void;
   grandTotal: number;
   isDraft?: boolean;
   isPosted?: boolean;
@@ -45,6 +47,8 @@ export function InvoiceSummaryPanel({
   totalTax,
   freightCost,
   roundOff,
+  isRoundOff = false,
+  onToggleRoundOff,
   grandTotal,
   isDraft = false,
   isPosted = false,
@@ -183,13 +187,31 @@ export function InvoiceSummaryPanel({
           </div>
         )}
 
-        {/* Round Off */}
-        {roundOff !== 0 && (
-          <div className="flex justify-between text-sm">
+        {/* Round Off Toggle & Row */}
+        {onToggleRoundOff && (
+          <div className="flex justify-between items-center text-sm pt-1">
             <span className="text-slate-600">Round Off</span>
+            <button
+              type="button"
+              onClick={onToggleRoundOff}
+              className={cn(
+                "px-2 py-0.5 rounded text-xs font-semibold border transition-all",
+                isRoundOff
+                  ? "bg-slate-900 text-white border-slate-900"
+                  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+              )}
+            >
+              {isRoundOff ? "ON" : "OFF"}
+            </button>
+          </div>
+        )}
+
+        {isRoundOff && roundOff !== 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-600">Adjustment</span>
             <span
               className={cn(
-                "font-mono",
+                "font-mono font-medium",
                 roundOff > 0 ? "text-emerald-700" : "text-red-700",
               )}
             >

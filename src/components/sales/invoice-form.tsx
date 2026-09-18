@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormSection, FormGrid } from "@/components/ui/form-layout";
 import { InvoiceSummaryPanel } from "@/components/sales/invoice-summary-panel";
-import { cn } from "@/lib/utils";
+import { cn, roundToTwo } from "@/lib/utils";
 import { invoiceSchema } from "@/validations/invoice.validation";
 import { ProductSelect } from "@/components/form/product-select";
 import { CustomerSelect } from "@/components/form/customer-select";
@@ -158,10 +158,14 @@ export function InvoiceForm({
       100;
     return sum + tax;
   }, 0);
-  const grandTotal = subtotal + totalTax + (freightCost || 0);
+  const [isRoundOff, setIsRoundOff] = React.useState(false);
+  const rawGrandTotal = subtotal + totalTax + (freightCost || 0);
+  const grandTotal = isRoundOff ? Math.round(rawGrandTotal) : rawGrandTotal;
+  const roundOff = isRoundOff ? roundToTwo(grandTotal - rawGrandTotal) : 0;
 
   const handleCancel = () => {
     if (isDirty) {
+        
       if (window.confirm("You have unsaved changes. Discard and leave?")) {
         router.back();
       }
@@ -171,13 +175,43 @@ export function InvoiceForm({
   };
 
   const handleValidationClick = async () => {
+    console.log("=== [INVOICE FORM] VALIDATION ATTEMPT ===", {
+      billType,
+      fromOutletId,
+      partyId: form.watch("partyId"),
+      buyerName: form.watch("buyerName"),
+      items: form.watch("items"),
+    });
+
     const isValid = await form.trigger();
     if (!isValid) {
       const errors = form.formState.errors;
-      const errorMessages = Object.entries(errors)
-        .map(([field, error]) => `${field}: ${error?.message}`)
-        .join(", ");
-      toast.error("Please fix validation errors before submitting");
+      const errorList: string[] = [];
+      const extract = (obj: any, path = "") => {
+        if (!obj) return;
+        if (typeof obj === "object") {
+          if (obj.message && typeof obj.message === "string") {
+            errorList.push(path ? `${path}: ${obj.message}` : obj.message);
+          }
+          for (const [k, v] of Object.entries(obj)) {
+            if (k === "message" || k === "ref" || k === "type") continue;
+            extract(v, path ? `${path}.${k}` : k);
+          }
+        }
+      };
+      extract(errors);
+
+      console.error("=== [INVOICE FORM] VALIDATION FAILED ===", {
+        errors,
+        errorList,
+        formValues: form.getValues(),
+      });
+
+      if (errorList.length > 0) {
+        toast.error(errorList.slice(0, 3).join("\n"));
+      } else {
+        toast.error("Please fix validation errors before submitting");
+      }
     } else {
       form.handleSubmit(handleFormSubmit)();
     }
@@ -373,7 +407,7 @@ export function InvoiceForm({
                         <FormLabel>Customer*</FormLabel>
                         <FormControl>
                           <CustomerSelect
-                            value={field.value}
+                            value={field.value ?? undefined}
                             onChange={field.onChange}
                             disabled={isPosted}
                             onCustomerLoad={(customer) => {
@@ -402,6 +436,7 @@ export function InvoiceForm({
                         <FormControl>
                           <Input
                             {...field}
+                            value={field.value ?? ""}
                             placeholder="Optional"
                             disabled={isPosted}
                           />
@@ -420,6 +455,7 @@ export function InvoiceForm({
                         <FormControl>
                           <Input
                             {...field}
+                            value={field.value ?? ""}
                             type="tel"
                             placeholder="Optional"
                             disabled={isPosted}
@@ -623,6 +659,7 @@ export function InvoiceForm({
                                 <Input
                                   type="text"
                                   {...field}
+                                  value={field.value ?? ""}
                                   disabled
                                   className="text-sm bg-slate-100 h-10"
                                 />
@@ -638,14 +675,14 @@ export function InvoiceForm({
                         <FormLabel className="text-xs">Total</FormLabel>
                         <div className="h-10 flex items-center justify-end bg-slate-100 rounded px-2 font-mono text-sm font-bold">
                           ₹
-                          {(
-                            (form.watch(`items.${index}.quantity`) || 0) *
-                            (form.watch(`items.${index}.rate`) || 0) *
-                            (1 -
-                              (form.watch(`items.${index}.discountPercent`) ||
-                                0) /
-                                100)
-                          ).toFixed(2)}
+                          {(() => {
+                            const qty = form.watch(`items.${index}.quantity`) || 0;
+                            const rate = form.watch(`items.${index}.rate`) || 0;
+                            const disc = form.watch(`items.${index}.discountPercent`) || 0;
+                            const gst = billType === "NO1" ? (form.watch(`items.${index}.gstRate`) || 0) : 0;
+                            const taxable = qty * rate * (1 - disc / 100);
+                            return (taxable + (taxable * gst) / 100).toFixed(2);
+                          })()}
                         </div>
                       </div>
 
@@ -756,6 +793,7 @@ export function InvoiceForm({
                       <FormControl>
                         <input
                           {...field}
+                          value={field.value ?? ""}
                           type="text"
                           placeholder="Optional notes"
                           disabled={isPosted}
@@ -781,7 +819,9 @@ export function InvoiceForm({
               gstBreakup={[]}
               totalTax={totalTax}
               freightCost={freightCost || 0}
-              roundOff={0}
+              roundOff={roundOff}
+              isRoundOff={isRoundOff}
+              onToggleRoundOff={() => setIsRoundOff((prev) => !prev)}
               grandTotal={grandTotal}
               isPosted={isPosted}
               canSubmit={

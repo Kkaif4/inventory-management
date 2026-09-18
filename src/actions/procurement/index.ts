@@ -23,6 +23,12 @@ export async function createPurchaseOrder(data: {
   toLocationId: string; // Warehouse where goods will arrive
   items: PurchaseItemPayload[];
   userId: string;
+  date?: Date | string;
+  freightCost?: number;
+  customBillNo?: string;
+  remarks?: string;
+  isRoundOff?: boolean;
+  roundOff?: number;
 }) {
   return withErrorHandler(async () => {
     // Validate user has access to this outlet
@@ -37,20 +43,26 @@ export async function createPurchaseOrder(data: {
     const totalTax = roundToTwo(
       items.reduce((sum, item) => sum + item.cgst + item.sgst + item.igst, 0),
     );
-    const grandTotal = roundToTwo(totalTaxable + totalTax);
+    const freightCost = data.freightCost ? roundToTwo(data.freightCost) : 0;
+    const rawGrandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
+    const grandTotal = data.isRoundOff ? Math.round(rawGrandTotal) : rawGrandTotal;
 
     const po = await prisma.transaction.create({
       data: {
         type: "PURCHASE_ORDER",
         txnNumber: `PO-${Date.now()}`,
+        customBillNo: data.customBillNo || undefined,
+        date: data.date ? new Date(data.date) : new Date(),
         partyId: data.partyId,
         outletId: data.outletId, // Scoped
         toLocationId: data.toLocationId,
         totalTaxable,
         totalTax,
+        freightCost,
         grandTotal,
         status: "POSTED",
         userId: data.userId,
+        remarks: data.remarks || undefined,
         items: {
           create: items.map((item) => ({
             variantId: item.variantId,
@@ -357,6 +369,7 @@ export async function getPurchaseOrderById(id: string, outletId: string) {
                 product: true,
               },
             },
+            purchaseSerialNumbers: true,
           },
         },
       },
@@ -376,6 +389,8 @@ export async function createPurchaseBill(data: {
   billNumber: string;
   billDate: Date;
   freightCost?: number;
+  isRoundOff?: boolean;
+  roundOff?: number;
   userId: string;
 }) {
   return withErrorHandler(async () => {
@@ -409,13 +424,10 @@ export async function createPurchaseBill(data: {
       const totalIgst = roundToTwo(
         source.items.reduce((a, b) => a + b.igst, 0),
       );
-      const grandTotal = roundToTwo(
-        totalTaxable +
-          totalCgst +
-          totalSgst +
-          totalIgst +
-          (data.freightCost || 0),
-      );
+      const totalTax = roundToTwo(totalCgst + totalSgst + totalIgst);
+      const freightCost = data.freightCost ? roundToTwo(data.freightCost) : 0;
+      const rawGrandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
+      const grandTotal = data.isRoundOff ? Math.round(rawGrandTotal) : rawGrandTotal;
 
       // 1. Build Item Payloads with Freight fractions
       const itemsData = source.items.map((item) => {
@@ -447,8 +459,11 @@ export async function createPurchaseBill(data: {
           partyId: source.partyId,
           outletId: source.outletId,
           toLocationId: source.toLocationId,
+          totalTaxable,
+          totalTax,
+          freightCost,
+          grandTotal,
           status: "POSTED",
-          freightCost: data.freightCost,
           userId: data.userId,
           items: {
             create: itemsData,
@@ -481,8 +496,16 @@ export async function createPurchaseBill(data: {
           "Mapped system accounts not found. Run COA setup.",
         );
 
+      const rawDebitTotal = roundToTwo(
+        totalTaxable + totalCgst + totalSgst + totalIgst + freightCost,
+      );
+      const roundOffDiff = roundToTwo(grandTotal - rawDebitTotal);
+
       const entries = [
-        { accountId: purchaseAcc.id, debit: totalTaxable },
+        {
+          accountId: purchaseAcc.id,
+          debit: roundToTwo(totalTaxable + roundOffDiff),
+        },
         { accountId: creditorAcc.id, credit: grandTotal },
       ];
 
@@ -504,30 +527,24 @@ export async function createPurchaseBill(data: {
 
       // 4. Link batches to this purchase bill (update purchaseBillId)
       if (source.type === "GRN" || source.type === "PURCHASE_ORDER") {
-        const variantIds = source.items
-          .filter((i) => i.variantId)
-          .map((i) => i.variantId as string);
-
         // Update matching batches to link to this purchase bill
         if (source.type === "GRN") {
           // GRN: Link via grnId
           await tx.customBatch.updateMany({
             where: {
-              variantId: { in: variantIds },
-              outletId: source.outletId,
               grnId: source.id,
+              outletId: source.outletId,
             },
             data: {
               purchaseBillId: bill.id,
             },
           });
         } else if (source.type === "PURCHASE_ORDER") {
-          // PO: Link via purchaseOrderId (batches created during PO acceptance)
+          // PO: Link via purchaseOrderId
           await tx.customBatch.updateMany({
             where: {
-              variantId: { in: variantIds },
-              outletId: source.outletId,
               purchaseOrderId: source.id,
+              outletId: source.outletId,
             },
             data: {
               purchaseBillId: bill.id,
@@ -535,38 +552,36 @@ export async function createPurchaseBill(data: {
           });
         }
 
-        // If source is GRN, check for rate discrepancies (FRD §13.6)
-        if (source.type === "GRN") {
-          for (const billItem of source.items) {
-            if (!billItem.variantId) continue;
-            const sourceItem = source.items.find(
-              (i) => i.variantId === billItem.variantId,
-            );
-            // If bill rate differs from GRN rate, update batch costs
-            if (sourceItem && sourceItem.rate !== billItem.rate) {
-              const variant = variantMap.get(billItem.variantId);
-              if (variant) {
-                const { costPerBaseUnit, sellingPricePerBaseUnit } =
-                  calculateBatchPricing(
-                    billItem.rate,
-                    sourceItem.conversionRatio || 1,
-                    (variant.pricingMethod as any) || "MANUAL",
-                    variant.markupPercent,
-                    variant.sellingPrice,
-                  );
-                await tx.customBatch.updateMany({
-                  where: {
-                    variantId: billItem.variantId,
-                    grnId: source.id,
-                    outletId: source.outletId,
-                  },
-                  data: {
-                    purchaseUnitRate: billItem.rate,
-                    costPerBaseUnit,
-                    sellingPricePerBaseUnit,
-                  },
-                });
-              }
+        // Handle rate discrepancies: if bill rate differs from GRN rate, update batch cost
+        for (const billItem of itemsData) {
+          if (!billItem.variantId) continue;
+          const poItem = source.items.find(
+            (i) => i.variantId === billItem.variantId,
+          );
+          if (poItem && poItem.rate !== billItem.rate) {
+            // Recalculate batch cost based on new purchase rate
+            const variant = variantMap.get(billItem.variantId);
+            if (variant) {
+              const { costPerBaseUnit, sellingPricePerBaseUnit } =
+                calculateBatchPricing(
+                  billItem.rate,
+                  billItem.conversionRatio || 1,
+                  (variant.pricingMethod as any) || "MANUAL",
+                  variant.markupPercent,
+                  variant.sellingPrice,
+                );
+              await tx.customBatch.updateMany({
+                where: {
+                  variantId: billItem.variantId,
+                  grnId: source.id,
+                  outletId: source.outletId,
+                },
+                data: {
+                  purchaseUnitRate: billItem.rate,
+                  costPerBaseUnit,
+                  sellingPricePerBaseUnit,
+                },
+              });
             }
           }
         }
@@ -591,6 +606,209 @@ export async function createPurchaseBill(data: {
 
     revalidatePath("/dashboard/purchases/bills");
     return result;
+  });
+}
+
+export async function updatePurchaseOrder(
+  poId: string,
+  outletId: string,
+  userId: string,
+  data: {
+    partyId?: string;
+    toLocationId?: string;
+    date?: Date | string;
+    freightCost?: number;
+    customBillNo?: string;
+    remarks?: string;
+    isRoundOff?: boolean;
+    items: PurchaseItemPayload[];
+  },
+) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(outletId);
+
+    const existingPo = await prisma.transaction.findUnique({
+      where: { id: poId },
+    });
+    if (!existingPo) throw new NotFoundError("Purchase Order not found");
+    if (existingPo.outletId !== outletId)
+      throw new ForbiddenError("Unauthorized access to this PO");
+    if (existingPo.status === "ACCEPTED" || existingPo.status === "COMPLETED") {
+      throw new ValidationError(
+        "Cannot edit an order that is already accepted or completed",
+      );
+    }
+
+    const totalTaxable = roundToTwo(
+      data.items.reduce((sum, item) => sum + item.taxableValue, 0),
+    );
+    const totalTax = roundToTwo(
+      data.items.reduce((sum, item) => sum + item.cgst + item.sgst + item.igst, 0),
+    );
+    const freightCost = data.freightCost ? roundToTwo(data.freightCost) : 0;
+    const rawGrandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
+    const grandTotal = data.isRoundOff ? Math.round(rawGrandTotal) : rawGrandTotal;
+
+    const updated = await prisma.$transaction(async (tx) => {
+      // Delete previous items
+      await tx.transactionItem.deleteMany({
+        where: { transactionId: poId },
+      });
+
+      // Update PO and create new items
+      return await tx.transaction.update({
+        where: { id: poId },
+        data: {
+          partyId: data.partyId ?? existingPo.partyId,
+          toLocationId: data.toLocationId ?? existingPo.toLocationId,
+          date: data.date ? new Date(data.date) : existingPo.date,
+          customBillNo:
+            data.customBillNo !== undefined
+              ? data.customBillNo
+              : existingPo.customBillNo,
+          remarks:
+            data.remarks !== undefined ? data.remarks : existingPo.remarks,
+          totalTaxable,
+          totalTax,
+          freightCost,
+          grandTotal,
+          items: {
+            create: data.items.map((item) => ({
+              variantId: item.variantId,
+              quantity: item.quantity,
+              unit: item.unit,
+              conversionRatio: item.conversionRatio || 1,
+              rate: item.rate,
+              taxableValue: item.taxableValue,
+              cgst: item.cgst,
+              sgst: item.sgst,
+              igst: item.igst,
+            })),
+          },
+        },
+        include: {
+          items: {
+            include: {
+              variant: {
+                include: {
+                  product: true,
+                },
+              },
+              purchaseSerialNumbers: true,
+            },
+          },
+          party: true,
+        },
+      });
+    });
+
+    await AuditService.log({
+      action: "UPDATE",
+      entity: "PURCHASE_ORDER",
+      entityId: poId,
+      userId,
+      newValues: {
+        totalTaxable,
+        totalTax,
+        freightCost,
+        grandTotal,
+        itemsCount: data.items.length,
+      },
+    });
+
+    revalidatePath(`/dashboard/purchases/orders/${poId}`);
+    revalidatePath("/dashboard/purchases");
+    return updated;
+  });
+}
+
+export async function addPurchaseSerialNumbers(data: {
+  poId: string;
+  outletId: string;
+  userId: string;
+  serialNumbers: Record<string, string[]>;
+}) {
+  return withErrorHandler(async () => {
+    await validateSessionOutletAccess(data.outletId);
+
+    const po = await prisma.transaction.findUnique({
+      where: { id: data.poId },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: { product: true },
+            },
+            purchaseSerialNumbers: true,
+          },
+        },
+      },
+    });
+
+    if (!po) throw new NotFoundError("Purchase Order not found");
+    if (po.outletId !== data.outletId)
+      throw new ForbiddenError("Unauthorized access to this PO");
+
+    const createdSerials: string[] = [];
+
+    await prisma.$transaction(async (tx) => {
+      for (const [variantId, sns] of Object.entries(data.serialNumbers)) {
+        const cleanSns = sns
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+        if (cleanSns.length === 0) continue;
+
+        const poItem = po.items.find((i) => i.variantId === variantId);
+        if (!poItem) continue;
+
+        // Check if adding cleanSns would exceed quantity
+        const existingCount = poItem.purchaseSerialNumbers?.length || 0;
+        if (existingCount + cleanSns.length > poItem.quantity) {
+          throw new ValidationError(
+            `Cannot add ${cleanSns.length} serial numbers to "${poItem.variant?.product.name}". Only ${poItem.quantity - existingCount} remaining slots available (Quantity: ${poItem.quantity}, Already registered: ${existingCount}).`,
+          );
+        }
+
+        // Check for duplicates in outlet
+        const existingInDb = await tx.serialNumber.findMany({
+          where: {
+            serialNumber: { in: cleanSns },
+            outletId: data.outletId,
+          },
+          select: { serialNumber: true },
+        });
+
+        if (existingInDb.length > 0) {
+          const dupes = existingInDb.map((s) => s.serialNumber).join(", ");
+          throw new ValidationError(
+            `Serial number(s) already exist in this outlet: ${dupes}`,
+          );
+        }
+
+        await tx.serialNumber.createMany({
+          data: cleanSns.map((sn) => ({
+            serialNumber: sn,
+            variantId,
+            outletId: data.outletId,
+            purchaseItemId: poItem.id,
+            status: "AVAILABLE",
+          })),
+        });
+
+        createdSerials.push(...cleanSns);
+      }
+    });
+
+    await AuditService.log({
+      action: "UPDATE",
+      entity: "SERIAL_NUMBER",
+      entityId: data.poId,
+      userId: data.userId,
+      newValues: { count: createdSerials.length },
+    });
+
+    revalidatePath(`/dashboard/purchases/orders/${data.poId}`);
+    return { count: createdSerials.length };
   });
 }
 
@@ -742,6 +960,11 @@ export async function acceptPurchaseOrder(
           if (sns && sns.length > 0) {
             const poItem = poTx.items.find((i) => i.variantId === variantId);
             if (poItem) {
+              if (sns.length > poItem.quantity) {
+                throw new ValidationError(
+                  `Cannot provide more than ${poItem.quantity} serial number(s) for "${variantMap.get(variantId)?.product?.name || "item"}". You entered ${sns.length}.`,
+                );
+              }
               // Check duplicates in outlet
               const existing = await tx.serialNumber.findMany({
                 where: {

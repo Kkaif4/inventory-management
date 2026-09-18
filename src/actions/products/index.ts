@@ -230,6 +230,10 @@ export async function createProduct(data: {
           })),
         },
       },
+      include: {
+        variants: true,
+        category: true,
+      },
     });
 
     await AuditService.log({

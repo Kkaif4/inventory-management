@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 import { useSession } from "next-auth/react";
 import { createPurchaseOrder } from "@/actions/procurement";
@@ -16,9 +17,10 @@ import {
   HelpCircle,
   ShoppingCart,
   AlertTriangle,
+  PackagePlus,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useOutletStore } from "@/store/use-outlet-store";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,9 +31,17 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { Controller } from "react-hook-form";
-import { useMemo } from "react";
 import { getOutletById } from "@/actions/locations";
 import { PartyComboboxWithCreate } from "@/components/form/party-combobox-with-create";
+import { QuickProductDialog } from "@/components/form/quick-product-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { roundToTwo } from "@/lib/utils";
 
 const itemSchema = z.object({
   variantId: z.string().min(1, "Item is required"),
@@ -45,6 +55,10 @@ const itemSchema = z.object({
 const poSchema = z.object({
   partyId: z.string().min(1, "Supplier is required"),
   toLocationId: z.string().min(1, "Destination required"),
+  date: z.string().min(1, "Order date is required"),
+  freightCost: z.coerce.number().min(0).default(0),
+  isRoundOff: z.boolean().default(false),
+  remarks: z.string().optional(),
   items: z.array(itemSchema).min(1, "Add at least one item"),
 });
 
@@ -59,6 +73,8 @@ export default function NewPurchaseOrderPage() {
   const [locations, setLocations] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
   const [outlet, setOutlet] = useState<any>(null);
+  const [showQuickProductDialog, setShowQuickProductDialog] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
   useEffect(() => {
     if (!currentOutletId) return;
@@ -104,6 +120,10 @@ export default function NewPurchaseOrderPage() {
   } = useForm<POFormValues>({
     resolver: zodResolver(poSchema) as any,
     defaultValues: {
+      date: format(new Date(), "yyyy-MM-dd"),
+      freightCost: 0,
+      isRoundOff: false,
+      remarks: "",
       items: [
         { variantId: "", quantity: 1, unit: "", rate: 0, gstPercent: 18 },
       ],
@@ -118,12 +138,33 @@ export default function NewPurchaseOrderPage() {
   const watchedItems = watch("items");
   const selectedSupplierId = watch("partyId");
   const selectedSupplier = suppliers.find((s) => s.id === selectedSupplierId);
+  const watchedFreight = Number(watch("freightCost") || 0);
+  const watchedIsRoundOff = watch("isRoundOff") || false;
+
+  // Global keyboard shortcuts (Alt+P to search item, Escape to discard warning)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && (e.key === "p" || e.key === "P")) {
+        e.preventDefault();
+        const searchBtn = document.querySelector<HTMLButtonElement>("[data-po-item-search]");
+        if (searchBtn) {
+          searchBtn.focus();
+          searchBtn.click();
+        }
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setShowDiscardDialog(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Totals calculations
   const totals = watchedItems.reduce(
     (acc, item) => {
       const taxable = (item.quantity || 0) * (item.rate || 0);
-      const taxTotal = taxable * (item.gstPercent / 100);
+      const taxTotal = taxable * ((item.gstPercent || 0) / 100);
 
       // Determine GST Split based on State
       const isInterState =
@@ -142,13 +183,17 @@ export default function NewPurchaseOrderPage() {
     { taxable: 0, tax: 0, grand: 0, isInterState: false },
   );
 
+  const rawGrandTotal = roundToTwo(totals.taxable + totals.tax + watchedFreight);
+  const finalGrandTotal = watchedIsRoundOff ? Math.round(rawGrandTotal) : rawGrandTotal;
+  const roundOffAmount = roundToTwo(finalGrandTotal - rawGrandTotal);
+
   const columns = useMemo<ColumnDef<any>[]>(
     () => [
       {
         id: "item",
-        header: "Item / SKU",
+        header: "Item / SKU (Alt+P)",
         cell: ({ row }) => (
-          <div className="min-w-[300px]">
+          <div className="min-w-[300px]" data-po-item-search={row.index === 0 ? "true" : undefined}>
             <Controller
               name={`items.${row.index}.variantId`}
               control={control}
@@ -168,6 +213,12 @@ export default function NewPurchaseOrderPage() {
                         : 1;
                       setValue(`items.${row.index}.unit`, currentUnit);
                       setValue(`items.${row.index}.conversionRatio`, ratio);
+                      if (variant.purchasePrice) {
+                        setValue(`items.${row.index}.rate`, variant.purchasePrice);
+                      }
+                      if (variant.product.gstRate !== undefined) {
+                        setValue(`items.${row.index}.gstPercent`, variant.product.gstRate);
+                      }
                     }
                   }}
                   placeholder="Search item or SKU..."
@@ -278,7 +329,7 @@ export default function NewPurchaseOrderPage() {
             {(
               (watchedItems[row.index]?.quantity || 0) *
               (watchedItems[row.index]?.rate || 0)
-            ).toLocaleString()}
+            ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         ),
       },
@@ -309,12 +360,17 @@ export default function NewPurchaseOrderPage() {
 
       const payload = {
         partyId: data.partyId,
-        outletId: currentOutletId, // Scoped
-        userId: session?.user?.id, // Audited
+        outletId: currentOutletId,
+        userId: session?.user?.id,
         toLocationId: data.toLocationId,
+        date: data.date,
+        freightCost: Number(data.freightCost) || 0,
+        isRoundOff: data.isRoundOff,
+        roundOff: roundOffAmount,
+        remarks: data.remarks?.trim() || undefined,
         items: data.items.map((item) => {
-          const taxableValue = item.quantity * item.rate;
-          const taxTotal = taxableValue * (item.gstPercent / 100);
+          const taxableValue = roundToTwo(item.quantity * item.rate);
+          const taxTotal = roundToTwo(taxableValue * ((item.gstPercent || 0) / 100));
 
           return {
             variantId: item.variantId,
@@ -323,8 +379,8 @@ export default function NewPurchaseOrderPage() {
             conversionRatio: item.conversionRatio,
             rate: item.rate,
             taxableValue,
-            cgst: totals.isInterState ? 0 : taxTotal / 2,
-            sgst: totals.isInterState ? 0 : taxTotal / 2,
+            cgst: totals.isInterState ? 0 : roundToTwo(taxTotal / 2),
+            sgst: totals.isInterState ? 0 : roundToTwo(taxTotal / 2),
             igst: totals.isInterState ? taxTotal : 0,
           };
         }),
@@ -362,22 +418,23 @@ export default function NewPurchaseOrderPage() {
               New Purchase Order
             </h2>
             <p className="text-sm text-slate-500">
-              Request stock from a vendor.
+              Request stock from a vendor. (Alt+P to search item, Esc to discard)
             </p>
           </div>
         </div>
-        <Link
-          href="/dashboard/purchases"
-          className="text-sm text-slate-600 hover:text-slate-900 px-3 py-2"
+        <button
+          type="button"
+          onClick={() => setShowDiscardDialog(true)}
+          className="text-sm text-slate-600 hover:text-slate-900 px-3 py-2 cursor-pointer"
         >
           Cancel
-        </Link>
+        </button>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Supplier (Vendor) *
               </label>
@@ -392,7 +449,6 @@ export default function NewPurchaseOrderPage() {
                       field.onChange(value);
                     }}
                     onPartyLoad={(party) => {
-                      // Update suppliers list with newly created vendor
                       setSuppliers((prev) => {
                         const exists = prev.some((s) => s.id === party.id);
                         if (exists) return prev;
@@ -417,7 +473,7 @@ export default function NewPurchaseOrderPage() {
               </label>
               <select
                 {...register("toLocationId")}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-sm"
               >
                 <option value="">Select Warehouse...</option>
                 {locations.map((l) => (
@@ -432,6 +488,47 @@ export default function NewPurchaseOrderPage() {
                 </p>
               )}
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Order Date *
+              </label>
+              <input
+                type="date"
+                {...register("date")}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-sm"
+              />
+              {errors.date && (
+                <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 pt-4 border-t border-slate-100">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Freight / Shipping Charges (₹)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                {...register("freightCost")}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Remarks / Reference Note
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. PO reference, urgent delivery"
+                {...register("remarks")}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-sm"
+              />
+            </div>
           </div>
         </div>
 
@@ -439,22 +536,31 @@ export default function NewPurchaseOrderPage() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center text-sm font-semibold text-slate-700 uppercase tracking-wider">
             <span>Order Items</span>
-            <button
-              type="button"
-              onClick={() =>
-                append({
-                  variantId: "",
-                  quantity: 1,
-                  unit: "",
-                  conversionRatio: 1,
-                  rate: 0,
-                  gstPercent: 18,
-                })
-              }
-              className="text-blue-600 flex items-center hover:text-blue-800"
-            >
-              <Plus className="w-4 h-4 mr-1" /> Add Item
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                type="button"
+                onClick={() => setShowQuickProductDialog(true)}
+                className="text-emerald-600 flex items-center hover:text-emerald-800 text-xs font-semibold px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 rounded border border-emerald-200 transition-colors"
+              >
+                <PackagePlus className="w-3.5 h-3.5 mr-1" /> Create New Item
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  append({
+                    variantId: "",
+                    quantity: 1,
+                    unit: "",
+                    conversionRatio: 1,
+                    rate: 0,
+                    gstPercent: 18,
+                  })
+                }
+                className="text-blue-600 flex items-center hover:text-blue-800 text-xs font-semibold px-2.5 py-1 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" /> Add Row
+              </button>
+            </div>
           </div>
 
           <DataTable
@@ -470,18 +576,42 @@ export default function NewPurchaseOrderPage() {
 
         {/* Breakdown */}
         <div className="flex justify-end pt-4">
-          <div className="w-80 bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-3">
+          <div className="w-88 bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-3">
             <div className="flex justify-between text-sm text-slate-600">
               <span>Sub-Total (Taxable)</span>
-              <span>₹{totals.taxable.toLocaleString()}</span>
+              <span>₹{totals.taxable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between text-sm text-slate-600">
               <span>Tax ({totals.isInterState ? "IGST" : "CGST + SGST"})</span>
-              <span>₹{totals.tax.toLocaleString()}</span>
+              <span>₹{totals.tax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
-            <div className="pt-3 border-t border-slate-100 flex justify-between font-bold text-lg text-slate-900">
+            {watchedFreight > 0 && (
+              <div className="flex justify-between text-sm text-slate-600">
+                <span>Freight Charges</span>
+                <span>₹{watchedFreight.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+            )}
+            
+            {/* Round Off Toggle & Row */}
+            <div className="flex items-center justify-between text-sm text-slate-600 pt-1 border-t border-slate-100">
+              <label className="flex items-center space-x-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  {...register("isRoundOff")}
+                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                />
+                <span className="font-medium">Round Off</span>
+              </label>
+              {watchedIsRoundOff && (
+                <span className="font-mono text-xs text-slate-500">
+                  {roundOffAmount >= 0 ? `+₹${roundOffAmount.toFixed(2)}` : `-₹${Math.abs(roundOffAmount).toFixed(2)}`}
+                </span>
+              )}
+            </div>
+
+            <div className="pt-3 border-t border-slate-200 flex justify-between font-bold text-lg text-slate-900">
               <span>Total Amount</span>
-              <span>₹{totals.grand.toLocaleString()}</span>
+              <span>₹{finalGrandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           </div>
         </div>
@@ -490,13 +620,91 @@ export default function NewPurchaseOrderPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-bold text-lg flex items-center shadow-lg disabled:opacity-50"
+            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-bold text-lg flex items-center shadow-lg disabled:opacity-50 cursor-pointer"
           >
             <Save className="w-5 h-5 mr-2" />
             {isSubmitting ? "Generating PO..." : "Issue Purchase Order"}
           </button>
         </div>
       </form>
+
+      {/* Discard Warning Dialog */}
+      <Dialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900">
+              Discard Purchase Order?
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-500 py-2">
+            Are you sure you want to discard this purchase order? All unsaved items and values will be lost.
+          </p>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowDiscardDialog(false)}
+            >
+              Keep Editing
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => router.push("/dashboard/purchases")}
+            >
+              Discard & Exit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Inline Quick Product Dialog */}
+      <QuickProductDialog
+        open={showQuickProductDialog}
+        onOpenChange={setShowQuickProductDialog}
+        outletId={currentOutletId}
+        userId={session?.user?.id}
+        onProductCreated={(product, variant) => {
+          if (variant) {
+            const enrichedVariant = {
+              id: variant.id,
+              sku: variant.sku,
+              purchasePrice: variant.purchasePrice,
+              sellingPrice: variant.sellingPrice,
+              product: {
+                id: product.id,
+                name: product.name,
+                brand: product.brand,
+                baseUnit: product.baseUnit,
+                purchaseUnit: product.purchaseUnit,
+                conversionRatio: product.conversionRatio,
+                gstRate: product.gstRate,
+              },
+            };
+            setVariants((prev) => [...prev, enrichedVariant]);
+
+            // Append or populate item in table
+            const currentItems = watch("items") || [];
+            if (currentItems.length === 1 && !currentItems[0].variantId) {
+              setValue("items.0.variantId", variant.id);
+              setValue("items.0.quantity", 1);
+              setValue("items.0.unit", product.purchaseUnit || product.baseUnit);
+              setValue("items.0.conversionRatio", product.conversionRatio || 1);
+              setValue("items.0.rate", variant.purchasePrice || 0);
+              setValue("items.0.gstPercent", product.gstRate || 18);
+            } else {
+              append({
+                variantId: variant.id,
+                quantity: 1,
+                unit: product.purchaseUnit || product.baseUnit,
+                conversionRatio: product.conversionRatio || 1,
+                rate: variant.purchasePrice || 0,
+                gstPercent: product.gstRate || 18,
+              });
+            }
+          }
+        }}
+      />
 
       {!currentOutletId && (
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">

@@ -1,11 +1,18 @@
-"use client";
-
 import * as React from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import { Plus, X } from "lucide-react";
-import { createCategory } from "@/actions/categories";
+import { Plus, X, Pencil } from "lucide-react";
+import { createCategory, updateCategory } from "@/actions/categories";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface CategoryComboboxWithCreateProps {
   categories: { id: string; name: string }[];
@@ -16,6 +23,7 @@ interface CategoryComboboxWithCreateProps {
   disabled?: boolean;
   userId?: string;
   onCategoryCreated?: (category: { id: string; name: string }) => void;
+  onCategoryUpdated?: (category: { id: string; name: string }) => void;
 }
 
 export function CategoryComboboxWithCreate({
@@ -27,12 +35,16 @@ export function CategoryComboboxWithCreate({
   disabled = false,
   userId = "system",
   onCategoryCreated,
+  onCategoryUpdated,
 }: CategoryComboboxWithCreateProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [isCreating, setIsCreating] = React.useState(false);
   const [localCategories, setLocalCategories] = React.useState(initialCategories);
   const [highlightedIndex, setHighlightedIndex] = React.useState(0);
+  const [editingCategory, setEditingCategory] = React.useState<{ id: string; name: string } | null>(null);
+  const [editCategoryName, setEditCategoryName] = React.useState("");
+  const [isUpdating, setIsUpdating] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   // Sync local categories with props
@@ -101,6 +113,49 @@ export function CategoryComboboxWithCreate({
       setIsCreating(false);
     }
   }, [search, outletId, userId, handleSelect, onCategoryCreated]);
+
+  const handleOpenEdit = (e: React.MouseEvent, cat: { id: string; name: string }) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setEditingCategory(cat);
+    setEditCategoryName(cat.name);
+  };
+
+  const handleUpdate = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!editingCategory) return;
+    const trimmed = editCategoryName.trim();
+    if (!trimmed) {
+      toast.error("Category name cannot be empty");
+      return;
+    }
+    setIsUpdating(true);
+    try {
+      const res = await updateCategory({
+        id: editingCategory.id,
+        name: trimmed,
+        userId,
+      });
+      if (res.success && res.data) {
+        const updated = { id: res.data.id, name: res.data.name };
+        setLocalCategories((prev) =>
+          prev.map((c) => (c.id === updated.id ? updated : c))
+        );
+        toast.success(`Category renamed to "${updated.name}"`);
+        if (onCategoryUpdated) {
+          onCategoryUpdated(updated);
+        }
+        setEditingCategory(null);
+      } else {
+        toast.error(res.error?.message || "Failed to update category");
+      }
+    } catch (error) {
+      toast.error("An error occurred while updating category");
+      console.error(error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleFocus = () => {
     if (!disabled) {
@@ -188,19 +243,26 @@ export function CategoryComboboxWithCreate({
             ) : (
               <>
                 {filtered.map((category, idx) => (
-                  <button
+                  <div
                     key={category.id}
-                    type="button"
                     onClick={() => handleSelect(category.id)}
                     onMouseEnter={() => setHighlightedIndex(idx)}
                     className={cn(
-                      "w-full text-left px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer",
+                      "w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer group select-none",
                       value === category.id && "bg-slate-50 font-semibold",
                       highlightedIndex === idx && "bg-slate-100"
                     )}
                   >
-                    {category.name}
-                  </button>
+                    <span className="truncate flex-1">{category.name}</span>
+                    <button
+                      type="button"
+                      title="Edit category"
+                      onClick={(e) => handleOpenEdit(e, category)}
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 rounded text-slate-500 hover:text-slate-800 transition-opacity ml-2 shrink-0"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 ))}
                 {showCreateOption && (
                   <button
@@ -226,6 +288,38 @@ export function CategoryComboboxWithCreate({
           </div>
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
+
+      <Dialog open={!!editingCategory} onOpenChange={(open) => !open && setEditingCategory(null)}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Edit Category</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdate} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-slate-700">Category Name</label>
+              <Input
+                value={editCategoryName}
+                onChange={(e) => setEditCategoryName(e.target.value)}
+                placeholder="Enter category name"
+                autoFocus
+              />
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditingCategory(null)}
+                disabled={isUpdating}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isUpdating || !editCategoryName.trim()}>
+                {isUpdating ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PopoverPrimitive.Root>
   );
 }

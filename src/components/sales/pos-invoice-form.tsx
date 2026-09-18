@@ -19,7 +19,37 @@ import {
 import { peekNextInvoiceNumber } from "@/actions/sales/invoice-form-handler";
 import { handleCreateOldBill } from "@/actions/sales/old-bill-form-handler";
 import { recordInvoicePayment } from "@/actions/sales/payment";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { roundToTwo } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+
+function extractAllValidationErrors(errors: any, path = ""): string[] {
+  const result: string[] = [];
+  if (!errors) return result;
+  if (typeof errors === "object") {
+    if (errors.message && typeof errors.message === "string") {
+      result.push(path ? `${path}: ${errors.message}` : errors.message);
+    }
+    for (const [key, value] of Object.entries(errors)) {
+      if (key === "message" || key === "ref" || key === "type") continue;
+      const currentPath = path
+        ? isNaN(Number(key))
+          ? `${path}.${key}`
+          : `Item #${Number(key) + 1}`
+        : key;
+      result.push(...extractAllValidationErrors(value, currentPath));
+    }
+  }
+  return result;
+}
 
 interface POSInvoiceFormProps {
   mode: "create" | "edit";
@@ -46,6 +76,8 @@ export function POSInvoiceForm({
   const [isDirty, setIsDirty] = React.useState(false);
   const [selectedCustomer, setSelectedCustomer] = React.useState<any>(null);
   const [isGlobalDiscount, setIsGlobalDiscount] = React.useState(true);
+  const [isRoundOff, setIsRoundOff] = React.useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = React.useState(false);
   const [invoiceNumber, setInvoiceNumber] = React.useState("");
   const [attachmentCount, setAttachmentCount] = React.useState(0);
   const [no2PaymentMode, setNo2PaymentMode] =
@@ -72,6 +104,8 @@ export function POSInvoiceForm({
           headerDiscount: invoice.headerDiscount || 0,
           freightCost: invoice.freightCost || 0,
           remarks: invoice.remarks || "",
+          roundOff: 0,
+          isRoundOff: false,
           ...(invoice.billType === "OLD" && {
             grandTotal: invoice.grandTotal || 0,
             payments: invoice.payments || [],
@@ -91,6 +125,8 @@ export function POSInvoiceForm({
           freightCost: 0,
           remarks: "",
           grandTotal: 0,
+          roundOff: 0,
+          isRoundOff: false,
           payments: [],
         }) as any,
   });
@@ -172,6 +208,14 @@ export function POSInvoiceForm({
     }
   }, [invoice?.id, invoiceNumber]);
 
+  // Track dirty state
+  React.useEffect(() => {
+    const subscription = form.watch(() => {
+      if (!isDirty) setIsDirty(true);
+    });
+    return () => subscription.unsubscribe();
+  }, [form, isDirty]);
+
   // ─── Calculations (with live update on form changes) ─────────────────────
   const calculateTotals = () => {
     const currentItems = form.watch("items") || [];
@@ -190,7 +234,9 @@ export function POSInvoiceForm({
         ? (itemsTotal * currentHeaderDiscount) / 100
         : 0;
       const subtotal = itemsTotal - discountAmount;
-      const grandTotal = subtotal + currentFreightCost;
+      const rawGrandTotal = subtotal + currentFreightCost;
+      const grandTotal = isRoundOff ? Math.round(rawGrandTotal) : rawGrandTotal;
+      const roundOff = isRoundOff ? roundToTwo(grandTotal - rawGrandTotal) : 0;
       return {
         itemsTotal,
         lineDiscounts: 0,
@@ -198,6 +244,7 @@ export function POSInvoiceForm({
         totalDiscount: discountAmount,
         totalTax: 0,
         grandTotal,
+        roundOff,
       };
     }
 
@@ -231,7 +278,9 @@ export function POSInvoiceForm({
       return sum + tax;
     }, 0);
 
-    const grandTotal = subtotal + totalTax + currentFreightCost;
+    const rawGrandTotal = subtotal + totalTax + currentFreightCost;
+    const grandTotal = isRoundOff ? Math.round(rawGrandTotal) : rawGrandTotal;
+    const roundOff = isRoundOff ? roundToTwo(grandTotal - rawGrandTotal) : 0;
 
     return {
       itemsTotal,
@@ -240,6 +289,7 @@ export function POSInvoiceForm({
       totalDiscount,
       totalTax,
       grandTotal,
+      roundOff,
     };
   };
 
@@ -325,6 +375,8 @@ export function POSInvoiceForm({
       const cleanedData = {
         ...data,
         items: (data.items || []).filter((item: any) => item.variantId),
+        roundOff: totals.roundOff,
+        isRoundOff,
       } as any;
 
       if (data.billType === "NO1" || data.billType === "NO2") {
@@ -353,6 +405,8 @@ export function POSInvoiceForm({
         }
       }
 
+      console.log("=== [POS INVOICE] SUBMISSION PAYLOAD ===", cleanedData);
+
       const res = await onSubmitProp(cleanedData as any);
       if (res.success) {
         // Reset state before navigation
@@ -373,22 +427,38 @@ export function POSInvoiceForm({
   };
 
   const handleValidationClick = async () => {
+    // 1. Remove trailing completely blank rows before validation so they don't block submission
+    const currentItems = form.getValues("items") || [];
+    const validItems = currentItems.filter(
+      (item: any) => item?.variantId || item?.productName || item?.itemDescription,
+    );
+    if (validItems.length > 0 && validItems.length < currentItems.length) {
+      form.setValue("items", validItems as any);
+    }
+
+    console.log("=== [POS INVOICE] VALIDATION ATTEMPT ===", {
+      billType,
+      fromOutletId,
+      partyId,
+      buyerName: form.getValues("buyerName"),
+      buyerPhone: form.getValues("buyerPhone"),
+      itemsCount: form.getValues("items")?.length,
+      items: form.getValues("items"),
+      payments: form.getValues("payments"),
+      totals,
+    });
+
     const isValid = await form.trigger();
     if (!isValid) {
-      // Get all field errors
-      const errors = form.formState.errors;
-      const errorMessages: string[] = [];
-
-      // Collect error messages from all fields
-      Object.entries(errors).forEach(([field, error]: any) => {
-        if (error?.message) {
-          errorMessages.push(`${field}: ${error.message}`);
-        }
+      const errorList = extractAllValidationErrors(form.formState.errors);
+      console.error("=== [POS INVOICE] VALIDATION ERRORS ===", {
+        errors: form.formState.errors,
+        errorList,
+        formValues: form.getValues(),
       });
 
-      if (errorMessages.length > 0) {
-        // Show first 3 errors
-        toast.error(errorMessages.slice(0, 3).join("\n"));
+      if (errorList.length > 0) {
+        toast.error(errorList.slice(0, 3).join("\n"));
       } else {
         toast.error(t("toasts.validationError"));
       }
@@ -398,13 +468,7 @@ export function POSInvoiceForm({
   };
 
   const handleCancel = () => {
-    if (isDirty) {
-      if (window.confirm(t("discardConfirm"))) {
-        router.back();
-      }
-    } else {
-      router.back();
-    }
+    setCancelDialogOpen(true);
   };
 
   const toggleDiscountMode = () => {
@@ -438,7 +502,10 @@ export function POSInvoiceForm({
       }
 
       // F4 or Alt+P → Jump to product search
-      if (e.key === "F4" || (e.altKey && e.key === "p")) {
+      if (
+        e.key === "F4" ||
+        (e.altKey && (e.key === "p" || e.key === "P" || e.code === "KeyP"))
+      ) {
         e.preventDefault();
         productSearchRef.current?.focus();
         return;
@@ -458,10 +525,10 @@ export function POSInvoiceForm({
         return;
       }
 
-      // Esc → Clear search / blur
+      // Esc → Open Cancel confirmation dialog
       if (e.key === "Escape") {
-        const active = document.activeElement as HTMLElement;
-        active?.blur();
+        e.preventDefault();
+        setCancelDialogOpen(true);
         return;
       }
     };
@@ -538,6 +605,9 @@ export function POSInvoiceForm({
             submitButtonText={submitButtonText}
             isGlobalDiscount={isGlobalDiscount}
             onToggleDiscountMode={toggleDiscountMode}
+            isRoundOff={isRoundOff}
+            onToggleRoundOff={() => setIsRoundOff((prev) => !prev)}
+            roundOff={totals.roundOff}
             notesRef={notesRef}
             paymentFieldArray={paymentFieldArray}
             no2PaymentMode={no2PaymentMode}
@@ -558,6 +628,39 @@ export function POSInvoiceForm({
           />
         </div>
       </form>
+
+      {/* Cancel Bill Warning Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent className="max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-slate-900">
+              Discard Current Bill?
+            </DialogTitle>
+            <DialogDescription className="text-sm text-slate-600">
+              Are you sure you want to cancel? All entered items, customer details, and values will be discarded.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setCancelDialogOpen(false)}
+              className="rounded-xl"
+            >
+              Keep Editing
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setCancelDialogOpen(false);
+                router.back();
+              }}
+              className="rounded-xl"
+            >
+              Discard & Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Form>
   );
 }

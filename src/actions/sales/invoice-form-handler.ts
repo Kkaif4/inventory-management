@@ -136,6 +136,13 @@ export async function handleCreateSalesInvoice(
     remarks: formData.remarks,
     buyerName: formData.buyerName,
     buyerPhone: formData.buyerPhone,
+    payments: formData.payments,
+  });
+
+  console.log("=== SERVER: createSalesInvoice RESULT ===", {
+    success: result.success,
+    error: (result as any).error,
+    invoiceId: (result as any).data?.invoice?.id,
   });
 
   // If invoice was created successfully, migrate any temporary attachments

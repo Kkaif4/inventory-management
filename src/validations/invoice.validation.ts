@@ -3,20 +3,21 @@ import { PAYMENT_MODES } from "./payment.validation";
 
 const invoiceItemSchema = z.object({
   variantId: z.string().min(1, "Product is required"),
-  productName: z.string().optional(),
-  description: z.string().min(1, "Description is required"),
-  quantity: z.number().min(0.01, "Qty > 0"),
-  unit: z.enum(["BASE", "SALES"]).default("BASE"),
-  rate: z.number().min(0, "Rate >= 0"),
-  discountPercent: z.number().min(0).max(100).default(0),
-  gstRate: z.number().default(0),
-  hsnCode: z.string().optional(),
-  taxableValue: z.number().default(0),
-  cgst: z.number().optional(),
-  sgst: z.number().optional(),
-  igst: z.number().optional(),
-  lineTotal: z.number().default(0),
+  productName: z.string().optional().nullable(),
+  description: z.string().optional().default(""),
+  quantity: z.coerce.number().min(0.01, "Quantity must be greater than 0"),
+  unit: z.enum(["BASE", "SALES"]).default("BASE").optional(),
+  rate: z.coerce.number().min(0, "Rate must be >= 0"),
+  discountPercent: z.coerce.number().min(0).max(100).default(0).optional(),
+  gstRate: z.coerce.number().default(0).optional(),
+  hsnCode: z.string().optional().nullable(),
+  taxableValue: z.coerce.number().default(0).optional(),
+  cgst: z.coerce.number().optional().nullable(),
+  sgst: z.coerce.number().optional().nullable(),
+  igst: z.coerce.number().optional().nullable(),
+  lineTotal: z.coerce.number().default(0).optional(),
   serialNumbers: z.array(z.string()).optional(),
+  hasSerialNumbers: z.boolean().optional(),
   batchNumber: z.string().optional().nullable(),
 });
 
@@ -24,23 +25,25 @@ const invoiceItemSchema = z.object({
 export const createNo1InvoiceSchema = z.object({
   billType: z.literal("NO1"),
   txnNumber: z.string().optional(),
-  partyId: z.string().min(1, "Customer is required"),
+  partyId: z.string().min(1, "Customer is required for legal invoice"),
   fromOutletId: z.string().min(1, "Outlet is required"),
   date: z.coerce.date(),
   items: z
     .array(invoiceItemSchema)
-    .min(1, "At least one item required"),
-  headerDiscount: z.number().min(0).max(100).default(0),
-  freightCost: z.number().min(0, "Freight >= 0").default(0),
-  remarks: z.string().optional(),
-  buyerName: z.string().optional(),
-  buyerPhone: z.string().optional(),
+    .min(1, "At least one item is required"),
+  headerDiscount: z.coerce.number().min(0).max(100).default(0).optional(),
+  freightCost: z.coerce.number().min(0, "Freight >= 0").default(0).optional(),
+  roundOff: z.coerce.number().optional().default(0),
+  isRoundOff: z.boolean().optional().default(false),
+  remarks: z.string().optional().nullable(),
+  buyerName: z.string().optional().nullable(),
+  buyerPhone: z.string().optional().nullable(),
   payments: z
     .array(
       z.object({
         paymentMode: z.enum(PAYMENT_MODES),
         bankAccountId: z.string().optional().nullable(),
-        amount: z.number().min(0.01, "Amount must be > 0"),
+        amount: z.coerce.number().min(0.01, "Amount must be > 0"),
         referenceNo: z.string().optional().nullable(),
         notes: z.string().optional().nullable(),
         chequeNumber: z.string().optional().nullable(),
@@ -57,20 +60,23 @@ export const createNo2InvoiceSchema = z.object({
   txnNumber: z.string().optional(),
   fromOutletId: z.string().min(1, "Outlet is required"),
   date: z.coerce.date(),
-  partyId: z.string().optional(),
-  buyerName: z.string().default(""),
-  buyerPhone: z.string().default(""),
+  partyId: z.string().optional().nullable(),
+  buyerName: z.string().optional().nullable().default(""),
+  buyerPhone: z.string().optional().nullable().default(""),
   items: z
     .array(invoiceItemSchema)
-    .min(1, "At least one item required"),
-  freightCost: z.number().min(0, "Freight >= 0").default(0),
-  remarks: z.string().optional(),
+    .min(1, "At least one item is required"),
+  headerDiscount: z.coerce.number().min(0).max(100).default(0).optional(),
+  freightCost: z.coerce.number().min(0, "Freight >= 0").default(0).optional(),
+  roundOff: z.coerce.number().optional().default(0),
+  isRoundOff: z.boolean().optional().default(false),
+  remarks: z.string().optional().nullable(),
   payments: z
     .array(
       z.object({
         paymentMode: z.enum(PAYMENT_MODES),
         bankAccountId: z.string().optional().nullable(),
-        amount: z.number().min(0.01, "Amount must be > 0"),
+        amount: z.coerce.number().min(0.01, "Amount must be > 0"),
         referenceNo: z.string().optional().nullable(),
         notes: z.string().optional().nullable(),
         chequeNumber: z.string().optional().nullable(),
@@ -103,6 +109,8 @@ export const createOldBillSchema = z.object({
   })).optional(),
   headerDiscount: z.number().min(0).max(100).default(0).optional(), // Bill discount %
   freightCost: z.number().min(0, "Freight >= 0").default(0).optional(),
+  roundOff: z.number().optional().default(0),
+  isRoundOff: z.boolean().optional().default(false),
   payments: z.array(oldBillPaymentSchema).default([]),
   remarks: z.string().optional(),
 }).superRefine((data, ctx) => {
@@ -125,7 +133,13 @@ export const createOldBillSchema = z.object({
   }
 });
 
-export type OldBillFormValues = z.infer<typeof createOldBillSchema>;
+export type OldBillFormValues = Omit<
+  z.infer<typeof createOldBillSchema>,
+  "roundOff" | "isRoundOff"
+> & {
+  roundOff?: number;
+  isRoundOff?: boolean;
+};
 
 // Combined schema
 export const invoiceSchema = z.discriminatedUnion("billType", [

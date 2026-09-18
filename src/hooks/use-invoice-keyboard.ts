@@ -6,6 +6,8 @@ interface UseInvoiceKeyboardOptions {
   onSubmit: () => void;
   onDeleteRow: (rowIndex: number) => void;
   onFocusLastRow: () => void;
+  onAltP?: () => void;
+  onEscape?: () => void;
   totalColumns: number;
   formRef: React.RefObject<HTMLElement | null>;
 }
@@ -14,6 +16,8 @@ export function useInvoiceKeyboard({
   onSubmit,
   onDeleteRow,
   onFocusLastRow,
+  onAltP,
+  onEscape,
   totalColumns,
   formRef,
 }: UseInvoiceKeyboardOptions) {
@@ -81,11 +85,25 @@ export function useInvoiceKeyboard({
         onFocusLastRow();
         return;
       }
+
+      // Alt+P → focus product search
+      if (e.altKey && (e.key === "p" || e.key === "P" || e.code === "KeyP")) {
+        e.preventDefault();
+        onAltP?.();
+        return;
+      }
+
+      // Esc → cancel bill
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onEscape?.();
+        return;
+      }
     };
 
     container.addEventListener("keydown", handler);
     return () => container.removeEventListener("keydown", handler);
-  }, [formRef, onSubmit, onDeleteRow, onFocusLastRow]);
+  }, [formRef, onSubmit, onDeleteRow, onFocusLastRow, onAltP, onEscape]);
 
   return {
     registerRef,

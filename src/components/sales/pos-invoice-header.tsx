@@ -696,24 +696,40 @@ export function POSInvoiceHeader({
               Quickly add customer details for {phone}.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (billingName && lookupState !== "loading") {
+                handleCreateCustomer();
+              }
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700">Full Name</label>
               <Input
                 value={billingName}
                 onChange={(e) => setBillingName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (billingName && lookupState !== "loading") {
+                      handleCreateCustomer();
+                    }
+                  }
+                }}
                 autoFocus
               />
             </div>
             <Button 
+              type="submit"
               className="w-full bg-slate-900" 
-              onClick={handleCreateCustomer}
               disabled={!billingName || lookupState === "loading"}
             >
               {lookupState === "loading" && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Save & Select
             </Button>
-          </div>
+          </form>
         </DialogContent>
       </Dialog>
 

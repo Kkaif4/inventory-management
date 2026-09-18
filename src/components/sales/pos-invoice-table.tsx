@@ -98,7 +98,7 @@ export function POSInvoiceTable({
   const openSerialPicker = async (index: number) => {
     const item = form.getValues(`items.${index}`);
     if (!item.variantId) return;
-    
+
     setSerialPickerIndex(index);
     setLoadingSerials(true);
     setSerialSearch("");
@@ -156,12 +156,12 @@ export function POSInvoiceTable({
     if (serialPickerIndex === null) return;
     const current = form.getValues(`items.${serialPickerIndex}.serialNumbers`) || [];
     const limit = Number(form.getValues(`items.${serialPickerIndex}.quantity`));
-    
+
     if (current.length >= limit) {
       toast.error(`Quantity limit reached (${limit}). Remove an existing serial number or increase quantity first.`);
       return;
     }
-    
+
     form.setValue(`items.${serialPickerIndex}.serialNumbers`, [...current, sn]);
   };
 
@@ -177,14 +177,14 @@ export function POSInvoiceTable({
   const handleSerialScan = (searchVal: string) => {
     const val = searchVal.trim();
     if (!val) return;
-    
+
     const isAvailable = availableSerials.some((s) => s.toLowerCase() === val.toLowerCase());
-    
+
     if (!isAvailable) {
       toast.error(`Serial number "${val}" is not available in stock.`);
       return;
     }
-    
+
     const exactSn = availableSerials.find((s) => s.toLowerCase() === val.toLowerCase())!;
     addSerial(exactSn);
     setSerialSearch("");
@@ -215,7 +215,7 @@ export function POSInvoiceTable({
 
       const existingItems = form.getValues("items") || [];
       const existingIndex = existingItems.findIndex((i: any) => i.variantId === variant.id);
-      
+
       if (existingIndex !== -1) {
         const currentSns = form.getValues(`items.${existingIndex}.serialNumbers`) || [];
         if (currentSns.includes(variant.matchedSerialNumber)) {
@@ -361,9 +361,13 @@ export function POSInvoiceTable({
     const qty = form.watch(`items.${index}.quantity`) || 0;
     const rate = form.watch(`items.${index}.rate`) || 0;
     const disc = form.watch(`items.${index}.discountPercent`) || 0;
-    return qty * rate * (1 - disc / 100);
+    const gstRate = isNO1 ? (form.watch(`items.${index}.gstRate`) || 0) : 0;
+    const taxable = qty * rate * (1 - disc / 100);
+    const tax = (taxable * gstRate) / 100;
+    return taxable + tax;
   };
 
+  
   const handleInlineQtyChange = (index: number, value: string) => {
     const num = parseInt(value.replace(/[^\d]/g, ""), 10) || 0;
     form.setValue(`items.${index}.quantity`, num);
@@ -801,7 +805,7 @@ export function POSInvoiceTable({
               Select Serial Numbers
             </DialogTitle>
           </DialogHeader>
-          
+
           {serialPickerIndex !== null && (
             <div className="space-y-4 py-3">
               <div>
@@ -907,7 +911,7 @@ export function POSInvoiceTable({
                 ) : (
                   <div className="grid grid-cols-2 gap-1.5 max-h-[150px] overflow-y-auto border rounded-lg p-2 bg-white">
                     {availableSerials
-                      .filter((sn) => 
+                      .filter((sn) =>
                         sn.toLowerCase().includes(serialSearch.toLowerCase()) &&
                         !((form.watch(`items.${serialPickerIndex}.serialNumbers`) || []) as string[]).includes(sn)
                       )
@@ -922,7 +926,7 @@ export function POSInvoiceTable({
                           + {sn}
                         </button>
                       ))}
-                    {availableSerials.filter((sn) => 
+                    {availableSerials.filter((sn) =>
                       sn.toLowerCase().includes(serialSearch.toLowerCase()) &&
                       !((form.watch(`items.${serialPickerIndex}.serialNumbers`) || []) as string[]).includes(sn)
                     ).length === 0 && (

@@ -112,6 +112,8 @@ export default function NewProductPage() {
       conversionRatio: 1,
       categoryId: "",
       parentCategoryId: "",
+      hasSerialNumbers: false,
+      warrantyMonths: 0,
       variants: [
         {
           sku: "",
@@ -314,6 +316,13 @@ export default function NewProductPage() {
                             const taxInfo = getTaxInfoByCategory(category.name);
                             form.setValue("hsnCode", taxInfo.hsnCode);
                             form.setValue("gstRate", taxInfo.gstRate);
+                          }}
+                          onCategoryUpdated={(category) => {
+                            setCategories((prev) =>
+                              prev.map((c) =>
+                                c.id === category.id ? { ...c, name: category.name } : c
+                              )
+                            );
                           }}
                         />
                       </FormControl>
@@ -529,7 +538,7 @@ export default function NewProductPage() {
                         </div>
                         <FormControl>
                           <Switch
-                            checked={field.value}
+                            checked={field.value ?? false}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
