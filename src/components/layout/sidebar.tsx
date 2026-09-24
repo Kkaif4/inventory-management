@@ -42,6 +42,11 @@ const navigation = [
     group: "SALES",
     items: [
       {
+        name: "New Invoice",
+        href: "/dashboard/sales/invoices/new",
+        icon: Receipt,
+      },
+      {
         name: "Sales Transactions",
         href: "/dashboard/sales/transactions",
         icon: ReceiptIndianRupee,
@@ -200,7 +205,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "bg-surface-base border-r border-border-default flex flex-col fixed left-0 bottom-0 top-14 transition-all duration-300 z-30",
+        "bg-surface-base border-r border-border-default flex flex-col fixed left-0 bottom-0 top-14 transition-all duration-300 z-30 print:hidden",
         isCollapsed ? "w-16" : "w-60",
       )}
     >
@@ -225,6 +230,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                 // Map item names to keys
                 const itemNameMap: Record<string, string> = {
                   Dashboard: "dashboard",
+                  "New Invoice": "newInvoice",
                   "Sales Transactions": "salesTransactions",
                   "Quotations & Delivery": "quotations",
                   "Warranty Lookup": "warrantyLookup",

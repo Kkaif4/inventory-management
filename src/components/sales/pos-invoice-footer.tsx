@@ -14,6 +14,7 @@ import {
   Landmark,
   Clock,
   Wallet,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getOutletAccounts } from "@/actions/sales/payment";
@@ -30,6 +31,11 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 
 export type No2PaymentMode =
   | "CREDIT"
@@ -63,6 +69,7 @@ interface POSInvoiceFooterProps {
   roundOff?: number;
   notesRef?: React.RefObject<HTMLInputElement | null>;
   paymentFieldArray?: any; // UseFieldArrayReturn
+  customChargesFieldArray?: any; // UseFieldArrayReturn
   no2PaymentMode?: No2PaymentMode;
   onNo2PaymentModeChange?: (mode: No2PaymentMode) => void;
 }
@@ -116,11 +123,18 @@ export function POSInvoiceFooter({
   roundOff = 0,
   notesRef,
   paymentFieldArray,
+  customChargesFieldArray,
   no2PaymentMode = "CREDIT",
   onNo2PaymentModeChange,
 }: POSInvoiceFooterProps) {
   const t = useTranslations("billing");
   const isNO1 = billType === "NO1";
+
+  const watchedCustomCharges = form.watch("customCharges") || [];
+  const totalCustomCharges = watchedCustomCharges.reduce(
+    (sum: number, c: any) => sum + (Number(c?.amount) || 0),
+    0,
+  );
 
   // For OLD bills, recalculate all totals from form state to ensure instant updates when items change
   let displaySubtotal = subtotal;
@@ -132,7 +146,6 @@ export function POSInvoiceFooter({
     const items = form.watch("items") || [];
     const headerDiscount = form.watch("headerDiscount") || 0;
     const freight = form.watch("freightCost") || 0;
-    const formGrandTotal = form.watch("grandTotal");
 
     const itemsTotal = items.reduce(
       (sum: number, item: any) =>
@@ -143,7 +156,8 @@ export function POSInvoiceFooter({
     displaySubtotal = itemsTotal - discountAmount;
     displayTotalDiscount = discountAmount;
     displayFreight = freight;
-    displayGrandTotal = displaySubtotal + displayFreight;
+    const rawTotal = displaySubtotal + displayFreight + totalCustomCharges;
+    displayGrandTotal = isRoundOff ? Math.round(rawTotal) : rawTotal;
   }
 
   return (
@@ -222,6 +236,155 @@ export function POSInvoiceFooter({
                 className="h-9 w-28 text-sm font-mono focus:ring-2 focus:ring-blue-500"
               />
             </label>
+
+            <div className="w-px h-6 bg-slate-200 shrink-0" />
+
+            {/* Extra Charges Popover */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "flex items-center gap-1.5 h-9 px-3 rounded-md text-xs font-medium border transition-colors shrink-0",
+                    watchedCustomCharges.length > 0
+                      ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
+                  )}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Extra Charges</span>
+                  {watchedCustomCharges.length > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-blue-600 text-white font-mono leading-none">
+                      {watchedCustomCharges.length}
+                    </span>
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="start"
+                className="w-80 p-3 bg-white shadow-xl border border-slate-200 rounded-xl space-y-3 z-50"
+              >
+                <div className="flex items-center justify-between border-b pb-2 border-slate-100">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Extra Charges
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-[11px] text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 font-medium"
+                    onClick={() => {
+                      customChargesFieldArray?.append({
+                        id: crypto.randomUUID(),
+                        name: "",
+                        amount: 0,
+                      });
+                    }}
+                  >
+                    + Add Charge
+                  </Button>
+                </div>
+
+                {/* Suggestions chips */}
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[10px] text-slate-400">Quick:</span>
+                  {["Packaging", "Delivery", "Handling", "Installation"].map(
+                    (suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => {
+                          customChargesFieldArray?.append({
+                            id: crypto.randomUUID(),
+                            name: suggestion,
+                            amount: 0,
+                          });
+                        }}
+                        className="text-[10px] bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 transition-colors"
+                      >
+                        +{suggestion}
+                      </button>
+                    ),
+                  )}
+                </div>
+
+                {/* Charges List */}
+                <div className="max-h-56 overflow-y-auto space-y-2 pr-1">
+                  {!customChargesFieldArray?.fields ||
+                  customChargesFieldArray.fields.length === 0 ? (
+                    <p className="text-xs text-slate-400 text-center py-3 italic">
+                      No extra charges added.
+                    </p>
+                  ) : (
+                    customChargesFieldArray.fields.map(
+                      (field: any, idx: number) => (
+                        <div
+                          key={field.id}
+                          className="flex items-center gap-1.5"
+                        >
+                          <Input
+                            placeholder="Charge name (e.g. Packing)"
+                            value={form.watch(`customCharges.${idx}.name`) || ""}
+                            onChange={(e) =>
+                              form.setValue(
+                                `customCharges.${idx}.name`,
+                                e.target.value,
+                              )
+                            }
+                            className="h-8 text-xs flex-1"
+                          />
+                          <div className="relative w-24">
+                            <span className="absolute left-2 top-2 text-[11px] text-slate-400 font-mono">
+                              ₹
+                            </span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              placeholder="0.00"
+                              value={
+                                form.watch(`customCharges.${idx}.amount`) ?? ""
+                              }
+                              onChange={(e) =>
+                                form.setValue(
+                                  `customCharges.${idx}.amount`,
+                                  parseFloat(e.target.value) || 0,
+                                )
+                              }
+                              className="h-8 text-xs pl-5 font-mono text-right"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => customChargesFieldArray?.remove(idx)}
+                            className="text-slate-400 hover:text-red-500 p-1 transition-colors"
+                            title="Remove charge"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ),
+                    )
+                  )}
+                </div>
+
+                {customChargesFieldArray?.fields?.length > 0 && (
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-700">
+                    <span>Total Extra Charges:</span>
+                    <span className="font-mono text-slate-900">
+                      ₹
+                      {(form.watch("customCharges") || [])
+                        .reduce(
+                          (sum: number, c: any) =>
+                            sum + (Number(c?.amount) || 0),
+                          0,
+                        )
+                        .toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
 
             <div className="w-px h-6 bg-slate-200 shrink-0" />
 
@@ -678,6 +841,15 @@ export function POSInvoiceFooter({
             {displayFreight > 0 && (
               <SummaryItem label={t("footer.freight")} value={displayFreight} />
             )}
+            {watchedCustomCharges
+              .filter((c: any) => c && c.name && Number(c.amount) > 0)
+              .map((c: any, idx: number) => (
+                <SummaryItem
+                  key={c.id || idx}
+                  label={c.name}
+                  value={Number(c.amount)}
+                />
+              ))}
             {isRoundOff && roundOff !== 0 && (
               <SummaryItem
                 label="Round Off"

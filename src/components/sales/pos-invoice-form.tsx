@@ -55,8 +55,8 @@ interface POSInvoiceFormProps {
   mode: "create" | "edit";
   invoice?: any;
   outlets: any[];
-  onSubmit?: (data: any) => Promise<{ success: boolean; error?: any }>;
-  onSaveDraft?: (data: any) => Promise<{ success: boolean; error?: any }>;
+  onSubmit?: (data: any) => Promise<{ success: boolean; error?: any; data?: any }>;
+  onSaveDraft?: (data: any) => Promise<{ success: boolean; error?: any; data?: any }>;
 }
 
 export function POSInvoiceForm({
@@ -103,6 +103,7 @@ export function POSInvoiceForm({
           items: invoice.items || [],
           headerDiscount: invoice.headerDiscount || 0,
           freightCost: invoice.freightCost || 0,
+          customCharges: (invoice as any).customCharges || [],
           remarks: invoice.remarks || "",
           roundOff: 0,
           isRoundOff: false,
@@ -123,6 +124,7 @@ export function POSInvoiceForm({
           items: [],
           headerDiscount: 0,
           freightCost: 0,
+          customCharges: [],
           remarks: "",
           grandTotal: 0,
           roundOff: 0,
@@ -141,12 +143,18 @@ export function POSInvoiceForm({
     name: "payments",
   });
 
+  const customChargesFieldArray = useFieldArray({
+    control: form.control,
+    name: "customCharges",
+  });
+
   const billType = form.watch("billType");
   const fromOutletId = form.watch("fromOutletId");
   const partyId = form.watch("partyId") as string | undefined;
   const items = form.watch("items");
   const headerDiscount = form.watch("headerDiscount");
   const freightCost = form.watch("freightCost");
+  const customCharges = form.watch("customCharges");
   const isPosted = invoice?.status === "POSTED";
 
   // Load next invoice number when outlet or bill type changes
@@ -221,6 +229,11 @@ export function POSInvoiceForm({
     const currentItems = form.watch("items") || [];
     const currentHeaderDiscount = form.watch("headerDiscount") || 0;
     const currentFreightCost = form.watch("freightCost") || 0;
+    const currentCustomCharges = form.watch("customCharges") || [];
+    const totalCustomCharges = currentCustomCharges.reduce(
+      (sum: number, c: any) => sum + (Number(c?.amount) || 0),
+      0,
+    );
 
     const itemsTotal = currentItems.reduce(
       (sum: number, item: any) =>
@@ -228,13 +241,13 @@ export function POSInvoiceForm({
       0,
     );
 
-    // OLD bills: calculation with discount support (quantity * rate) - discount% + freight
+    // OLD bills: calculation with discount support (quantity * rate) - discount% + freight + customCharges
     if (billType === "OLD") {
       const discountAmount = isGlobalDiscount
         ? (itemsTotal * currentHeaderDiscount) / 100
         : 0;
       const subtotal = itemsTotal - discountAmount;
-      const rawGrandTotal = subtotal + currentFreightCost;
+      const rawGrandTotal = subtotal + currentFreightCost + totalCustomCharges;
       const grandTotal = isRoundOff ? Math.round(rawGrandTotal) : rawGrandTotal;
       const roundOff = isRoundOff ? roundToTwo(grandTotal - rawGrandTotal) : 0;
       return {
@@ -243,12 +256,13 @@ export function POSInvoiceForm({
         subtotal,
         totalDiscount: discountAmount,
         totalTax: 0,
+        totalCustomCharges,
         grandTotal,
         roundOff,
       };
     }
 
-    // Standard invoices (NO1, NO2): include discounts and tax
+    // Standard invoices (NO1, NO2): include discounts, tax, freight, and custom charges
     const lineDiscounts = currentItems.reduce(
       (sum: number, item: any) =>
         sum +
@@ -278,7 +292,8 @@ export function POSInvoiceForm({
       return sum + tax;
     }, 0);
 
-    const rawGrandTotal = subtotal + totalTax + currentFreightCost;
+    const rawGrandTotal =
+      subtotal + totalTax + currentFreightCost + totalCustomCharges;
     const grandTotal = isRoundOff ? Math.round(rawGrandTotal) : rawGrandTotal;
     const roundOff = isRoundOff ? roundToTwo(grandTotal - rawGrandTotal) : 0;
 
@@ -288,6 +303,7 @@ export function POSInvoiceForm({
       subtotal,
       totalDiscount,
       totalTax,
+      totalCustomCharges,
       grandTotal,
       roundOff,
     };
@@ -307,7 +323,11 @@ export function POSInvoiceForm({
         ? (itemsTotal * (headerDiscount || 0)) / 100
         : 0;
       const subtotal = itemsTotal - discountAmount || 0;
-      const calculated = subtotal + (freightCost || 0);
+      const totalCustomCharges = (customCharges || []).reduce(
+        (sum: number, c: any) => sum + (Number(c?.amount) || 0),
+        0,
+      );
+      const calculated = subtotal + (freightCost || 0) + totalCustomCharges;
 
       form.setValue("grandTotal", calculated, {
         shouldDirty: false,
@@ -315,7 +335,14 @@ export function POSInvoiceForm({
         shouldTouch: false,
       });
     }
-  }, [billType, items, headerDiscount, freightCost, isGlobalDiscount]);
+  }, [
+    billType,
+    items,
+    headerDiscount,
+    freightCost,
+    customCharges,
+    isGlobalDiscount,
+  ]);
 
   // Count items with products
   const filledItemsCount = (items || []).filter(
@@ -350,6 +377,9 @@ export function POSInvoiceForm({
             rate: item.rate || 0,
           })),
           headerDiscount: data.headerDiscount || 0,
+          customCharges: ((data.customCharges || []) as any[]).filter(
+            (c: any) => c && c.name?.trim() && Number(c.amount) > 0,
+          ),
           payments: ((data as any).payments || []).filter(
             (p: any) => p && p.amount && p.amount > 0,
           ),
@@ -375,6 +405,9 @@ export function POSInvoiceForm({
       const cleanedData = {
         ...data,
         items: (data.items || []).filter((item: any) => item.variantId),
+        customCharges: ((data.customCharges || []) as any[]).filter(
+          (c: any) => c && c.name?.trim() && Number(c.amount) > 0,
+        ),
         roundOff: totals.roundOff,
         isRoundOff,
       } as any;
@@ -411,10 +444,23 @@ export function POSInvoiceForm({
       if (res.success) {
         // Reset state before navigation
         setAttachmentCount(0);
+        const createdInvoiceId = res.data?.invoice?.id;
         toast.success(
           mode === "create" ? t("toasts.posted") : t("toasts.updated"),
+          createdInvoiceId
+            ? {
+                action: {
+                  label: "Print Bill",
+                  onClick: () =>
+                    router.push(
+                      `/dashboard/sales/invoices/${createdInvoiceId}/print`,
+                    ),
+                },
+                duration: 8000,
+              }
+            : undefined,
         );
-        router.push("/dashboard/sales/invoices");
+        router.push("/dashboard/sales/transactions");
       } else {
         toast.error(res.error?.message || t("toasts.failed"));
       }
@@ -610,6 +656,7 @@ export function POSInvoiceForm({
             roundOff={totals.roundOff}
             notesRef={notesRef}
             paymentFieldArray={paymentFieldArray}
+            customChargesFieldArray={customChargesFieldArray}
             no2PaymentMode={no2PaymentMode}
             onNo2PaymentModeChange={(mode) => {
               setNo2PaymentMode(mode);

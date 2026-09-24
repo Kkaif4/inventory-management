@@ -229,6 +229,7 @@ model Transaction {
   totalTaxable    Float             @default(0)
   totalTax        Float             @default(0)
   freightCost     Float?            @default(0)
+  customCharges   Json?
   globalDiscount  Float?            @default(0)
   grandTotal      Float             @default(0)
   status          TxStatus          @default(DRAFT)

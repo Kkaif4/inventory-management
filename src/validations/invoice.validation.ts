@@ -21,6 +21,12 @@ const invoiceItemSchema = z.object({
   batchNumber: z.string().optional().nullable(),
 });
 
+export const customChargeSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Charge name is required"),
+  amount: z.coerce.number().min(0, "Amount must be >= 0"),
+});
+
 // No.1 Legal Invoice Schema
 export const createNo1InvoiceSchema = z.object({
   billType: z.literal("NO1"),
@@ -33,6 +39,7 @@ export const createNo1InvoiceSchema = z.object({
     .min(1, "At least one item is required"),
   headerDiscount: z.coerce.number().min(0).max(100).default(0).optional(),
   freightCost: z.coerce.number().min(0, "Freight >= 0").default(0).optional(),
+  customCharges: z.array(customChargeSchema).optional().default([]),
   roundOff: z.coerce.number().optional().default(0),
   isRoundOff: z.boolean().optional().default(false),
   remarks: z.string().optional().nullable(),
@@ -68,6 +75,7 @@ export const createNo2InvoiceSchema = z.object({
     .min(1, "At least one item is required"),
   headerDiscount: z.coerce.number().min(0).max(100).default(0).optional(),
   freightCost: z.coerce.number().min(0, "Freight >= 0").default(0).optional(),
+  customCharges: z.array(customChargeSchema).optional().default([]),
   roundOff: z.coerce.number().optional().default(0),
   isRoundOff: z.boolean().optional().default(false),
   remarks: z.string().optional().nullable(),
@@ -109,15 +117,17 @@ export const createOldBillSchema = z.object({
   })).optional(),
   headerDiscount: z.number().min(0).max(100).default(0).optional(), // Bill discount %
   freightCost: z.number().min(0, "Freight >= 0").default(0).optional(),
+  customCharges: z.array(customChargeSchema).optional().default([]),
   roundOff: z.number().optional().default(0),
   isRoundOff: z.boolean().optional().default(false),
   payments: z.array(oldBillPaymentSchema).default([]),
   remarks: z.string().optional(),
 }).superRefine((data, ctx) => {
-  // Validate total is calculated correctly: (sum(quantity * rate) - headerDiscount%) + freight
+  // Validate total is calculated correctly: (sum(quantity * rate) - headerDiscount%) + freight + customCharges
   const itemsSubtotal = (data.items || []).reduce((sum, item) => sum + (item.quantity * item.rate), 0);
   const discountAmount = (itemsSubtotal * (data.headerDiscount || 0)) / 100;
-  const expectedTotal = itemsSubtotal - discountAmount + (data.freightCost || 0);
+  const totalCustomCharges = (data.customCharges || []).reduce((sum, c) => sum + (c.amount || 0), 0);
+  const expectedTotal = itemsSubtotal - discountAmount + (data.freightCost || 0) + totalCustomCharges;
 
   if (Math.abs(data.grandTotal - expectedTotal) > 0.01) {
     ctx.addIssue({
@@ -135,10 +145,11 @@ export const createOldBillSchema = z.object({
 
 export type OldBillFormValues = Omit<
   z.infer<typeof createOldBillSchema>,
-  "roundOff" | "isRoundOff"
+  "roundOff" | "isRoundOff" | "customCharges"
 > & {
   roundOff?: number;
   isRoundOff?: boolean;
+  customCharges?: { id?: string; name: string; amount: number }[];
 };
 
 // Combined schema

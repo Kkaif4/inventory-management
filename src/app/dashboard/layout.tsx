@@ -65,9 +65,9 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-surface-muted flex flex-col font-sans">
+    <div className="min-h-screen bg-surface-muted flex flex-col font-sans print:min-h-0 print:bg-white print:block">
       {/* Top Navbar */}
-      <nav className="h-14 sticky top-0 z-40 bg-surface-base border-b border-border-default flex items-center px-4 justify-between">
+      <nav className="h-14 sticky top-0 z-40 bg-surface-base border-b border-border-default flex items-center px-4 justify-between print:hidden">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 px-2">
             <div className="w-7 h-7 bg-brand rounded-lg flex items-center justify-center text-white">
@@ -117,17 +117,19 @@ export default function DashboardLayout({
         </div>
       </nav>
 
-      <div className="flex flex-1 relative">
-        <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
+      <div className="flex flex-1 relative print:block">
+        <div className="print:hidden">
+          <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
+        </div>
 
         {/* Main Content Area */}
         <main
           className={cn(
-            "flex-1 transition-all duration-300 min-h-screen",
+            "flex-1 transition-all duration-300 min-h-screen print:ml-0 print:min-h-0 print:p-0 print:m-0 print:w-full print:block",
             isCollapsed ? "ml-16" : "ml-60",
           )}
         >
-          <div className="max-w-screen-2xl mx-auto px-6 py-6 h-full">
+          <div className="max-w-screen-2xl mx-auto px-6 py-6 h-full print:p-0 print:m-0 print:max-w-none print:w-full">
             {children}
           </div>
         </main>

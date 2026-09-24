@@ -13,6 +13,7 @@
   },
   "items": {
     "dashboard": "Dashboard",
+    "newInvoice": "New Invoice",
     "salesTransactions": "Sales Transactions",
     "quotations": "Quotations & Delivery",
     "warrantyLookup": "Warranty Lookup",

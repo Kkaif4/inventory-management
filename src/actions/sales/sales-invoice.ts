@@ -37,6 +37,9 @@ export async function createSalesInvoice(data: {
   userId: string;
   headerDiscount?: number;
   freightCost?: number;
+  customCharges?: { id?: string; name: string; amount: number }[];
+  roundOff?: number;
+  isRoundOff?: boolean;
   remarks?: string;
   buyerName?: string;
   buyerPhone?: string;
@@ -91,7 +94,14 @@ export async function createSalesInvoice(data: {
     );
     const totalTax = roundToTwo(totalCgst + totalSgst + totalIgst);
     const freightCost = data.freightCost || 0;
-    const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
+    const totalCustomCharges = roundToTwo(
+      (data.customCharges || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0),
+    );
+    const rawTotal = totalTaxable + totalTax + freightCost + totalCustomCharges;
+    const roundOff = (data as any).isRoundOff
+      ? roundToTwo(Math.round(rawTotal) - rawTotal)
+      : (data as any).roundOff || 0;
+    const grandTotal = roundToTwo(rawTotal + roundOff);
 
     // Get default warehouse, fallback to first if no default set
     const warehouseId =
@@ -209,6 +219,10 @@ export async function createSalesInvoice(data: {
             totalTaxable,
             totalTax,
             freightCost,
+            customCharges:
+              data.customCharges && data.customCharges.length > 0
+                ? (data.customCharges as any)
+                : undefined,
             grandTotal,
             status: initialStatus,
             paidAt,
@@ -729,7 +743,18 @@ export async function getSalesInvoice(invoiceId: string) {
   return await prisma.transaction.findUnique({
     where: { id: invoiceId },
     include: {
-      party: { select: { id: true, name: true, gstin: true, state: true } },
+      party: {
+        select: {
+          id: true,
+          name: true,
+          gstin: true,
+          state: true,
+          phone: true,
+          address: true,
+          email: true,
+          pan: true,
+        },
+      },
       outlet: {
         select: {
           id: true,
@@ -744,7 +769,20 @@ export async function getSalesInvoice(invoiceId: string) {
         include: {
           variant: {
             include: {
-              product: { select: { name: true, hsnCode: true, gstRate: true } },
+              product: {
+                select: {
+                  name: true,
+                  hsnCode: true,
+                  gstRate: true,
+                  baseUnit: true,
+                },
+              },
+            },
+          },
+          saleSerialNumbers: {
+            select: {
+              serialNumber: true,
+              warrantyExpiry: true,
             },
           },
         },
@@ -775,6 +813,7 @@ export async function updateSalesInvoiceFreightAndRemarks(
   invoiceId: string,
   data: {
     freightCost?: number;
+    customCharges?: { id?: string; name: string; amount: number }[];
     remarks?: string;
   },
 ) {
@@ -789,6 +828,8 @@ export async function updateSalesInvoiceFreightAndRemarks(
         totalTaxable: true,
         totalTax: true,
         freightCost: true,
+        customCharges: true,
+        globalDiscount: true,
         txnNumber: true,
       },
     });
@@ -804,18 +845,39 @@ export async function updateSalesInvoiceFreightAndRemarks(
     }
 
     const newFreightCost = roundToTwo(data.freightCost ?? invoice.freightCost ?? 0);
-    const newGrandTotal = roundToTwo(
-      (invoice.totalTaxable ?? 0) + (invoice.totalTax ?? 0) + newFreightCost,
+
+    const incomingCharges =
+      data.customCharges !== undefined
+        ? data.customCharges.filter((c) => c && c.name?.trim() && Number(c.amount) > 0)
+        : (Array.isArray(invoice.customCharges) ? (invoice.customCharges as any[]) : []);
+
+    const totalCustomCharges = roundToTwo(
+      incomingCharges.reduce((sum, c) => sum + (Number(c.amount) || 0), 0)
     );
+
+    const globalDiscount = invoice.globalDiscount ?? 0;
+    const rawTotal =
+      (invoice.totalTaxable ?? 0) +
+      (invoice.totalTax ?? 0) +
+      newFreightCost +
+      totalCustomCharges -
+      globalDiscount;
+
+    const wasRoundOff =
+      Math.abs(Math.round(invoice.grandTotal) - invoice.grandTotal) < 0.005 &&
+      invoice.grandTotal !== 0;
+
+    const newGrandTotal = wasRoundOff ? roundToTwo(Math.round(rawTotal)) : roundToTwo(rawTotal);
     const delta = roundToTwo(newGrandTotal - invoice.grandTotal);
     const isPosted = invoice.status === "POSTED";
 
     return await prisma.$transaction(async (tx) => {
-      // 1. Update the transaction record with new freight and recalculated grandTotal
+      // 1. Update the transaction record with new freight, customCharges, and recalculated grandTotal
       const updated = await tx.transaction.update({
         where: { id: invoiceId },
         data: {
           freightCost: newFreightCost,
+          customCharges: incomingCharges.length > 0 ? (incomingCharges as any) : undefined,
           grandTotal: newGrandTotal,
           remarks: data.remarks ?? undefined,
         },
@@ -853,10 +915,10 @@ export async function updateSalesInvoiceFreightAndRemarks(
         ]);
 
         if (debtorAcc && salesAcc) {
-          const ref = `Freight adjustment on Invoice ${invoice.txnNumber}`;
+          const ref = `Adjustment on Invoice ${invoice.txnNumber}`;
           await tx.ledgerEntry.createMany({
             data: [
-              // Dr. Debtors if freight increased, Cr. Debtors if freight decreased
+              // Dr. Debtors if total increased, Cr. Debtors if total decreased
               {
                 transactionId: invoiceId,
                 accountId: debtorAcc.id,
@@ -866,7 +928,7 @@ export async function updateSalesInvoiceFreightAndRemarks(
                 credit: delta < 0 ? Math.abs(delta) : 0,
                 reference: ref,
               },
-              // Cr. Sales if freight increased, Dr. Sales if freight decreased
+              // Cr. Sales if total increased, Dr. Sales if total decreased
               {
                 transactionId: invoiceId,
                 accountId: salesAcc.id,
@@ -883,6 +945,7 @@ export async function updateSalesInvoiceFreightAndRemarks(
 
       revalidatePath("/dashboard/sales/invoices");
       revalidatePath(`/dashboard/sales/invoices/${invoiceId}`);
+      revalidatePath(`/dashboard/sales/invoices/${invoiceId}/print`);
       revalidatePath("/dashboard/sales/transactions");
       revalidatePath("/dashboard/financials/ledger");
 
@@ -911,6 +974,9 @@ export async function saveSalesInvoiceDraft(data: {
   userId: string;
   headerDiscount?: number;
   freightCost?: number;
+  customCharges?: { id?: string; name: string; amount: number }[];
+  roundOff?: number;
+  isRoundOff?: boolean;
   remarks?: string;
   buyerName?: string;
   buyerPhone?: string;
@@ -940,7 +1006,14 @@ export async function saveSalesInvoiceDraft(data: {
     );
     const totalTax = roundToTwo(totalCgst + totalSgst + totalIgst);
     const freightCost = data.freightCost || 0;
-    const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
+    const totalCustomCharges = roundToTwo(
+      (data.customCharges || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0),
+    );
+    const rawTotal = totalTaxable + totalTax + freightCost + totalCustomCharges;
+    const roundOff = (data as any).isRoundOff
+      ? roundToTwo(Math.round(rawTotal) - rawTotal)
+      : (data as any).roundOff || 0;
+    const grandTotal = roundToTwo(rawTotal + roundOff);
 
     // Get default warehouse, fallback to first if no default set
     const warehouseId =
@@ -967,6 +1040,10 @@ export async function saveSalesInvoiceDraft(data: {
           totalTaxable,
           totalTax,
           freightCost,
+          customCharges:
+            data.customCharges && data.customCharges.length > 0
+              ? (data.customCharges as any)
+              : undefined,
           grandTotal,
           status: "DRAFT",
           userId: data.userId,
@@ -1018,6 +1095,9 @@ export async function editSalesInvoice(
     userId: string;
     headerDiscount?: number;
     freightCost?: number;
+    customCharges?: { id?: string; name: string; amount: number }[];
+    roundOff?: number;
+    isRoundOff?: boolean;
     remarks?: string;
     buyerName?: string;
     buyerPhone?: string;
@@ -1056,7 +1136,17 @@ export async function editSalesInvoice(
     );
     const totalTax = roundToTwo(totalCgst + totalSgst + totalIgst);
     const freightCost = data.freightCost || 0;
-    const grandTotal = roundToTwo(totalTaxable + totalTax + freightCost);
+    const totalCustomCharges = roundToTwo(
+      (data.customCharges || []).reduce(
+        (sum, c) => sum + (Number(c.amount) || 0),
+        0,
+      ),
+    );
+    const rawTotal = totalTaxable + totalTax + freightCost + totalCustomCharges;
+    const roundOff = (data as any).isRoundOff
+      ? roundToTwo(Math.round(rawTotal) - rawTotal)
+      : (data as any).roundOff || 0;
+    const grandTotal = roundToTwo(rawTotal + roundOff);
 
     const variants = await prisma.variant.findMany({
       where: { id: { in: data.items.map((i) => i.variantId) } },
@@ -1082,6 +1172,10 @@ export async function editSalesInvoice(
           totalTaxable,
           totalTax,
           freightCost,
+          customCharges:
+            data.customCharges && data.customCharges.length > 0
+              ? (data.customCharges as any)
+              : undefined,
           grandTotal,
           remarks: data.remarks,
           items: {

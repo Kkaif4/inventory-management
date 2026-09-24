@@ -37,15 +37,21 @@ export async function createOldBill(
       const discountAmount = roundToTwo(
         (itemsSubtotal * (data.headerDiscount || 0)) / 100,
       );
+      const totalCustomCharges = roundToTwo(
+        (data.customCharges || []).reduce(
+          (sum, c) => sum + (Number(c.amount) || 0),
+          0,
+        ),
+      );
       const calculatedGrandTotal = roundToTwo(
-        itemsSubtotal - discountAmount + (data.freightCost || 0),
+        itemsSubtotal - discountAmount + (data.freightCost || 0) + totalCustomCharges,
       );
 
       // Validate that provided grandTotal matches calculation (within tolerance)
       if (Math.abs(data.grandTotal - calculatedGrandTotal) > 0.01) {
         throw new ValidationError(
           `Total mismatch: Calculated ₹${calculatedGrandTotal} but got ₹${data.grandTotal}. ` +
-            `Total = (Quantity × Rate) - (Discount%) + Freight`,
+            `Total = (Quantity × Rate) - (Discount%) + Freight + Extra Charges`,
         );
       }
 
@@ -190,6 +196,10 @@ export async function createOldBill(
           totalTax: 0,
           globalDiscount: data.headerDiscount || 0,
           freightCost: data.freightCost || 0,
+          customCharges:
+            data.customCharges && data.customCharges.length > 0
+              ? (data.customCharges as any)
+              : undefined,
           status,
           paidAt,
           remarks: data.remarks,

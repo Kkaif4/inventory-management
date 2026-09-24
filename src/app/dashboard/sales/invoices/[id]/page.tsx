@@ -18,6 +18,8 @@ import {
   MessageSquare,
   Percent,
   Paperclip,
+  Printer,
+  Tag,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -34,6 +36,7 @@ import { useSession } from "next-auth/react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AttachmentSection } from "@/components/attachments";
+import { roundToTwo } from "@/lib/utils";
 
 type Invoice = Awaited<ReturnType<typeof getSalesInvoice>>;
 
@@ -50,11 +53,15 @@ export default function InvoiceDetailPage() {
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const [attachmentCount, setAttachmentCount] = useState(0);
 
-  // Editable fields for freight and remarks
+  // Editable fields for freight, extra charges, and remarks
   const [isEditingFreight, setIsEditingFreight] = useState(false);
   const [isEditingRemarks, setIsEditingRemarks] = useState(false);
+  const [isEditingCharges, setIsEditingCharges] = useState(false);
   const [freightValue, setFreightValue] = useState("");
   const [remarksValue, setRemarksValue] = useState("");
+  const [chargesList, setChargesList] = useState<
+    { id: string; name: string; amount: number | string }[]
+  >([]);
   const [isSaving, setIsSaving] = useState(false);
 
   const loadInvoice = useCallback(async () => {
@@ -65,6 +72,16 @@ export default function InvoiceDetailPage() {
     if (data) {
       setFreightValue(data.freightCost?.toString() || "0");
       setRemarksValue(data.remarks || "");
+      const existingCharges = Array.isArray(data.customCharges)
+        ? (data.customCharges as any[])
+        : [];
+      setChargesList(
+        existingCharges.map((c) => ({
+          id: c.id || crypto.randomUUID(),
+          name: c.name || "",
+          amount: c.amount !== undefined ? c.amount : "",
+        })),
+      );
     }
     setIsLoading(false);
   }, [id]);
@@ -110,13 +127,74 @@ export default function InvoiceDetailPage() {
     }
   };
 
+  const handleSaveCharges = async () => {
+    if (!invoice) return;
+    setIsSaving(true);
+    try {
+      const validCharges = chargesList
+        .filter((c) => c.name.trim() !== "" && Number(c.amount) > 0)
+        .map((c) => ({
+          id: c.id,
+          name: c.name.trim(),
+          amount: roundToTwo(Number(c.amount)),
+        }));
+
+      await updateSalesInvoiceFreightAndRemarks(invoice.id, {
+        freightCost: parseFloat(freightValue) || invoice.freightCost || 0,
+        customCharges: validCharges,
+        remarks: remarksValue,
+      });
+      toast.success("Extra charges updated successfully");
+      setIsEditingCharges(false);
+      loadInvoice();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update extra charges");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const addChargeRow = (initialName: string = "") => {
+    setChargesList((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), name: initialName, amount: "" },
+    ]);
+  };
+
+  const updateChargeRow = (
+    index: number,
+    field: "name" | "amount",
+    value: any,
+  ) => {
+    setChargesList((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const removeChargeRow = (index: number) => {
+    setChargesList((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleCancelEdit = () => {
     if (invoice) {
       setFreightValue(invoice.freightCost?.toString() || "0");
       setRemarksValue(invoice.remarks || "");
+      const existingCharges = Array.isArray(invoice.customCharges)
+        ? (invoice.customCharges as any[])
+        : [];
+      setChargesList(
+        existingCharges.map((c) => ({
+          id: c.id || crypto.randomUUID(),
+          name: c.name || "",
+          amount: c.amount !== undefined ? c.amount : "",
+        })),
+      );
     }
     setIsEditingFreight(false);
     setIsEditingRemarks(false);
+    setIsEditingCharges(false);
   };
 
   if (isLoading) {
@@ -237,6 +315,14 @@ export default function InvoiceDetailPage() {
 
         {/* Action Bar */}
         <div className="flex items-center gap-2">
+          <Button
+            onClick={() => router.push(`/dashboard/sales/invoices/${invoice.id}/print`)}
+            variant="outline"
+            className="gap-2 h-9 text-sm font-bold"
+          >
+            <Printer className="w-4 h-4" />
+            Print Bill
+          </Button>
           {canAppend && (
             <Button
               onClick={() => setAppendDrawerOpen(true)}
@@ -321,16 +407,71 @@ export default function InvoiceDetailPage() {
             )}
           </div>
         )}
+
+        {/* Custom Charges Summary */}
+        {Array.isArray((invoice as any).customCharges) && (invoice as any).customCharges.length > 0 ? (
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Extra Charges
+              </p>
+              {canEdit && !isEditingCharges && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditingCharges(true);
+                    const el = document.getElementById("extra-charges-section");
+                    el?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  Edit Charges
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {(invoice as any).customCharges.map((charge: any, idx: number) => (
+                <div key={idx} className="bg-slate-50 border border-slate-100 rounded-lg p-2.5">
+                  <p className="text-xs text-slate-500 mb-0.5">{charge.name || "Charge"}</p>
+                  <p className="text-sm font-bold text-slate-800 font-mono">
+                    {fmt(Number(charge.amount) || 0)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          canEdit && !isEditingCharges && (
+            <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-400">Extra Charges: None</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditingCharges(true);
+                  if (chargesList.length === 0) addChargeRow();
+                  const el = document.getElementById("extra-charges-section");
+                  el?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" />
+                Add Extra Charges
+              </button>
+            </div>
+          )
+        )}
       </div>
 
-      {/* Freight and Remarks Section */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
-        <div className="flex items-center gap-2 mb-4">
+      {/* Freight, Extra Charges, and Remarks Section */}
+      <div id="extra-charges-section" className="bg-white rounded-xl border border-slate-200 p-5 space-y-6">
+        <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
           <MessageSquare className="w-4 h-4 text-slate-400" />
           <span className="text-sm font-bold text-slate-700 uppercase tracking-tight">
-            Additional Details
+            Additional Details & Extra Charges
           </span>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Freight Cost */}
           <div>
@@ -444,6 +585,190 @@ export default function InvoiceDetailPage() {
               </p>
             )}
           </div>
+        </div>
+
+        {/* Extra Charges Section */}
+        <div className="pt-5 border-t border-slate-100">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Tag className="w-4 h-4 text-slate-400" />
+              <Label className="text-xs text-slate-500 uppercase tracking-tight font-semibold">
+                Extra / Custom Charges
+              </Label>
+              {chargesList.length > 0 && (
+                <span className="text-[10px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                  {chargesList.length} {chargesList.length === 1 ? "charge" : "charges"}
+                </span>
+              )}
+            </div>
+            {canEdit && !isEditingCharges && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setIsEditingCharges(true);
+                  if (chargesList.length === 0) addChargeRow();
+                }}
+                className="h-7 text-xs gap-1.5 text-slate-600 hover:text-blue-600 border-slate-200"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                {chargesList.length > 0 ? "Edit Charges" : "+ Add Charges"}
+              </Button>
+            )}
+          </div>
+
+          {isEditingCharges ? (
+            <div className="space-y-3 bg-slate-50/70 p-4 rounded-xl border border-slate-200">
+              {/* Quick Suggestions */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] text-slate-500 font-medium">Quick add:</span>
+                {["Packaging", "Delivery", "Handling", "Installation", "Loading/Unloading"].map(
+                  (suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => addChargeRow(suggestion)}
+                      className="text-[11px] bg-white hover:bg-blue-50 hover:text-blue-600 text-slate-700 px-2 py-0.5 rounded border border-slate-200 shadow-sm transition-colors"
+                    >
+                      +{suggestion}
+                    </button>
+                  ),
+                )}
+              </div>
+
+              {/* Charges List */}
+              <div className="space-y-2">
+                {chargesList.length === 0 ? (
+                  <div className="text-center py-4 bg-white rounded-lg border border-dashed border-slate-200">
+                    <p className="text-xs text-slate-400 mb-2">No extra charges added.</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addChargeRow()}
+                      className="h-7 text-xs gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add First Charge
+                    </Button>
+                  </div>
+                ) : (
+                  chargesList.map((charge, idx) => (
+                    <div key={charge.id} className="flex items-center gap-2">
+                      <Input
+                        placeholder="Charge description (e.g. Packaging, Delivery)"
+                        value={charge.name}
+                        onChange={(e) => updateChargeRow(idx, "name", e.target.value)}
+                        className="h-9 text-xs flex-1 bg-white"
+                      />
+                      <div className="relative w-36">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-mono">
+                          ₹
+                        </span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          value={charge.amount}
+                          onChange={(e) => updateChargeRow(idx, "amount", e.target.value)}
+                          className="h-9 text-xs pl-6 font-mono text-right bg-white"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeChargeRow(idx)}
+                        className="p-1.5 text-slate-400 hover:text-red-600 rounded transition-colors"
+                        title="Remove charge"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Bottom Actions within Edit Mode */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addChargeRow()}
+                  className="h-8 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 font-medium"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  Add Another Charge
+                </Button>
+
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-slate-600">
+                    Total Extra Charges:{" "}
+                    <span className="font-mono text-slate-900 font-bold">
+                      ₹
+                      {chargesList
+                        .reduce((sum, c) => sum + (Number(c.amount) || 0), 0)
+                        .toFixed(2)}
+                    </span>
+                  </span>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveCharges}
+                    disabled={isSaving}
+                    className="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs gap-1.5"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    Save Charges
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className="h-8 px-3 text-xs"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div>
+              {chargesList.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                  {chargesList.map((charge) => (
+                    <div
+                      key={charge.id}
+                      className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200/80 rounded-lg text-xs"
+                    >
+                      <span className="text-slate-600 font-medium truncate mr-2">
+                        {charge.name}
+                      </span>
+                      <span className="font-bold text-slate-900 font-mono shrink-0">
+                        {fmt(Number(charge.amount) || 0)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between text-xs text-slate-400 py-1">
+                  <span className="italic">No extra charges applied</span>
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingCharges(true);
+                        if (chargesList.length === 0) addChargeRow();
+                      }}
+                      className="text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      + Add Extra Charge
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
