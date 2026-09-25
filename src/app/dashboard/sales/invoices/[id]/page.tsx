@@ -813,9 +813,68 @@ export default function InvoiceDetailPage() {
                       </p>
                       {item.variant && (
                         <p className="text-[10px] text-slate-400 font-mono">
-                          {item.variant.sku}
+                          SKU: {item.variant.sku}
                         </p>
                       )}
+                      {/* Serial Numbers and Warranty Information */}
+                      {(() => {
+                        const serialList =
+                          item.saleSerialNumbers && item.saleSerialNumbers.length > 0
+                            ? item.saleSerialNumbers
+                            : Array.isArray((item as any).serialNumbers)
+                            ? (item as any).serialNumbers.map((s: any) =>
+                                typeof s === "string" ? { serialNumber: s } : s,
+                              )
+                            : [];
+
+                        if (serialList.length > 0) {
+                          return (
+                            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                S/N:
+                              </span>
+                              {serialList.map((sn: any, sIdx: number) => {
+                                const months =
+                                  sn.warrantyMonths ||
+                                  item.variant?.product?.warrantyMonths;
+                                const expiry = sn.warrantyExpiry;
+
+                                return (
+                                  <span
+                                    key={sn.id || sIdx}
+                                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-xs font-mono font-medium text-slate-800"
+                                  >
+                                    <span>{sn.serialNumber}</span>
+                                    {expiry ? (
+                                      <span className="text-[10px] font-sans font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded leading-none">
+                                        Warranty till{" "}
+                                        {new Date(expiry).toLocaleDateString("en-IN", {
+                                          day: "2-digit",
+                                          month: "short",
+                                          year: "numeric",
+                                        })}
+                                      </span>
+                                    ) : months && months > 0 ? (
+                                      <span className="text-[10px] font-sans font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-1.5 py-0.5 rounded leading-none">
+                                        {months}M Warranty
+                                      </span>
+                                    ) : null}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          );
+                        } else if (item.variant?.product?.warrantyMonths && item.variant.product.warrantyMonths > 0) {
+                          return (
+                            <div className="mt-1">
+                              <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded">
+                                Warranty: {item.variant.product.warrantyMonths} Months
+                              </span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </td>
                     <td className="px-5 py-3 text-right font-mono text-slate-700">
                       {item.quantity}

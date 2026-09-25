@@ -263,12 +263,14 @@ export async function createSalesInvoice(data: {
               }
 
               for (const sn of item.serialNumbers) {
+                const trimmedSn = sn.trim();
+                if (!trimmedSn) continue;
+
                 const dbSn = await tx.serialNumber.findFirst({
                   where: {
-                    serialNumber: { equals: sn.trim(), mode: "insensitive" },
+                    serialNumber: { equals: trimmedSn, mode: "insensitive" },
                     variantId: item.variantId,
                     outletId: data.fromOutletId,
-                    status: "AVAILABLE",
                   },
                 });
                 if (dbSn) {
@@ -277,6 +279,19 @@ export async function createSalesInvoice(data: {
                     data: {
                       status: "SOLD",
                       saleItemId: grnItem.id,
+                      warrantyExpiry: expiry,
+                      warrantyMonths: months > 0 ? months : dbSn.warrantyMonths,
+                    },
+                  });
+                } else {
+                  await tx.serialNumber.create({
+                    data: {
+                      serialNumber: trimmedSn,
+                      variantId: item.variantId,
+                      outletId: data.fromOutletId,
+                      saleItemId: grnItem.id,
+                      status: "SOLD",
+                      warrantyMonths: months > 0 ? months : undefined,
                       warrantyExpiry: expiry,
                     },
                   });
@@ -775,13 +790,17 @@ export async function getSalesInvoice(invoiceId: string) {
                   hsnCode: true,
                   gstRate: true,
                   baseUnit: true,
+                  hasSerialNumbers: true,
+                  warrantyMonths: true,
                 },
               },
             },
           },
           saleSerialNumbers: {
             select: {
+              id: true,
               serialNumber: true,
+              warrantyMonths: true,
               warrantyExpiry: true,
             },
           },
